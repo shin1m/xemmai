@@ -1,0 +1,45 @@
+bin_PROGRAMS = xemmai
+AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CXXFLAGS =
+AM_LDFLAGS = -rdynamic
+LDADD = -ldl -lpthread
+if DEBUG
+AM_CXXFLAGS += -g
+else
+AM_CPPFLAGS += -DNDEBUG
+AM_CXXFLAGS += -O3
+endif
+if PROFILE
+AM_CXXFLAGS += -pg
+AM_LDFLAGS += -pg
+endif
+xemmai_SOURCES = \
+	portable.cc \
+	pointer.cc \
+	hash.cc \
+	type.cc \
+	object.cc \
+	class.cc \
+	module.cc \
+	fiber.cc \
+	thread.cc \
+	symbol.cc \
+	scope.cc \
+	code.cc \
+	method.cc \
+	lambda.cc \
+	native.cc \
+	throwable.cc \
+	null.cc \
+	boolean.cc \
+	integer.cc \
+	float.cc \
+	string.cc \
+	tuple.cc \
+	array.cc \
+	dictionary.cc \
+	lexer.cc \
+	parser.cc \
+	global.cc \
+	engine.cc \
+	main.cc

@@ -1,0 +1,85 @@
+alphabetic: [_A-Za-z] ;
+
+digit: [0-9] ;
+
+symbol: alphabetic (alphabetic | digit)* ;
+
+integer: digit+ ;
+
+float: digit+ '.' digit* ;
+
+string: '"' escaped-string '"' ;
+
+arguments: symbol | symbol ',' arguments ;
+
+self: '$' (':' | '^')* ;
+
+target: '(' expression ')'
+	| '@' ('(' arguments? ')')? '{' statement* '}'
+	| 'null'
+	| 'true'
+	| 'false'
+	| integer
+	| float
+	| string
+	| '[' expressions? ']'
+	| '{' pairs? '}'
+	;
+
+setter: '.' symbol | '[' expression ']' ;
+
+getter: '.' (':' | '^') | setter ;
+
+term0: (':'* (symbol | self symbol?) | target) (getter | '(' expressions? ')')* ;
+
+term1: ('+' | '-' | '!' | '~')* term0 ;
+
+term2: term1 (('*' | '/' | '%') term1)* ;
+
+term3: term2 (('+' | '-') term2)* ;
+
+term4: term3 (('<<' | '>>') term3)* ;
+
+term5: term4 (('<' | '>' | '<=' | '>=') term4)* ;
+
+term6: term5 (('==' | '!=') term5)* ;
+
+term7: term6 ('&' term6)* ;
+
+term8: term7 ('^' term7)* ;
+
+term9: term8 ('|' term8)* ;
+
+term10: term9 ('&&' term9)* ;
+
+term11: term10 ('||' term10)* ;
+
+term: term11 ('::' term11)* ;
+
+assignment: (':'* symbol | term0 setter) '=' expression
+
+compound: 'if' '(' expression ')' block ('else' block)?
+	| 'while' '(' expression ')' block
+	| 'try' '{' statement* '}' ('catch' '(' symbol ')' '{' statement* '}')? ('finally' '{' statement* '}')?
+	;
+
+expression: term | assignment | compound ;
+
+expressions: expression (',' expression)* ;
+
+pair: expression ':' expression ;
+
+pairs: pair (',' pair)* ;
+
+block: statement | '{' statement* '}' ;
+
+statement: term ';'
+	| assignment ';'
+	| compound
+	| 'break' expression? ';'
+	| 'continue' ';'
+	| 'return' expression? ';'
+	| 'throw' expression ';'
+	;
+
+module: statement* ;

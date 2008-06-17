@@ -1,0 +1,44 @@
+#ifndef XEMMAI__THROWABLE_H
+#define XEMMAI__THROWABLE_H
+
+#include "fiber.h"
+
+namespace xemmai
+{
+
+struct t_throwable
+{
+	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_message);
+	XEMMAI__PORTABLE__EXPORT static void f_throw(const std::wstring& a_message);
+
+	t_fiber::t_context* v_context;
+	std::wstring v_message;
+
+	t_throwable(const std::wstring& a_message) : v_context(0), v_message(a_message)
+	{
+	}
+	virtual ~t_throwable();
+	const std::wstring& f_string() const
+	{
+		return v_message;
+	}
+	virtual void f_dump() const;
+};
+
+template<>
+struct t_type_of<t_throwable> : t_type
+{
+	static t_transfer f_define();
+
+	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	{
+	}
+	virtual t_type* f_derive(t_object* a_this);
+	virtual void f_scan(t_object* a_this, t_scan a_scan);
+	virtual void f_finalize(t_object* a_this);
+	virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
+};
+
+}
+
+#endif

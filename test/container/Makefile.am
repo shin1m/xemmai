@@ -1,0 +1,20 @@
+check_PROGRAMS = container.so
+AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_LDFLAGS = -shared
+AM_CXXFLAGS = -fPIC
+if DEBUG
+AM_CXXFLAGS += -g
+else
+AM_CPPFLAGS += -DNDEBUG
+AM_CXXFLAGS += -O3
+endif
+if PROFILE
+AM_CXXFLAGS += -pg
+AM_LDFLAGS += -pg
+endif
+container_so_SOURCES = queue.h queue.cc container.h container.cc
+
+check_SCRIPTS = test.xm
+CLEANFILES = test.xm
+test.xm: $(srcdir)/test.xm.in
+	cp $< $@
