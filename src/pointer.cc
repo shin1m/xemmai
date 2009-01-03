@@ -5,23 +5,7 @@
 namespace xemmai
 {
 
-void t_pointer::t_queue::f_next(t_object* a_object)
-{
-	f_engine()->f_tick();
-	while (v_head == v_tail) f_engine()->f_wait();
-	v_next = v_tail;
-	t_object* volatile* head = v_head;
-	if (head < v_objects + V_SIZE - 1) {
-		if (v_next < head) v_next = v_objects + V_SIZE - 1;
-		*head = a_object;
-		v_head = ++head;
-	} else {
-		*head = a_object;
-		v_head = v_objects;
-	}
-}
-
-void t_pointer::t_queue::f_flush()
+void t_pointer::t_increments::f_flush()
 {
 	t_object* volatile* end = v_objects + V_SIZE - 1;
 	t_object* volatile* tail = v_tail;
@@ -74,8 +58,9 @@ void t_pointer::t_decrements::f_flush()
 	v_last = v_epoch;
 }
 
-XEMMAI__PORTABLE__THREAD t_pointer::t_queue* t_pointer::v_increments;
-XEMMAI__PORTABLE__THREAD t_pointer::t_queue* t_pointer::v_decrements;
+XEMMAI__PORTABLE__THREAD t_pointer::t_collector* t_pointer::v_collector;
+XEMMAI__PORTABLE__THREAD t_pointer::t_increments* t_pointer::v_increments;
+XEMMAI__PORTABLE__THREAD t_pointer::t_decrements* t_pointer::v_decrements;
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 t_pointer::t_pointer(t_object* a_p) : v_p(a_p)

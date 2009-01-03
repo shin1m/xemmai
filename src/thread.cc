@@ -24,6 +24,7 @@ void* t_thread::f_main(void* a_p)
 	v_current = static_cast<t_object*>(a_p);
 	t_thread* p = f_as<t_thread*>(v_current);
 	t_thread::t_queues* queues = p->v_queues;
+	t_pointer::v_collector = queues->v_collector;
 	t_pointer::v_increments = &queues->v_increments;
 	t_pointer::v_decrements = &queues->v_decrements;
 	p->v_active = p->v_fiber;

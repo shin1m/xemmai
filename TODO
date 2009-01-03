@@ -24,6 +24,7 @@
 //change object construction protocol to ensure v_pointer is initialized before accessed by multiple threads.
 //implement array.
 //implement dictionary.
+profile and improve smp performance.
 
 performance improvement ideas:
 //	implement threaded code.
@@ -37,9 +38,9 @@ performance improvement ideas:
 //	allocate stack area in each scope.
 //	increment/decrement counter for native context instead of push/pop.
 //	improve threaded code.
-	implement scope cache.
-	implement method cache.
+	implement field cache.
 	implement thread local memory pool.
 	use direct function table instead of virtual function.
 	cache flyweight integers.
 	allocate variables in threaded code.
+	implement scope cache.

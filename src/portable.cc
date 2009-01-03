@@ -4,34 +4,12 @@
 
 #include <cstdlib>
 #include <vector>
-#ifdef __unix__
-#include <unistd.h>
-#include <sys/types.h>
-#include <linux/unistd.h>
-#include <errno.h>
-inline pid_t gettid()
-{
-	return syscall(__NR_gettid);
-}
-#endif
 
 namespace xemmai
 {
 
 namespace portable
 {
-
-#ifdef __unix__
-void t_affinity::f_from_process()
-{
-	sched_getaffinity(0, sizeof(cpu_set_t), &v_set);
-}
-
-void t_affinity::f_to_thread()
-{
-	sched_setaffinity(gettid(), sizeof(cpu_set_t), &v_set);
-}
-#endif
 
 #ifdef _WIN32
 namespace

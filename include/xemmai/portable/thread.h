@@ -3,7 +3,6 @@
 
 #ifdef __unix__
 #include <pthread.h>
-#include <sched.h>
 #endif
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0400
@@ -30,6 +29,16 @@ inline bool f_thread(void* (*a_main)(void*), void* a_p)
 	int n = pthread_create(&thread, &attributes, a_main, a_p);
 	pthread_attr_destroy(&attributes);
 	return n == 0;
+}
+
+inline void f_yield()
+{
+	pthread_yield();
+}
+
+inline size_t f_cpu()
+{
+	return sched_getcpu();
 }
 
 class t_mutex
@@ -91,8 +100,14 @@ class t_affinity
 public:
 	static const size_t V_SIZE = CPU_SETSIZE;
 
-	void f_from_process();
-	void f_to_thread();
+	void f_from_thread()
+	{
+		pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &v_set);
+	}
+	void f_to_thread()
+	{
+		pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &v_set);
+	}
 	bool f_contains(size_t a_cpu) const
 	{
 		return CPU_ISSET(static_cast<int>(a_cpu), &v_set) != 0;
@@ -114,6 +129,19 @@ public:
 
 #ifdef _WIN32
 bool f_thread(void* (*a_main)(void*), void* a_p);
+
+inline void f_yield()
+{
+	SwitchToThread();
+}
+
+inline size_t f_cpu()
+{
+	_asm {mov eax, 1}
+	_asm {cpuid}
+	_asm {shr ebx, 24}
+	_asm {mov eax, ebx}
+}
 
 class t_mutex
 {
@@ -191,7 +219,7 @@ class t_affinity
 public:
 	static const size_t V_SIZE = sizeof(DWORD_PTR) * 8;
 
-	void f_from_process()
+	void f_from_thread()
 	{
 		DWORD_PTR mask;
 		GetProcessAffinityMask(GetCurrentProcess(), &v_mask, &mask);
