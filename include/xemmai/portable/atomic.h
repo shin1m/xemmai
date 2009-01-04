@@ -69,7 +69,7 @@ public:
 			: "memory", "cc"
 		);
 		if (value >= 0) return;
-		do pthread_yield(); while (v_lock <= 0);
+		do sched_yield(); while (v_lock <= 0);
 	}
 	void f_release_for_read()
 	{
@@ -91,7 +91,7 @@ public:
 				: "memory", "cc"
 			);
 			if (value == 0) break;
-			do pthread_yield(); while (v_lock != 0);
+			do sched_yield(); while (v_lock != 0);
 		}
 	}
 	void f_release_for_write()

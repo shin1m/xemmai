@@ -33,7 +33,7 @@ inline bool f_thread(void* (*a_main)(void*), void* a_p)
 
 inline void f_yield()
 {
-	pthread_yield();
+	sched_yield();
 }
 
 inline size_t f_cpu()

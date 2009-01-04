@@ -68,13 +68,11 @@ public:
 		}
 		void f_wait()
 		{
-#if 0
 			{
 				portable::t_scoped_lock lock(v_collector__mutex);
 				++v_collector__wait;
 				if (v_collector__running) {
 					v_collector__done.f_wait(v_collector__mutex);
-					do portable::f_yield(); while (v_collector__running);
 					return;
 				}
 				v_collector__running = true;
@@ -84,17 +82,6 @@ public:
 				portable::t_scoped_lock lock(v_collector__mutex);
 				if (v_collector__running) v_collector__done.f_wait(v_collector__mutex);
 			}
-#else
-			bool b;
-			{
-				portable::t_scoped_lock lock(v_collector__mutex);
-				++v_collector__wait;
-				b = v_collector__running;
-				if (!b) v_collector__running = true;
-			}
-			if (!b) v_collector__wake.f_signal();
-			while (v_collector__running) portable::f_yield();
-#endif
 		}
 	};
 
