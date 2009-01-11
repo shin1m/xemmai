@@ -120,7 +120,6 @@ void t_engine::f_collector()
 				}
 				{
 					portable::t_scoped_lock lock(v_object__reviving__mutex);
-					p = v_thread__queueses;
 					do {
 						p = p->v_next;
 						if (p->v_done > 0) ++p->v_done;
