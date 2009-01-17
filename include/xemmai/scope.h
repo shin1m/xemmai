@@ -48,11 +48,11 @@ public:
 	void f_scan(t_scan a_scan)
 	{
 		a_scan(v_outer);
-		a_scan(v_self);
+		if (v_self) a_scan(v_self);
 		t_slot* p = f_entries();
 		t_slot* q = p + v_size;
 		while (p < q) {
-			a_scan(*p);
+			if (*p) a_scan(*p);
 			++p;
 		}
 	}

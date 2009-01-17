@@ -72,7 +72,7 @@ public:
 	}
 };
 
-template<typename T, size_t A_size = 1024>
+template<typename T, size_t A_size>
 class t_fixed_pool
 {
 	struct t_block

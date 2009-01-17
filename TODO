@@ -34,10 +34,11 @@ performance improvement ideas:
 //	reduce unnecessary increment/decrement on call.
 //	reduce unnecessary push/pop using peek/head.
 //	add native push/pop of context.
-//	skip to lock private scope.
+//	skip locking to get/set private scope variable.
 //	allocate stack area in each scope.
 //	increment/decrement counter for native context instead of push/pop.
 //	improve threaded code.
+	skip locking to get constant scope variable.
 	implement field cache.
 	implement thread local memory pool.
 	use direct function table instead of virtual function.

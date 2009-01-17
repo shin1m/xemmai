@@ -120,11 +120,11 @@ protected:
 			v_epoch = v_head;
 		}
 	};
-	struct t_increments : t_queue<4096>
+	struct t_increments : t_queue<16384>
 	{
 		void f_flush();
 	};
-	struct t_decrements : t_queue<8192>
+	struct t_decrements : t_queue<32768>
 	{
 		t_object* volatile* v_last;
 

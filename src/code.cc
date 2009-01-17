@@ -583,7 +583,7 @@ XEMMAI__CODE__CALL(OR, 1, f_or)
 						t_fiber::t_context* p = f_context();\
 						f_as<t_type*>(x->f_type())->a_method(x, *stack);\
 						if (f_context() == p) {\
-							x = stack->f_top().f_transfer();\
+							t_transfer x = stack->f_top().f_transfer();\
 							if (p->v_native > 0) return x;\
 							stack = f_as<t_scope*>(f_context()->v_scope);\
 							stack->f_return(x);\
@@ -666,15 +666,6 @@ XEMMAI__CODE__CALL_TAIL(OR_TAIL, 1, f_or)
 void t_code::f_scan(t_scan a_scan)
 {
 	for (std::vector<void*>::iterator i = v_objects.begin(); i != v_objects.end(); ++i) a_scan(*reinterpret_cast<t_slot*>(&*i));
-}
-
-void t_code::f_call(t_object* a_this, const t_transfer& a_scope, const t_transfer& a_self, size_t a_n, t_stack& a_stack)
-{
-	if (a_n != v_arguments) t_throwable::f_throw(L"invalid number of arguments.");
-	t_transfer scope = t_scope::f_instantiate(v_size, a_scope, a_self);
-	t_scope& s = f_as<t_scope&>(scope);
-	while (a_n > 0) s[--a_n] = a_stack.f_pop();
-	t_fiber::t_context::f_push(scope, a_this, &v_instructions[0]);
 }
 
 const t_code::t_at* t_code::f_at(void** a_address) const

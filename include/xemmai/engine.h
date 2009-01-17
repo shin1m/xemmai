@@ -53,7 +53,7 @@ class t_engine : public t_pointer::t_collector
 		void f_run();
 	};
 
-	static const size_t V_POOL__ALLOCATION__UNIT = 1024;
+	static const size_t V_POOL__ALLOCATION__UNIT = 4096;
 	static const size_t V_COLLECTOR__SKIP = 1024;
 
 	static void* f_synchronizer(void* a_p);
@@ -75,17 +75,17 @@ class t_engine : public t_pointer::t_collector
 		static_cast<t_engine*>(t_pointer::v_collector)->v_fiber__try__pool.f_free(a_p);
 	}
 
-	t_shared_pool<t_fixed_pool<t_hash::t_entry> > v_hash__entry__pool;
+	t_shared_pool<t_fixed_pool<t_hash::t_entry, 4096> > v_hash__entry__pool;
 	t_shared_pool<t_variable_pool<t_hash::t_table> > v_hash__table__pools[t_hash::t_table::V_POOLS__SIZE];
-	t_shared_pool<t_fixed_pool<t_object> > v_object__pool;
+	t_shared_pool<t_fixed_pool<t_object, 65536> > v_object__pool;
 	t_object* v_object__cycle;
 	std::vector<t_object*> v_object__cycles;
 	bool v_object__reviving;
 	portable::t_mutex v_object__reviving__mutex;
 	size_t v_object__release;
 	size_t v_object__collect;
-	t_shared_pool<t_fixed_pool<t_fiber::t_context> > v_fiber__context__pool;
-	t_shared_pool<t_fixed_pool<t_fiber::t_try> > v_fiber__try__pool;
+	t_shared_pool<t_fixed_pool<t_fiber::t_context, 256> > v_fiber__context__pool;
+	t_shared_pool<t_fixed_pool<t_fiber::t_try, 256> > v_fiber__try__pool;
 	void* v_fiber__instructions[10];
 	t_thread::t_queues* v_thread__queueses;
 	portable::t_mutex v_thread__mutex;

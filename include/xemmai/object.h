@@ -17,7 +17,7 @@ class t_object
 	friend class t_pointer;
 	friend struct t_pointer::t_queues;
 	template<typename T_base> friend class t_shared_pool;
-	friend class t_fixed_pool<t_object>;
+	template<typename T, size_t A_size> friend class t_fixed_pool;
 	friend class t_local_pool<t_object>;
 	friend struct t_type;
 	friend class t_engine;

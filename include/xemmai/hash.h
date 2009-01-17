@@ -20,7 +20,7 @@ public:
 		friend class t_hash;
 		friend class t_iterator;
 		template<typename T_base> friend class t_shared_pool;
-		friend class t_fixed_pool<t_entry>;
+		template<typename T, size_t A_size> friend class t_fixed_pool;
 		friend class t_local_pool<t_entry>;
 		friend class t_engine;
 

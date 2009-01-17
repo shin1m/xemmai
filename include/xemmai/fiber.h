@@ -67,14 +67,13 @@ struct t_fiber
 		void** v_pc;
 		size_t v_native;
 
-		t_context() : v_pc(0), v_native(0)
+		t_context() : v_native(0)
 		{
 		}
 		XEMMAI__PORTABLE__FORCE_INLINE void f_finalize()
 		{
 			v_scope = 0;
 			v_code = 0;
-			v_pc = 0;
 			v_native = 0;
 			t_local_pool<t_context>::f_free(this);
 		}

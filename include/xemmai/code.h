@@ -139,7 +139,6 @@ struct t_code
 	{
 	}
 	void f_scan(t_scan a_scan);
-	void f_call(t_object* a_this, const t_transfer& a_scope, const t_transfer& a_self, size_t a_n, t_stack& a_stack);
 	const t_at* f_at(void** a_address) const;
 	void f_at(size_t a_address, long a_position, size_t a_line, size_t a_column)
 	{
