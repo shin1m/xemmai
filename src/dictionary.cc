@@ -31,6 +31,14 @@ t_object* t_dictionary::f_get(t_object* a_key) const
 	return field->v_value;
 }
 
+t_transfer t_dictionary::f_remove(t_object* a_key)
+{
+	t_transfer value = v_hash.f_remove<t_hash_traits>(a_key);
+	if (!value) t_throwable::f_throw(L"key not found.");
+	--v_size;
+	return value;
+}
+
 std::wstring t_type_of<t_dictionary>::f_string(t_object* a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
@@ -153,11 +161,11 @@ size_t t_type_of<t_dictionary>::f_size(t_object* a_self)
 	return f_as<t_dictionary&>(a_self).f_size();
 }
 
-void t_type_of<t_dictionary>::f_remove_at(t_object* a_self, t_object* a_key)
+t_transfer t_type_of<t_dictionary>::f_remove_at(t_object* a_self, t_object* a_key)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_dictionary&>(a_self).f_remove(a_key);
+	return f_as<t_dictionary&>(a_self).f_remove(a_key);
 }
 
 t_transfer t_type_of<t_dictionary>::f_define()
@@ -171,7 +179,7 @@ t_transfer t_type_of<t_dictionary>::f_define()
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(t_object*, t_object*), f_not_equals>())
 		(L"clear", t_member<void (*)(t_object*), f_clear>())
 		(L"size", t_member<size_t (*)(t_object*), f_size>())
-		(L"remove", t_member<void (*)(t_object*, t_object*), f_remove_at>())
+		(L"remove", t_member<t_transfer (*)(t_object*, t_object*), f_remove_at>())
 	;
 }
 

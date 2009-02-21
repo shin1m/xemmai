@@ -264,12 +264,18 @@ void t_parser::f_getter()
 				case t_lexer::e_token__HAT:
 					f_emit(e_instruction__SUPER);
 					break;
+				case t_lexer::e_token__TILDE:
+					v_lexer.f_next();
+					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
+					f_emit(e_instruction__OBJECT_REMOVE);
+					f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1)));
+					break;
 				case t_lexer::e_token__SYMBOL:
 					f_emit(e_instruction__OBJECT_GET);
 					f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1)));
 					break;
 				default:
-					f_throw(L"expecting ':' or '^' or symbol.");
+					f_throw(L"expecting ':' or '^' or '~' or symbol.");
 				}
 				f_at(position, line, column);
 				v_lexer.f_next();
@@ -1058,6 +1064,13 @@ void t_parser::f_expression()
 					f_emit(e_instruction__SUPER);
 					v_lexer.f_next();
 					break;
+				case t_lexer::e_token__TILDE:
+					v_lexer.f_next();
+					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
+					f_emit(e_instruction__OBJECT_REMOVE);
+					f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1)));
+					v_lexer.f_next();
+					break;
 				case t_lexer::e_token__SYMBOL:
 					{
 						t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
@@ -1075,7 +1088,7 @@ void t_parser::f_expression()
 					}
 					break;
 				default:
-					f_throw(L"expecting ':' or '^' or symbol.");
+					f_throw(L"expecting ':' or '^' or '~' or symbol.");
 				}
 				f_at(position, line, column);
 			}

@@ -115,10 +115,12 @@ void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 	a_this->v_fields.f_put<t_object::t_hash_traits>(a_key, a_value);
 }
 
-void t_type::f_remove(t_object* a_this, t_object* a_key)
+t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
 {
 	portable::t_scoped_lock_for_write lock(a_this->v_lock);
-	a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
+	t_transfer value = a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
+	if (!value) t_throwable::f_throw(f_as<const std::map<std::wstring, t_slot>::iterator&>(a_key)->first);
+	return value;
 }
 
 void t_type::f_hash(t_object* a_this, t_stack& a_stack)

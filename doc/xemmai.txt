@@ -31,7 +31,7 @@ $class0 = Class() :: @{
 		$ == ::$class0 or <instance>;
 		:$ == ::$class0;
 		variable0 == ::variable0;
-		$method0 == $:method0 & $;
+		$method0 == $:method0[$];
 		...
 	}
 	...
@@ -46,8 +46,8 @@ $class1 = Class($class0) :: @{
 		:$ == ::$class1;
 		:$^ == ::$class0;
 		:$class_variable0 == :$^class_variable0;
-		$method0 == $:method0 & $;
-		$^method0 == :$^method0 & $;
+		$method0 == $:method0[$];
+		$^method0 == :$^method0[$];
 		...
 	}
 	...

@@ -43,10 +43,7 @@ public:
 	{
 		if (v_hash.f_put<t_hash_traits>(a_key, a_value)) ++v_size;
 	}
-	void f_remove(t_object* a_key)
-	{
-		if (v_hash.f_remove<t_hash_traits>(a_key)) --v_size;
-	}
+	t_transfer f_remove(t_object* a_key);
 };
 
 template<>
@@ -63,7 +60,7 @@ struct t_type_of<t_dictionary> : t_type
 	}
 	static void f_clear(t_object* a_self);
 	static size_t f_size(t_object* a_self);
-	static void f_remove_at(t_object* a_self, t_object* a_key);
+	static t_transfer f_remove_at(t_object* a_self, t_object* a_key);
 	static t_transfer f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

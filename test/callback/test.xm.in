@@ -3,7 +3,7 @@ callback = Module("callback");
 Derived = Class(callback.Client) :: @{
 	$on_message = @(message) {
 		print("Derived.on_message(\n\t");
-		(:$^on_message & $)(message);
+		:$^on_message[$](message);
 		print(");\n");
 	};
 };

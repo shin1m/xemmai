@@ -143,7 +143,7 @@ public:
 	template<typename T_traits>
 	bool f_put(t_object* a_key, const t_transfer& a_value);
 	template<typename T_traits>
-	bool f_remove(t_object* a_key);
+	t_transfer f_remove(t_object* a_key);
 };
 
 template<typename T_traits>
@@ -185,8 +185,8 @@ bool t_hash::f_put(t_object* a_key, const t_transfer& a_value)
 		t_entry** bucket = v_table->f_bucket(T_traits::f_hash(a_key));
 		t_entry* p = t_local_pool<t_entry>::f_allocate(t_entry::f_allocate);
 		p->v_next = *bucket;
-		p->v_key = a_key;
-		p->v_value = a_value;
+		p->v_key.f_construct(a_key);
+		p->v_value.f_construct(a_value);
 		*bucket = p;
 		++v_table->v_size;
 		return true;
@@ -194,24 +194,24 @@ bool t_hash::f_put(t_object* a_key, const t_transfer& a_value)
 }
 
 template<typename T_traits>
-bool t_hash::f_remove(t_object* a_key)
+t_transfer t_hash::f_remove(t_object* a_key)
 {
-	if (!v_table) return false;
+	if (!v_table) return t_transfer();
 	t_entry** bucket = v_table->f_bucket(T_traits::f_hash(a_key));
 	while (true) {
 		t_entry* p = *bucket;
-		if (!p) return false;
+		if (!p) return t_transfer();
 		if (T_traits::f_equals(p->v_key, a_key)) break;
 		bucket = &p->v_next;
 	}
 	t_entry* p = *bucket;
 	*bucket = p->v_next;
 	p->v_key = 0;
-	p->v_value = 0;
+	t_transfer value = p->v_value.f_transfer();
 	t_local_pool<t_entry>::f_free(p);
 	--v_table->v_size;
 	if (v_table->v_rank > 0 && v_table->v_size < v_table->v_capacity / 2) f_rehash<T_traits>(v_table->v_rank - 1);
-	return true;
+	return value;
 }
 
 }

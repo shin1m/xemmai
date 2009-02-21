@@ -1,5 +1,6 @@
 TESTS_ENVIRONMENT = $(top_builddir)/src/xemmai --verbose
 scripts = \
+	field.xm \
 	flow.xm \
 	race.xm \
 	ring.xm \

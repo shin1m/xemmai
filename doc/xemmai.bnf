@@ -28,7 +28,9 @@ target: '(' expression ')'
 
 setter: '.' symbol | '[' expression ']' ;
 
-getter: '.' (':' | '^') | setter ;
+remover: '.' '~' symbol ;
+
+getter: '.' (':' | '^') | setter | remover;
 
 term0: (':'* (symbol | self symbol?) | target) (getter | '(' expressions? ')')* ;
 

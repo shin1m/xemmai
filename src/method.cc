@@ -15,7 +15,7 @@ t_transfer t_method::f_instantiate(const t_transfer& a_function, const t_transfe
 void t_method::f_define(t_object* a_class)
 {
 	t_define<t_method, t_object>(f_global(), L"Method", a_class)
-		(f_global()->f_symbol_and(), t_member<t_transfer (t_method::*)(const t_transfer&) const, &t_method::f_bind>())
+		(f_global()->f_symbol_get_at(), t_member<t_transfer (t_method::*)(const t_transfer&) const, &t_method::f_bind>())
 	;
 }
 
@@ -47,7 +47,7 @@ void t_type_of<t_method>::f_call(t_object* a_this, t_object* a_self, size_t a_n,
 	p->v_function->f_call(p->v_self, a_n, a_stack);
 }
 
-void t_type_of<t_method>::f_and(t_object* a_this, t_stack& a_stack)
+void t_type_of<t_method>::f_get_at(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();

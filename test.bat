@@ -1,6 +1,8 @@
 set TARGET=%1\
 set XEMMAI=%TARGET%xemmai --verbose
 
+%XEMMAI% test\field.xm
+pause
 %XEMMAI% test\flow.xm
 pause
 %XEMMAI% test\race.xm

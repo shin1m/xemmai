@@ -350,8 +350,7 @@ t_transfer t_code::f_loop()
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
 						t_slot& top = stack->f_top();
-						top->f_remove(key);
-						top = f_global()->f_null();
+						top = top->f_remove(key);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(GLOBAL_GET)

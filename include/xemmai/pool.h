@@ -194,8 +194,8 @@ public:
 	template<typename T_allocate>
 	static T* f_allocate(T_allocate a_allocate)
 	{
-		if (!v_head) v_head = a_allocate();
 		T* p = v_head;
+		if (!p) p = a_allocate();
 		v_head = p->v_next;
 		return p;
 	}
@@ -209,7 +209,7 @@ public:
 	{
 		T* p = v_head;
 		if (!p) return;
-		a_free(v_head);
+		a_free(p);
 		v_head = 0;
 	}
 };

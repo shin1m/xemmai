@@ -256,7 +256,7 @@ t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 	p->v_next = 0;
 	p->v_count = 1;
-	p->v_type = a_type;
+	p->v_type.f_construct(a_type);
 	return t_transfer(p, t_transfer::t_pass());
 }
 
@@ -265,7 +265,7 @@ t_transfer t_object::f_allocate(t_object* a_type)
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 	p->v_next = 0;
 	p->v_count = 1;
-	p->v_type = a_type;
+	p->v_type.f_construct(a_type);
 	p->v_pointer = 0;
 	return t_transfer(p, t_transfer::t_pass());
 }

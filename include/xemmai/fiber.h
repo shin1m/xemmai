@@ -21,8 +21,8 @@ struct t_fiber
 		{
 			t_context* p = t_local_pool<t_context>::f_allocate(f_allocate);
 			p->v_next = a_next;
-			p->v_scope = a_scope;
-			p->v_code = a_code;
+			p->v_scope.f_construct(a_scope);
+			p->v_code.f_construct(a_code);
 			p->v_pc = a_pc;
 			return p;
 		}

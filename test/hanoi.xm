@@ -2,7 +2,7 @@ list = Module("list");
 
 Tower = Class(list.List) :: @{
 	$__initialize = @(a_height) {
-		(:$^__initialize & $)();
+		:$^__initialize[$]();
 		$build(a_height);
 	};
 	$build = @(a_height) {

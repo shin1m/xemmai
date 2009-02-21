@@ -165,7 +165,7 @@ public:
 		t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 		p->v_next = 0;
 		p->v_count = 1;
-		p->v_type = a_type;
+		p->v_type.f_construct(a_type);
 		return t_transfer(p, t_transfer::t_pass());
 	}
 	static t_transfer f_allocate(t_object* a_type)
@@ -173,7 +173,7 @@ public:
 		t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 		p->v_next = 0;
 		p->v_count = 1;
-		p->v_type = a_type;
+		p->v_type.f_construct(a_type);
 		p->v_pointer = 0;
 		return t_transfer(p, t_transfer::t_pass());
 	}
@@ -208,9 +208,9 @@ public:
 	{
 		static_cast<t_type*>(v_type->v_pointer)->f_put(this, a_key, a_value);
 	}
-	void f_remove(t_object* a_key)
+	t_transfer f_remove(t_object* a_key)
 	{
-		static_cast<t_type*>(v_type->v_pointer)->f_remove(this, a_key);
+		return static_cast<t_type*>(v_type->v_pointer)->f_remove(this, a_key);
 	}
 	void f_call(t_object* a_self, size_t a_n, t_stack& a_stack)
 	{
