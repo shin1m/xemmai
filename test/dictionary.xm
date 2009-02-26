@@ -1,3 +1,5 @@
+print("dictionary: " + {"one": 1, 2: "two"} + "\n");
+
 d = {"one": 1, 2: "two"};
 print(d);
 print("\n");

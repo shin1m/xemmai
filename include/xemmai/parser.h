@@ -87,6 +87,7 @@ class t_parser
 	void f_and_also();
 	void f_or_else();
 	void f_extension();
+	void f_conditional();
 	void f_expression();
 	size_t f_expressions();
 	void f_statement();

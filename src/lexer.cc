@@ -134,6 +134,10 @@ void t_lexer::f_next()
 			v_token = e_token__AMPERSAND;
 		}
 		break;
+	case L'\'':
+		v_token = e_token__APOSTROPHE;
+		f_get();
+		break;
 	case L'(':
 		v_token = e_token__LEFT_PARENTHESIS;
 		f_get();
@@ -222,6 +226,10 @@ void t_lexer::f_next()
 		default:
 			v_token = e_token__GREATER;
 		}
+		break;
+	case L'?':
+		v_token = e_token__QUESTION;
+		f_get();
 		break;
 	case L'@':
 		v_token = e_token__ATMARK;

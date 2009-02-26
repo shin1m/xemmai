@@ -49,8 +49,23 @@ void t_code::f_generate(void** a_p, bool a_private)
 			++a_p;
 			break;
 		case e_instruction__OBJECT_GET:
+			a_p += 2;
+			break;
+		case e_instruction__OBJECT_GET_INDIRECT:
+			++a_p;
+			break;
 		case e_instruction__OBJECT_PUT:
+			a_p += 2;
+			break;
+		case e_instruction__OBJECT_PUT_INDIRECT:
+			++a_p;
+			break;
 		case e_instruction__OBJECT_REMOVE:
+			a_p += 2;
+			break;
+		case e_instruction__OBJECT_REMOVE_INDIRECT:
+			++a_p;
+			break;
 		case e_instruction__GLOBAL_GET:
 			a_p += 2;
 			break;
@@ -168,8 +183,11 @@ t_transfer t_code::f_loop(const void*** a_labels)
 		&&label__THROW,
 		&&label__POP,
 		&&label__OBJECT_GET,
+		&&label__OBJECT_GET_INDIRECT,
 		&&label__OBJECT_PUT,
+		&&label__OBJECT_PUT_INDIRECT,
 		&&label__OBJECT_REMOVE,
+		&&label__OBJECT_REMOVE_INDIRECT,
 		&&label__GLOBAL_GET,
 		&&label__SCOPE_GET,
 		&&label__SCOPE_GET0,
@@ -335,6 +353,14 @@ t_transfer t_code::f_loop()
 						top = top->f_get(key);
 					}
 					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_GET_INDIRECT)
+					{
+						++pc;
+						t_transfer key = stack->f_pop();
+						t_slot& top = stack->f_top();
+						top = top->f_get(key);
+					}
+					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_PUT)
 					{
 						t_object* key = static_cast<t_object*>(*++pc);
@@ -345,10 +371,28 @@ t_transfer t_code::f_loop()
 						top = value;
 					}
 					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_PUT_INDIRECT)
+					{
+						++pc;
+						t_transfer value = stack->f_pop();
+						t_transfer key = stack->f_pop();
+						t_slot& top = stack->f_top();
+						top->f_put(key, static_cast<t_object*>(value));
+						top = value;
+					}
+					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_REMOVE)
 					{
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
+						t_slot& top = stack->f_top();
+						top = top->f_remove(key);
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_REMOVE_INDIRECT)
+					{
+						++pc;
+						t_transfer key = stack->f_pop();
 						t_slot& top = stack->f_top();
 						top = top->f_remove(key);
 					}
@@ -717,12 +761,24 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 		case e_instruction__OBJECT_GET:
 			a_p += 2;
 			break;
+		case e_instruction__OBJECT_GET_INDIRECT:
+			--a_n;
+			++a_p;
+			break;
 		case e_instruction__OBJECT_PUT:
 			--a_n;
 			a_p += 2;
 			break;
+		case e_instruction__OBJECT_PUT_INDIRECT:
+			a_n -= 2;
+			++a_p;
+			break;
 		case e_instruction__OBJECT_REMOVE:
 			a_p += 2;
+			break;
+		case e_instruction__OBJECT_REMOVE_INDIRECT:
+			--a_n;
+			++a_p;
 			break;
 		case e_instruction__GLOBAL_GET:
 			if (++a_n > v_size) v_size = a_n;
@@ -844,8 +900,23 @@ void t_code::f_tail()
 			++p;
 			break;
 		case e_instruction__OBJECT_GET:
+			p += 2;
+			break;
+		case e_instruction__OBJECT_GET_INDIRECT:
+			++p;
+			break;
 		case e_instruction__OBJECT_PUT:
+			p += 2;
+			break;
+		case e_instruction__OBJECT_PUT_INDIRECT:
+			++p;
+			break;
 		case e_instruction__OBJECT_REMOVE:
+			p += 2;
+			break;
+		case e_instruction__OBJECT_REMOVE_INDIRECT:
+			++p;
+			break;
 		case e_instruction__GLOBAL_GET:
 			p += 2;
 			break;

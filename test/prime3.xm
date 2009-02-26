@@ -21,10 +21,7 @@ sequence = @(n) {
 
 sieve = @(n, ns) {
 	delay(@{
-		if (ns().first % n == 0)
-			sieve(n, ns().second)();
-		else
-			Pair(ns().first, sieve(n, ns().second));
+		ns().first % n == 0 ? sieve(n, ns().second)() : Pair(ns().first, sieve(n, ns().second));
 	});
 };
 

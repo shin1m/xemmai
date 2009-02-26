@@ -14,8 +14,10 @@ arguments: symbol | symbol ',' arguments ;
 
 self: '$' (':' | '^')* ;
 
-target: '(' expression ')'
+target: '\'' symbol
+	| '(' expression ')'
 	| '@' ('(' arguments? ')')? '{' statement* '}'
+	| '@' '(' arguments? ')' expression
 	| 'null'
 	| 'true'
 	| 'false'
@@ -26,9 +28,9 @@ target: '(' expression ')'
 	| '{' pairs? '}'
 	;
 
-setter: '.' symbol | '[' expression ']' ;
+setter: '.' (symbol | '(' expression ')') | '[' expression ']' ;
 
-remover: '.' '~' symbol ;
+remover: '.' '~' (symbol | '(' expression ')') ;
 
 getter: '.' (':' | '^') | setter | remover;
 
@@ -56,7 +58,9 @@ term10: term9 ('&&' term9)* ;
 
 term11: term10 ('||' term10)* ;
 
-term: term11 ('::' term11)* ;
+term12: term11 ('::' term11)* ;
+
+term: term12 ('?' expression ':' expression)? ;
 
 assignment: (':'* symbol | term0 setter) '=' expression
 

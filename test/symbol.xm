@@ -1,6 +1,6 @@
 symbol = @{
 	print(Symbol("Hello, World!!"));
-	print("\nGood bye, World!!\n");
+	print("\n" + 'Good + " " + 'bye + ", " + 'World + "!!\n");
 };
 
 symbols = @(a_n) {

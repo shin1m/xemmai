@@ -4,10 +4,7 @@ Pair = Class() :: @{
 		$v_second = a_second;
 	};
 	$__string = @{
-		if ($v_second === null)
-			$v_first.__string();
-		else
-			$v_first.__string() + " " + $v_second;
+		$v_second === null ? $v_first.__string() : $v_first.__string() + " " + $v_second;
 	};
 };
 
@@ -16,10 +13,7 @@ List = Class() :: @{
 		$v_list = null;
 	};
 	$__string = @{
-		if ($v_list === null)
-			"()";
-		else
-			"(" + $v_list + ")";
+		$v_list === null ? "()" : "(" + $v_list + ")";
 	};
 	$push = @(a_value) {
 		$v_list = Pair(a_value, $v_list);

@@ -1,13 +1,20 @@
-if (true) {
+f = @(x) x * 2;
+if (f(1) > 0) {
 	print("1\n");
 } else {
 	print("ng\n");
 }
-if (false) {
+if (f(-1) > 0) {
 	print("ng\n");
 } else {
 	print("2\n");
 }
+
+print(f(1) > 0 ? "true\n" : "ng\n");
+print(f(-1) > 0 ? "ng\n" : "false\n");
+print(f(1) > 0 ? "true\n" : f(1) > 0 ? "ng\n" : "ng\n");
+print(f(-1) > 0 ? "ng\n" : f(1) > 0 ? "false->true\n" : "ng\n");
+print(f(-1) > 0 ? "ng\n" : f(-1) > 0 ? "ng\n" : "false->false\n");
 
 i = 2;
 while (i > 0) {

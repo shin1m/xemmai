@@ -30,10 +30,7 @@ server = @(co, x) {
 			} else if (recipients == "") {
 				x = co("503 Recipients not specified\n");
 			} else {
-				if (hostname === null)
-					mail = "";
-				else
-					mail = "Received: from " + hostname + "\n";
+				mail = hostname === null ? "" : "Received: from " + hostname + "\n";
 				mail = mail + "From: " + sender + "\n";
 				mail = mail + recipients;
 				mail = mail + "\n";

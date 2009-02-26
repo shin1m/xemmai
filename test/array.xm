@@ -1,3 +1,5 @@
+print("array: " + ["one", 2] + "\n");
+
 a = ["one", 2];
 print(a);
 print("\n");
