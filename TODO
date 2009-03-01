@@ -38,7 +38,7 @@ performance improvement ideas:
 //	allocate stack area in each scope.
 //	increment/decrement counter for native context instead of push/pop.
 //	improve threaded code.
-	skip locking to get constant scope variable.
+//	skip locking to get constant scope variable.
 	allocate/free private scope immediately instead of allocating object.
 	implement field cache.
 	implement thread local memory pool.

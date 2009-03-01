@@ -203,7 +203,7 @@ v_verbose(false)
 	v_fiber__instructions[7] = reinterpret_cast<void*>(e_instruction__FINALLY);
 	v_fiber__instructions[8] = reinterpret_cast<void*>(t_fiber::t_try::e_state__THROW);
 	v_fiber__instructions[9] = reinterpret_cast<void*>(e_instruction__FIBER_EXIT);
-	t_code::f_generate(v_fiber__instructions, true);
+	t_code::f_generate(v_fiber__instructions);
 	t_thread* thread = new t_thread(0);
 	t_pointer::v_increments = &thread->v_queues->v_increments;
 	t_pointer::v_decrements = &thread->v_queues->v_decrements;

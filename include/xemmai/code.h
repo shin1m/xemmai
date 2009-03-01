@@ -26,11 +26,12 @@ enum t_instruction
 	e_instruction__OBJECT_REMOVE_INDIRECT,
 	e_instruction__GLOBAL_GET,
 	e_instruction__SCOPE_GET,
+	e_instruction__SCOPE_GET_WITHOUT_LOCK,
 	e_instruction__SCOPE_GET0,
-	e_instruction__SCOPE_GET0_PRIVATE,
+	e_instruction__SCOPE_GET0_WITHOUT_LOCK,
 	e_instruction__SCOPE_PUT,
 	e_instruction__SCOPE_PUT0,
-	e_instruction__SCOPE_PUT0_PRIVATE,
+	e_instruction__SCOPE_PUT0_WITHOUT_LOCK,
 	e_instruction__LAMBDA,
 	e_instruction__SELF,
 	e_instruction__CLASS,
@@ -93,6 +94,12 @@ enum t_instruction
 
 struct t_code
 {
+	enum t_access
+	{
+		e_access__SHARED = ~(~0 >> 1),
+		e_access__VARIES = ~(~0 >> 1) >> 1,
+		e_access__INDEX = ~0 >> 2
+	};
 	class t_at
 	{
 		size_t v_address;
@@ -124,7 +131,7 @@ struct t_code
 	};
 
 	static t_transfer f_instantiate(const std::wstring& a_path, size_t a_arguments);
-	static void f_generate(void** a_p, bool a_private);
+	static void f_generate(void** a_p);
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static t_transfer f_loop(const void*** a_labels = 0);
 #else
@@ -159,9 +166,9 @@ struct t_code
 	}
 	bool f_tail(void** a_p);
 	void f_tail();
-	void f_generate(bool a_private)
+	void f_generate()
 	{
-		f_generate(&v_instructions[0], a_private);
+		f_generate(&v_instructions[0]);
 	}
 };
 

@@ -13,9 +13,8 @@ class t_parser
 	{
 		t_scope* v_outer;
 		t_object* v_code;
-		bool v_shared;
 
-		t_scope(t_scope* a_outer, t_object* a_code) : v_outer(a_outer), v_code(a_code), v_shared(false)
+		t_scope(t_scope* a_outer, t_object* a_code) : v_outer(a_outer), v_code(a_code)
 		{
 		}
 	};
@@ -46,6 +45,10 @@ class t_parser
 	{
 		v_instructions->push_back(reinterpret_cast<void*>(a_operand));
 	}
+	void f_operand(int* a_operand)
+	{
+		v_instructions->push_back(static_cast<void*>(a_operand));
+	}
 	void f_operand(const t_transfer& a_operand)
 	{
 		v_objects->push_back(0);
@@ -54,7 +57,7 @@ class t_parser
 	void f_operand(std::vector<size_t>& a_label)
 	{
 		a_label.push_back(v_instructions->size());
-		f_operand(0);
+		f_operand(size_t(0));
 	}
 	void f_resolve(const std::vector<size_t>& a_label, size_t a_n)
 	{
@@ -69,7 +72,7 @@ class t_parser
 		f_as<t_code*>(v_scope->v_code)->f_at(v_instructions->size(), a_position, a_line, a_column);
 	}
 	void f_get(long a_position, size_t a_line, size_t a_column, size_t a_outer, t_scope* a_scope, const t_transfer& a_symbol);
-	size_t f_index(t_scope* a_scope, const t_transfer& a_symbol);
+	int* f_index(t_scope* a_scope, const t_transfer& a_symbol, bool a_loop);
 	void f_number(long a_position, size_t a_line, size_t a_column, t_lexer::t_token a_token);
 	void f_target();
 	void f_call();

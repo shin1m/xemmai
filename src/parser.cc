@@ -20,13 +20,13 @@ void t_parser::f_get(long a_position, size_t a_line, size_t a_column, size_t a_o
 		t_hash::t_entry* field = a_scope->v_code->v_fields.f_find<t_object::t_hash_traits>(a_symbol);
 		if (field) {
 			if (a_outer > 0) {
-				a_scope->v_shared = true;
+				field->v_value->v_integer |= t_code::e_access__SHARED;
 				f_emit(e_instruction__SCOPE_GET);
 				f_operand(a_outer);
 			} else {
 				f_emit(e_instruction__SCOPE_GET0);
 			}
-			f_operand(field->v_value->v_integer);
+			f_operand(&field->v_value->v_integer);
 			f_at(a_position, a_line, a_column);
 			return;
 		}
@@ -38,15 +38,20 @@ void t_parser::f_get(long a_position, size_t a_line, size_t a_column, size_t a_o
 	f_at(a_position, a_line, a_column);
 }
 
-size_t t_parser::f_index(t_scope* a_scope, const t_transfer& a_symbol)
+int* t_parser::f_index(t_scope* a_scope, const t_transfer& a_symbol, bool a_loop)
 {
 	t_hash::t_entry* field = a_scope->v_code->v_fields.f_find<t_object::t_hash_traits>(a_symbol);
-	if (field) return field->v_value->v_integer;
-	t_code* p = f_as<t_code*>(a_scope->v_code);
-	size_t index = p->v_size;
-	a_scope->v_code->v_fields.f_put<t_object::t_hash_traits>(a_symbol, f_global()->f_as(index));
-	++p->v_size;
-	return index;
+	if (field) {
+		field->v_value->v_integer |= t_code::e_access__VARIES;
+		return &field->v_value->v_integer;
+	}
+	t_code* code = f_as<t_code*>(a_scope->v_code);
+	t_transfer index = f_global()->f_as(code->v_size);
+	if (a_loop) index->v_integer |= t_code::e_access__VARIES;
+	int* p = &index->v_integer;
+	a_scope->v_code->v_fields.f_put<t_object::t_hash_traits>(a_symbol, index);
+	++code->v_size;
+	return p;
 }
 
 void t_parser::f_number(long a_position, size_t a_line, size_t a_column, t_lexer::t_token a_token)
@@ -143,7 +148,6 @@ void t_parser::f_target()
 			f_at(position, line, column);
 			f_as<t_code*>(code)->f_estimate();
 			f_as<t_code*>(code)->f_tail();
-			f_as<t_code*>(code)->f_generate(!scope.v_shared);
 			v_scope = scope.v_outer;
 			v_instructions = instructions;
 			v_objects = objects;
@@ -858,10 +862,10 @@ void t_parser::f_expression()
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 						v_lexer.f_next();
 						if (scope) {
-							size_t index = f_index(scope, symbol);
+							int* index = f_index(scope, symbol, outer > 0 || v_targets->v_break);
 							f_expression();
 							if (outer > 0) {
-								scope->v_shared = true;
+								*index |= t_code::e_access__SHARED;
 								f_emit(e_instruction__SCOPE_PUT);
 								f_operand(outer);
 							} else {
@@ -1025,7 +1029,7 @@ void t_parser::f_expression()
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__LEFT_BRACE) f_throw(L"expecting '{'.");
 					f_emit(e_instruction__CATCH);
-					f_operand(f_index(v_scope, symbol));
+					f_operand(f_index(v_scope, symbol, v_targets->v_break));
 					f_at(position, line, column);
 					f_block();
 					f_emit(e_instruction__FINALLY);
@@ -1068,15 +1072,15 @@ void t_parser::f_expression()
 			if (targets0->v_break)
 				f_operand(*targets0->v_break);
 			else
-				f_operand(0);
+				f_operand(size_t(0));
 			if (targets0->v_continue)
 				f_operand(*targets0->v_continue);
 			else
-				f_operand(0);
+				f_operand(size_t(0));
 			if (targets0->v_return)
 				f_operand(*targets0->v_return);
 			else
-				f_operand(0);
+				f_operand(size_t(0));
 			f_at(position, line, column);
 			v_targets = targets0;
 		}
@@ -1363,7 +1367,7 @@ t_transfer t_parser::f_parse()
 	}
 	f_emit(e_instruction__END);
 	f_as<t_code*>(code)->f_estimate();
-	f_as<t_code*>(code)->f_generate(!scope.v_shared);
+	f_as<t_code*>(code)->f_generate();
 	return code;
 }
 

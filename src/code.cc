@@ -18,7 +18,7 @@ t_transfer t_code::f_instantiate(const std::wstring& a_path, size_t a_arguments)
 	return object;
 }
 
-void t_code::f_generate(void** a_p, bool a_private)
+void t_code::f_generate(void** a_p)
 {
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	const void** labels;
@@ -27,7 +27,10 @@ void t_code::f_generate(void** a_p, bool a_private)
 	while (true) {
 		int i = reinterpret_cast<int>(*a_p);
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
+#define XEMMAI__CODE__REPLACE(a_name) *a_p = const_cast<void*>(labels[e_instruction__##a_name]);
 		*a_p = const_cast<void*>(labels[i]);
+#else
+#define XEMMAI__CODE__REPLACE(a_name) *a_p = reinterpret_cast<void*>(e_instruction__##a_name);
 #endif
 		switch (static_cast<t_instruction>(i)) {
 		case e_instruction__JUMP:
@@ -38,6 +41,10 @@ void t_code::f_generate(void** a_p, bool a_private)
 			a_p += 3;
 			break;
 		case e_instruction__CATCH:
+			++a_p;
+			*a_p = reinterpret_cast<void*>(*static_cast<int*>(*a_p) & e_access__INDEX);
+			++a_p;
+			break;
 		case e_instruction__FINALLY:
 			a_p += 2;
 			break;
@@ -70,28 +77,39 @@ void t_code::f_generate(void** a_p, bool a_private)
 			a_p += 2;
 			break;
 		case e_instruction__SCOPE_GET:
-			a_p += 3;
+			{
+				int index = *static_cast<int*>(a_p[2]);
+				if ((index & e_access__VARIES) == 0) XEMMAI__CODE__REPLACE(SCOPE_GET_WITHOUT_LOCK)
+				a_p += 2;
+				*a_p = reinterpret_cast<void*>(index & e_access__INDEX);
+				++a_p;
+			}
 			break;
 		case e_instruction__SCOPE_GET0:
-#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-			if (a_private) *a_p = const_cast<void*>(labels[e_instruction__SCOPE_GET0_PRIVATE]);
-#else
-			if (a_private) *a_p = reinterpret_cast<void*>(e_instruction__SCOPE_GET0_PRIVATE);
-#endif
-			a_p += 2;
+			{
+				int index = *static_cast<int*>(a_p[1]);
+				if ((index & (e_access__SHARED | e_access__VARIES)) != e_access__SHARED | e_access__VARIES) XEMMAI__CODE__REPLACE(SCOPE_GET0_WITHOUT_LOCK)
+				*++a_p = reinterpret_cast<void*>(index & e_access__INDEX);
+				++a_p;
+			}
 			break;
 		case e_instruction__SCOPE_PUT:
-			a_p += 3;
+			a_p += 2;
+			*a_p = reinterpret_cast<void*>(*static_cast<int*>(*a_p) & e_access__INDEX);
+			++a_p;
 			break;
 		case e_instruction__SCOPE_PUT0:
-#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-			if (a_private) *a_p = const_cast<void*>(labels[e_instruction__SCOPE_PUT0_PRIVATE]);
-#else
-			if (a_private) *a_p = reinterpret_cast<void*>(e_instruction__SCOPE_PUT0_PRIVATE);
-#endif
-			a_p += 2;
+			{
+				int index = *static_cast<int*>(a_p[1]);
+				if ((index & e_access__SHARED) == 0) XEMMAI__CODE__REPLACE(SCOPE_PUT0_WITHOUT_LOCK)
+				*++a_p = reinterpret_cast<void*>(index & e_access__INDEX);
+				++a_p;
+			}
 			break;
 		case e_instruction__LAMBDA:
+			f_as<t_code*>(static_cast<t_object*>(*++a_p))->f_generate();
+			++a_p;
+			break;
 		case e_instruction__SELF:
 			a_p += 2;
 			break;
@@ -173,87 +191,88 @@ void t_code::f_generate(void** a_p, bool a_private)
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 t_transfer t_code::f_loop(const void*** a_labels)
 {
-	const void* labels[] = {
-		&&label__JUMP,
-		&&label__BRANCH,
-		&&label__TRY,
-		&&label__CATCH,
-		&&label__FINALLY,
-		&&label__YRT,
-		&&label__THROW,
-		&&label__POP,
-		&&label__OBJECT_GET,
-		&&label__OBJECT_GET_INDIRECT,
-		&&label__OBJECT_PUT,
-		&&label__OBJECT_PUT_INDIRECT,
-		&&label__OBJECT_REMOVE,
-		&&label__OBJECT_REMOVE_INDIRECT,
-		&&label__GLOBAL_GET,
-		&&label__SCOPE_GET,
-		&&label__SCOPE_GET0,
-		&&label__SCOPE_GET0_PRIVATE,
-		&&label__SCOPE_PUT,
-		&&label__SCOPE_PUT0,
-		&&label__SCOPE_PUT0_PRIVATE,
-		&&label__LAMBDA,
-		&&label__SELF,
-		&&label__CLASS,
-		&&label__SUPER,
-		&&label__INSTANCE,
-		&&label__IDENTICAL,
-		&&label__NOT_IDENTICAL,
-		&&label__EXTEND,
-		&&label__RETURN,
-		&&label__CALL,
-		&&label__GET_AT,
-		&&label__SET_AT,
-		&&label__PLUS,
-		&&label__MINUS,
-		&&label__NOT,
-		&&label__COMPLEMENT,
-		&&label__MULTIPLY,
-		&&label__DIVIDE,
-		&&label__MODULUS,
-		&&label__ADD,
-		&&label__SUBTRACT,
-		&&label__LEFT_SHIFT,
-		&&label__RIGHT_SHIFT,
-		&&label__LESS,
-		&&label__LESS_EQUAL,
-		&&label__GREATER,
-		&&label__GREATER_EQUAL,
-		&&label__EQUALS,
-		&&label__NOT_EQUALS,
-		&&label__AND,
-		&&label__XOR,
-		&&label__OR,
-		&&label__CALL_TAIL,
-		&&label__GET_AT_TAIL,
-		&&label__SET_AT_TAIL,
-		&&label__PLUS_TAIL,
-		&&label__MINUS_TAIL,
-		&&label__NOT_TAIL,
-		&&label__COMPLEMENT_TAIL,
-		&&label__MULTIPLY_TAIL,
-		&&label__DIVIDE_TAIL,
-		&&label__MODULUS_TAIL,
-		&&label__ADD_TAIL,
-		&&label__SUBTRACT_TAIL,
-		&&label__LEFT_SHIFT_TAIL,
-		&&label__RIGHT_SHIFT_TAIL,
-		&&label__LESS_TAIL,
-		&&label__LESS_EQUAL_TAIL,
-		&&label__GREATER_TAIL,
-		&&label__GREATER_EQUAL_TAIL,
-		&&label__EQUALS_TAIL,
-		&&label__NOT_EQUALS_TAIL,
-		&&label__AND_TAIL,
-		&&label__XOR_TAIL,
-		&&label__OR_TAIL,
-		&&label__FIBER_EXIT,
-		&&label__END,
-	};
 	if (a_labels) {
+		static const void* labels[] = {
+			&&label__JUMP,
+			&&label__BRANCH,
+			&&label__TRY,
+			&&label__CATCH,
+			&&label__FINALLY,
+			&&label__YRT,
+			&&label__THROW,
+			&&label__POP,
+			&&label__OBJECT_GET,
+			&&label__OBJECT_GET_INDIRECT,
+			&&label__OBJECT_PUT,
+			&&label__OBJECT_PUT_INDIRECT,
+			&&label__OBJECT_REMOVE,
+			&&label__OBJECT_REMOVE_INDIRECT,
+			&&label__GLOBAL_GET,
+			&&label__SCOPE_GET,
+			&&label__SCOPE_GET_WITHOUT_LOCK,
+			&&label__SCOPE_GET0,
+			&&label__SCOPE_GET0_WITHOUT_LOCK,
+			&&label__SCOPE_PUT,
+			&&label__SCOPE_PUT0,
+			&&label__SCOPE_PUT0_WITHOUT_LOCK,
+			&&label__LAMBDA,
+			&&label__SELF,
+			&&label__CLASS,
+			&&label__SUPER,
+			&&label__INSTANCE,
+			&&label__IDENTICAL,
+			&&label__NOT_IDENTICAL,
+			&&label__EXTEND,
+			&&label__RETURN,
+			&&label__CALL,
+			&&label__GET_AT,
+			&&label__SET_AT,
+			&&label__PLUS,
+			&&label__MINUS,
+			&&label__NOT,
+			&&label__COMPLEMENT,
+			&&label__MULTIPLY,
+			&&label__DIVIDE,
+			&&label__MODULUS,
+			&&label__ADD,
+			&&label__SUBTRACT,
+			&&label__LEFT_SHIFT,
+			&&label__RIGHT_SHIFT,
+			&&label__LESS,
+			&&label__LESS_EQUAL,
+			&&label__GREATER,
+			&&label__GREATER_EQUAL,
+			&&label__EQUALS,
+			&&label__NOT_EQUALS,
+			&&label__AND,
+			&&label__XOR,
+			&&label__OR,
+			&&label__CALL_TAIL,
+			&&label__GET_AT_TAIL,
+			&&label__SET_AT_TAIL,
+			&&label__PLUS_TAIL,
+			&&label__MINUS_TAIL,
+			&&label__NOT_TAIL,
+			&&label__COMPLEMENT_TAIL,
+			&&label__MULTIPLY_TAIL,
+			&&label__DIVIDE_TAIL,
+			&&label__MODULUS_TAIL,
+			&&label__ADD_TAIL,
+			&&label__SUBTRACT_TAIL,
+			&&label__LEFT_SHIFT_TAIL,
+			&&label__RIGHT_SHIFT_TAIL,
+			&&label__LESS_TAIL,
+			&&label__LESS_EQUAL_TAIL,
+			&&label__GREATER_TAIL,
+			&&label__GREATER_EQUAL_TAIL,
+			&&label__EQUALS_TAIL,
+			&&label__NOT_EQUALS_TAIL,
+			&&label__AND_TAIL,
+			&&label__XOR_TAIL,
+			&&label__OR_TAIL,
+			&&label__FIBER_EXIT,
+			&&label__END,
+		};
 		*a_labels = labels;
 		return 0;
 	}
@@ -417,6 +436,18 @@ t_transfer t_code::f_loop()
 						stack->f_push(value);
 					}
 					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(SCOPE_GET_WITHOUT_LOCK)
+					{
+						size_t outer = reinterpret_cast<size_t>(*++pc);
+						size_t index = reinterpret_cast<size_t>(*++pc);
+						++pc;
+						t_object* scope = f_context()->v_scope;
+						for (size_t i = 0; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
+						t_object* value = f_as<const t_scope&>(scope)[index];
+						if (!value) t_throwable::f_throw(L"not initialized.");
+						stack->f_push(value);
+					}
+					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_GET0)
 					{
 						size_t index = reinterpret_cast<size_t>(*++pc);
@@ -427,7 +458,7 @@ t_transfer t_code::f_loop()
 						stack->f_push(value);
 					}
 					XEMMAI__CODE__BREAK
-				XEMMAI__CODE__CASE(SCOPE_GET0_PRIVATE)
+				XEMMAI__CODE__CASE(SCOPE_GET0_WITHOUT_LOCK)
 					{
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
@@ -455,7 +486,7 @@ t_transfer t_code::f_loop()
 						(*stack)[index] = stack->f_top();
 					}
 					XEMMAI__CODE__BREAK
-				XEMMAI__CODE__CASE(SCOPE_PUT0_PRIVATE)
+				XEMMAI__CODE__CASE(SCOPE_PUT0_WITHOUT_LOCK)
 					{
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
