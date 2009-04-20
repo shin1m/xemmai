@@ -81,7 +81,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 		std::map<std::wstring, t_slot>::iterator i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
 			f_engine()->v_object__reviving = true;
-			f_as<t_thread*>(t_thread::f_current())->v_queues->f_revive();
+			f_as<t_thread*>(t_thread::f_current())->v_internal->f_revive();
 			f_engine()->v_module__mutex.f_release();
 			f_engine()->v_object__reviving__mutex.f_release();
 			return i->second;
@@ -150,16 +150,16 @@ int t_module::f_execute(const std::wstring& a_path)
 {
 	int n = f_main(f_main, const_cast<std::wstring*>(&a_path));
 	portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-	t_thread::t_queues*& queueses = f_engine()->v_thread__queueses;
-	t_thread::t_queues* queues = f_as<t_thread*>(t_thread::f_current())->v_queues;
+	t_thread::t_internal*& internals = f_engine()->v_thread__internals;
+	t_thread::t_internal* internal = f_as<t_thread*>(t_thread::f_current())->v_internal;
 	while (true) {
-		t_thread::t_queues* p = queueses;
+		t_thread::t_internal* p = internals;
 		do {
 			p = p->v_next;
-			if (p == queues || p->v_done > 0) continue;
+			if (p == internal || p->v_done > 0) continue;
 			p = 0;
 			break;
-		} while (p != queueses);
+		} while (p != internals);
 		if (p) break;
 		f_engine()->v_thread__condition.f_wait(f_engine()->v_thread__mutex);
 	}

@@ -21,6 +21,11 @@ namespace portable
 {
 
 #if 0
+inline size_t f_atomic_increment(volatile size_t& a_n)
+{
+	return ++a_n;
+}
+
 class t_lock
 {
 	volatile long v_lock;
@@ -51,6 +56,18 @@ public:
 #endif
 
 #if defined(__unix__) && (defined(__i386__) || defined(__x86_64__)) && defined(__GNUC__)
+inline size_t f_atomic_increment(volatile size_t& a_n)
+{
+	size_t value;
+	asm volatile (
+		"lock; xaddl %0, %1"
+		: "=r" (value)
+		: "m" (a_n), "0" (1)
+		: "memory", "cc"
+	);
+	return ++value;
+}
+
 class t_lock
 {
 	volatile long v_lock;
@@ -61,7 +78,7 @@ public:
 	}
 	void f_acquire_for_read()
 	{
-		int value;
+		long value;
 		asm volatile (
 			"lock; xaddl %0, %1"
 			: "=r" (value)
@@ -83,7 +100,7 @@ public:
 	void f_acquire_for_write()
 	{
 		while (true) {
-			int value;
+			long value;
 			asm volatile (
 				"lock; cmpxchgl %1, %2"
 				: "=a" (value)
@@ -107,6 +124,11 @@ public:
 #endif
 
 #ifdef _MSC_VER
+inline size_t f_atomic_increment(volatile size_t& a_n)
+{
+	return _InterlockedIncrement(reinterpret_cast<long*>(&a_n));
+}
+
 class t_lock
 {
 	volatile long v_lock;

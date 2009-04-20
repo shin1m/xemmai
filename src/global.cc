@@ -55,7 +55,7 @@ v_type_fiber(a_type_fiber),
 v_type_thread(a_type_thread)
 {
 	v_instance = this;
-	v_type_symbol = t_class::f_instantiate(new t_symbol(a_module, v_type_object));
+	v_type_symbol = t_class::f_instantiate(new t_type_of<t_symbol>(a_module, v_type_object));
 	v_type_method = t_class::f_instantiate(new t_type_of<t_method>(a_module, v_type_object));
 	v_type_native = t_class::f_instantiate(new t_type_of<t_native>(a_module, v_type_object));
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct");

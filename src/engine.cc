@@ -99,13 +99,13 @@ void t_engine::f_collector()
 		}
 		{
 			portable::t_scoped_lock lock(v_thread__mutex);
-			t_thread::t_queues* p = v_thread__queueses;
+			t_thread::t_internal* p = v_thread__internals;
 			if (p) {
 				do {
 					p = p->v_next;
 					p->v_increments.f_epoch();
 					p->v_decrements.f_epoch();
-				} while (p != v_thread__queueses);
+				} while (p != v_thread__internals);
 				if (v_synchronizers) {
 					size_t cpu = portable::f_cpu();
 					for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) if (p->v_cpu != cpu) ++v_synchronizer__wake;
@@ -132,7 +132,7 @@ void t_engine::f_collector()
 							else
 								v_object__reviving = true;
 						}
-					} while (p != v_thread__queueses);
+					} while (p != v_thread__internals);
 				}
 /*				if (v_synchronizers) {
 					portable::t_scoped_lock lock(v_synchronizer__mutex);
@@ -140,17 +140,17 @@ void t_engine::f_collector()
 				}*/
 				while (v_synchronizer__wake > 0) portable::f_yield();
 				while (true) {
-					t_thread::t_queues* q = p->v_next;
+					t_thread::t_internal* q = p->v_next;
 					q->v_increments.f_flush();
 					q->v_decrements.f_flush();
 					if (q->v_done < 3) {
-						if (q == v_thread__queueses) break;
+						if (q == v_thread__internals) break;
 						p = q;
 					} else {
 						p->v_next = q->v_next;
-						if (q == v_thread__queueses) {
+						if (q == v_thread__internals) {
 							if (p == q) p = 0;
-							v_thread__queueses = p;
+							v_thread__internals = p;
 							delete q;
 							break;
 						}
@@ -169,7 +169,7 @@ v_object__cycle(0),
 v_object__reviving(false),
 v_object__release(0),
 v_object__collect(0),
-v_thread__queueses(0),
+v_thread__internals(0),
 v_synchronizers(0),
 v_synchronizer__wake(0),
 v_module__thread(0),
@@ -205,9 +205,8 @@ v_verbose(false)
 	v_fiber__instructions[9] = reinterpret_cast<void*>(e_instruction__FIBER_EXIT);
 	t_code::f_generate(v_fiber__instructions);
 	t_thread* thread = new t_thread(0);
-	t_pointer::v_increments = &thread->v_queues->v_increments;
-	t_pointer::v_decrements = &thread->v_queues->v_decrements;
-	v_thread__queueses = thread->v_queues->v_next = thread->v_queues;
+	thread->v_internal->f_initialize();
+	v_thread__internals = thread->v_internal->v_next = thread->v_internal;
 	t_scoped type_class = t_object::f_allocate(0);
 	type_class->v_type = type_class;
 	type_class->v_pointer = new t_class(0, 0);
@@ -258,16 +257,17 @@ v_verbose(false)
 t_engine::~t_engine()
 {
 	v_module_global = 0;
-	f_pools__return();
+	t_thread::f_cache_clear();
 	{
 		t_thread* thread = f_as<t_thread*>(v_thread);
 		thread->v_active = 0;
-		t_thread::t_queues* queues = thread->v_queues;
-		thread->v_queues = 0;
+		t_thread::t_internal* internal = thread->v_internal;
+		thread->v_internal = 0;
 		v_thread = 0;
 		portable::t_scoped_lock lock(v_thread__mutex);
-		++queues->v_done;
+		++internal->v_done;
 	}
+	f_pools__return();
 	f_collect();
 	f_collect();
 	f_collect();
@@ -295,7 +295,7 @@ t_engine::~t_engine()
 			delete v_synchronizers;
 		} while (v_synchronizers);
 	}
-	assert(!v_thread__queueses);
+	assert(!v_thread__internals);
 	v_fiber__try__pool.f_clear();
 	v_fiber__context__pool.f_clear();
 	v_object__pool.f_clear();

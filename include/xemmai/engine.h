@@ -12,7 +12,7 @@ namespace xemmai
 {
 
 struct t_class;
-struct t_symbol;
+class t_symbol;
 
 class t_engine : public t_pointer::t_collector
 {
@@ -29,7 +29,8 @@ class t_engine : public t_pointer::t_collector
 	friend struct t_fiber::t_try;
 	friend struct t_type_of<t_fiber>;
 	friend struct t_thread;
-	friend struct t_symbol;
+	friend class t_symbol;
+	friend struct t_type_of<t_symbol>;
 	friend class t_global;
 
 	struct t_synchronizer
@@ -87,7 +88,7 @@ class t_engine : public t_pointer::t_collector
 	t_shared_pool<t_fixed_pool<t_fiber::t_context, 256> > v_fiber__context__pool;
 	t_shared_pool<t_fixed_pool<t_fiber::t_try, 256> > v_fiber__try__pool;
 	void* v_fiber__instructions[10];
-	t_thread::t_queues* v_thread__queueses;
+	t_thread::t_internal* v_thread__internals;
 	portable::t_mutex v_thread__mutex;
 	portable::t_condition v_thread__condition;
 	t_synchronizer* v_synchronizers;

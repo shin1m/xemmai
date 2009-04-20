@@ -1,5 +1,6 @@
 #include <xemmai/type.h>
 
+#include <xemmai/thread.h>
 #include <xemmai/method.h>
 #include <xemmai/throwable.h>
 #include <xemmai/convert.h>
@@ -87,39 +88,80 @@ void t_type::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
 
 t_transfer t_type::f_get(t_object* a_this, t_object* a_key)
 {
+	size_t i = t_thread::t_cache::f_index(a_this, a_key);
+	t_thread::t_cache& cache = t_thread::v_cache[i];
+	t_symbol* symbol = f_as<t_symbol*>(a_key);
+	if (cache.v_object == a_this && cache.v_key == a_key) {
+		if (cache.v_key_revision == symbol->v_revision) return cache.v_value;
+		if (cache.v_modified) {
+			cache.v_key_revision = symbol->v_revision;
+			return cache.v_value;
+		}
+	}
+	cache.v_key_revision = symbol->v_revision;
+	t_transfer value;
 	{
 		portable::t_scoped_lock_for_read lock(a_this->v_lock);
 		t_hash::t_entry* field = a_this->v_fields.f_find<t_object::t_hash_traits>(a_key);
-		if (field) return field->v_value;
+		if (field) value = field->v_value;
 	}
-	t_object* type = a_this->v_type;
-	do {
+	if (!value) {
+		value = a_this->v_type->f_get(a_key);
+		if (value->f_type() == f_global()->f_type<t_method>()) value = t_method::f_instantiate(f_as<t_method*>(value)->v_function, a_this);
+	}
+	if (cache.v_modified) {
 		{
-			portable::t_scoped_lock_for_read lock(type->v_lock);
-			t_hash::t_entry* field = type->v_fields.f_find<t_object::t_hash_traits>(a_key);
-			if (field) {
-				t_object* value = field->v_value;
-				if (value->f_type() == f_global()->f_type<t_lambda>() || value->f_type() == f_global()->f_type<t_native>()) return t_method::f_instantiate(value, a_this);
-				return value;
-			}
+			portable::t_scoped_lock_for_write lock(cache.v_object->v_lock);
+			cache.v_object->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
 		}
-		type = f_as<t_type*>(type)->v_super;
-	} while (type);
-	t_throwable::f_throw(f_as<const std::map<std::wstring, t_slot>::iterator&>(a_key)->first);
-	return 0;
+		cache.v_modified = false;
+		cache.v_revision = t_thread::t_cache::f_revise(i);
+	}
+	cache.v_object = a_this;
+	cache.v_key = a_key;
+	return cache.v_value = value;
 }
 
 void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 {
-	portable::t_scoped_lock_for_write lock(a_this->v_lock);
-	a_this->v_fields.f_put<t_object::t_hash_traits>(a_key, a_value);
+	size_t i = t_thread::t_cache::f_index(a_this, a_key);
+	t_thread::t_cache& cache = t_thread::v_cache[i];
+	if (cache.v_object != a_this || cache.v_key != a_key) {
+		if (cache.v_modified) {
+			{
+				portable::t_scoped_lock_for_write lock(cache.v_object->v_lock);
+				cache.v_object->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
+			}
+			cache.v_revision = t_thread::t_cache::f_revise(i);
+		}
+		cache.v_object = a_this;
+		cache.v_key = a_key;
+	}
+	cache.v_value = a_value;
+	cache.v_modified = true;
+	cache.v_key_revision = f_as<t_symbol*>(a_key)->v_revision;
 }
 
 t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
 {
-	portable::t_scoped_lock_for_write lock(a_this->v_lock);
-	t_transfer value = a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
-	if (!value) t_throwable::f_throw(f_as<const std::map<std::wstring, t_slot>::iterator&>(a_key)->first);
+	size_t i = t_thread::t_cache::f_index(a_this, a_key);
+	t_thread::t_cache& cache = t_thread::v_cache[i];
+	t_transfer value;
+	if (cache.v_object == a_this && cache.v_key == a_key) {
+		{
+			portable::t_scoped_lock_for_write lock(a_this->v_lock);
+			a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
+		}
+		cache.v_object = cache.v_key = 0;
+		value = cache.v_value.f_transfer();
+		cache.v_modified = false;
+	} else {
+		portable::t_scoped_lock_for_write lock(a_this->v_lock);
+		value = a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
+		if (!value) t_throwable::f_throw(f_as<t_symbol*>(a_key)->f_string());
+	}
+	cache.v_revision = t_thread::t_cache::f_revise(i);
+	cache.v_key_revision = f_as<t_symbol*>(a_key)->v_revision;
 	return value;
 }
 

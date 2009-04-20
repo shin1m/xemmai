@@ -8,14 +8,48 @@ namespace xemmai
 
 struct t_thread
 {
-	struct t_queues : t_pointer::t_queues
+	struct t_cache
 	{
-		t_queues* v_next;
-		size_t v_done;
-		t_object* volatile* v_reviving;
+		static const size_t V_SIZE = 1 << 11;
+		static const size_t V_MASK = V_SIZE - 1;
 
-		t_queues() : v_next(0), v_done(0), v_reviving(0)
+		static volatile size_t v_revisions[V_SIZE];
+
+		static size_t f_index(t_object* a_object, t_object* a_key)
 		{
+			return (reinterpret_cast<size_t>(a_object) ^ reinterpret_cast<size_t>(a_key)) / sizeof(t_object*) & V_MASK;
+		}
+		static size_t f_revise(size_t a_i);
+
+		t_slot v_object;
+		t_slot v_key;
+		t_slot v_value;
+		bool v_modified;
+		volatile size_t v_revision;
+		volatile size_t v_key_revision;
+
+		t_cache() : v_modified(false), v_revision(0), v_key_revision(0)
+		{
+		}
+	};
+	struct t_internal
+	{
+		t_internal* v_next;
+		size_t v_done;
+		t_pointer::t_collector* v_collector;
+		t_pointer::t_increments v_increments;
+		t_pointer::t_decrements v_decrements;
+		t_object* volatile* v_reviving;
+		t_cache v_cache[t_cache::V_SIZE];
+
+		t_internal() : v_next(0), v_done(0), v_collector(t_pointer::v_collector), v_reviving(0)
+		{
+		}
+		void f_initialize()
+		{
+			t_pointer::v_increments = &v_increments;
+			t_pointer::v_decrements = &v_decrements;
+			t_thread::v_cache = v_cache;
 		}
 		void f_revive()
 		{
@@ -24,20 +58,24 @@ struct t_thread
 	};
 
 	static XEMMAI__PORTABLE__THREAD t_object* v_current;
+	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
 
 	static void* f_main(void* a_p);
 	static t_object* f_current()
 	{
 		return v_current;
 	}
+	static void f_cache_clear();
+	static void f_cache_acquire();
+	static void f_cache_release();
 	static t_transfer f_instantiate(const t_transfer& a_callable);
 	static void f_define(t_object* a_class);
 
-	t_queues* v_queues;
+	t_internal* v_internal;
 	t_slot v_fiber;
 	t_scoped v_active;
 
-	t_thread(const t_transfer& a_fiber) : v_queues(new t_queues()), v_fiber(a_fiber)
+	t_thread(const t_transfer& a_fiber) : v_internal(new t_internal()), v_fiber(a_fiber)
 	{
 	}
 	void f_join();

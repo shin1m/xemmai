@@ -18,6 +18,8 @@ struct t_class : t_type
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
 	virtual t_transfer f_get(t_object* a_this, t_object* a_key);
+	virtual void f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value);
+	virtual t_transfer f_remove(t_object* a_this, t_object* a_key);
 	virtual void f_call(t_object* a_this, t_object* a_self, size_t a_n, t_stack& a_stack);
 };
 

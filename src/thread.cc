@@ -7,6 +7,27 @@
 namespace xemmai
 {
 
+volatile size_t t_thread::t_cache::v_revisions[V_SIZE];
+
+size_t t_thread::t_cache::f_revise(size_t a_i)
+{
+	size_t revision = portable::f_atomic_increment(v_revisions[a_i]);
+	if (revision != 0) return revision;
+	{
+		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
+		t_internal* internals = f_engine()->v_thread__internals;
+		t_internal* p = internals;
+		do {
+			p = p->v_next;
+			p->v_cache[a_i].v_revision = 0;
+		} while (p != internals);
+	}
+	return v_revisions[a_i] = 1;
+}
+
+XEMMAI__PORTABLE__THREAD t_object* t_thread::v_current;
+XEMMAI__PORTABLE__THREAD t_thread::t_cache* t_thread::v_cache;
+
 namespace
 {
 
@@ -17,29 +38,71 @@ void f_main(void* a_p)
 
 }
 
-XEMMAI__PORTABLE__THREAD t_object* t_thread::v_current;
-
 void* t_thread::f_main(void* a_p)
 {
 	v_current = static_cast<t_object*>(a_p);
 	t_thread* p = f_as<t_thread*>(v_current);
-	t_thread::t_queues* queues = p->v_queues;
-	t_pointer::v_collector = queues->v_collector;
-	t_pointer::v_increments = &queues->v_increments;
-	t_pointer::v_decrements = &queues->v_decrements;
+	t_thread::t_internal* internal = p->v_internal;
+	t_pointer::v_collector = internal->v_collector;
+	internal->f_initialize();
 	p->v_active = p->v_fiber;
 	t_fiber::v_current = p->v_active;
 	t_module::f_main(xemmai::f_main, 0);
+	f_cache_clear();
 	p->v_active = 0;
-	p->v_queues = 0;
+	p->v_internal = 0;
 	t_pointer::v_decrements->f_push(v_current);
 	f_engine()->f_pools__return();
 	{
 		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-		++queues->v_done;
+		++internal->v_done;
 		f_engine()->v_thread__condition.f_broadcast();
 	}
 	return 0;
+}
+
+void t_thread::f_cache_clear()
+{
+	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
+		t_cache& cache = v_cache[i];
+		if (cache.v_modified) {
+			{
+				portable::t_scoped_lock_for_write lock(cache.v_object->v_lock);
+				cache.v_object->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
+			}
+			cache.v_modified = false;
+			cache.v_revision = t_cache::f_revise(i);
+		} else {
+			cache.v_value = 0;
+		}
+		cache.v_object = cache.v_key = 0;
+	}
+}
+
+void t_thread::f_cache_acquire()
+{
+	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
+		t_cache& cache = v_cache[i];
+		size_t revision = t_cache::v_revisions[i];
+		if (cache.v_revision == revision) continue;
+		cache.v_modified = false;
+		cache.v_revision = revision;
+		cache.v_object = cache.v_key = cache.v_value = 0;
+	}
+}
+
+void t_thread::f_cache_release()
+{
+	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
+		t_cache& cache = v_cache[i];
+		if (!cache.v_modified) continue;
+		{
+			portable::t_scoped_lock_for_write lock(cache.v_object->v_lock);
+			cache.v_object->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value);
+		}
+		cache.v_modified = false;
+		cache.v_revision = t_cache::f_revise(i);
+	}
 }
 
 t_transfer t_thread::f_instantiate(const t_transfer& a_callable)
@@ -48,24 +111,20 @@ t_transfer t_thread::f_instantiate(const t_transfer& a_callable)
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_thread>());
 	t_thread* p = new t_thread(fiber);
 	object->v_pointer = p;
-	t_queues* queues = p->v_queues;
+	t_internal* internal = p->v_internal;
 	{
 		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-		t_queues*& queueses = f_engine()->v_thread__queueses;
-		if (queueses) {
-			queues->v_next = queueses->v_next;
-			queueses->v_next = queues;
-		} else {
-			queues->v_next = queues;
-		}
-		queueses = queues;
+		t_internal*& internals = f_engine()->v_thread__internals;
+		internal->v_next = internals->v_next;
+		internals = internals->v_next = internal;
 	}
 	t_pointer::v_increments->f_push(object);
+	f_cache_release();
 	if (!portable::f_thread(f_main, object)) {
-		p->v_queues = 0;
+		p->v_internal = 0;
 		t_pointer::v_decrements->f_push(object);
 		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-		++queues->v_done;
+		++internal->v_done;
 	}
 	return object;
 }
@@ -83,7 +142,7 @@ void t_thread::f_join()
 	if (this == f_as<t_thread*>(v_current)) t_throwable::f_throw(L"current thread can not be joined.");
 	if (this == f_as<t_thread*>(f_engine()->v_thread)) t_throwable::f_throw(L"engine thread can not be joined.");
 	portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-	while (v_queues) f_engine()->v_thread__condition.f_wait(f_engine()->v_thread__mutex);
+	while (v_internal) f_engine()->v_thread__condition.f_wait(f_engine()->v_thread__mutex);
 }
 
 t_type* t_type_of<t_thread>::f_derive(t_object* a_this)

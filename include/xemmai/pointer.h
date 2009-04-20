@@ -133,16 +133,6 @@ protected:
 		}
 		void f_flush();
 	};
-	struct t_queues
-	{
-		t_collector* v_collector;
-		t_increments v_increments;
-		t_decrements v_decrements;
-
-		t_queues() : v_collector(t_pointer::v_collector)
-		{
-		}
-	};
 	class t_pass
 	{
 	};

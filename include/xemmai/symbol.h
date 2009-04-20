@@ -8,16 +8,34 @@
 namespace xemmai
 {
 
-struct t_symbol : t_type
+class t_symbol
 {
-	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_value);
-	static std::wstring f_string(t_object* a_self)
-	{
-		return f_as<const std::map<std::wstring, t_slot>::iterator&>(a_self)->first;
-	}
-	static void f_define(t_object* a_class);
+	friend struct t_type;
+	friend struct t_class;
+	friend struct t_type_of<t_symbol>;
 
-	t_symbol(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	std::map<std::wstring, t_slot>::iterator v_entry;
+	volatile size_t v_revision;
+
+	t_symbol(std::map<std::wstring, t_slot>::iterator a_entry) : v_entry(a_entry), v_revision(0)
+	{
+	}
+
+public:
+	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_value);
+	static void f_define(t_object* a_class);
+	static void f_revise(t_object* a_this);
+
+	const std::wstring& f_string() const
+	{
+		return v_entry->first;
+	}
+};
+
+template<>
+struct t_type_of<t_symbol> : t_type
+{
+	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
 		v_revive = true;
 	}
