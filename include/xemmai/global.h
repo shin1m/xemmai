@@ -81,7 +81,6 @@ class t_global : public t_extension
 	t_slot v_null;
 	t_slot v_true;
 	t_slot v_false;
-	t_slot v_tuple_empty;
 
 public:
 	t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread);
@@ -207,10 +206,6 @@ public:
 	t_object* f_false() const
 	{
 		return v_false;
-	}
-	t_object* f_tuple_empty() const
-	{
-		return v_tuple_empty;
 	}
 	t_transfer f_as(t_object* a_value) const
 	{

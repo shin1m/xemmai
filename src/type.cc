@@ -107,7 +107,7 @@ t_transfer t_type::f_get(t_object* a_this, t_object* a_key)
 	}
 	if (!value) {
 		value = a_this->v_type->f_get(a_key);
-		if (value->f_type() == f_global()->f_type<t_method>()) value = t_method::f_instantiate(f_as<t_method*>(value)->v_function, a_this);
+		if (value->f_type() == f_global()->f_type<t_method>()) value = f_as<t_method*>(value)->f_bind(a_this);
 	}
 	if (cache.v_modified) {
 		{

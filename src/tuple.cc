@@ -7,7 +7,6 @@ namespace xemmai
 
 t_transfer t_tuple::f_instantiate(size_t a_size)
 {
-	if (a_size <= 0) return f_global()->f_tuple_empty();
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_tuple>());
 	object->v_pointer = new(a_size) t_tuple();
 	return object;

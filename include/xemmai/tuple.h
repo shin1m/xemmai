@@ -8,15 +8,9 @@ namespace xemmai
 
 class t_tuple
 {
+	friend struct t_type_of<t_tuple>;
+
 	size_t v_size;
-
-	t_slot* f_entries() const
-	{
-		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
-	}
-
-public:
-	static t_transfer f_instantiate(size_t a_size);
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
@@ -38,6 +32,17 @@ public:
 		t_slot* p = f_entries();
 		for (size_t i = 0; i < v_size; ++i) new(p + i) t_slot();
 	}
+	~t_tuple()
+	{
+	}
+	t_slot* f_entries() const
+	{
+		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
+	}
+
+public:
+	static t_transfer f_instantiate(size_t a_size);
+
 	size_t f_size() const
 	{
 		return v_size;

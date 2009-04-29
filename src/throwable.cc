@@ -6,6 +6,11 @@
 namespace xemmai
 {
 
+t_throwable::~t_throwable()
+{
+	t_fiber::t_context::f_finalize(v_context);
+}
+
 t_transfer t_throwable::f_instantiate(const std::wstring& a_message)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_throwable>());
@@ -16,11 +21,6 @@ t_transfer t_throwable::f_instantiate(const std::wstring& a_message)
 void t_throwable::f_throw(const std::wstring& a_message)
 {
 	throw t_scoped(f_instantiate(a_message));
-}
-
-t_throwable::~t_throwable()
-{
-	t_fiber::t_context::f_finalize(v_context);
 }
 
 void t_throwable::f_dump() const

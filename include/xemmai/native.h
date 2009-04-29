@@ -6,18 +6,26 @@
 namespace xemmai
 {
 
-struct t_native
+class t_native
 {
+	friend struct t_type_of<t_native>;
+
+public:
 	typedef void (*t_function)(t_object*, t_object*, size_t, t_stack&);
 
-	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const t_transfer& a_module, t_function a_function);
-
+private:
 	t_slot v_module;
 	t_function v_function;
 
 	t_native(const t_transfer& a_module, t_function a_function) : v_module(a_module), v_function(a_function)
 	{
 	}
+	~t_native()
+	{
+	}
+
+public:
+	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const t_transfer& a_module, t_function a_function);
 };
 
 template<>

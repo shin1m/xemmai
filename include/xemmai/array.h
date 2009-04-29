@@ -17,6 +17,12 @@ class t_array
 	size_t v_head;
 	size_t v_size;
 
+	t_array() : v_head(0), v_size(0)
+	{
+	}
+	~t_array()
+	{
+	}
 	void f_resize();
 	void f_grow();
 	void f_shrink();
@@ -24,9 +30,6 @@ class t_array
 public:
 	static t_transfer f_instantiate();
 
-	t_array() : v_head(0), v_size(0)
-	{
-	}
 	void f_clear()
 	{
 		v_tuple = 0;

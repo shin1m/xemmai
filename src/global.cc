@@ -142,8 +142,6 @@ v_type_thread(a_type_thread)
 	v_true->v_boolean = true;
 	v_false = t_object::f_allocate(v_type_boolean);
 	v_false->v_boolean = false;
-	v_tuple_empty = t_object::f_allocate(v_type_tuple);
-	v_tuple_empty->v_pointer = new(0) t_tuple();
 }
 
 void t_global::f_scan(t_scan a_scan)
@@ -170,7 +168,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_dictionary);
 	a_scan(v_type_lexer__error);
 	a_scan(v_type_parser__error);
-	a_scan(v_tuple_empty);
 	a_scan(v_symbol_construct);
 	a_scan(v_symbol_initialize);
 	a_scan(v_symbol_string);

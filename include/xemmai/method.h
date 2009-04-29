@@ -6,17 +6,24 @@
 namespace xemmai
 {
 
-struct t_method
+class t_method
 {
+	friend struct t_type_of<t_method>;
+
 	t_slot v_function;
 	t_slot v_self;
-
-	static t_transfer f_instantiate(const t_transfer& a_function, const t_transfer& a_self);
-	static void f_define(t_object* a_class);
 
 	t_method(const t_transfer& a_function, const t_transfer& a_self) : v_function(a_function), v_self(a_self)
 	{
 	}
+	~t_method()
+	{
+	}
+
+public:
+	static t_transfer f_instantiate(const t_transfer& a_function, const t_transfer& a_self);
+	static void f_define(t_object* a_class);
+
 	t_transfer f_bind(const t_transfer& a_target) const
 	{
 		return f_instantiate(v_function, a_target);

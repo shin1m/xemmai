@@ -6,18 +6,24 @@
 namespace xemmai
 {
 
-struct t_throwable
+class t_throwable
 {
-	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_message);
-	XEMMAI__PORTABLE__EXPORT static void f_throw(const std::wstring& a_message);
+	friend struct t_fiber;
+	friend struct t_type_of<t_throwable>;
 
 	t_fiber::t_context* v_context;
 	std::wstring v_message;
 
+protected:
+	virtual ~t_throwable();
+
+public:
+	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_message);
+	XEMMAI__PORTABLE__EXPORT static void f_throw(const std::wstring& a_message);
+
 	t_throwable(const std::wstring& a_message) : v_context(0), v_message(a_message)
 	{
 	}
-	virtual ~t_throwable();
 	const std::wstring& f_string() const
 	{
 		return v_message;

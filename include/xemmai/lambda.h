@@ -6,9 +6,9 @@
 namespace xemmai
 {
 
-struct t_lambda
+class t_lambda
 {
-	static t_transfer f_instantiate(const t_transfer& a_scope, const t_transfer& a_code);
+	friend struct t_type_of<t_lambda>;
 
 	t_slot v_scope;
 	t_slot v_code;
@@ -16,6 +16,12 @@ struct t_lambda
 	t_lambda(const t_transfer& a_scope, const t_transfer& a_code) : v_scope(a_scope), v_code(a_code)
 	{
 	}
+	~t_lambda()
+	{
+	}
+
+public:
+	static t_transfer f_instantiate(const t_transfer& a_scope, const t_transfer& a_code);
 };
 
 template<>

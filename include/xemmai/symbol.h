@@ -20,6 +20,9 @@ class t_symbol
 	t_symbol(std::map<std::wstring, t_slot>::iterator a_entry) : v_entry(a_entry), v_revision(0)
 	{
 	}
+	~t_symbol()
+	{
+	}
 
 public:
 	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_value);

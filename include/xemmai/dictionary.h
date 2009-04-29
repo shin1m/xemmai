@@ -9,18 +9,14 @@ namespace xemmai
 class t_dictionary
 {
 	friend struct t_type_of<t_dictionary>;
-
-	t_hash v_hash;
-	size_t v_size;
-
-public:
 	struct t_hash_traits
 	{
 		static size_t f_hash(t_object* a_key);
 		static size_t f_equals(t_object* a_x, t_object* a_y);
 	};
 
-	static t_transfer f_instantiate();
+	t_hash v_hash;
+	size_t v_size;
 
 	t_dictionary() : v_size(0)
 	{
@@ -29,6 +25,10 @@ public:
 	{
 		v_hash.f_finalize();
 	}
+
+public:
+	static t_transfer f_instantiate();
+
 	void f_clear()
 	{
 		v_hash.f_clear();
