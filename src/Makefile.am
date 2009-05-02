@@ -38,6 +38,8 @@ xemmai_SOURCES = \
 	tuple.cc \
 	array.cc \
 	dictionary.cc \
+	bytes.cc \
+	file.cc \
 	lexer.cc \
 	parser.cc \
 	global.cc \

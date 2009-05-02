@@ -20,6 +20,8 @@ class t_null;
 class t_tuple;
 class t_array;
 class t_dictionary;
+class t_bytes;
+class t_file;
 
 t_global* f_global();
 
@@ -49,6 +51,8 @@ class t_global : public t_extension
 	t_slot v_type_tuple;
 	t_slot v_type_array;
 	t_slot v_type_dictionary;
+	t_slot v_type_bytes;
+	t_slot v_type_file;
 	t_slot v_type_lexer__error;
 	t_slot v_type_parser__error;
 	t_slot v_symbol_construct;
@@ -361,6 +365,18 @@ template<>
 inline t_object* t_global::f_type<t_dictionary>() const
 {
 	return v_type_dictionary;
+}
+
+template<>
+inline t_object* t_global::f_type<t_bytes>() const
+{
+	return v_type_bytes;
+}
+
+template<>
+inline t_object* t_global::f_type<t_file>() const
+{
+	return v_type_file;
 }
 
 template<>

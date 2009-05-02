@@ -11,6 +11,7 @@ scripts = \
 	thread.xm \
 	array.xm \
 	dictionary.xm \
+	bytes.xm \
 	hanoi.xm \
 	hanoi2.xm \
 	prime.xm \

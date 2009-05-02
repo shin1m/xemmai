@@ -9,22 +9,6 @@
 namespace xemmai
 {
 
-class t_file
-{
-	FILE* v_stream;
-
-public:
-	t_file(const std::wstring& a_path, const char* a_mode);
-	~t_file()
-	{
-		if (v_stream != NULL) std::fclose(v_stream);
-	}
-	operator FILE*() const
-	{
-		return v_stream;
-	}
-};
-
 struct t_library;
 
 struct t_module

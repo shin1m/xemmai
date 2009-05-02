@@ -3,6 +3,7 @@
 #include <cwctype>
 #include <xemmai/engine.h>
 #include <xemmai/scope.h>
+#include <xemmai/file.h>
 #include <xemmai/convert.h>
 
 namespace xemmai

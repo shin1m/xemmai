@@ -7,6 +7,7 @@ nobase_include_HEADERS = \
 	xemmai/portable/thread.h \
 	xemmai/array.h \
 	xemmai/boolean.h \
+	xemmai/bytes.h \
 	xemmai/class.h \
 	xemmai/code.h \
 	xemmai/convert.h \
@@ -16,6 +17,7 @@ nobase_include_HEADERS = \
 	xemmai/dictionary.h \
 	xemmai/engine.h \
 	xemmai/fiber.h \
+	xemmai/file.h \
 	xemmai/float.h \
 	xemmai/global.h \
 	xemmai/hash.h \

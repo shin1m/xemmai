@@ -2,15 +2,12 @@
 
 #include <xemmai/engine.h>
 #include <xemmai/scope.h>
+#include <xemmai/file.h>
 #include <xemmai/parser.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
 {
-
-t_file::t_file(const std::wstring& a_path, const char* a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), a_mode))
-{
-}
 
 t_module::t_scoped_lock::t_scoped_lock() : v_own(false)
 {
@@ -226,7 +223,7 @@ void t_type_of<t_module>::f_finalize(t_object* a_this)
 
 void t_type_of<t_module>::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
 {
-	if (a_n != 1) t_throwable::f_throw(L"must be called with an arguments.");
+	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	t_transfer a0 = a_stack.f_pop();
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack.f_return(t_module::f_instantiate(f_as<const std::wstring&>(a0)));

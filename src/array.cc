@@ -289,7 +289,7 @@ bool t_type_of<t_array>::f_equals(t_object* a_self, t_object* a_other)
 			x = a0[i];
 			y = a1[i];
 		}
-		if (f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(y))) return false;
+		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(y))) return false;
 		++i;
 	}
 	return true;
