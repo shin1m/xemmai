@@ -21,18 +21,27 @@ public:
 	{
 		if (v_stream != NULL) std::fclose(v_stream);
 	}
-	void f_close();
 	operator FILE*() const
 	{
 		return v_stream;
 	}
+	void f_close();
+	void f_seek(int a_offset, int a_whence);
+	int f_tell();
 	size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
+	void f_flush();
 };
 
 template<>
 struct t_type_of<t_file> : t_type
 {
+	static void f_close(t_object* a_self);
+	static void f_seek(t_object* a_self, int a_offset, int a_whence);
+	static int f_tell(t_object* a_self);
+	static size_t f_read(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size);
+	static void f_write(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size);
+	static void f_flush(t_object* a_self);
 	static t_transfer f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

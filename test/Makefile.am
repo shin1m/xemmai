@@ -12,6 +12,7 @@ scripts = \
 	array.xm \
 	dictionary.xm \
 	bytes.xm \
+	file.xm \
 	hanoi.xm \
 	hanoi2.xm \
 	prime.xm \
@@ -23,5 +24,6 @@ TESTS = $(scripts) \
 	container/test.xm \
 	callback/test.xm
 EXTRA_DIST = $(scripts) list.xm
+CLEANFILES = file.xm.test
 
 SUBDIRS = container callback

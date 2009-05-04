@@ -30,6 +30,20 @@ void t_file::f_close()
 	v_stream = NULL;
 }
 
+void t_file::f_seek(int a_offset, int a_whence)
+{
+	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	if (std::fseek(v_stream, a_offset, a_whence) == -1) t_throwable::f_throw(L"failed to seek.");
+}
+
+int t_file::f_tell()
+{
+	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	int n = std::ftell(v_stream);
+	if (n == -1) t_throwable::f_throw(L"failed to tell.");
+	return n;
+}
+
 size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
@@ -53,12 +67,63 @@ void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 	}
 }
 
+void t_file::f_flush()
+{
+	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	std::fflush(v_stream);
+}
+
+void t_type_of<t_file>::f_close(t_object* a_self)
+{
+	f_check<t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	f_as<t_file&>(a_self).f_close();
+}
+
+void t_type_of<t_file>::f_seek(t_object* a_self, int a_offset, int a_whence)
+{
+	f_check<t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	f_as<t_file&>(a_self).f_seek(a_offset, a_whence);
+}
+
+int t_type_of<t_file>::f_tell(t_object* a_self)
+{
+	f_check<t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	return f_as<t_file&>(a_self).f_tell();
+}
+
+size_t t_type_of<t_file>::f_read(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
+{
+	f_check<t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	return f_as<t_file&>(a_self).f_read(a_bytes, a_offset, a_size);
+}
+
+void t_type_of<t_file>::f_write(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
+{
+	f_check<t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	f_as<t_file&>(a_self).f_write(a_bytes, a_offset, a_size);
+}
+
+void t_type_of<t_file>::f_flush(t_object* a_self)
+{
+	f_check<t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	f_as<t_file&>(a_self).f_flush();
+}
+
 t_transfer t_type_of<t_file>::f_define()
 {
 	return t_define<t_file, t_object>(f_global(), L"File")
-		(L"close", t_member<void (t_file::*)(), &t_file::f_close>())
-		(L"read", t_member<size_t (t_file::*)(t_bytes&, size_t, size_t), &t_file::f_read>())
-		(L"write", t_member<void (t_file::*)(t_bytes&, size_t, size_t), &t_file::f_write>())
+		(L"close", t_member<void (*)(t_object*), f_close>())
+		(L"seek", t_member<void (*)(t_object*, int, int), f_seek>())
+		(L"tell", t_member<int (*)(t_object*), f_tell>())
+		(L"read", t_member<size_t (*)(t_object*, t_bytes&, size_t, size_t), f_read>())
+		(L"write", t_member<void (*)(t_object*, t_bytes&, size_t, size_t), f_write>())
+		(L"flush", t_member<void (*)(t_object*), f_flush>())
 	;
 }
 
