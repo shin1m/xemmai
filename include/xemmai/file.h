@@ -1,6 +1,8 @@
 #ifndef XEMMAI__FILE_H
 #define XEMMAI__FILE_H
 
+#include <cstdio>
+
 #include "bytes.h"
 
 namespace xemmai

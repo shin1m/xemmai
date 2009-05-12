@@ -10,6 +10,7 @@
 #define NOMINMAX
 #include <windows.h>
 #endif
+#include <cstdio>
 #include <string>
 
 namespace xemmai

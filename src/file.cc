@@ -1,6 +1,5 @@
 #include <xemmai/file.h>
 
-#include <xemmai/boolean.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
 
