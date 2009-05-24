@@ -17,7 +17,6 @@ nobase_include_HEADERS = \
 	xemmai/dictionary.h \
 	xemmai/engine.h \
 	xemmai/fiber.h \
-	xemmai/file.h \
 	xemmai/float.h \
 	xemmai/global.h \
 	xemmai/hash.h \
@@ -40,4 +39,8 @@ nobase_include_HEADERS = \
 	xemmai/thread.h \
 	xemmai/throwable.h \
 	xemmai/tuple.h \
-	xemmai/type.h
+	xemmai/type.h \
+	xemmai/io.h \
+	xemmai/io/file.h \
+	xemmai/io/reader.h \
+	xemmai/io/writer.h

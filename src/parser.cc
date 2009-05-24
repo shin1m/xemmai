@@ -5,6 +5,7 @@
 #include <xemmai/integer.h>
 #include <xemmai/float.h>
 #include <xemmai/string.h>
+#include <xemmai/global.h>
 
 namespace xemmai
 {

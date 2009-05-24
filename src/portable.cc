@@ -87,14 +87,9 @@ t_path& t_path::operator/=(const std::wstring& a_path)
 		if (cs.empty() || cs.size() == 1 && cs[0] == L'.') continue;
 		if (cs.size() == 2 && cs[0] == L'.' && cs[1] == L'.') {
 			std::wstring::size_type n = v_path.find_last_of(v_directory_separator);
-#ifdef __unix__
 			if (n > 0) v_path.erase(n);
-#endif
-#ifdef _WIN32
-			if (n > 2) v_path.erase(n);
-#endif
 		} else {
-			v_path += v_directory_separator;
+			if (*--v_path.end() != v_directory_separator) v_path += v_directory_separator;
 			v_path.append(cs.begin(), cs.end());
 		}
 	}

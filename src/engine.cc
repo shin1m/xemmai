@@ -2,7 +2,11 @@
 
 #include <cassert>
 #include <cstring>
+#include <xemmai/portable/path.h>
 #include <xemmai/class.h>
+#include <xemmai/array.h>
+#include <xemmai/global.h>
+#include <xemmai/io.h>
 
 namespace xemmai
 {
@@ -252,11 +256,33 @@ v_verbose(false)
 		while (v_collector__running) v_collector__done.f_wait(v_collector__mutex);
 	}
 	library->v_extension = new t_global(v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
+	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
+	t_transfer path = t_array::f_instantiate();
+	if (argc > 0) {
+		v_module_system->f_put(f_global()->f_symbol_executable(), f_global()->f_as(portable::t_path(portable::f_convert(argv[0]))));
+		if (argc > 1) {
+			portable::t_path script(portable::f_convert(argv[1]));
+			v_module_system->f_put(f_global()->f_symbol_script(), f_global()->f_as(script));
+			f_as<t_array*>(path)->f_push(f_global()->f_as(script / L".."));
+			t_transfer arguments = t_array::f_instantiate();
+			t_array* p = f_as<t_array*>(arguments);
+			for (int i = 2; i < argc; ++i) p->f_push(f_global()->f_as(portable::f_convert(argv[i])));
+			v_module_system->f_put(f_global()->f_symbol_arguments(), arguments);
+		}
+	}
+	v_module_system->f_put(f_global()->f_symbol_path(), path);
+	{
+		t_library* library = new t_library(std::wstring(), 0);
+		v_module_io = t_module::f_instantiate(L"io", library);
+		library->v_extension = new t_io(v_module_io);
+	}
 }
 
 t_engine::~t_engine()
 {
 	v_module_global = 0;
+	v_module_system = 0;
+	v_module_io = 0;
 	t_thread::f_cache_clear();
 	{
 		t_thread* thread = f_as<t_thread*>(v_thread);
@@ -325,6 +351,26 @@ t_engine::~t_engine()
 		std::fwprintf(stderr, L"\tcollector: tick = %d, wait = %d, epoch = %d, collect = %d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
 		if (b) throw std::exception();
 	}
+}
+
+int t_engine::f_run()
+{
+	int n = t_module::f_main(t_module::f_main, 0);
+	portable::t_scoped_lock lock(v_thread__mutex);
+	t_thread::t_internal*& internals = v_thread__internals;
+	t_thread::t_internal* internal = f_as<t_thread*>(t_thread::f_current())->v_internal;
+	while (true) {
+		t_thread::t_internal* p = internals;
+		do {
+			p = p->v_next;
+			if (p == internal || p->v_done > 0) continue;
+			p = 0;
+			break;
+		} while (p != internals);
+		if (p) break;
+		v_thread__condition.f_wait(v_thread__mutex);
+	}
+	return n;
 }
 
 }

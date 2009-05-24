@@ -39,9 +39,12 @@ xemmai_SOURCES = \
 	array.cc \
 	dictionary.cc \
 	bytes.cc \
-	file.cc \
 	lexer.cc \
 	parser.cc \
 	global.cc \
+	io.cc \
+	io__file.cc \
+	io__reader.cc \
+	io__writer.cc \
 	engine.cc \
 	main.cc

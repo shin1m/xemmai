@@ -1,3 +1,5 @@
+io = Module("io");
+
 bytes = Bytes(26);
 i = 0;
 while (i < bytes.size()) {
@@ -5,7 +7,7 @@ while (i < bytes.size()) {
 	i = i + 1;
 }
 
-file = File("file.xm.test", "w");
+file = io.File("file.xm.test", "w");
 try {
 	file.write(bytes, 0, bytes.size());
 } finally {
@@ -13,7 +15,7 @@ try {
 }
 
 bytes = Bytes(4);
-file = File("file.xm.test", "r");
+file = io.File("file.xm.test", "r");
 try {
 	while (true) {
 		n = file.read(bytes, 0, bytes.size());

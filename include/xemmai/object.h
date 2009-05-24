@@ -30,19 +30,6 @@ class t_object
 		e_color__ORANGE,
 		e_color__RED
 	};
-	struct t_scoped_stack : t_stack
-	{
-		t_slot* v_base;
-
-		t_scoped_stack(t_slot* a_top, t_slot* a_base) : v_base(a_base)
-		{
-			v_top = a_top;
-		}
-		~t_scoped_stack()
-		{
-			while (v_top < v_base) f_pop();
-		}
-	};
 
 	static XEMMAI__PORTABLE__THREAD t_object* v_roots;
 	static XEMMAI__PORTABLE__THREAD size_t v_release;
@@ -218,7 +205,7 @@ public:
 	XEMMAI__PORTABLE__EXPORT void f_call(size_t a_n, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT t_transfer f_call(size_t a_n, t_slot* a_slots);
 #define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
-#define XEMMAI__MACRO__A_N(n) a_##n
+#define XEMMAI__MACRO__A_N_COMMA(n) a_##n,
 #define XEMMAI__MACRO__ITERATE "object_call.h"
 #define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT
 #include "macro.h"

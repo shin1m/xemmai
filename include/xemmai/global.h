@@ -21,15 +21,15 @@ class t_tuple;
 class t_array;
 class t_dictionary;
 class t_bytes;
-class t_file;
 
 t_global* f_global();
 
 class t_global : public t_extension
 {
+	friend struct t_thread;
 	friend t_global* f_global();
 
-	XEMMAI__PORTABLE__EXPORT static t_global* v_instance;
+	static XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
 	t_slot v_type_object;
 	t_slot v_type_class;
@@ -52,7 +52,6 @@ class t_global : public t_extension
 	t_slot v_type_array;
 	t_slot v_type_dictionary;
 	t_slot v_type_bytes;
-	t_slot v_type_file;
 	t_slot v_type_lexer__error;
 	t_slot v_type_parser__error;
 	t_slot v_symbol_construct;
@@ -82,6 +81,12 @@ class t_global : public t_extension
 	t_slot v_symbol_and;
 	t_slot v_symbol_xor;
 	t_slot v_symbol_or;
+	t_slot v_symbol_path;
+	t_slot v_symbol_executable;
+	t_slot v_symbol_script;
+	t_slot v_symbol_arguments;
+	t_slot v_symbol_size;
+	t_slot v_symbol_push;
 	t_slot v_null;
 	t_slot v_true;
 	t_slot v_false;
@@ -198,6 +203,30 @@ public:
 	t_object* f_symbol_or() const
 	{
 		return v_symbol_or;
+	}
+	t_object* f_symbol_path() const
+	{
+		return v_symbol_path;
+	}
+	t_object* f_symbol_executable() const
+	{
+		return v_symbol_executable;
+	}
+	t_object* f_symbol_script() const
+	{
+		return v_symbol_script;
+	}
+	t_object* f_symbol_arguments() const
+	{
+		return v_symbol_arguments;
+	}
+	t_object* f_symbol_size() const
+	{
+		return v_symbol_size;
+	}
+	t_object* f_symbol_push() const
+	{
+		return v_symbol_push;
 	}
 	t_object* f_null() const
 	{
@@ -374,12 +403,6 @@ inline t_object* t_global::f_type<t_bytes>() const
 }
 
 template<>
-inline t_object* t_global::f_type<t_file>() const
-{
-	return v_type_file;
-}
-
-template<>
 inline t_object* t_global::f_type<t_lexer::t_error>() const
 {
 	return v_type_lexer__error;
@@ -391,10 +414,14 @@ inline t_object* t_global::f_type<t_parser::t_error>() const
 	return v_type_parser__error;
 }
 
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 inline t_global* f_global()
 {
 	return t_global::v_instance;
 }
+#else
+XEMMAI__PORTABLE__EXPORT t_global* f_global();
+#endif
 
 }
 

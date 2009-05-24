@@ -1,10 +1,11 @@
 #include <xemmai/module.h>
 
+#include <xemmai/portable/path.h>
 #include <xemmai/engine.h>
 #include <xemmai/scope.h>
-#include <xemmai/file.h>
 #include <xemmai/parser.h>
 #include <xemmai/convert.h>
+#include <xemmai/io/file.h>
 
 namespace xemmai
 {
@@ -45,7 +46,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name, t_module* a_modul
 
 t_transfer t_module::f_load_script(const std::wstring& a_path)
 {
-	t_file stream(a_path, "r");
+	io::t_file stream(a_path, "r");
 	if (!stream) return 0;
 	t_parser parser(a_path, stream);
 	return parser.f_parse();
@@ -86,9 +87,16 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 	}
 	f_engine()->v_module__mutex.f_release();
 	f_engine()->v_object__reviving__mutex.f_release();
-	const std::vector<portable::t_path>& paths = f_engine()->v_paths;
-	for (std::vector<portable::t_path>::const_iterator j = paths.begin(); j != paths.end(); ++j) {
-		std::wstring path = *j / a_name;
+	t_transfer paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
+	t_transfer n = paths->f_get(f_global()->f_symbol_size())->f_call();
+	f_check<size_t>(n, L"size must be integer.");
+	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
+		t_slot slots[] = {f_global()->f_as(i), 0};
+		t_scoped_stack stack(slots, slots + 2);
+		f_as<t_type*>(paths->f_type())->f_get_at(paths, stack);
+		t_transfer x = stack.f_pop();
+		f_check<std::wstring>(x, L"path must be string.");
+		std::wstring path = portable::t_path(f_as<const std::wstring&>(x)) / a_name;
 		std::wstring s = path + L".xm";
 		t_transfer script = f_load_script(s);
 		if (script) {
@@ -135,32 +143,13 @@ int t_module::f_main(void (*a_main)(void*), void* a_p)
 
 void t_module::f_main(void* a_p)
 {
-	const std::wstring& path = *static_cast<const std::wstring*>(a_p);
-	if (path.empty()) t_throwable::f_throw(L"file path is empty.");
-	f_engine()->v_paths.push_back(portable::t_path(path) / L"..");
+	t_transfer x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
+	f_check<std::wstring>(x, L"script must be string");
+	const std::wstring& path = f_as<const std::wstring&>(x);
+	if (path.empty()) t_throwable::f_throw(L"script path is empty.");
 	t_transfer script = f_load_script(path);
 	if (!script) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
 	f_execute_script(f_instantiate(L"__main", new t_module(path)), script);
-}
-
-int t_module::f_execute(const std::wstring& a_path)
-{
-	int n = f_main(f_main, const_cast<std::wstring*>(&a_path));
-	portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-	t_thread::t_internal*& internals = f_engine()->v_thread__internals;
-	t_thread::t_internal* internal = f_as<t_thread*>(t_thread::f_current())->v_internal;
-	while (true) {
-		t_thread::t_internal* p = internals;
-		do {
-			p = p->v_next;
-			if (p == internal || p->v_done > 0) continue;
-			p = 0;
-			break;
-		} while (p != internals);
-		if (p) break;
-		f_engine()->v_thread__condition.f_wait(f_engine()->v_thread__mutex);
-	}
-	return n;
 }
 
 t_module::t_module(const std::wstring& a_path) : v_path(a_path), v_iterator(f_engine()->v_module__instances__null)

@@ -108,7 +108,7 @@ public:
 
 void t_client_wrapper::f_on_message(const std::wstring& a_message)
 {
-	t_callback_extension* extension = f_extension<t_client>(f_as<t_type*>(v_self->f_type())->v_module);
+	t_callback_extension* extension = f_extension<t_callback_extension>(f_as<t_type*>(v_self->f_type())->v_module);
 	v_self->f_get(extension->v_symbol_on_message)->f_call(extension->f_as(a_message));
 }
 

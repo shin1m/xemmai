@@ -7,6 +7,7 @@
 #include <xemmai/throwable.h>
 #include <xemmai/boolean.h>
 #include <xemmai/array.h>
+#include <xemmai/global.h>
 
 namespace xemmai
 {
@@ -350,6 +351,7 @@ t_transfer t_code::f_loop()
 							pc = return0;
 							break;
 						case t_fiber::t_try::e_state__THROW:
+							pc = p->v_caught;
 							throw t_scoped(stack->f_pop());
 						default:
 							++pc;

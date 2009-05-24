@@ -3,15 +3,15 @@
 #include <cwctype>
 #include <xemmai/engine.h>
 #include <xemmai/scope.h>
-#include <xemmai/file.h>
 #include <xemmai/convert.h>
+#include <xemmai/io/file.h>
 
 namespace xemmai
 {
 
 void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_column)
 {
-	t_file file(a_path, "r");
+	io::t_file file(a_path, "r");
 	std::fseek(file, a_position, SEEK_SET);
 	std::fputwc(L'\t', stderr);
 	while (true) {

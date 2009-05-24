@@ -3,16 +3,16 @@
 
 #include <vector>
 
-#include "portable/path.h"
+#include "module.h"
 #include "fiber.h"
 #include "thread.h"
-#include "global.h"
 
 namespace xemmai
 {
 
 struct t_class;
 class t_symbol;
+class t_global;
 
 class t_engine : public t_pointer::t_collector
 {
@@ -96,7 +96,6 @@ class t_engine : public t_pointer::t_collector
 	portable::t_mutex v_synchronizer__mutex;
 	portable::t_condition v_synchronizer__condition;
 	t_object* v_type_class;
-	std::vector<portable::t_path> v_paths;
 	std::map<std::wstring, t_slot> v_module__instances;
 	std::map<std::wstring, t_slot>::iterator v_module__instances__null;
 	portable::t_mutex v_module__mutex;
@@ -107,6 +106,8 @@ class t_engine : public t_pointer::t_collector
 	portable::t_mutex v_symbol__instances__mutex;
 	portable::t_mutex v_symbol__instantiate__mutex;
 	t_slot v_module_global;
+	t_slot v_module_system;
+	t_slot v_module_io;
 	t_slot v_thread;
 	bool v_verbose;
 
@@ -136,6 +137,15 @@ public:
 	{
 		return v_module_global;
 	}
+	t_object* f_module_system() const
+	{
+		return v_module_system;
+	}
+	t_object* f_module_io() const
+	{
+		return v_module_io;
+	}
+	int f_run();
 };
 
 inline t_engine* f_engine()

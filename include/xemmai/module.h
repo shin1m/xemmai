@@ -29,7 +29,6 @@ struct t_module
 	static t_transfer f_instantiate(const std::wstring& a_name);
 	static int f_main(void (*a_main)(void*), void* a_p);
 	static void f_main(void* a_p);
-	static int f_execute(const std::wstring& a_path);
 
 	std::wstring v_path;
 	std::map<std::wstring, t_slot>::iterator v_iterator;

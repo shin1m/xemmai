@@ -42,9 +42,9 @@ inline void f_check(t_object* a_object, const wchar_t* a_name)
 }
 
 template<typename T>
-inline typename t_type_of<typename t_fundamental<T>::t_type>::t_extension* f_extension(t_object* a_module)
+inline T* f_extension(t_object* a_module)
 {
-	return static_cast<typename t_type_of<typename t_fundamental<T>::t_type>::t_extension*>(f_as<t_library*>(a_module)->v_extension);
+	return static_cast<T*>(f_as<t_library*>(a_module)->v_extension);
 }
 
 template<typename T_function>
@@ -52,7 +52,7 @@ struct t_call_construct
 {
 };
 
-template<typename T_function>
+template<typename T_extension, typename T_function>
 struct t_call_member
 {
 };
@@ -118,17 +118,21 @@ struct t_construct_with
 template<typename T_function, T_function A_function>
 struct t_member
 {
-	typedef typename t_call_member<T_function>::t_type t_type;
-	typedef typename t_call_member<T_function>::t_call t_call;
+	template<typename T_extension>
+	struct t_bind
+	{
+		typedef typename t_call_member<T_extension, T_function>::t_type t_type;
+		typedef typename t_call_member<T_extension, T_function>::t_call t_call;
 
-	static void f_call(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack)
-	{
-		t_call::f_call(A_function, a_module, a_self, a_n, a_stack);
-	}
-	static void f_call(t_object* a_module, t_object* a_self, t_stack& a_stack)
-	{
-		t_call::f_call(A_function, a_module, a_self, a_stack);
-	}
+		static void f_call(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack)
+		{
+			t_call::f_call(A_function, a_module, a_self, a_n, a_stack);
+		}
+		static void f_call(t_object* a_module, t_object* a_self, t_stack& a_stack)
+		{
+			t_call::f_call(A_function, a_module, a_self, a_stack);
+		}
+	};
 };
 
 template<typename T_function, T_function A_function>
@@ -165,10 +169,12 @@ struct t_overload
 	template<typename T_extension>
 	struct t_bind
 	{
+		typedef typename T::template t_bind<T_extension> t_bound;
+
 		static void f_call(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack)
 		{
-			if (T::t_type::f_match(a_self, a_n, a_stack))
-				T::f_call(a_module, a_self, a_stack);
+			if (t_bound::t_type::f_match(a_self, a_n, a_stack))
+				t_bound::f_call(a_module, a_self, a_stack);
 			else
 				T_next::template t_bind<T_extension>::f_call(a_module, a_self, a_n, a_stack);
 		}
@@ -196,17 +202,16 @@ struct t_overload<t_static<T_function, A_function>, T_next>
 template<typename T, typename T_super>
 class t_define
 {
-	t_extension* v_extension;
+	typename t_type_of<T>::t_extension* v_extension;
 	t_transfer v_type;
 
 public:
-	template<typename T_extension>
-	t_define(T_extension* a_extension, const std::wstring& a_name) :
+	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name) :
 	v_extension(a_extension), v_type(t_class::f_instantiate(new t_type_of<T>(v_extension->f_module(), a_extension->template f_type<T_super>())))
 	{
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
 	}
-	t_define(t_extension* a_extension, const std::wstring& a_name, const t_transfer& a_type) : v_extension(a_extension), v_type(a_type)
+	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name, const t_transfer& a_type) : v_extension(a_extension), v_type(a_type)
 	{
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
 	}
@@ -226,7 +231,7 @@ public:
 	template<typename T_function, T_function A_function>
 	t_define& operator()(const t_transfer& a_name, const t_member<T_function, A_function>&)
 	{
-		v_type->f_put(a_name, v_extension->f_function(t_member<T_function, A_function>::f_call));
+		v_type->f_put(a_name, v_extension->f_function(t_member<T_function, A_function>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
 		return *this;
 	}
 	template<typename T_function, T_function A_function>

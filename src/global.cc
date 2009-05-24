@@ -8,7 +8,7 @@
 #include <xemmai/boolean.h>
 #include <xemmai/array.h>
 #include <xemmai/dictionary.h>
-#include <xemmai/file.h>
+#include <xemmai/bytes.h>
 #include <xemmai/convert.h>
 
 #include <cmath>
@@ -45,7 +45,7 @@ void f_sleep(int a_miliseconds)
 
 }
 
-t_global* t_global::v_instance;
+XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
 
 t_global::t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread) :
 t_extension(a_module),
@@ -86,6 +86,12 @@ v_type_thread(a_type_thread)
 	v_symbol_and = t_symbol::f_instantiate(L"__and");
 	v_symbol_xor = t_symbol::f_instantiate(L"__xor");
 	v_symbol_or = t_symbol::f_instantiate(L"__or");
+	v_symbol_path = t_symbol::f_instantiate(L"path");
+	v_symbol_executable = t_symbol::f_instantiate(L"executable");
+	v_symbol_script = t_symbol::f_instantiate(L"script");
+	v_symbol_arguments = t_symbol::f_instantiate(L"arguments");
+	v_symbol_size = t_symbol::f_instantiate(L"size");
+	v_symbol_push = t_symbol::f_instantiate(L"push");
 	t_type::f_define(v_type_object);
 	xemmai::f_as<t_type*>(v_type_object)->v_builtin = true;
 	xemmai::f_as<t_type*>(v_type_object)->v_primitive = true;
@@ -133,8 +139,6 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type*>(v_type_dictionary)->v_builtin = true;
 	v_type_bytes = t_type_of<t_bytes>::f_define();
 	xemmai::f_as<t_type*>(v_type_bytes)->v_builtin = true;
-	v_type_file = t_type_of<t_file>::f_define();
-	xemmai::f_as<t_type*>(v_type_file)->v_builtin = true;
 	v_type_lexer__error = t_define<t_lexer::t_error, t_throwable>(this, L"LexerError");
 	xemmai::f_as<t_type*>(v_type_lexer__error)->v_builtin = true;
 	v_type_parser__error = t_define<t_parser::t_error, t_throwable>(this, L"ParserError");
@@ -172,7 +176,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_array);
 	a_scan(v_type_dictionary);
 	a_scan(v_type_bytes);
-	a_scan(v_type_file);
 	a_scan(v_type_lexer__error);
 	a_scan(v_type_parser__error);
 	a_scan(v_symbol_construct);
@@ -202,9 +205,22 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_and);
 	a_scan(v_symbol_xor);
 	a_scan(v_symbol_or);
+	a_scan(v_symbol_path);
+	a_scan(v_symbol_executable);
+	a_scan(v_symbol_script);
+	a_scan(v_symbol_arguments);
+	a_scan(v_symbol_size);
+	a_scan(v_symbol_push);
 	a_scan(v_null);
 	a_scan(v_true);
 	a_scan(v_false);
 }
+
+#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+t_global* f_global()
+{
+	return t_global::v_instance;
+}
+#endif
 
 }

@@ -1,14 +1,20 @@
-#include <xemmai/file.h>
+#include <xemmai/io/file.h>
 
+#include <xemmai/engine.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
+#include <xemmai/io.h>
 
 namespace xemmai
 {
 
+namespace io
+{
+
 t_transfer t_file::f_instantiate(const std::wstring& a_path, const std::wstring& a_mode)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_file>());
+	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
+	t_transfer object = t_object::f_allocate(extension->f_type<t_file>());
 	object->v_pointer = new t_file(a_path, a_mode);
 	return object;
 }
@@ -72,73 +78,75 @@ void t_file::f_flush()
 	std::fflush(v_stream);
 }
 
-void t_type_of<t_file>::f_close(t_object* a_self)
-{
-	f_check<t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_file&>(a_self).f_close();
 }
 
-void t_type_of<t_file>::f_seek(t_object* a_self, int a_offset, int a_whence)
+void t_type_of<io::t_file>::f_close(t_object* a_self)
 {
-	f_check<t_file>(a_self, L"this");
+	f_check<io::t_file>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_file&>(a_self).f_seek(a_offset, a_whence);
+	f_as<io::t_file&>(a_self).f_close();
 }
 
-int t_type_of<t_file>::f_tell(t_object* a_self)
+void t_type_of<io::t_file>::f_seek(t_object* a_self, int a_offset, int a_whence)
 {
-	f_check<t_file>(a_self, L"this");
+	f_check<io::t_file>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_file&>(a_self).f_tell();
+	f_as<io::t_file&>(a_self).f_seek(a_offset, a_whence);
 }
 
-size_t t_type_of<t_file>::f_read(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
+int t_type_of<io::t_file>::f_tell(t_object* a_self)
 {
-	f_check<t_file>(a_self, L"this");
+	f_check<io::t_file>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_file&>(a_self).f_read(a_bytes, a_offset, a_size);
+	return f_as<io::t_file&>(a_self).f_tell();
 }
 
-void t_type_of<t_file>::f_write(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
+size_t t_type_of<io::t_file>::f_read(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	f_check<t_file>(a_self, L"this");
+	f_check<io::t_file>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_file&>(a_self).f_write(a_bytes, a_offset, a_size);
+	return f_as<io::t_file&>(a_self).f_read(a_bytes, a_offset, a_size);
 }
 
-void t_type_of<t_file>::f_flush(t_object* a_self)
+void t_type_of<io::t_file>::f_write(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	f_check<t_file>(a_self, L"this");
+	f_check<io::t_file>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_file&>(a_self).f_flush();
+	f_as<io::t_file&>(a_self).f_write(a_bytes, a_offset, a_size);
 }
 
-t_transfer t_type_of<t_file>::f_define()
+void t_type_of<io::t_file>::f_flush(t_object* a_self)
 {
-	return t_define<t_file, t_object>(f_global(), L"File")
-		(L"close", t_member<void (*)(t_object*), f_close>())
+	f_check<io::t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	f_as<io::t_file&>(a_self).f_flush();
+}
+
+t_transfer t_type_of<io::t_file>::f_define(t_io* a_extension)
+{
+	return t_define<io::t_file, t_object>(a_extension, L"File")
+		(a_extension->f_symbol_close(), t_member<void (*)(t_object*), f_close>())
 		(L"seek", t_member<void (*)(t_object*, int, int), f_seek>())
 		(L"tell", t_member<int (*)(t_object*), f_tell>())
-		(L"read", t_member<size_t (*)(t_object*, t_bytes&, size_t, size_t), f_read>())
-		(L"write", t_member<void (*)(t_object*, t_bytes&, size_t, size_t), f_write>())
-		(L"flush", t_member<void (*)(t_object*), f_flush>())
+		(a_extension->f_symbol_read(), t_member<size_t (*)(t_object*, t_bytes&, size_t, size_t), f_read>())
+		(a_extension->f_symbol_write(), t_member<void (*)(t_object*, t_bytes&, size_t, size_t), f_write>())
+		(a_extension->f_symbol_flush(), t_member<void (*)(t_object*), f_flush>())
 	;
 }
 
-t_type* t_type_of<t_file>::f_derive(t_object* a_this)
+t_type* t_type_of<io::t_file>::f_derive(t_object* a_this)
 {
 	return new t_derived<t_type_of>(v_module, a_this);
 }
 
-void t_type_of<t_file>::f_finalize(t_object* a_this)
+void t_type_of<io::t_file>::f_finalize(t_object* a_this)
 {
-	delete f_as<t_file*>(a_this);
+	delete f_as<io::t_file*>(a_this);
 }
 
-void t_type_of<t_file>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<io::t_file>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
 {
-	t_construct<t_file, const std::wstring&, const std::wstring&>::f_call(a_class, a_n, a_stack);
+	t_construct<io::t_file, const std::wstring&, const std::wstring&>::f_call(a_class, a_n, a_stack);
 }
 
 }

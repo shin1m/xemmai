@@ -54,6 +54,20 @@ struct t_stack
 	}
 };
 
+struct t_scoped_stack : t_stack
+{
+	t_slot* v_base;
+
+	t_scoped_stack(t_slot* a_top, t_slot* a_base) : v_base(a_base)
+	{
+		v_top = a_top;
+	}
+	~t_scoped_stack()
+	{
+		while (v_top < v_base) f_pop();
+	}
+};
+
 struct t_type
 {
 	typedef t_global t_extension;

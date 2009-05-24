@@ -4,6 +4,7 @@
 #include <xemmai/symbol.h>
 #include <xemmai/method.h>
 #include <xemmai/throwable.h>
+#include <xemmai/global.h>
 
 namespace xemmai
 {
