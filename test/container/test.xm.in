@@ -1,37 +1,29 @@
+system = Module("system");
 container = Module("container");
+print = system.out.write_line;
 
 queue = container.Queue("this is a message");
 print(queue);
-print("\n");
 
-print("push\n");
+print("push");
 queue.push(0);
 queue.push("one");
 queue.push(2);
 queue.push("three");
 print(queue);
-print("\n");
 
-print("pop\n");
+print("pop");
 print(queue.pop());
-print("\n");
 print(queue.pop());
-print("\n");
 print(queue);
-print("\n");
 
 print(queue.pop());
-print("\n");
 print(queue.pop());
-print("\n");
 print(queue);
-print("\n");
 
 try {
 	print(queue.pop());
-	print("\n");
 } catch (e) {
 	print(e);
-	print("\n");
 	e.dump();
 }

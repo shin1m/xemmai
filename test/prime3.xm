@@ -1,3 +1,6 @@
+system = Module("system");
+print = system.out.write_line;
+
 delay = @(f) {
 	v = null;
 	@{
@@ -35,7 +38,6 @@ ns = primes(sequence(2));
 i = 0;
 while (i < 30) {
 	print(ns().first);
-	print("\n");
 	ns = ns().second;
 	i = i + 1;
 }

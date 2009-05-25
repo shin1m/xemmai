@@ -1,4 +1,6 @@
+system = Module("system");
 list = Module("list");
+print = system.out.write_line;
 
 Tower = Class(list.List) :: @{
 	$__initialize = @(a_height) {
@@ -33,9 +35,7 @@ hanoi = @(a_height, a_from, a_via, a_to, a_move) {
 n = 5;
 towers = Towers(Tower(n), Tower(0), Tower(0));
 print(towers);
-print("\n");
 hanoi(n, towers.v_x, towers.v_y, towers.v_z, @(a_from, a_to) {
 	a_to.push(a_from.pop());
 	print(towers);
-	print("\n");
 });

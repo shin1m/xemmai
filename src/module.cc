@@ -131,11 +131,11 @@ int t_module::f_main(void (*a_main)(void*), void* a_p)
 				if (f_is<std::wstring>(p)) s = f_as<const std::wstring&>(p);
 			} catch (...) {
 			}
-			std::fwprintf(stderr, L"caught: %ls\n", s.c_str());
+			std::fprintf(stderr, "caught: %ls\n", s.c_str());
 			if (f_is<t_throwable>(thrown)) thrown->f_get(t_symbol::f_instantiate(L"dump"))->f_call();
 		}
 	} catch (...) {
-		std::fwprintf(stderr, L"caught <unexpected>.\n");
+		std::fprintf(stderr, "caught <unexpected>.\n");
 	}
 	t_fiber::t_context::f_terminate();
 	return -1;

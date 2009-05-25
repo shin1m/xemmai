@@ -1,3 +1,6 @@
+system = Module("system");
+print = system.out.write_line;
+
 Cell = Class() :: @{
 	$__initialize = @(a_value) {
 		$v_value = a_value;
@@ -49,7 +52,6 @@ ring = @(a_n) {
 rings = @(a_n) {
 	if (a_n > 0) rings(a_n - 1);
 	print(ring(a_n));
-	print("\n");
 };
 
 rings(10);

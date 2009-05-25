@@ -1,4 +1,6 @@
+system = Module("system");
 io = Module("io");
+print = system.out.write_line;
 
 bytes = Bytes(26);
 i = 0;
@@ -21,7 +23,6 @@ try {
 		n = file.read(bytes, 0, bytes.size());
 		if (n <= 0) break;
 		print(bytes);
-		print("\n");
 	}
 } finally {
 	file.close();

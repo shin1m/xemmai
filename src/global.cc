@@ -19,17 +19,6 @@ namespace xemmai
 namespace
 {
 
-void f_print(t_object* a_value)
-{
-	if (f_is<std::wstring>(a_value)) {
-		std::fputws(f_as<std::wstring*>(a_value)->c_str(), stdout);
-		return;
-	}
-	t_transfer x = a_value->f_get(f_global()->f_symbol_string())->f_call();
-	if (!f_is<std::wstring>(x)) t_throwable::f_throw(L"argument must be string.");
-	std::fputws(f_as<std::wstring*>(x)->c_str(), stdout);
-}
-
 void f_sleep(int a_miliseconds)
 {
 #ifdef __unix__
@@ -143,7 +132,6 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type*>(v_type_lexer__error)->v_builtin = true;
 	v_type_parser__error = t_define<t_parser::t_error, t_throwable>(this, L"ParserError");
 	xemmai::f_as<t_type*>(v_type_parser__error)->v_builtin = true;
-	f_define<void (*)(t_object*), f_print>(this, L"print");
 	f_define<void (*)(int), f_sleep>(this, L"sleep");
 	f_define<double (*)(double), std::sqrt>(this, L"sqrt");
 	v_null = t_object::f_allocate(v_type_null);

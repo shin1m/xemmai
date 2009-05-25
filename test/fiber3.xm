@@ -1,7 +1,10 @@
+system = Module("system");
+print = system.out.write_line;
+
 f0 = Fiber(@(co) {
-	co("Hello everyone,\n");
-	co("This is shin.\n");
-	"Good bye.\n";
+	co("Hello everyone,");
+	co("This is shin.");
+	"Good bye.";
 });
 
 foo = Object();

@@ -1,62 +1,65 @@
+system = Module("system");
+print = system.out.write_line;
+
 f = @(x) x * 2;
 if (f(1) > 0) {
-	print("1\n");
+	print("1");
 } else {
-	print("ng\n");
+	print("ng");
 }
 if (f(-1) > 0) {
-	print("ng\n");
+	print("ng");
 } else {
-	print("2\n");
+	print("2");
 }
 
-print(f(1) > 0 ? "true\n" : "ng\n");
-print(f(-1) > 0 ? "ng\n" : "false\n");
-print(f(1) > 0 ? "true\n" : f(1) > 0 ? "ng\n" : "ng\n");
-print(f(-1) > 0 ? "ng\n" : f(1) > 0 ? "false->true\n" : "ng\n");
-print(f(-1) > 0 ? "ng\n" : f(-1) > 0 ? "ng\n" : "false->false\n");
+print(f(1) > 0 ? "true" : "ng");
+print(f(-1) > 0 ? "ng" : "false");
+print(f(1) > 0 ? "true" : f(1) > 0 ? "ng" : "ng");
+print(f(-1) > 0 ? "ng" : f(1) > 0 ? "false->true" : "ng");
+print(f(-1) > 0 ? "ng" : f(-1) > 0 ? "ng" : "false->false");
 
 i = 2;
 while (i > 0) {
 	if (i > 1) {
-		print("3\n");
+		print("3");
 		i = 1;
 	} else if (i > 0) {
-		print("4\n");
+		print("4");
 		i = 0;
 	}
 }
-print("5\n");
+print("5");
 
 i = 0;
 while (true) {
 	if (i > 1) {
-		print("8\n");
+		print("8");
 		break;
 	}
 	if (i > 0) {
-		print("7\n");
+		print("7");
 		i = 2;
 		continue;
 	}
-	print("6\n");
+	print("6");
 	i = 1;
 }
-print("9\n");
+print("9");
 
 a = @{
 	i = 0;
 	while (true) {
-		if (i > 1) return "12\n";
+		if (i > 1) return "12";
 		if (i > 0) {
-			print("11\n");
+			print("11");
 			i = 2;
 			continue;
 		}
-		print("10\n");
+		print("10");
 		i = 1;
 	}
-	print("9\n");
+	print("9");
 }();
 print(a);
 
@@ -69,13 +72,12 @@ while (true) {
 		}
 		if (i > 0) throw 2;
 		i = 1;
-		print("try\n");
+		print("try");
 	} catch (e) {
-		print("catch\n");
+		print("catch");
 		i = e;
 	} finally {
-		print("finally\n");
+		print("finally");
 		print(i);
-		print("\n");
 	}
 }

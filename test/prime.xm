@@ -1,3 +1,6 @@
+system = Module("system");
+print = system.out.write_line;
+
 sequence = @(n) {
 	@{
 		:n = n + 1;
@@ -25,6 +28,5 @@ primes = @{
 i = 0;
 while (i < 30) {
 	print(primes());
-	print("\n");
 	i = i + 1;
 }

@@ -1,10 +1,12 @@
+system = Module("system");
 callback = Module("callback");
+write = system.out.write;
 
 Derived = Class(callback.Client) :: @{
 	$on_message = @(message) {
-		print("Derived.on_message(\n\t");
+		write("Derived.on_message(\n\t");
 		:$^on_message[$](message);
-		print(");\n");
+		write(");\n");
 	};
 };
 

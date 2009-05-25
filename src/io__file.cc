@@ -11,6 +11,14 @@ namespace xemmai
 namespace io
 {
 
+t_transfer t_file::f_instantiate(FILE* a_stream)
+{
+	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
+	t_transfer object = t_object::f_allocate(extension->f_type<t_file>());
+	object->v_pointer = new t_file(a_stream);
+	return object;
+}
+
 t_transfer t_file::f_instantiate(const std::wstring& a_path, const std::wstring& a_mode)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
@@ -19,18 +27,25 @@ t_transfer t_file::f_instantiate(const std::wstring& a_path, const std::wstring&
 	return object;
 }
 
-t_file::t_file(const std::wstring& a_path, const char* a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), a_mode))
+t_file::t_file(const std::wstring& a_path, const char* a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), a_mode)), v_own(true)
 {
 }
 
-t_file::t_file(const std::wstring& a_path, const std::wstring& a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str()))
+t_file::t_file(const std::wstring& a_path, const std::wstring& a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str())), v_own(true)
 {
+	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+}
+
+void t_file::f_reopen(const std::wstring& a_path, const std::wstring& a_mode)
+{
+	v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
 	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
 }
 
 void t_file::f_close()
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	if (!v_own) t_throwable::f_throw(L"can not close unown.");
 	std::fclose(v_stream);
 	v_stream = NULL;
 }
@@ -80,6 +95,13 @@ void t_file::f_flush()
 
 }
 
+void t_type_of<io::t_file>::f_reopen(t_object* a_self, const std::wstring& a_path, const std::wstring& a_mode)
+{
+	f_check<io::t_file>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	f_as<io::t_file&>(a_self).f_reopen(a_path, a_mode);
+}
+
 void t_type_of<io::t_file>::f_close(t_object* a_self)
 {
 	f_check<io::t_file>(a_self, L"this");
@@ -125,6 +147,7 @@ void t_type_of<io::t_file>::f_flush(t_object* a_self)
 t_transfer t_type_of<io::t_file>::f_define(t_io* a_extension)
 {
 	return t_define<io::t_file, t_object>(a_extension, L"File")
+		(L"reopen", t_member<void (*)(t_object*, const std::wstring&, const std::wstring&), f_reopen>())
 		(a_extension->f_symbol_close(), t_member<void (*)(t_object*), f_close>())
 		(L"seek", t_member<void (*)(t_object*, int, int), f_seek>())
 		(L"tell", t_member<int (*)(t_object*), f_tell>())

@@ -19,7 +19,7 @@ void t_engine::t_synchronizer::f_run()
 		affinity.f_add(v_cpu);
 		affinity.f_to_thread();
 	}
-	if (v_engine->v_verbose) std::fwprintf(stderr, L"synchronizer(%d) starting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%d) starting...\n", v_cpu);
 	{
 		portable::t_scoped_lock lock(v_mutex);
 		while (true) {
@@ -33,7 +33,7 @@ void t_engine::t_synchronizer::f_run()
 //			v_engine->v_synchronizer__condition.f_signal();
 		}
 	}
-	if (v_engine->v_verbose) std::fwprintf(stderr, L"synchronizer(%d) quitting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%d) quitting...\n", v_cpu);
 	v_condition.f_signal();
 }
 
@@ -74,7 +74,7 @@ void t_engine::f_hash__table__free(t_hash::t_table* a_p)
 void t_engine::f_collector()
 {
 	t_pointer::v_collector = this;
-	if (v_verbose) std::fwprintf(stderr, L"collector starting...\n");
+	if (v_verbose) std::fprintf(stderr, "collector starting...\n");
 	while (true) {
 		{
 			portable::t_scoped_lock lock(v_collector__mutex);
@@ -88,7 +88,7 @@ void t_engine::f_collector()
 		if (v_collector__quitting) {
 			v_object__release = t_object::v_release;
 			v_object__collect = t_object::v_collect;
-			if (v_verbose) std::fwprintf(stderr, L"collector quitting...\n");
+			if (v_verbose) std::fprintf(stderr, "collector quitting...\n");
 			{
 				portable::t_scoped_lock lock(v_collector__mutex);
 				v_collector__running = false;
@@ -276,6 +276,15 @@ v_verbose(false)
 		v_module_io = t_module::f_instantiate(L"io", library);
 		library->v_extension = new t_io(v_module_io);
 	}
+	t_transfer in = io::t_file::f_instantiate(stdin);
+	v_module_system->f_put(t_symbol::f_instantiate(L"native_in"), static_cast<t_object*>(in));
+	v_module_system->f_put(t_symbol::f_instantiate(L"in"), io::t_reader::f_instantiate(in, L""));
+	t_transfer out = io::t_file::f_instantiate(stdout);
+	v_module_system->f_put(t_symbol::f_instantiate(L"native_out"), static_cast<t_object*>(out));
+	v_module_system->f_put(t_symbol::f_instantiate(L"out"), io::t_writer::f_instantiate(out, L""));
+	t_transfer error = io::t_file::f_instantiate(stderr);
+	v_module_system->f_put(t_symbol::f_instantiate(L"native_error"), static_cast<t_object*>(error));
+	v_module_system->f_put(t_symbol::f_instantiate(L"error"), io::t_writer::f_instantiate(error, L""));
 }
 
 t_engine::~t_engine()
@@ -329,26 +338,26 @@ t_engine::~t_engine()
 	v_hash__entry__pool.f_clear();
 	if (v_verbose) {
 		bool b = false;
-		std::fwprintf(stderr, L"statistics:\n\thash:\n");
+		std::fprintf(stderr, "statistics:\n\thash:\n");
 		{
 			size_t allocated = v_hash__entry__pool.f_allocated();
 			size_t freed = v_hash__entry__pool.f_freed();
-			std::fwprintf(stderr, L"\t\tentry: %d - %d = %d\n", allocated, freed, allocated - freed);
+			std::fprintf(stderr, "\t\tentry: %d - %d = %d\n", allocated, freed, allocated - freed);
 			if (allocated > freed) b = true;
 		}
 		for (size_t i = 0; i < t_hash::t_table::V_POOLS__SIZE; ++i) {
 			size_t allocated = v_hash__table__pools[i].f_allocated();
 			size_t freed = v_hash__table__pools[i].f_freed();
-			std::fwprintf(stderr, L"\t\ttable[%d]: %d - %d = %d\n", i, allocated, freed, allocated - freed);
+			std::fprintf(stderr, "\t\ttable[%d]: %d - %d = %d\n", i, allocated, freed, allocated - freed);
 			if (allocated > freed) b = true;
 		}
 		{
 			size_t allocated = v_object__pool.f_allocated();
 			size_t freed = v_object__pool.f_freed();
-			std::fwprintf(stderr, L"\tobject: %d - %d = %d, release = %d, collect = %d\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
+			std::fprintf(stderr, "\tobject: %d - %d = %d, release = %d, collect = %d\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
 			if (allocated > freed) b = true;
 		}
-		std::fwprintf(stderr, L"\tcollector: tick = %d, wait = %d, epoch = %d, collect = %d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
+		std::fprintf(stderr, "\tcollector: tick = %d, wait = %d, epoch = %d, collect = %d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
 		if (b) throw std::exception();
 	}
 }

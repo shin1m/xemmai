@@ -79,10 +79,16 @@ void t_writer::f_close(t_io* a_extension)
 	v_stream = 0;
 }
 
-void t_writer::f_write(t_io* a_extension, const std::wstring& a_text)
+void t_writer::f_write(t_io* a_extension, t_object* a_value)
 {
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
-	f_write(a_extension, a_text.c_str(), a_text.size());
+	if (f_is<std::wstring>(a_value)) {
+		f_write(a_extension, f_as<const std::wstring&>(a_value));
+	} else {
+		t_transfer x = a_value->f_get(f_global()->f_symbol_string())->f_call();
+		f_check<std::wstring>(x, L"value");
+		f_write(a_extension, f_as<const std::wstring&>(x));
+	}
 }
 
 void t_writer::f_write_line(t_io* a_extension)
@@ -93,10 +99,16 @@ void t_writer::f_write_line(t_io* a_extension)
 	v_stream->f_get(a_extension->f_symbol_flush())->f_call();
 }
 
-void t_writer::f_write_line(t_io* a_extension, const std::wstring& a_text)
+void t_writer::f_write_line(t_io* a_extension, t_object* a_value)
 {
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
-	f_write(a_extension, a_text.c_str(), a_text.size());
+	if (f_is<std::wstring>(a_value)) {
+		f_write(a_extension, f_as<const std::wstring&>(a_value));
+	} else {
+		t_transfer x = a_value->f_get(f_global()->f_symbol_string())->f_call();
+		f_check<std::wstring>(x, L"value");
+		f_write(a_extension, f_as<const std::wstring&>(x));
+	}
 	f_write(a_extension, L"\n", 1);
 	f_unshift(a_extension);
 	v_stream->f_get(a_extension->f_symbol_flush())->f_call();
@@ -118,11 +130,11 @@ void t_type_of<io::t_writer>::f_close(t_io* a_extension, t_object* a_self)
 	f_as<io::t_writer&>(a_self).f_close(a_extension);
 }
 
-void t_type_of<io::t_writer>::f_write(t_io* a_extension, t_object* a_self, const std::wstring& a_text)
+void t_type_of<io::t_writer>::f_write(t_io* a_extension, t_object* a_self, t_object* a_value)
 {
 	f_check<io::t_writer>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_writer&>(a_self).f_write(a_extension, a_text);
+	f_as<io::t_writer&>(a_self).f_write(a_extension, a_value);
 }
 
 void t_type_of<io::t_writer>::f_write_line(t_io* a_extension, t_object* a_self)
@@ -132,11 +144,11 @@ void t_type_of<io::t_writer>::f_write_line(t_io* a_extension, t_object* a_self)
 	f_as<io::t_writer&>(a_self).f_write_line(a_extension);
 }
 
-void t_type_of<io::t_writer>::f_write_line(t_io* a_extension, t_object* a_self, const std::wstring& a_text)
+void t_type_of<io::t_writer>::f_write_line(t_io* a_extension, t_object* a_self, t_object* a_value)
 {
 	f_check<io::t_writer>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_writer&>(a_self).f_write_line(a_extension, a_text);
+	f_as<io::t_writer&>(a_self).f_write_line(a_extension, a_value);
 }
 
 void t_type_of<io::t_writer>::f_flush(t_io* a_extension, t_object* a_self)
@@ -150,10 +162,10 @@ t_transfer t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
 	return t_define<io::t_writer, t_object>(a_extension, L"Writer")
 		(a_extension->f_symbol_close(), t_member<void (*)(t_io*, t_object*), f_close>())
-		(a_extension->f_symbol_write(), t_member<void (*)(t_io*, t_object*, const std::wstring&), f_write>())
+		(a_extension->f_symbol_write(), t_member<void (*)(t_io*, t_object*, t_object*), f_write>())
 		(a_extension->f_symbol_write_line(),
 			t_member<void (*)(t_io*, t_object*), f_write_line>(),
-			t_member<void (*)(t_io*, t_object*, const std::wstring&), f_write_line>()
+			t_member<void (*)(t_io*, t_object*, t_object*), f_write_line>()
 		)
 		(a_extension->f_symbol_flush(), t_member<void (*)(t_io*, t_object*), f_flush>())
 	;

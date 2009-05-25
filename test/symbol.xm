@@ -1,6 +1,9 @@
+system = Module("system");
+print = system.out.write_line;
+
 symbol = @{
 	print(Symbol("Hello, World!!"));
-	print("\n" + 'Good + " " + 'bye + ", " + 'World + "!!\n");
+	print('Good.__string() + " " + 'bye + ", " + 'World + "!!");
 };
 
 symbols = @(a_n) {

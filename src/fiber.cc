@@ -13,21 +13,21 @@ void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_co
 {
 	io::t_file file(a_path, "r");
 	std::fseek(file, a_position, SEEK_SET);
-	std::fputwc(L'\t', stderr);
+	std::putc('\t', stderr);
 	while (true) {
-		wint_t c = std::fgetwc(file);
-		if (c == WEOF) break;
-		std::fputwc(c, stderr);
-		if (c == L'\n') break;
+		int c = std::getc(file);
+		if (c == EOF) break;
+		std::putc(c, stderr);
+		if (c == '\n') break;
 	}
 	std::fseek(file, a_position, SEEK_SET);
-	std::fputwc(L'\t', stderr);
+	std::putc('\t', stderr);
 	for (size_t i = 1; i < a_column; ++i) {
-		wint_t c = std::fgetwc(file);
-		std::fputwc(std::iswspace(c) ? c : L' ', stderr);
+		int c = std::getc(file);
+		std::putc(std::isspace(c) ? c : ' ', stderr);
 	}
-	std::fputwc(L'^', stderr);
-	std::fputwc(L'\n', stderr);
+	std::putc('^', stderr);
+	std::putc('\n', stderr);
 }
 
 XEMMAI__PORTABLE__THREAD t_fiber::t_context* t_fiber::t_context::v_instance;
@@ -53,26 +53,26 @@ void t_fiber::t_context::f_dump() const
 {
 	if (v_next) {
 		v_next->f_dump();
-		std::fputws(L"from ", stderr);
+		std::fputs("from ", stderr);
 	} else {
-		std::fputws(L"at ", stderr);
+		std::fputs("at ", stderr);
 	}
 	if (v_native > 0) {
-		std::fputws(L"<native code>\n", stderr);
-		std::fputws(L"from ", stderr);
+		std::fputs("<native code>\n", stderr);
+		std::fputs("from ", stderr);
 	}
 	if (v_code) {
 		t_code* code = f_as<t_code*>(v_code);
-		std::fputws(code->v_path.c_str(), stderr);
+		std::fprintf(stderr, "%ls", code->v_path.c_str());
 		const t_code::t_at* at = code->f_at(v_pc);
 		if (at) {
-			std::fwprintf(stderr, L":%d:%d\n", at->f_line(), at->f_column());
+			std::fprintf(stderr, ":%d:%d\n", at->f_line(), at->f_column());
 			f_print_with_caret(code->v_path.c_str(), at->f_position(), at->f_column());
 		} else {
-			std::fputwc(L'\n', stderr);
+			std::fputc('\n', stderr);
 		}
 	} else {
-		std::fputws(L"<fiber>\n", stderr);
+		std::fputs("<fiber>\n", stderr);
 	}
 }
 

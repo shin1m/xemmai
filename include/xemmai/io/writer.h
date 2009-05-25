@@ -25,6 +25,10 @@ class t_writer
 
 	void f_write(t_io* a_extension);
 	void f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n);
+	void f_write(t_io* a_extension, const std::wstring& a_text)
+	{
+		f_write(a_extension, a_text.c_str(), a_text.size());
+	}
 	void f_unshift(t_io* a_extension);
 
 public:
@@ -36,9 +40,9 @@ public:
 		iconv_close(v_cd);
 	}
 	void f_close(t_io* a_extension);
-	void f_write(t_io* a_extension, const std::wstring& a_text);
+	void f_write(t_io* a_extension, t_object* a_value);
 	void f_write_line(t_io* a_extension);
-	void f_write_line(t_io* a_extension, const std::wstring& a_text);
+	void f_write_line(t_io* a_extension, t_object* a_value);
 	void f_flush(t_io* a_extension);
 };
 
@@ -50,9 +54,9 @@ struct t_type_of<io::t_writer> : t_type
 	typedef t_io t_extension;
 
 	static void f_close(t_io* a_extension, t_object* a_self);
-	static void f_write(t_io* a_extension, t_object* a_self, const std::wstring& a_text);
+	static void f_write(t_io* a_extension, t_object* a_self, t_object* a_value);
 	static void f_write_line(t_io* a_extension, t_object* a_self);
-	static void f_write_line(t_io* a_extension, t_object* a_self, const std::wstring& a_text);
+	static void f_write_line(t_io* a_extension, t_object* a_self, t_object* a_value);
 	static void f_flush(t_io* a_extension, t_object* a_self);
 	static t_transfer f_define(t_io* a_extension);
 

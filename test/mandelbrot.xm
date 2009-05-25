@@ -1,3 +1,7 @@
+system = Module("system");
+write = system.out.write;
+print = system.out.write_line;
+
 mandelbrot = @(cr, ci) {
 	limit = 95;
 	n = 0;
@@ -15,14 +19,14 @@ mandelbrot = @(cr, ci) {
 draw_mandelbrot = @(r0, i0, r1, i1, delta) {
 	i = i0;
 	while (i > i1) {
-		print("|");
+		write("|");
 		r = r0;
 		while (r < r1) {
 			c = 127 - mandelbrot(r, i);
-			print(String.from_code(c));
+			write(String.from_code(c));
 			r = r + delta;
 		}
-		print("|\n");
+		print("|");
 		i = i - delta;
 	}
 };

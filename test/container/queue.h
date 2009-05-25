@@ -30,11 +30,11 @@ class t_queue
 public:
 	t_queue()
 	{
-		std::wprintf(L"t_queue::t_queue()\n");
+		std::printf("t_queue::t_queue()\n");
 	}
 	t_queue(const std::wstring& a_message)
 	{
-		std::wprintf(L"t_queue::t_queue(a_message = %ls)\n", a_message.c_str());
+		std::printf("t_queue::t_queue(a_message = %ls)\n", a_message.c_str());
 	}
 	void f_scan(t_scan a_scan)
 	{

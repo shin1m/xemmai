@@ -1,3 +1,6 @@
+system = Module("system");
+print = system.out.write_line;
+
 fm = Fiber.current();
 
 f0 = Fiber(@(x) {
@@ -24,6 +27,6 @@ try {
 		f1(f1("zot") + "How are you?\n");
 	}());
 } catch (e) {
-	print("caught: " + e + "\n");
+	print("caught: " + e);
 	e.dump();
 }

@@ -1,3 +1,6 @@
+system = Module("system");
+print = system.out.write_line;
+
 counter = 0;
 
 hello = @(a_name, a_n) {
@@ -5,9 +8,9 @@ hello = @(a_name, a_n) {
 		a_n = a_n - 1;
 		i = :counter;
 		:counter = i + 1;
-		print(a_name + ": " + i + "\n");
+		print(a_name + ": " + i);
 	}
-	print("done.\n");
+	print("done.");
 };
 
 good_bye = @(a_name, a_n) {
@@ -42,4 +45,4 @@ fooooo.join();
 baaaar.join();
 zoooot.join();
 
-print("counter: " + counter + "\n");
+print("counter: " + counter);

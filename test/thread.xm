@@ -1,8 +1,11 @@
+system = Module("system");
+print = system.out.write_line;
+
 hello = @(a_name, a_n) {
 	if (a_n > 0) {
-		print("Hello, " + a_name + ": " + a_n + "\n");
+		print("Hello, " + a_name + ": " + a_n);
 		hello(a_name, a_n - 1);
-		print("Good bye, " + a_name + ": " + a_n + "\n");
+		print("Good bye, " + a_name + ": " + a_n);
 	}
 };
 

@@ -74,7 +74,7 @@ class t_object
 	{
 #ifdef _DEBUG
 		if (v_count <= 0) {
-			std::fwprintf(stderr, L"%p: dangling\n", this);
+			std::fprintf(stderr, "%p: dangling\n", this);
 			assert(false);
 		}
 #endif

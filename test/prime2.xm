@@ -1,3 +1,6 @@
+system = Module("system");
+print = system.out.write_line;
+
 generator = @(f) {
 	fiber = Fiber(@(other) {
 		f(@(x) {
@@ -39,6 +42,5 @@ primes = generator(@(yield) {
 i = 0;
 while (i < 30) {
 	print(primes());
-	print("\n");
 	i = i + 1;
 }

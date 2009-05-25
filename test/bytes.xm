@@ -1,3 +1,6 @@
+system = Module("system");
+print = system.out.write_line;
+
 bytes = Bytes(16);
 i = 0;
 while (i < bytes.size()) {
@@ -5,7 +8,6 @@ while (i < bytes.size()) {
 	i = i + 1;
 }
 print(bytes);
-print("\n");
 
 i = 0;
 while (i < bytes.size()) {

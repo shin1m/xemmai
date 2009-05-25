@@ -1,3 +1,6 @@
+system = Module("system");
+write = system.out.write;
+
 server = @(co, x) {
 	hostname = null;
 	sender = null;
@@ -58,14 +61,14 @@ coroutine = @(f) {
 };
 
 co = coroutine(server);
-print(co("Pseudo SMTP Server"));
-print(co("HELO localhost"));
-print(co("MAIL FROM: foo@foo.com"));
-print(co("RCPT TO: bar@bar.com"));
-print(co("RCPT TO: zot@zot.com"));
-print(co("DATA"));
-print(co("Hello everyone,"));
-print(co("This is shin."));
-print(co("Good bye."));
-print(co("."));
-print(co("QUIT"));
+write(co("Pseudo SMTP Server"));
+write(co("HELO localhost"));
+write(co("MAIL FROM: foo@foo.com"));
+write(co("RCPT TO: bar@bar.com"));
+write(co("RCPT TO: zot@zot.com"));
+write(co("DATA"));
+write(co("Hello everyone,"));
+write(co("This is shin."));
+write(co("Good bye."));
+write(co("."));
+write(co("QUIT"));

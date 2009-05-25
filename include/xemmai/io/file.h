@@ -18,20 +18,26 @@ class t_file
 	friend struct t_type_of<t_file>;
 
 	FILE* v_stream;
+	bool v_own;
 
 public:
+	static t_transfer f_instantiate(FILE* a_stream);
 	static t_transfer f_instantiate(const std::wstring& a_path, const std::wstring& a_mode);
 
+	t_file(FILE* a_stream) : v_stream(a_stream), v_own(false)
+	{
+	}
 	t_file(const std::wstring& a_path, const char* a_mode);
 	t_file(const std::wstring& a_path, const std::wstring& a_mode);
 	~t_file()
 	{
-		if (v_stream != NULL) std::fclose(v_stream);
+		if (v_stream != NULL && v_own) std::fclose(v_stream);
 	}
 	operator FILE*() const
 	{
 		return v_stream;
 	}
+	void f_reopen(const std::wstring& a_path, const std::wstring& a_mode);
 	void f_close();
 	void f_seek(int a_offset, int a_whence);
 	int f_tell();
@@ -47,6 +53,7 @@ struct t_type_of<io::t_file> : t_type
 {
 	typedef t_io t_extension;
 
+	static void f_reopen(t_object* a_self, const std::wstring& a_path, const std::wstring& a_mode);
 	static void f_close(t_object* a_self);
 	static void f_seek(t_object* a_self, int a_offset, int a_whence);
 	static int f_tell(t_object* a_self);
