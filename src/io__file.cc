@@ -1,5 +1,6 @@
 #include <xemmai/io/file.h>
 
+#include <cstring>
 #include <xemmai/engine.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
@@ -68,9 +69,25 @@ size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
 	if (a_offset + a_size > a_bytes.f_size()) t_throwable::f_throw(L"out of range.");
-	size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
-	if (std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
-	return n;
+	if (isatty(fileno(v_stream))) {
+		unsigned char* p = &a_bytes[0] + a_offset;
+		unsigned char* q = p;
+		while (a_size > 0) {
+			int c = std::getc(v_stream);
+			if (c == EOF) {
+				if (std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
+				break;
+			}
+			*p++ = c;
+			if (c == '\n') break;
+			--a_size;
+		}
+		return p - q;
+	} else {
+		size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
+		if (std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
+		return n;
+	}
 }
 
 void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
