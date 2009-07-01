@@ -131,7 +131,31 @@ inline int f_as<int>(t_object* a_object)
 }
 
 template<>
+inline int f_as<int>(const t_transfer& a_object)
+{
+	return a_object->v_integer;
+}
+
+template<>
+inline int f_as<int>(const t_shared& a_object)
+{
+	return a_object->v_integer;
+}
+
+template<>
 inline size_t f_as<size_t>(t_object* a_object)
+{
+	return a_object->v_integer;
+}
+
+template<>
+inline size_t f_as<size_t>(const t_transfer& a_object)
+{
+	return a_object->v_integer;
+}
+
+template<>
+inline size_t f_as<size_t>(const t_shared& a_object)
 {
 	return a_object->v_integer;
 }

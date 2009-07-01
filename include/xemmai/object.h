@@ -211,97 +211,110 @@ public:
 #include "macro.h"
 };
 
-template<typename T>
-struct t_argument
-{
-	typedef T t_type;
-};
-
-template<>
-struct t_argument<const t_transfer&>
-{
-	typedef t_transfer t_type;
-};
-
-template<typename T>
+template<typename T0, typename T1>
 struct t_as
 {
-	static T f_call(t_object* a_object)
+	typedef T0 t_type;
+
+	static T0 f_call(T1 a_object)
 	{
-		return *static_cast<T*>(a_object->v_pointer);
+		return *static_cast<T0*>(a_object->v_pointer);
+	}
+};
+
+template<typename T0, typename T1>
+struct t_as<T0*, T1>
+{
+	typedef T0* t_type;
+
+	static T0* f_call(T1 a_object)
+	{
+		return static_cast<T0*>(a_object->v_pointer);
+	}
+};
+
+template<typename T0, typename T1>
+struct t_as<const T0*, T1>
+{
+	typedef const T0* t_type;
+
+	static const T0* f_call(T1 a_object)
+	{
+		return static_cast<T0*>(a_object->v_pointer);
+	}
+};
+
+template<typename T0, typename T1>
+struct t_as<T0&, T1>
+{
+	typedef T0& t_type;
+
+	static T0& f_call(T1 a_object)
+	{
+		return *static_cast<T0*>(a_object->v_pointer);
+	}
+};
+
+template<typename T0, typename T1>
+struct t_as<const T0&, T1>
+{
+	typedef const T0& t_type;
+
+	static const T0& f_call(T1 a_object)
+	{
+		return *static_cast<T0*>(a_object->v_pointer);
 	}
 };
 
 template<typename T>
-struct t_as<T*>
+struct t_as<t_object*, T>
 {
-	static T* f_call(t_object* a_object)
+	typedef t_object* t_type;
+
+	static t_object* f_call(T a_object)
 	{
-		return static_cast<T*>(a_object->v_pointer);
+		return a_object;
 	}
 };
 
 template<typename T>
-struct t_as<const T*>
+struct t_as<const t_transfer&, T>
 {
-	static const T* f_call(t_object* a_object)
+	typedef t_transfer t_type;
+
+	static t_object* f_call(T a_object)
 	{
-		return static_cast<T*>(a_object->v_pointer);
+		return a_object;
 	}
 };
-
-template<typename T>
-struct t_as<T&>
-{
-	static T& f_call(t_object* a_object)
-	{
-		return *static_cast<T*>(a_object->v_pointer);
-	}
-};
-
-template<typename T>
-struct t_as<const T&>
-{
-	static const T& f_call(t_object* a_object)
-	{
-		return *static_cast<T*>(a_object->v_pointer);
-	}
-};
-
-template<typename T>
-inline typename t_argument<T>::t_type f_as(t_object* a_object)
-{
-	return t_as<T>::f_call(a_object);
-}
-
-template<typename T>
-inline T f_as(const t_transfer& a_object)
-{
-	return f_as<T>(static_cast<t_object*>(a_object));
-}
-
-template<typename T>
-inline T f_as(const t_shared& a_object)
-{
-	return f_as<T>(static_cast<t_object*>(a_object));
-}
 
 template<>
-inline t_object* f_as<t_object*>(t_object* a_object)
+struct t_as<const t_transfer&, const t_transfer&>
 {
-	return a_object;
+	typedef const t_transfer& t_type;
+
+	static const t_transfer& f_call(const t_transfer& a_object)
+	{
+		return a_object;
+	}
+};
+
+template<typename T>
+inline typename t_as<T, t_object*>::t_type f_as(t_object* a_object)
+{
+	return t_as<T, t_object*>::f_call(a_object);
 }
 
-template<>
-inline t_transfer f_as<const t_transfer&>(t_object* a_object)
+template<typename T>
+inline typename t_as<T, const t_transfer&>::t_type f_as(const t_transfer& a_object)
 {
-	return a_object;
+	return t_as<T, const t_transfer&>::f_call(a_object);
 }
 
-template<>
-inline const t_transfer& f_as<const t_transfer&>(const t_transfer& a_object)
+template<typename T>
+inline typename t_as<T, const t_shared&>::t_type f_as(const t_shared& a_object)
 {
-	return a_object;
+	return t_as<T, const t_shared&>::f_call(a_object);
 }
 
 template<typename T>

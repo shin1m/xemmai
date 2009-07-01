@@ -48,6 +48,18 @@ inline bool f_as<bool>(t_object* a_object)
 	return a_object->v_boolean;
 }
 
+template<>
+inline bool f_as<bool>(const t_transfer& a_object)
+{
+	return a_object->v_boolean;
+}
+
+template<>
+inline bool f_as<bool>(const t_shared& a_object)
+{
+	return a_object->v_boolean;
+}
+
 }
 
 #endif

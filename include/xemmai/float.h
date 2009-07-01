@@ -104,6 +104,18 @@ inline double f_as<double>(t_object* a_object)
 	return a_object->v_float;
 }
 
+template<>
+inline double f_as<double>(const t_transfer& a_object)
+{
+	return a_object->v_float;
+}
+
+template<>
+inline double f_as<double>(const t_shared& a_object)
+{
+	return a_object->v_float;
+}
+
 }
 
 #endif

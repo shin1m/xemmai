@@ -118,7 +118,7 @@ namespace xemmai
 t_transfer t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 {
 	return t_define<t_client, t_object>(a_extension, L"Client")
-		(a_extension->v_symbol_on_message, t_member<void (*)(t_client*, const std::wstring&), &t_client_wrapper::f_super__on_message>())
+		(a_extension->v_symbol_on_message, t_member<void (*)(t_client*, const std::wstring&), t_client_wrapper::f_super__on_message>())
 		(L"remove", t_member<void (t_client::*)(), &t_client::f_remove>())
 	;
 }
