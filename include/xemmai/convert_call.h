@@ -298,6 +298,13 @@ struct t_call_static<T_extension, T_r (*)(XEMMAI__MACRO__T_AN__)>
 	typedef typename t_type::template t_bind<t_is_void<T_r>::v_value, false> t_call;
 };
 
+template<typename T_extension, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
+struct t_call_static<T_extension, T_r (*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__)>
+{
+	typedef XEMMAI__MACRO__CALL_STATICN<T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
+	typedef typename t_type::template t_bind<t_is_void<T_r>::v_value, true> t_call;
+};
+
 #undef XEMMAI__MACRO__COMMA_IF_N
 #undef XEMMAI__MACRO__TYPENAME_T_AN__
 #undef XEMMAI__MACRO__T_AN__
