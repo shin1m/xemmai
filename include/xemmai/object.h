@@ -341,12 +341,6 @@ struct t_fundamental<T&>
 	typedef typename t_fundamental<T>::t_type t_type;
 };
 
-template<>
-struct t_fundamental<size_t>
-{
-	typedef int t_type;
-};
-
 template<typename T>
 inline bool f_is(t_object* a_object)
 {

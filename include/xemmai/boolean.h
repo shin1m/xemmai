@@ -42,23 +42,16 @@ struct t_type_of<bool> : t_type
 	virtual void f_or(t_object* a_this, t_stack& a_stack);
 };
 
-template<>
-inline bool f_as<bool>(t_object* a_object)
+template<typename T>
+struct t_as<bool, T>
 {
-	return a_object->v_boolean;
-}
+	typedef bool t_type;
 
-template<>
-inline bool f_as<bool>(const t_transfer& a_object)
-{
-	return a_object->v_boolean;
-}
-
-template<>
-inline bool f_as<bool>(const t_shared& a_object)
-{
-	return a_object->v_boolean;
-}
+	static bool f_call(T a_object)
+	{
+		return a_object->v_boolean;
+	}
+};
 
 }
 

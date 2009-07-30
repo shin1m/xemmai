@@ -98,23 +98,16 @@ struct t_type_of<double> : t_type
 	virtual void f_not_equals(t_object* a_this, t_stack& a_stack);
 };
 
-template<>
-inline double f_as<double>(t_object* a_object)
+template<typename T>
+struct t_as<double, T>
 {
-	return a_object->v_float;
-}
+	typedef double t_type;
 
-template<>
-inline double f_as<double>(const t_transfer& a_object)
-{
-	return a_object->v_float;
-}
-
-template<>
-inline double f_as<double>(const t_shared& a_object)
-{
-	return a_object->v_float;
-}
+	static double f_call(T a_object)
+	{
+		return a_object->v_float;
+	}
+};
 
 }
 

@@ -124,41 +124,33 @@ struct t_type_of<int> : t_type
 	virtual void f_or(t_object* a_this, t_stack& a_stack);
 };
 
-template<>
-inline int f_as<int>(t_object* a_object)
+template<typename T>
+struct t_as<int, T>
 {
-	return a_object->v_integer;
-}
+	typedef int t_type;
+
+	static int f_call(T a_object)
+	{
+		return a_object->v_integer;
+	}
+};
+
+template<typename T>
+struct t_as<size_t, T>
+{
+	typedef size_t t_type;
+
+	static size_t f_call(T a_object)
+	{
+		return a_object->v_integer;
+	}
+};
 
 template<>
-inline int f_as<int>(const t_transfer& a_object)
+struct t_fundamental<size_t>
 {
-	return a_object->v_integer;
-}
-
-template<>
-inline int f_as<int>(const t_shared& a_object)
-{
-	return a_object->v_integer;
-}
-
-template<>
-inline size_t f_as<size_t>(t_object* a_object)
-{
-	return a_object->v_integer;
-}
-
-template<>
-inline size_t f_as<size_t>(const t_transfer& a_object)
-{
-	return a_object->v_integer;
-}
-
-template<>
-inline size_t f_as<size_t>(const t_shared& a_object)
-{
-	return a_object->v_integer;
-}
+	typedef int t_type;
+};
 
 }
 
