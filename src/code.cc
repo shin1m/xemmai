@@ -511,7 +511,9 @@ t_transfer t_code::f_loop()
 							scope = f_as<t_scope*>(scope)->v_outer;
 							if (!scope) t_throwable::f_throw(L"no more outer scope.");
 						}
-						stack->f_push(f_as<t_scope*>(scope)->v_self);
+						t_object* self = f_as<t_scope*>(scope)->v_self;
+						if (!self) t_throwable::f_throw(L"$ not given.");
+						stack->f_push(self);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CLASS)

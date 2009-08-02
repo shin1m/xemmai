@@ -50,7 +50,10 @@ t_type* t_type_of<int>::f_derive(t_object* a_this)
 
 void t_type_of<int>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
 {
-	t_construct_with<t_transfer (*)(t_object*, int), f_construct>::f_call(a_class, a_n, a_stack);
+	t_overload<t_construct_with<t_transfer (*)(t_object*, int), f_construct>,
+	t_overload<t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
+	t_overload<t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
+	> > >::f_call(a_class, a_n, a_stack);
 }
 
 void t_type_of<int>::f_hash(t_object* a_this, t_stack& a_stack)

@@ -15,6 +15,15 @@ struct t_type_of<double> : t_type
 		object->v_float = a_value;
 		return object;
 	}
+	static t_transfer f_construct(t_object* a_class, int a_value)
+	{
+		return f_construct(a_class, static_cast<double>(a_value));
+	}
+	static t_transfer f_construct(t_object* a_class, const std::wstring& a_value)
+	{
+		wchar_t* p;
+		return f_construct(a_class, std::wcstod(a_value.c_str(), &p));
+	}
 	static std::wstring f_string(double a_self)
 	{
 		wchar_t cs[32];

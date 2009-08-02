@@ -133,6 +133,7 @@ v_type_thread(a_type_thread)
 	v_type_parser__error = t_define<t_parser::t_error, t_throwable>(this, L"ParserError");
 	xemmai::f_as<t_type*>(v_type_parser__error)->v_builtin = true;
 	f_define<void (*)(int), f_sleep>(this, L"sleep");
+	f_define<double (*)(double), std::fabs>(this, L"fabs");
 	f_define<double (*)(double), std::sqrt>(this, L"sqrt");
 	v_null = t_object::f_allocate(v_type_null);
 	v_true = t_object::f_allocate(v_type_boolean);
