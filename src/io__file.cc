@@ -161,9 +161,9 @@ void t_type_of<io::t_file>::f_flush(t_object* a_self)
 	f_as<io::t_file&>(a_self).f_flush();
 }
 
-t_transfer t_type_of<io::t_file>::f_define(t_io* a_extension)
+void t_type_of<io::t_file>::f_define(t_io* a_extension)
 {
-	return t_define<io::t_file, t_object>(a_extension, L"File")
+	t_define<io::t_file, t_object>(a_extension, L"File")
 		(L"reopen", t_member<void (*)(t_object*, const std::wstring&, const std::wstring&), f_reopen>())
 		(a_extension->f_symbol_close(), t_member<void (*)(t_object*), f_close>())
 		(L"seek", t_member<void (*)(t_object*, int, int), f_seek>())

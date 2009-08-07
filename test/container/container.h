@@ -32,7 +32,7 @@ struct t_type_of<t_queue> : t_type
 {
 	typedef t_container t_extension;
 
-	static t_transfer f_define(t_container* a_extension);
+	static void f_define(t_container* a_extension);
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
@@ -50,6 +50,9 @@ struct t_container : t_extension
 	t_slot v_type_pair;
 	t_slot v_type_queue;
 
+	template<typename T>
+	void f_type__(const t_transfer& a_type);
+
 	t_container(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
@@ -63,6 +66,18 @@ struct t_container : t_extension
 		return f_global()->f_as(a_value);
 	}
 };
+
+template<>
+inline void t_container::f_type__<t_pair>(const t_transfer& a_type)
+{
+	v_type_pair = a_type;
+}
+
+template<>
+inline void t_container::f_type__<t_queue>(const t_transfer& a_type)
+{
+	v_type_queue = a_type;
+}
 
 template<>
 inline t_object* t_container::f_type<t_pair>() const

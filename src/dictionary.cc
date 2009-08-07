@@ -168,9 +168,9 @@ t_transfer t_type_of<t_dictionary>::f_remove_at(t_object* a_self, t_object* a_ke
 	return f_as<t_dictionary&>(a_self).f_remove(a_key);
 }
 
-t_transfer t_type_of<t_dictionary>::f_define()
+void t_type_of<t_dictionary>::f_define()
 {
-	return t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
+	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(t_object*), f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<t_object* (*)(t_object*, t_object*), f_get_at>())

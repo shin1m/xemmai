@@ -28,9 +28,9 @@ void t_throwable::f_dump() const
 	if (v_context) v_context->f_dump();
 }
 
-t_transfer t_type_of<t_throwable>::f_define()
+void t_type_of<t_throwable>::f_define()
 {
-	return t_define<t_throwable, t_object>(f_global(), L"Throwable")
+	t_define<t_throwable, t_object>(f_global(), L"Throwable")
 		(f_global()->f_symbol_string(), t_member<const std::wstring& (t_throwable::*)() const, &t_throwable::f_string>())
 		(L"dump", t_member<void (t_throwable::*)() const, &t_throwable::f_dump>())
 	;

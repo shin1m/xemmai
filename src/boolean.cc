@@ -5,9 +5,9 @@
 namespace xemmai
 {
 
-t_transfer t_type_of<bool>::f_define()
+void t_type_of<bool>::f_define()
 {
-	return t_define<bool, t_object>(f_global(), L"Boolean")
+	t_define<bool, t_object>(f_global(), L"Boolean")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(bool), f_string>())
 		(f_global()->f_symbol_not(), t_member<bool (*)(bool), f_not>())
 		(f_global()->f_symbol_and(), t_member<bool (*)(bool, bool), f_and>())

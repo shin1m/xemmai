@@ -35,9 +35,9 @@ void t_type_of<t_pair>::f_instantiate(t_object* a_class, size_t a_n)
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-t_transfer t_type_of<t_queue>::f_define(t_container* a_extension)
+void t_type_of<t_queue>::f_define(t_container* a_extension)
 {
-	return t_define<t_queue, t_object>(a_extension, L"Queue")
+	t_define<t_queue, t_object>(a_extension, L"Queue")
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_queue::*)() const, &t_queue::f_string>())
 		(L"empty", t_member<bool (t_queue::*)() const, &t_queue::f_empty>())
 		(L"push", t_member<void (t_queue::*)(t_container*, const t_transfer&), &t_queue::f_push>())
@@ -72,7 +72,7 @@ void t_type_of<t_queue>::f_construct(t_object* a_class, size_t a_n, t_stack& a_s
 t_container::t_container(t_object* a_module) : t_extension(a_module)
 {
 	v_type_pair = t_type_of<t_pair>::f_define(this);
-	v_type_queue = t_type_of<t_queue>::f_define(this);
+	t_type_of<t_queue>::f_define(this);
 }
 
 void t_container::f_scan(t_scan a_scan)

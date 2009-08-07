@@ -5,9 +5,9 @@
 namespace xemmai
 {
 
-t_transfer t_type_of<t_null>::f_define()
+void t_type_of<t_null>::f_define()
 {
-	return t_define<t_null, t_object>(f_global(), L"Null")
+	t_define<t_null, t_object>(f_global(), L"Null")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
 	;
 }

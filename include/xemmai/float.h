@@ -85,7 +85,7 @@ struct t_type_of<double> : t_type
 	}
 	static bool f_equals(double a_self, t_object* a_value);
 	static bool f_not_equals(double a_self, t_object* a_value);
-	static t_transfer f_define();
+	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{

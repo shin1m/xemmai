@@ -16,9 +16,9 @@ bool t_type_of<double>::f_not_equals(double a_self, t_object* a_value)
 	return !f_is<double>(a_value) || a_self != f_as<double>(a_value);
 }
 
-t_transfer t_type_of<double>::f_define()
+void t_type_of<double>::f_define()
 {
-	return t_define<double, t_object>(f_global(), L"Float")
+	t_define<double, t_object>(f_global(), L"Float")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(double), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(double), f_hash>())
 		(f_global()->f_symbol_plus(), t_member<double (*)(double), f_plus>())

@@ -24,9 +24,9 @@ bool t_type_of<std::wstring>::f_not_equals(const std::wstring& a_self, t_object*
 	return !f_is<std::wstring>(a_value) || a_self != f_as<const std::wstring&>(a_value);
 }
 
-t_transfer t_type_of<std::wstring>::f_define()
+void t_type_of<std::wstring>::f_define()
 {
-	return t_define<std::wstring, t_object>(f_global(), L"String")
+	t_define<std::wstring, t_object>(f_global(), L"String")
 		(L"from_code", t_static<std::wstring (*)(int), f_from_code>())
 		(f_global()->f_symbol_string(), t_member<t_transfer (*)(const t_transfer&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(const std::wstring&), f_hash>())

@@ -34,7 +34,7 @@ struct t_type_of<std::wstring> : t_type
 	{
 		return a_self.substr(a_i, a_n);
 	}
-	static t_transfer f_define();
+	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{

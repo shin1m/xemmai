@@ -58,7 +58,7 @@ struct t_type_of<io::t_writer> : t_type
 	static void f_write_line(t_io* a_extension, t_object* a_self);
 	static void f_write_line(t_io* a_extension, t_object* a_self, t_object* a_value);
 	static void f_flush(t_io* a_extension, t_object* a_self);
-	static t_transfer f_define(t_io* a_extension);
+	static void f_define(t_io* a_extension);
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{

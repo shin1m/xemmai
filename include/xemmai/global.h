@@ -27,6 +27,7 @@ t_global* f_global();
 class t_global : public t_extension
 {
 	friend struct t_thread;
+	template<typename T, typename T_super> friend class t_define;
 	friend t_global* f_global();
 
 	static XEMMAI__PORTABLE__THREAD t_global* v_instance;
@@ -90,6 +91,9 @@ class t_global : public t_extension
 	t_slot v_null;
 	t_slot v_true;
 	t_slot v_false;
+
+	template<typename T>
+	void f_type__(const t_transfer& a_type);
 
 public:
 	t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread);
@@ -275,6 +279,144 @@ public:
 		return object;
 	}
 };
+
+template<>
+inline void t_global::f_type__<t_object>(const t_transfer& a_type)
+{
+	v_type_object = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_class>(const t_transfer& a_type)
+{
+	v_type_class = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_module>(const t_transfer& a_type)
+{
+	v_type_module = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_fiber>(const t_transfer& a_type)
+{
+	v_type_fiber = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_thread>(const t_transfer& a_type)
+{
+	v_type_thread = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_symbol>(const t_transfer& a_type)
+{
+	v_type_symbol = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_scope>(const t_transfer& a_type)
+{
+	v_type_scope = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_method>(const t_transfer& a_type)
+{
+	v_type_method = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_code>(const t_transfer& a_type)
+{
+	v_type_code = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_lambda>(const t_transfer& a_type)
+{
+	v_type_lambda = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_native>(const t_transfer& a_type)
+{
+	v_type_native = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_throwable>(const t_transfer& a_type)
+{
+	v_type_throwable = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_null>(const t_transfer& a_type)
+{
+	v_type_null = a_type;
+}
+
+template<>
+inline void t_global::f_type__<bool>(const t_transfer& a_type)
+{
+	v_type_boolean = a_type;
+}
+
+template<>
+inline void t_global::f_type__<int>(const t_transfer& a_type)
+{
+	v_type_integer = a_type;
+}
+
+template<>
+inline void t_global::f_type__<double>(const t_transfer& a_type)
+{
+	v_type_float = a_type;
+}
+
+template<>
+inline void t_global::f_type__<std::wstring>(const t_transfer& a_type)
+{
+	v_type_string = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_tuple>(const t_transfer& a_type)
+{
+	v_type_tuple = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_array>(const t_transfer& a_type)
+{
+	v_type_array = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_dictionary>(const t_transfer& a_type)
+{
+	v_type_dictionary = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_bytes>(const t_transfer& a_type)
+{
+	v_type_bytes = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_lexer::t_error>(const t_transfer& a_type)
+{
+	v_type_lexer__error = a_type;
+}
+
+template<>
+inline void t_global::f_type__<t_parser::t_error>(const t_transfer& a_type)
+{
+	v_type_parser__error = a_type;
+}
 
 template<>
 inline t_object* t_global::f_type<t_object>() const

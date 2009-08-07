@@ -72,7 +72,7 @@ struct t_type_of<t_bytes> : t_type
 	{
 		return !f_equals(a_self, a_other);
 	}
-	static t_transfer f_define();
+	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{

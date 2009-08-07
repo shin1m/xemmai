@@ -16,9 +16,9 @@ bool t_type_of<int>::f_not_equals(int a_self, t_object* a_value)
 	return !f_is<int>(a_value) || a_self != f_as<int>(a_value);
 }
 
-t_transfer t_type_of<int>::f_define()
+void t_type_of<int>::f_define()
 {
-	return t_define<int, t_object>(f_global(), L"Integer")
+	t_define<int, t_object>(f_global(), L"Integer")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(int), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(int), f_hash>())
 		(f_global()->f_symbol_plus(), t_member<int (*)(int), f_plus>())

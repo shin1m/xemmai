@@ -61,9 +61,9 @@ bool t_type_of<t_bytes>::f_equals(t_object* a_self, t_object* a_other)
 	return true;
 }
 
-t_transfer t_type_of<t_bytes>::f_define()
+void t_type_of<t_bytes>::f_define()
 {
-	return t_define<t_bytes, t_object>(f_global(), L"Bytes")
+	t_define<t_bytes, t_object>(f_global(), L"Bytes")
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_bytes::*)() const, &t_bytes::f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (t_bytes::*)() const, &t_bytes::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<int (t_bytes::*)(int) const, &t_bytes::f_get_at>())

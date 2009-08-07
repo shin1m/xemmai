@@ -69,7 +69,7 @@ struct t_type_of<t_array> : t_type
 	static t_transfer f_shift(t_object* a_self);
 	static void f_insert(t_object* a_self, int a_index, const t_transfer& a_value);
 	static t_transfer f_remove(t_object* a_self, int a_index);
-	static t_transfer f_define();
+	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{

@@ -122,9 +122,9 @@ std::wstring t_type_of<io::t_reader>::f_read_line(t_io* a_extension, t_object* a
 	return f_as<io::t_reader&>(a_self).f_read_line(a_extension);
 }
 
-t_transfer t_type_of<io::t_reader>::f_define(t_io* a_extension)
+void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
-	return t_define<io::t_reader, t_object>(a_extension, L"Reader")
+	t_define<io::t_reader, t_object>(a_extension, L"Reader")
 		(a_extension->f_symbol_close(), t_member<void (*)(t_io*, t_object*), f_close>())
 		(a_extension->f_symbol_read(), t_member<std::wstring (*)(t_io*, t_object*, size_t), f_read>())
 		(a_extension->f_symbol_read_line(), t_member<std::wstring (*)(t_io*, t_object*), f_read_line>())

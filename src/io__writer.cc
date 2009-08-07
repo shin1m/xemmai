@@ -158,9 +158,9 @@ void t_type_of<io::t_writer>::f_flush(t_io* a_extension, t_object* a_self)
 	f_as<io::t_writer&>(a_self).f_flush(a_extension);
 }
 
-t_transfer t_type_of<io::t_writer>::f_define(t_io* a_extension)
+void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
-	return t_define<io::t_writer, t_object>(a_extension, L"Writer")
+	t_define<io::t_writer, t_object>(a_extension, L"Writer")
 		(a_extension->f_symbol_close(), t_member<void (*)(t_io*, t_object*), f_close>())
 		(a_extension->f_symbol_write(), t_member<void (*)(t_io*, t_object*, t_object*), f_write>())
 		(a_extension->f_symbol_write_line(),

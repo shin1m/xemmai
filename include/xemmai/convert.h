@@ -209,6 +209,7 @@ public:
 	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name) :
 	v_extension(a_extension), v_type(t_class::f_instantiate(new t_type_of<T>(v_extension->f_module(), a_extension->template f_type<T_super>())))
 	{
+		v_extension->template f_type__<T>(static_cast<t_object*>(v_type));
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
 	}
 	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name, const t_transfer& a_type) : v_extension(a_extension), v_type(a_type)
@@ -218,6 +219,17 @@ public:
 	operator t_transfer() const
 	{
 		return v_type;
+	}
+	template<typename T_value>
+	t_define& operator()(const t_transfer& a_name, T_value a_value)
+	{
+		v_type->f_put(a_name, v_extension->f_as(a_value));
+		return *this;
+	}
+	template<typename T_value>
+	t_define& operator()(const std::wstring& a_name, T_value a_value)
+	{
+		return (*this)(t_symbol::f_instantiate(a_name), a_value);
 	}
 	t_define& operator()(const t_transfer& a_name, t_native::t_function a_function)
 	{

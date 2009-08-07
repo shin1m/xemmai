@@ -351,9 +351,9 @@ t_transfer t_type_of<t_array>::f_remove(t_object* a_self, int a_index)
 	return f_as<t_array&>(a_self).f_remove(a_index);
 }
 
-t_transfer t_type_of<t_array>::f_define()
+void t_type_of<t_array>::f_define()
 {
-	return t_define<t_array, t_object>(f_global(), L"Array")
+	t_define<t_array, t_object>(f_global(), L"Array")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(t_object*), f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<t_object* (*)(t_object*, int), f_get_at>())
