@@ -22,6 +22,8 @@ enum t_instruction
 	e_instruction__OBJECT_GET_INDIRECT,
 	e_instruction__OBJECT_PUT,
 	e_instruction__OBJECT_PUT_INDIRECT,
+	e_instruction__OBJECT_HAS,
+	e_instruction__OBJECT_HAS_INDIRECT,
 	e_instruction__OBJECT_REMOVE,
 	e_instruction__OBJECT_REMOVE_INDIRECT,
 	e_instruction__GLOBAL_GET,

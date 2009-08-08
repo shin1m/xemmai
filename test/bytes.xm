@@ -11,6 +11,6 @@ print(bytes);
 
 i = 0;
 while (i < bytes.size()) {
-	if (bytes[i] != i * 17) throw "bytes[" + i + "] must be " + (i * 17) + ".";
+	if (bytes[i] != i * 17) throw Throwable("bytes[" + i + "] must be " + (i * 17) + ".");
 	i = i + 1;
 }

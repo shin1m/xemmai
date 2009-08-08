@@ -142,6 +142,17 @@ void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 	cache.v_key_revision = f_as<t_symbol*>(a_key)->v_revision;
 }
 
+bool t_type::f_has(t_object* a_this, t_object* a_key)
+{
+	try {
+		f_get(a_this, a_key);
+		return true;
+	} catch (const t_scoped& thrown) {
+		f_as<t_fiber*>(t_fiber::f_current())->f_caught(thrown);
+		return false;
+	}
+}
+
 t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
 {
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);

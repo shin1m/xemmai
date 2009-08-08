@@ -161,7 +161,14 @@ size_t t_type_of<t_dictionary>::f_size(t_object* a_self)
 	return f_as<t_dictionary&>(a_self).f_size();
 }
 
-t_transfer t_type_of<t_dictionary>::f_remove_at(t_object* a_self, t_object* a_key)
+bool t_type_of<t_dictionary>::f_has_key(t_object* a_self, t_object* a_key)
+{
+	f_check<t_dictionary>(a_self, L"this");
+	portable::t_scoped_lock_for_write lock(a_self->v_lock);
+	return f_as<t_dictionary&>(a_self).f_has(a_key);
+}
+
+t_transfer t_type_of<t_dictionary>::f_remove_key(t_object* a_self, t_object* a_key)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	portable::t_scoped_lock_for_write lock(a_self->v_lock);
@@ -179,7 +186,8 @@ void t_type_of<t_dictionary>::f_define()
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(t_object*, t_object*), f_not_equals>())
 		(L"clear", t_member<void (*)(t_object*), f_clear>())
 		(L"size", t_member<size_t (*)(t_object*), f_size>())
-		(L"remove", t_member<t_transfer (*)(t_object*, t_object*), f_remove_at>())
+		(L"has", t_member<bool (*)(t_object*, t_object*), f_has_key>())
+		(L"remove", t_member<t_transfer (*)(t_object*, t_object*), f_remove_key>())
 	;
 }
 

@@ -76,7 +76,8 @@ class t_parser
 	void f_number(long a_position, size_t a_line, size_t a_column, t_lexer::t_token a_token);
 	void f_target();
 	void f_call();
-	void f_getter();
+	void f_dot();
+	void f_action();
 	void f_primary();
 	void f_unary();
 	void f_multiplicative();

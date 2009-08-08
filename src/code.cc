@@ -68,6 +68,12 @@ void t_code::f_generate(void** a_p)
 		case e_instruction__OBJECT_PUT_INDIRECT:
 			++a_p;
 			break;
+		case e_instruction__OBJECT_HAS:
+			a_p += 2;
+			break;
+		case e_instruction__OBJECT_HAS_INDIRECT:
+			++a_p;
+			break;
 		case e_instruction__OBJECT_REMOVE:
 			a_p += 2;
 			break;
@@ -206,6 +212,8 @@ t_transfer t_code::f_loop(const void*** a_labels)
 			&&label__OBJECT_GET_INDIRECT,
 			&&label__OBJECT_PUT,
 			&&label__OBJECT_PUT_INDIRECT,
+			&&label__OBJECT_HAS,
+			&&label__OBJECT_HAS_INDIRECT,
 			&&label__OBJECT_REMOVE,
 			&&label__OBJECT_REMOVE_INDIRECT,
 			&&label__GLOBAL_GET,
@@ -400,6 +408,22 @@ t_transfer t_code::f_loop()
 						t_slot& top = stack->f_top();
 						top->f_put(key, static_cast<t_object*>(value));
 						top = value;
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_HAS)
+					{
+						t_object* key = static_cast<t_object*>(*++pc);
+						++pc;
+						t_slot& top = stack->f_top();
+						top = f_global()->f_as(top->f_has(key));
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_HAS_INDIRECT)
+					{
+						++pc;
+						t_transfer key = stack->f_pop();
+						t_slot& top = stack->f_top();
+						top = f_global()->f_as(top->f_has(key));
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_REMOVE)
@@ -730,9 +754,9 @@ XEMMAI__CODE__CALL_TAIL(OR_TAIL, 1, f_or)
 				}
 			}
 #endif
-		} catch (const t_scoped& a_thrown) {
+		} catch (const t_scoped& thrown) {
 			f_context()->v_pc = pc;
-			t_fiber::f_throw(a_thrown);
+			t_fiber::f_throw(thrown);
 		} catch (...) {
 			f_context()->v_pc = pc;
 			t_fiber::f_throw(t_throwable::f_instantiate(L"<unknown>."));
@@ -806,6 +830,13 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 			break;
 		case e_instruction__OBJECT_PUT_INDIRECT:
 			a_n -= 2;
+			++a_p;
+			break;
+		case e_instruction__OBJECT_HAS:
+			a_p += 2;
+			break;
+		case e_instruction__OBJECT_HAS_INDIRECT:
+			--a_n;
 			++a_p;
 			break;
 		case e_instruction__OBJECT_REMOVE:
@@ -944,6 +975,12 @@ void t_code::f_tail()
 			p += 2;
 			break;
 		case e_instruction__OBJECT_PUT_INDIRECT:
+			++p;
+			break;
+		case e_instruction__OBJECT_HAS:
+			p += 2;
+			break;
+		case e_instruction__OBJECT_HAS_INDIRECT:
 			++p;
 			break;
 		case e_instruction__OBJECT_REMOVE:

@@ -194,6 +194,10 @@ public:
 	{
 		static_cast<t_type*>(v_type->v_pointer)->f_put(this, a_key, a_value);
 	}
+	bool f_has(t_object* a_key)
+	{
+		return static_cast<t_type*>(v_type->v_pointer)->f_has(this, a_key);
+	}
 	t_transfer f_remove(t_object* a_key)
 	{
 		return static_cast<t_type*>(v_type->v_pointer)->f_remove(this, a_key);

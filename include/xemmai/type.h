@@ -112,6 +112,7 @@ struct t_type
 	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_get(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value);
+	XEMMAI__PORTABLE__EXPORT virtual bool f_has(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_remove(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_call(t_object* a_this, t_object* a_self, size_t a_n, t_stack& a_stack);

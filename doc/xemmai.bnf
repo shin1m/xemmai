@@ -28,13 +28,16 @@ target: '\'' symbol
 	| '{' pairs? '}'
 	;
 
-setter: '.' (symbol | '(' expression ')') | '[' expression ']' ;
+qualifier: symbol | '(' expression ')' ;
 
-remover: '.' '~' (symbol | '(' expression ')') ;
+subscription: '[' expression ']' ;
 
-getter: '.' (':' | '^') | setter | remover;
+action: '.' (':' | '^' | ('?' | '~') qualifier)
+	| subscription
+	| '(' expressions? ')'
+	;
 
-term0: (':'* (symbol | self symbol?) | target) (getter | '(' expressions? ')')* ;
+term0: (':'* (symbol | self symbol?) | target) action* ;
 
 term1: ('+' | '-' | '!' | '~')* term0 ;
 
@@ -62,7 +65,7 @@ term12: term11 ('::' term11)* ;
 
 term: term12 ('?' expression ':' expression)? ;
 
-assignment: (':'* symbol | term0 setter) '=' expression
+assignment: (':'* symbol | term0 ('.' qualifier | subscription)) '=' expression ;
 
 compound: 'if' '(' expression ')' block ('else' block)?
 	| 'while' '(' expression ')' block
