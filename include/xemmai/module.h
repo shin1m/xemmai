@@ -90,6 +90,12 @@ struct t_type_of<t_module> : t_type
 	virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
 };
 
+template<typename T>
+inline T* f_extension(t_object* a_module)
+{
+	return static_cast<T*>(f_as<t_library*>(a_module)->v_extension);
+}
+
 }
 
 #endif

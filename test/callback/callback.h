@@ -31,7 +31,7 @@ class t_server
 
 public:
 	~t_server();
-	void f_add(t_client* a_client);
+	void f_add(t_client& a_client);
 	void f_post(const std::wstring& a_message);
 	void f_run();
 };

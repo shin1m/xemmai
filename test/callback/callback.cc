@@ -31,11 +31,11 @@ t_server::~t_server()
 	while (!v_clients.empty()) v_clients.back()->f_remove();
 }
 
-void t_server::f_add(t_client* a_client)
+void t_server::f_add(t_client& a_client)
 {
-	if (a_client->v_server) a_client->f_remove();
-	v_clients.push_back(a_client);
-	a_client->v_server = this;
+	if (a_client.v_server) a_client.f_remove();
+	v_clients.push_back(&a_client);
+	a_client.v_server = this;
 }
 
 void t_server::f_post(const std::wstring& a_message)

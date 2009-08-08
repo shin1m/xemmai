@@ -156,7 +156,7 @@ void t_type_of<t_client>::f_construct(t_object* a_class, size_t a_n, t_stack& a_
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_server, t_object>(a_extension, L"Server")
-		(L"add", t_member<void (t_server::*)(t_client*), &t_server::f_add>())
+		(L"add", t_member<void (t_server::*)(t_client&), &t_server::f_add>())
 		(L"post", t_member<void (t_server::*)(const std::wstring&), &t_server::f_post>())
 		(L"run", t_member<void (t_server::*)(), &t_server::f_run>())
 	;

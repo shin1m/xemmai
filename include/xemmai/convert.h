@@ -18,13 +18,13 @@ namespace xemmai
 template<typename T>
 struct t_is_void
 {
-	const static bool v_value = false;
+	static const bool v_value = false;
 };
 
 template<>
 struct t_is_void<void>
 {
-	const static bool v_value = true;
+	static const bool v_value = true;
 };
 
 XEMMAI__PORTABLE__EXPORT void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name);
@@ -36,15 +36,28 @@ void f_throw_type_error(const wchar_t* a_name)
 }
 
 template<typename T>
-inline void f_check(t_object* a_object, const wchar_t* a_name)
+struct t_allow_null
 {
-	if (!f_is<T>(a_object)) f_throw_type_error<T>(a_name);
-}
+	static const bool v_value = false;
+};
 
 template<typename T>
-inline T* f_extension(t_object* a_module)
+struct t_allow_null<T*>
 {
-	return static_cast<T*>(f_as<t_library*>(a_module)->v_extension);
+	static const bool v_value = true;
+};
+
+template<>
+struct t_allow_null<t_object*>
+{
+	static const bool v_value = false;
+};
+
+template<typename T>
+inline void f_check(t_object* a_object, const wchar_t* a_name)
+{
+	if (t_allow_null<T>::v_value && a_object == f_global()->f_null()) return;
+	if (!f_is<T>(a_object)) f_throw_type_error<T>(a_name);
 }
 
 template<typename T_function>
