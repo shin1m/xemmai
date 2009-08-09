@@ -22,10 +22,6 @@ class t_bytes
 	{
 		delete[] static_cast<char*>(a_p);
 	}
-	void operator delete(void* a_p, size_t)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
 
 	t_bytes()
 	{
@@ -54,7 +50,7 @@ public:
 	{
 		return v_size;
 	}
-	unsigned char operator[](size_t a_index) const
+	const unsigned char& operator[](size_t a_index) const
 	{
 		return f_entries()[a_index];
 	}
