@@ -412,8 +412,22 @@ void t_parser::f_unary()
 		case t_lexer::e_token__EXCLAMATION:
 		case t_lexer::e_token__TILDE:
 			break;
-		default:
+		case t_lexer::e_token__COLON:
+		case t_lexer::e_token__SYMBOL:
+		case t_lexer::e_token__SELF:
+		case t_lexer::e_token__APOSTROPHE:
+		case t_lexer::e_token__LEFT_PARENTHESIS:
+		case t_lexer::e_token__ATMARK:
+		case t_lexer::e_token__LEFT_BRACKET:
+		case t_lexer::e_token__LEFT_BRACE:
+		case t_lexer::e_token__NULL:
+		case t_lexer::e_token__TRUE:
+		case t_lexer::e_token__FALSE:
+		case t_lexer::e_token__INTEGER:
+		case t_lexer::e_token__FLOAT:
+		case t_lexer::e_token__STRING:
 			f_primary();
+		default:
 			return;
 		}
 		long position = v_lexer.f_position();
