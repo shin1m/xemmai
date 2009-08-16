@@ -37,6 +37,7 @@ struct t_derived : T
 	virtual void f_and(t_object* a_this, t_stack& a_stack);
 	virtual void f_xor(t_object* a_this, t_stack& a_stack);
 	virtual void f_or(t_object* a_this, t_stack& a_stack);
+	virtual void f_send(t_object* a_this, t_stack& a_stack);
 };
 
 template<typename T>
@@ -187,6 +188,12 @@ template<typename T>
 void t_derived<T>::f_or(t_object* a_this, t_stack& a_stack)
 {
 	a_this->f_get(f_global()->f_symbol_or())->f_call(0, 1, a_stack);
+}
+
+template<typename T>
+void t_derived<T>::f_send(t_object* a_this, t_stack& a_stack)
+{
+	a_this->f_get(f_global()->f_symbol_send())->f_call(0, 1, a_stack);
 }
 
 }

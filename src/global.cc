@@ -75,6 +75,7 @@ v_type_thread(a_type_thread)
 	v_symbol_and = t_symbol::f_instantiate(L"__and");
 	v_symbol_xor = t_symbol::f_instantiate(L"__xor");
 	v_symbol_or = t_symbol::f_instantiate(L"__or");
+	v_symbol_send = t_symbol::f_instantiate(L"__send");
 	v_symbol_path = t_symbol::f_instantiate(L"path");
 	v_symbol_executable = t_symbol::f_instantiate(L"executable");
 	v_symbol_script = t_symbol::f_instantiate(L"script");
@@ -194,6 +195,7 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_and);
 	a_scan(v_symbol_xor);
 	a_scan(v_symbol_or);
+	a_scan(v_symbol_send);
 	a_scan(v_symbol_path);
 	a_scan(v_symbol_executable);
 	a_scan(v_symbol_script);

@@ -82,6 +82,7 @@ class t_global : public t_extension
 	t_slot v_symbol_and;
 	t_slot v_symbol_xor;
 	t_slot v_symbol_or;
+	t_slot v_symbol_send;
 	t_slot v_symbol_path;
 	t_slot v_symbol_executable;
 	t_slot v_symbol_script;
@@ -207,6 +208,10 @@ public:
 	t_object* f_symbol_or() const
 	{
 		return v_symbol_or;
+	}
+	t_object* f_symbol_send() const
+	{
+		return v_symbol_send;
 	}
 	t_object* f_symbol_path() const
 	{

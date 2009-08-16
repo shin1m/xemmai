@@ -41,7 +41,6 @@ enum t_instruction
 	e_instruction__INSTANCE,
 	e_instruction__IDENTICAL,
 	e_instruction__NOT_IDENTICAL,
-	e_instruction__EXTEND,
 	e_instruction__RETURN,
 	e_instruction__CALL,
 	e_instruction__GET_AT,
@@ -66,6 +65,7 @@ enum t_instruction
 	e_instruction__AND,
 	e_instruction__XOR,
 	e_instruction__OR,
+	e_instruction__SEND,
 	e_instruction__CALL_TAIL,
 	e_instruction__GET_AT_TAIL,
 	e_instruction__SET_AT_TAIL,
@@ -89,6 +89,7 @@ enum t_instruction
 	e_instruction__AND_TAIL,
 	e_instruction__XOR_TAIL,
 	e_instruction__OR_TAIL,
+	e_instruction__SEND_TAIL,
 	e_instruction__FIBER_EXIT,
 	e_instruction__END,
 	e_instruction__DEAD = 0x80

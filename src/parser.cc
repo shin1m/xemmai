@@ -754,9 +754,9 @@ void t_parser::f_or_else()
 	}
 }
 
-void t_parser::f_extension()
+void t_parser::f_send()
 {
-	while (v_lexer.f_token() == t_lexer::e_token__EXTEND) {
+	while (v_lexer.f_token() == t_lexer::e_token__SEND) {
 		long position = v_lexer.f_position();
 		size_t line = v_lexer.f_line();
 		size_t column = v_lexer.f_column();
@@ -772,8 +772,7 @@ void t_parser::f_extension()
 		f_or();
 		f_and_also();
 		f_or_else();
-		f_emit(e_instruction__EXTEND);
-		f_emit(e_instruction__POP);
+		f_emit(e_instruction__SEND);
 		f_at(position, line, column);
 	}
 }
@@ -858,7 +857,7 @@ void t_parser::f_expression()
 				f_or();
 				f_and_also();
 				f_or_else();
-				f_extension();
+				f_send();
 				f_conditional();
 				return;
 			}
@@ -1213,8 +1212,8 @@ void t_parser::f_expression()
 			f_and_also();
 		case t_lexer::e_token__OR_ELSE:
 			f_or_else();
-		case t_lexer::e_token__EXTEND:
-			f_extension();
+		case t_lexer::e_token__SEND:
+			f_send();
 		case t_lexer::e_token__QUESTION:
 			f_conditional();
 		default:

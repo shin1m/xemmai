@@ -206,7 +206,7 @@ public:
 	{
 		static_cast<t_type*>(v_type->v_pointer)->f_call(this, a_self, a_n, a_stack);
 	}
-	XEMMAI__PORTABLE__EXPORT void f_call(size_t a_n, t_stack& a_stack);
+	XEMMAI__PORTABLE__EXPORT void f_call_and_return(t_object* a_self, size_t a_n, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT t_transfer f_call(size_t a_n, t_slot* a_slots);
 #define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
 #define XEMMAI__MACRO__A_N_COMMA(n) a_##n,

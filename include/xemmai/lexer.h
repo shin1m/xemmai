@@ -51,7 +51,7 @@ public:
 		e_token__GREATER_EQUAL,
 		e_token__AND_ALSO,
 		e_token__OR_ELSE,
-		e_token__EXTEND,
+		e_token__SEND,
 		e_token__NULL,
 		e_token__TRUE,
 		e_token__FALSE,

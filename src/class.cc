@@ -112,4 +112,12 @@ void t_class::f_call(t_object* a_this, t_object* a_self, size_t a_n, t_stack& a_
 	context.f_done();
 }
 
+void t_class::f_send(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	a_stack.f_pop()->f_call_and_return(a_this, 0, a_stack);
+	a_stack.f_top() = a_this;
+	context.f_done();
+}
+
 }

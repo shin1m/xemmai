@@ -138,6 +138,7 @@ struct t_type
 	XEMMAI__PORTABLE__EXPORT virtual void f_and(t_object* a_this, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_xor(t_object* a_this, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_or(t_object* a_this, t_stack& a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_send(t_object* a_this, t_stack& a_stack);
 };
 
 template<typename T>

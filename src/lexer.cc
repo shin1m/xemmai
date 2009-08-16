@@ -173,7 +173,7 @@ void t_lexer::f_next()
 	case L':':
 		f_get();
 		if (v_c == L':') {
-			v_token = e_token__EXTEND;
+			v_token = e_token__SEND;
 			f_get();
 		} else {
 			v_token = e_token__COLON;

@@ -82,7 +82,7 @@ void t_type::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
 void t_type::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
 {
 	t_transfer object = a_class->f_get(f_global()->f_symbol_construct())->f_call(a_n, a_stack.v_top);
-	object->f_get(f_global()->f_symbol_initialize())->f_call(a_n, a_stack);
+	object->f_get(f_global()->f_symbol_initialize())->f_call_and_return(0, a_n, a_stack);
 	a_stack.f_top() = object;
 }
 
@@ -294,6 +294,11 @@ void t_type::f_xor(t_object* a_this, t_stack& a_stack)
 void t_type::f_or(t_object* a_this, t_stack& a_stack)
 {
 	a_this->f_get(f_global()->f_symbol_or())->f_call(0, 1, a_stack);
+}
+
+void t_type::f_send(t_object* a_this, t_stack& a_stack)
+{
+	a_this->f_get(f_global()->f_symbol_send())->f_call(0, 1, a_stack);
 }
 
 }

@@ -129,7 +129,6 @@ void t_code::f_generate(void** a_p)
 			break;
 		case e_instruction__IDENTICAL:
 		case e_instruction__NOT_IDENTICAL:
-		case e_instruction__EXTEND:
 			++a_p;
 			break;
 		case e_instruction__RETURN:
@@ -159,6 +158,7 @@ void t_code::f_generate(void** a_p)
 		case e_instruction__AND:
 		case e_instruction__XOR:
 		case e_instruction__OR:
+		case e_instruction__SEND:
 			++a_p;
 			break;
 		case e_instruction__CALL_TAIL:
@@ -186,6 +186,7 @@ void t_code::f_generate(void** a_p)
 		case e_instruction__AND_TAIL:
 		case e_instruction__XOR_TAIL:
 		case e_instruction__OR_TAIL:
+		case e_instruction__SEND_TAIL:
 			++a_p;
 			break;
 		case e_instruction__FIBER_EXIT:
@@ -231,7 +232,6 @@ t_transfer t_code::f_loop(const void*** a_labels)
 			&&label__INSTANCE,
 			&&label__IDENTICAL,
 			&&label__NOT_IDENTICAL,
-			&&label__EXTEND,
 			&&label__RETURN,
 			&&label__CALL,
 			&&label__GET_AT,
@@ -256,6 +256,7 @@ t_transfer t_code::f_loop(const void*** a_labels)
 			&&label__AND,
 			&&label__XOR,
 			&&label__OR,
+			&&label__SEND,
 			&&label__CALL_TAIL,
 			&&label__GET_AT_TAIL,
 			&&label__SET_AT_TAIL,
@@ -279,6 +280,7 @@ t_transfer t_code::f_loop(const void*** a_labels)
 			&&label__AND_TAIL,
 			&&label__XOR_TAIL,
 			&&label__OR_TAIL,
+			&&label__SEND_TAIL,
 			&&label__FIBER_EXIT,
 			&&label__END,
 		};
@@ -579,22 +581,6 @@ t_transfer t_code::f_loop()
 						top = f_global()->f_as(x != top);
 					}
 					XEMMAI__CODE__BREAK
-				XEMMAI__CODE__CASE(EXTEND)
-					{
-						++pc;
-						t_transfer x = stack->f_at(0).f_transfer();
-						t_object* clazz = stack->f_at(1);
-						if (clazz->f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-						if (x->f_type() != f_global()->f_type<t_lambda>() && x->f_type() != f_global()->f_type<t_native>()) t_throwable::f_throw(L"must be function.");
-						t_fiber::t_context* p = f_context();
-						x->f_call(static_cast<t_object*>(clazz), 0, *stack);
-						if (f_context() != p) {
-							p->v_pc = pc;
-							pc = f_context()->v_pc;
-							stack = f_as<t_scope*>(f_context()->v_scope);
-						}
-					}
-					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(RETURN)
 					{
 						t_transfer x = stack->f_top().f_transfer();
@@ -656,6 +642,7 @@ XEMMAI__CODE__CALL(NOT_EQUALS, 1, f_not_equals)
 XEMMAI__CODE__CALL(AND, 1, f_and)
 XEMMAI__CODE__CALL(XOR, 1, f_xor)
 XEMMAI__CODE__CALL(OR, 1, f_or)
+XEMMAI__CODE__CALL(SEND, 1, f_send)
 				XEMMAI__CODE__CASE(CALL_TAIL)
 					{
 						size_t n = reinterpret_cast<size_t>(*++pc);
@@ -717,6 +704,7 @@ XEMMAI__CODE__CALL_TAIL(NOT_EQUALS_TAIL, 1, f_not_equals)
 XEMMAI__CODE__CALL_TAIL(AND_TAIL, 1, f_and)
 XEMMAI__CODE__CALL_TAIL(XOR_TAIL, 1, f_xor)
 XEMMAI__CODE__CALL_TAIL(OR_TAIL, 1, f_or)
+XEMMAI__CODE__CALL_TAIL(SEND_TAIL, 1, f_send)
 				XEMMAI__CODE__CASE(FIBER_EXIT)
 					{
 						t_transfer x = stack->f_top().f_transfer();
@@ -882,9 +870,6 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 			--a_n;
 			++a_p;
 			break;
-		case e_instruction__EXTEND:
-			++a_p;
-			break;
 		case e_instruction__RETURN:
 			return;
 		case e_instruction__CALL:
@@ -921,6 +906,7 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 		case e_instruction__AND:
 		case e_instruction__XOR:
 		case e_instruction__OR:
+		case e_instruction__SEND:
 			--a_n;
 			++a_p;
 			break;
@@ -1015,7 +1001,6 @@ void t_code::f_tail()
 			break;
 		case e_instruction__IDENTICAL:
 		case e_instruction__NOT_IDENTICAL:
-		case e_instruction__EXTEND:
 			++p;
 			break;
 		case e_instruction__RETURN:
@@ -1046,6 +1031,7 @@ void t_code::f_tail()
 		case e_instruction__AND:
 		case e_instruction__XOR:
 		case e_instruction__OR:
+		case e_instruction__SEND:
 			if (f_tail(p + 1)) *reinterpret_cast<int*>(p) += e_instruction__CALL_TAIL - e_instruction__CALL;
 			++p;
 			break;
