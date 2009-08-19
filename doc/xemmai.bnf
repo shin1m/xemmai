@@ -12,7 +12,9 @@ string: '"' escaped-string '"' ;
 
 arguments: symbol | symbol ',' arguments ;
 
-self: '$' (':' | '^')* ;
+variable: ':'* symbol ;
+
+self: ':'* '$' (':' | '^')* ;
 
 target: '\'' symbol
 	| '(' expression ')'
@@ -32,12 +34,12 @@ qualifier: symbol | '(' expression ')' ;
 
 subscription: '[' expression ']' ;
 
-action: '.' (':' | '^' | ('?' | '~') qualifier)
+action: '.' (':' | '^' | ('?' | '~')? qualifier)
 	| subscription
 	| '(' expressions? ')'
 	;
 
-term0: (':'* (symbol | self symbol?) | target) action* ;
+term0: (variable | self symbol? | target) action* ;
 
 term1: ('+' | '-' | '!' | '~')* term0 ;
 
@@ -65,7 +67,7 @@ term12: term11 ('::' term11)* ;
 
 term: term12 ('?' expression ':' expression)? ;
 
-assignment: (':'* symbol | term0 ('.' qualifier | subscription)) '=' expression ;
+assignment: (variable | self symbol | term0 ('.' qualifier | subscription)) '=' expression ;
 
 compound: 'if' '(' expression ')' block ('else' block)?
 	| 'while' '(' expression ')' block
