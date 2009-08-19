@@ -73,7 +73,9 @@ while (true) {
 		if (i > 0) throw 2;
 		i = 1;
 		print("try");
-	} catch (e) {
+	} catch (Float e) {
+		throw Throwable("never reach here.");
+	} catch (Integer e) {
 		print("catch");
 		i = e;
 	} finally {

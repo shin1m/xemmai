@@ -69,7 +69,7 @@ assignment: (':'* symbol | term0 ('.' qualifier | subscription)) '=' expression 
 
 compound: 'if' '(' expression ')' block ('else' block)?
 	| 'while' '(' expression ')' block
-	| 'try' '{' statement* '}' ('catch' '(' symbol ')' '{' statement* '}')? ('finally' '{' statement* '}')?
+	| 'try' '{' statement* '}' ('catch' '(' expression symbol ')' '{' statement* '}')? ('finally' '{' statement* '}')?
 	;
 
 expression: term | assignment | compound ;

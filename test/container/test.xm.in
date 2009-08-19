@@ -23,7 +23,7 @@ print(queue);
 
 try {
 	print(queue.pop());
-} catch (e) {
+} catch (Throwable e) {
 	print(e);
 	e.dump();
 }

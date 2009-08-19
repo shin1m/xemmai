@@ -6,7 +6,7 @@ if (object.?hello) throw Throwable("Hello");
 if (object.?world) throw Throwable("World");
 try {
 	print(object.hello + ", " + object.world + "!");
-} catch (e) {
+} catch (Throwable e) {
 	e.dump();
 }
 object.hello = "Hello";
@@ -19,7 +19,7 @@ if (object.?hello) throw Throwable("Hello");
 if (object.?world) throw Throwable("World");
 try {
 	print(object.hello + ", " + object.world + "!");
-} catch (e) {
+} catch (Throwable e) {
 	e.dump();
 }
 object.('hello) = "Hello";
@@ -32,7 +32,7 @@ if (object.?('hello)) throw Throwable("Hello");
 if (object.?('world)) throw Throwable("World");
 try {
 	print(object.('hello) + ", " + object.('world) + "!");
-} catch (e) {
+} catch (Throwable e) {
 	e.dump();
 }
 
@@ -40,7 +40,7 @@ if ($.?hello) throw Throwable("Hello");
 if ($.?world) throw Throwable("World");
 try {
 	print($hello + ", " + $world + "!");
-} catch (e) {
+} catch (Throwable e) {
 	e.dump();
 }
 $hello = "Hello";
@@ -53,7 +53,7 @@ if ($.?hello) throw Throwable("Hello");
 if ($.?world) throw Throwable("World");
 try {
 	print($hello + ", " + $world + "!");
-} catch (e) {
+} catch (Throwable e) {
 	e.dump();
 }
 $.('hello) = "Hello";
@@ -66,6 +66,6 @@ if ($.?('hello)) throw Throwable("Hello");
 if ($.?('world)) throw Throwable("World");
 try {
 	print($.('hello) + ", " + $.('world) + "!");
-} catch (e) {
+} catch (Throwable e) {
 	e.dump();
 }

@@ -26,7 +26,7 @@ try {
 	print(@{
 		f1(f1("zot") + "How are you?\n");
 	}());
-} catch (e) {
+} catch (Throwable e) {
 	print("caught: " + e);
 	e.dump();
 }

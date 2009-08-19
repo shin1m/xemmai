@@ -42,7 +42,7 @@ void t_code::f_generate(void** a_p)
 			a_p += 3;
 			break;
 		case e_instruction__CATCH:
-			++a_p;
+			a_p += 2;
 			*a_p = reinterpret_cast<void*>(*static_cast<int*>(*a_p) & e_access__INDEX);
 			++a_p;
 			break;
@@ -327,12 +327,18 @@ t_transfer t_code::f_loop()
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CATCH)
 					{
-						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer value = stack->f_pop();
-						f_as<t_fiber*>(t_fiber::f_current())->f_caught(value);
-						portable::t_scoped_lock_for_write lock(f_context()->v_scope->v_lock);
-						(*stack)[index] = value;
+						t_transfer type = stack->f_pop();
+						if (stack->f_top()->f_is(type)) {
+							size_t index = reinterpret_cast<size_t>(*++pc);
+							++pc;
+							t_transfer value = stack->f_pop();
+							f_as<t_fiber*>(t_fiber::f_current())->f_caught(value);
+							portable::t_scoped_lock_for_write lock(f_context()->v_scope->v_lock);
+							(*stack)[index] = value;
+						} else {
+							pc = reinterpret_cast<void**>(*pc);
+						}
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(FINALLY)
@@ -789,6 +795,8 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 			break;
 		case e_instruction__CATCH:
 			--a_n;
+			f_resolve(a_n, ++a_p);
+			--a_n;
 			a_p += 2;
 			break;
 		case e_instruction__FINALLY:
@@ -938,9 +946,9 @@ void t_code::f_tail()
 			p += 2;
 			break;
 		case e_instruction__TRY:
+		case e_instruction__CATCH:
 			p += 3;
 			break;
-		case e_instruction__CATCH:
 		case e_instruction__FINALLY:
 			p += 2;
 			break;

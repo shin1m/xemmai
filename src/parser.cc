@@ -1031,7 +1031,7 @@ void t_parser::f_expression()
 			f_operand(finally0);
 			f_at(position, line, column);
 			t_targets* targets0 = v_targets;
-			bool catching;
+			bool catching = false;
 			{
 				std::vector<size_t> break0;
 				std::vector<size_t> continue0;
@@ -1043,27 +1043,30 @@ void t_parser::f_expression()
 				f_operand(t_fiber::t_try::e_state__STEP);
 				f_at(position, line, column);
 				f_resolve(catch0);
-				catching = v_lexer.f_token() == t_lexer::e_token__CATCH;
-				if (catching) {
+				while (v_lexer.f_token() == t_lexer::e_token__CATCH) {
+					catching = true;
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__LEFT_PARENTHESIS) f_throw(L"expecting '('.");
 					v_lexer.f_next();
+					f_expression();
 					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
 					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__LEFT_BRACE) f_throw(L"expecting '{'.");
+					std::vector<size_t> label0;
 					f_emit(e_instruction__CATCH);
+					f_operand(label0);
 					f_operand(f_index(v_scope, symbol, v_targets->v_break));
 					f_at(position, line, column);
 					f_block();
 					f_emit(e_instruction__FINALLY);
 					f_operand(t_fiber::t_try::e_state__STEP);
-				} else {
-					f_emit(e_instruction__FINALLY);
-					f_operand(t_fiber::t_try::e_state__THROW);
+					f_resolve(label0);
 				}
+				f_emit(e_instruction__FINALLY);
+				f_operand(t_fiber::t_try::e_state__THROW);
 				f_resolve(break0);
 				f_emit(e_instruction__FINALLY);
 				f_operand(t_fiber::t_try::e_state__BREAK);
@@ -1319,22 +1322,22 @@ void t_parser::f_statement()
 void t_parser::f_block()
 {
 	v_lexer.f_next();
-	long position = v_lexer.f_position();
-	size_t line = v_lexer.f_line();
-	size_t column = v_lexer.f_column();
 	if (v_lexer.f_token() == t_lexer::e_token__RIGHT_BRACE) {
+		long position = v_lexer.f_position();
+		size_t line = v_lexer.f_line();
+		size_t column = v_lexer.f_column();
 		f_emit(e_instruction__INSTANCE);
 		f_operand(f_global()->f_null());
 		f_at(position, line, column);
 	} else {
-		f_statement();
-		while (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
+		while (true) {
+			long position = v_lexer.f_position();
+			size_t line = v_lexer.f_line();
+			size_t column = v_lexer.f_column();
+			f_statement();
+			if (v_lexer.f_token() == t_lexer::e_token__RIGHT_BRACE) break;
 			f_emit(e_instruction__POP);
 			f_at(position, line, column);
-			position = v_lexer.f_position();
-			line = v_lexer.f_line();
-			column = v_lexer.f_column();
-			f_statement();
 		}
 	}
 	v_lexer.f_next();
