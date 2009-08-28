@@ -69,9 +69,13 @@ term: term12 ('?' expression ':' expression)? ;
 
 assignment: (variable | self symbol | term0 ('.' qualifier | subscription)) '=' expression ;
 
+catch: 'catch' '(' expression symbol ')' '{' statement* '}' ;
+
+finally: 'finally' '{' statement* '}' ;
+
 compound: 'if' '(' expression ')' block ('else' block)?
 	| 'while' '(' expression ')' block
-	| 'try' '{' statement* '}' ('catch' '(' expression symbol ')' '{' statement* '}')? ('finally' '{' statement* '}')?
+	| 'try' '{' statement* '}' (catch+ finally? | finally)
 	;
 
 expression: term | assignment | compound ;
