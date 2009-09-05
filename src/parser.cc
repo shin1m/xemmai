@@ -404,65 +404,49 @@ void t_parser::f_primary()
 
 void t_parser::f_unary()
 {
-	while (true) {
-		t_lexer::t_token token = v_lexer.f_token();
-		switch (token) {
-		case t_lexer::e_token__PLUS:
-		case t_lexer::e_token__HYPHEN:
-		case t_lexer::e_token__EXCLAMATION:
-		case t_lexer::e_token__TILDE:
-			break;
-		case t_lexer::e_token__COLON:
-		case t_lexer::e_token__SYMBOL:
-		case t_lexer::e_token__SELF:
-		case t_lexer::e_token__APOSTROPHE:
-		case t_lexer::e_token__LEFT_PARENTHESIS:
-		case t_lexer::e_token__ATMARK:
-		case t_lexer::e_token__LEFT_BRACKET:
-		case t_lexer::e_token__LEFT_BRACE:
-		case t_lexer::e_token__NULL:
-		case t_lexer::e_token__TRUE:
-		case t_lexer::e_token__FALSE:
+	t_lexer::t_token token = v_lexer.f_token();
+	switch (token) {
+	case t_lexer::e_token__PLUS:
+	case t_lexer::e_token__HYPHEN:
+	case t_lexer::e_token__EXCLAMATION:
+	case t_lexer::e_token__TILDE:
+		break;
+	default:
+		f_primary();
+		return;
+	}
+	long position = v_lexer.f_position();
+	size_t line = v_lexer.f_line();
+	size_t column = v_lexer.f_column();
+	v_lexer.f_next();
+	switch (token) {
+	case t_lexer::e_token__PLUS:
+	case t_lexer::e_token__HYPHEN:
+		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__INTEGER:
 		case t_lexer::e_token__FLOAT:
-		case t_lexer::e_token__STRING:
-			f_primary();
-		default:
+			f_number(position, line, column, token);
+			f_action();
 			return;
 		}
-		long position = v_lexer.f_position();
-		size_t line = v_lexer.f_line();
-		size_t column = v_lexer.f_column();
-		v_lexer.f_next();
-		switch (token) {
-		case t_lexer::e_token__PLUS:
-		case t_lexer::e_token__HYPHEN:
-			switch (v_lexer.f_token()) {
-			case t_lexer::e_token__INTEGER:
-			case t_lexer::e_token__FLOAT:
-				f_number(position, line, column, token);
-				f_action();
-				return;
-			}
-			f_unary();
-			f_emit(token == t_lexer::e_token__PLUS ? e_instruction__PLUS : e_instruction__MINUS);
-			break;
-		case t_lexer::e_token__EXCLAMATION:
-			f_unary();
-			f_emit(e_instruction__NOT);
-			break;
-		case t_lexer::e_token__TILDE:
-			if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
-				f_number(position, line, column, token);
-				f_action();
-				return;
-			}
-			f_unary();
-			f_emit(e_instruction__COMPLEMENT);
-			break;
+		f_unary();
+		f_emit(token == t_lexer::e_token__PLUS ? e_instruction__PLUS : e_instruction__MINUS);
+		break;
+	case t_lexer::e_token__EXCLAMATION:
+		f_unary();
+		f_emit(e_instruction__NOT);
+		break;
+	case t_lexer::e_token__TILDE:
+		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
+			f_number(position, line, column, token);
+			f_action();
+			return;
 		}
-		f_at(position, line, column);
+		f_unary();
+		f_emit(e_instruction__COMPLEMENT);
+		break;
 	}
+	f_at(position, line, column);
 }
 
 void t_parser::f_multiplicative()
