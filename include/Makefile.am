@@ -43,4 +43,6 @@ nobase_include_HEADERS = \
 	xemmai/io.h \
 	xemmai/io/file.h \
 	xemmai/io/reader.h \
-	xemmai/io/writer.h
+	xemmai/io/writer.h \
+	xemmai/math.h \
+	xemmai/os.h

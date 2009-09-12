@@ -11,28 +11,8 @@
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>
 
-#include <cmath>
-
 namespace xemmai
 {
-
-namespace
-{
-
-void f_sleep(int a_miliseconds)
-{
-#ifdef __unix__
-	struct timespec nano;
-	nano.tv_sec = a_miliseconds / 1000;
-	nano.tv_nsec = a_miliseconds % 1000 * 1000000;
-	nanosleep(&nano, NULL);
-#endif
-#ifdef _WIN32
-	Sleep(a_miliseconds);
-#endif
-}
-
-}
 
 XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
 
@@ -133,9 +113,6 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type*>(v_type_lexer__error)->v_builtin = true;
 	t_define<t_parser::t_error, t_throwable>(this, L"ParserError");
 	xemmai::f_as<t_type*>(v_type_parser__error)->v_builtin = true;
-	f_define<void (*)(int), f_sleep>(this, L"sleep");
-	f_define<double (*)(double), std::fabs>(this, L"fabs");
-	f_define<double (*)(double), std::sqrt>(this, L"sqrt");
 	v_null = t_object::f_allocate(v_type_null);
 	v_true = t_object::f_allocate(v_type_boolean);
 	v_true->v_boolean = true;

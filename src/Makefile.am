@@ -46,5 +46,7 @@ xemmai_SOURCES = \
 	io__file.cc \
 	io__reader.cc \
 	io__writer.cc \
+	math.cc \
+	os.cc \
 	engine.cc \
 	main.cc

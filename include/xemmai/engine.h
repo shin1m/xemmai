@@ -108,6 +108,8 @@ class t_engine : public t_pointer::t_collector
 	t_slot v_module_global;
 	t_slot v_module_system;
 	t_slot v_module_io;
+	t_slot v_module_math;
+	t_slot v_module_os;
 	t_slot v_thread;
 	bool v_verbose;
 
@@ -144,6 +146,14 @@ public:
 	t_object* f_module_io() const
 	{
 		return v_module_io;
+	}
+	t_object* f_module_math() const
+	{
+		return v_module_math;
+	}
+	t_object* f_module_os() const
+	{
+		return v_module_os;
 	}
 	int f_run();
 };

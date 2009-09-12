@@ -1,6 +1,8 @@
 system = Module("system");
 write = system.out.write;
 print = system.out.write_line;
+math = Module("math");
+sqrt = math.sqrt;
 
 mandelbrot = @(cr, ci) {
 	limit = 95;
