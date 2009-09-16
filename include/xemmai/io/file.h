@@ -53,13 +53,6 @@ struct t_type_of<io::t_file> : t_type
 {
 	typedef t_io t_extension;
 
-	static void f_reopen(t_object* a_self, const std::wstring& a_path, const std::wstring& a_mode);
-	static void f_close(t_object* a_self);
-	static void f_seek(t_object* a_self, int a_offset, int a_whence);
-	static int f_tell(t_object* a_self);
-	static size_t f_read(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size);
-	static void f_write(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size);
-	static void f_flush(t_object* a_self);
 	static void f_define(t_io* a_extension);
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

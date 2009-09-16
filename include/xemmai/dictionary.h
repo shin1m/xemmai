@@ -39,11 +39,13 @@ public:
 		return v_size;
 	}
 	t_object* f_get(t_object* a_key) const;
-	void f_put(t_object* a_key, const t_transfer& a_value)
+	t_object* f_put(t_object* a_key, const t_transfer& a_value)
 	{
+		t_object* p = a_value;
 		if (v_hash.f_put<t_hash_traits>(a_key, a_value)) ++v_size;
+		return p;
 	}
-	bool f_has(t_object* a_key)
+	bool f_has(t_object* a_key) const
 	{
 		return v_hash.f_find<t_hash_traits>(a_key);
 	}
@@ -55,17 +57,11 @@ struct t_type_of<t_dictionary> : t_type
 {
 	static std::wstring f_string(t_object* a_self);
 	static int f_hash(t_object* a_self);
-	static t_object* f_get_at(t_object* a_self, t_object* a_key);
-	static t_object* f_set_at(t_object* a_self, t_object* a_key, const t_transfer& a_value);
 	static bool f_equals(t_object* a_self, t_object* a_other);
 	static bool f_not_equals(t_object* a_self, t_object* a_other)
 	{
 		return !f_equals(a_self, a_other);
 	}
-	static void f_clear(t_object* a_self);
-	static size_t f_size(t_object* a_self);
-	static bool f_has_key(t_object* a_self, t_object* a_key);
-	static t_transfer f_remove_key(t_object* a_self, t_object* a_key);
 	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

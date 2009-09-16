@@ -41,6 +41,14 @@ public:
 	}
 	const t_slot& operator[](int a_index) const;
 	t_slot& operator[](int a_index);
+	t_object* f_get_at(int a_index) const
+	{
+		return (*this)[a_index];
+	}
+	t_object* f_set_at(int a_index, const t_transfer& a_value)
+	{
+		return (*this)[a_index] = a_value;
+	}
 	void f_push(const t_transfer& a_value);
 	t_transfer f_pop();
 	void f_unshift(const t_transfer& a_value);
@@ -54,21 +62,11 @@ struct t_type_of<t_array> : t_type
 {
 	static std::wstring f_string(t_object* a_self);
 	static int f_hash(t_object* a_self);
-	static t_object* f_get_at(t_object* a_self, int a_index);
-	static t_object* f_set_at(t_object* a_self, int a_index, const t_transfer& a_value);
 	static bool f_equals(t_object* a_self, t_object* a_other);
 	static bool f_not_equals(t_object* a_self, t_object* a_other)
 	{
 		return !f_equals(a_self, a_other);
 	}
-	static void f_clear(t_object* a_self);
-	static size_t f_size(t_object* a_self);
-	static void f_push(t_object* a_self, const t_transfer& a_value);
-	static t_transfer f_pop(t_object* a_self);
-	static void f_unshift(t_object* a_self, const t_transfer& a_value);
-	static t_transfer f_shift(t_object* a_self);
-	static void f_insert(t_object* a_self, int a_index, const t_transfer& a_value);
-	static t_transfer f_remove(t_object* a_self, int a_index);
 	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

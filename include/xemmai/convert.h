@@ -65,7 +65,7 @@ struct t_call_construct
 {
 };
 
-template<typename T_extension, typename T_function>
+template<typename T_extension, typename T_function, typename T_with>
 struct t_call_member
 {
 };
@@ -90,6 +90,36 @@ struct t_unspecified
 			t_throwable::f_throw(L"no method matching signature is found.");
 		}
 	};
+
+	t_unspecified(t_object* a_self)
+	{
+	}
+};
+
+class t_with_lock_for_read
+{
+	portable::t_scoped_lock_for_read v_lock;
+
+public:
+	t_with_lock_for_read(t_object* a_self) : v_lock(a_self->v_lock)
+	{
+	}
+	~t_with_lock_for_read()
+	{
+	}
+};
+
+class t_with_lock_for_write
+{
+	portable::t_scoped_lock_for_write v_lock;
+
+public:
+	t_with_lock_for_write(t_object* a_self) : v_lock(a_self->v_lock)
+	{
+	}
+	~t_with_lock_for_write()
+	{
+	}
 };
 
 #define XEMMAI__MACRO__TYPENAME_UNSPECIFIED(n) typename T_a##n = t_unspecified
@@ -128,14 +158,14 @@ struct t_construct_with
 	}
 };
 
-template<typename T_function, T_function A_function>
+template<typename T_function, T_function A_function, typename T_with = t_unspecified>
 struct t_member
 {
 	template<typename T_extension>
 	struct t_bind
 	{
-		typedef typename t_call_member<T_extension, T_function>::t_type t_type;
-		typedef typename t_call_member<T_extension, T_function>::t_call t_call;
+		typedef typename t_call_member<T_extension, T_function, T_with>::t_type t_type;
+		typedef typename t_call_member<T_extension, T_function, T_with>::t_call t_call;
 
 		static void f_call(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack)
 		{
@@ -253,14 +283,14 @@ public:
 	{
 		return (*this)(t_symbol::f_instantiate(a_name), a_function);
 	}
-	template<typename T_function, T_function A_function>
-	t_define& operator()(const t_transfer& a_name, const t_member<T_function, A_function>&)
+	template<typename T_function, T_function A_function, typename T_with>
+	t_define& operator()(const t_transfer& a_name, const t_member<T_function, A_function, T_with>&)
 	{
-		v_type->f_put(a_name, v_extension->f_function(t_member<T_function, A_function>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
+		v_type->f_put(a_name, v_extension->f_function(t_member<T_function, A_function, T_with>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
 		return *this;
 	}
-	template<typename T_function, T_function A_function>
-	t_define& operator()(const std::wstring& a_name, const t_member<T_function, A_function>& a_member0)
+	template<typename T_function, T_function A_function, typename T_with>
+	t_define& operator()(const std::wstring& a_name, const t_member<T_function, A_function, T_with>& a_member0)
 	{
 		return (*this)(t_symbol::f_instantiate(a_name), a_member0);
 	}

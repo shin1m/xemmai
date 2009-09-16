@@ -100,22 +100,6 @@ int t_type_of<t_dictionary>::f_hash(t_object* a_self)
 	return n;
 }
 
-t_object* t_type_of<t_dictionary>::f_get_at(t_object* a_self, t_object* a_key)
-{
-	f_check<t_dictionary>(a_self, L"this");
-	portable::t_scoped_lock_for_read lock(a_self->v_lock);
-	return f_as<const t_dictionary&>(a_self).f_get(a_key);
-}
-
-t_object* t_type_of<t_dictionary>::f_set_at(t_object* a_self, t_object* a_key, const t_transfer& a_value)
-{
-	f_check<t_dictionary>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	t_object* p = a_value;
-	f_as<t_dictionary&>(a_self).f_put(a_key, a_value);
-	return p;
-}
-
 bool t_type_of<t_dictionary>::f_equals(t_object* a_self, t_object* a_other)
 {
 	if (a_self == a_other) return true;
@@ -123,11 +107,7 @@ bool t_type_of<t_dictionary>::f_equals(t_object* a_self, t_object* a_other)
 	if (!f_is<t_dictionary>(a_other)) return false;
 	const t_dictionary& d0 = f_as<const t_dictionary&>(a_self);
 	const t_dictionary& d1 = f_as<const t_dictionary&>(a_other);
-	{
-		portable::t_scoped_lock_for_read lock0(a_self->v_lock);
-		portable::t_scoped_lock_for_read lock1(a_other->v_lock);
-		if (d0.f_size() != d1.f_size()) return false;
-	}
+	if (d0.f_size() != d1.f_size()) return false;
 	t_hash::t_iterator i(d0.v_hash);
 	while (true) {
 		t_transfer x;
@@ -147,47 +127,19 @@ bool t_type_of<t_dictionary>::f_equals(t_object* a_self, t_object* a_other)
 	return false;
 }
 
-void t_type_of<t_dictionary>::f_clear(t_object* a_self)
-{
-	f_check<t_dictionary>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_dictionary&>(a_self).f_clear();
-}
-
-size_t t_type_of<t_dictionary>::f_size(t_object* a_self)
-{
-	f_check<t_dictionary>(a_self, L"this");
-	portable::t_scoped_lock_for_read lock(a_self->v_lock);
-	return f_as<t_dictionary&>(a_self).f_size();
-}
-
-bool t_type_of<t_dictionary>::f_has_key(t_object* a_self, t_object* a_key)
-{
-	f_check<t_dictionary>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_dictionary&>(a_self).f_has(a_key);
-}
-
-t_transfer t_type_of<t_dictionary>::f_remove_key(t_object* a_self, t_object* a_key)
-{
-	f_check<t_dictionary>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_dictionary&>(a_self).f_remove(a_key);
-}
-
 void t_type_of<t_dictionary>::f_define()
 {
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(t_object*), f_hash>())
-		(f_global()->f_symbol_get_at(), t_member<t_object* (*)(t_object*, t_object*), f_get_at>())
-		(f_global()->f_symbol_set_at(), t_member<t_object* (*)(t_object*, t_object*, const t_transfer&), f_set_at>())
+		(f_global()->f_symbol_get_at(), t_member<t_object* (t_dictionary::*)(t_object*) const, &t_dictionary::f_get, t_with_lock_for_read>())
+		(f_global()->f_symbol_set_at(), t_member<t_object* (t_dictionary::*)(t_object*, const t_transfer&), &t_dictionary::f_put, t_with_lock_for_write>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(t_object*, t_object*), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(t_object*, t_object*), f_not_equals>())
-		(L"clear", t_member<void (*)(t_object*), f_clear>())
-		(L"size", t_member<size_t (*)(t_object*), f_size>())
-		(L"has", t_member<bool (*)(t_object*, t_object*), f_has_key>())
-		(L"remove", t_member<t_transfer (*)(t_object*, t_object*), f_remove_key>())
+		(L"clear", t_member<void (t_dictionary::*)(), &t_dictionary::f_clear, t_with_lock_for_write>())
+		(L"size", t_member<size_t (t_dictionary::*)() const, &t_dictionary::f_size, t_with_lock_for_read>())
+		(L"has", t_member<bool (t_dictionary::*)(t_object*) const, &t_dictionary::f_has, t_with_lock_for_read>())
+		(L"remove", t_member<t_transfer (t_dictionary::*)(t_object*), &t_dictionary::f_remove, t_with_lock_for_write>())
 	;
 }
 
@@ -241,7 +193,8 @@ void t_type_of<t_dictionary>::f_get_at(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_get_at(a_this, a0));
+	portable::t_scoped_lock_for_read lock(a_this->v_lock);
+	a_stack.f_return(f_as<const t_dictionary&>(a_this).f_get(a0));
 	context.f_done();
 }
 
@@ -250,7 +203,8 @@ void t_type_of<t_dictionary>::f_set_at(t_object* a_this, t_stack& a_stack)
 	t_native_context context;
 	t_transfer a1 = a_stack.f_pop();
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_set_at(a_this, a0, a1));
+	portable::t_scoped_lock_for_write lock(a_this->v_lock);
+	a_stack.f_return(f_as<t_dictionary&>(a_this).f_put(a0, a1));
 	context.f_done();
 }
 

@@ -46,9 +46,6 @@ struct t_type_of<io::t_reader> : t_type
 {
 	typedef t_io t_extension;
 
-	static void f_close(t_io* a_extension, t_object* a_self);
-	static std::wstring f_read(t_io* a_extension, t_object* a_self, size_t a_size);
-	static std::wstring f_read_line(t_io* a_extension, t_object* a_self);
 	static void f_define(t_io* a_extension);
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

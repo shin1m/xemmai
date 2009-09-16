@@ -101,33 +101,12 @@ std::wstring t_reader::f_read_line(t_io* a_extension)
 
 }
 
-void t_type_of<io::t_reader>::f_close(t_io* a_extension, t_object* a_self)
-{
-	f_check<io::t_reader>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_reader&>(a_self).f_close(a_extension);
-}
-
-std::wstring t_type_of<io::t_reader>::f_read(t_io* a_extension, t_object* a_self, size_t a_size)
-{
-	f_check<io::t_reader>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<io::t_reader&>(a_self).f_read(a_extension, a_size);
-}
-
-std::wstring t_type_of<io::t_reader>::f_read_line(t_io* a_extension, t_object* a_self)
-{
-	f_check<io::t_reader>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<io::t_reader&>(a_self).f_read_line(a_extension);
-}
-
 void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader")
-		(a_extension->f_symbol_close(), t_member<void (*)(t_io*, t_object*), f_close>())
-		(a_extension->f_symbol_read(), t_member<std::wstring (*)(t_io*, t_object*, size_t), f_read>())
-		(a_extension->f_symbol_read_line(), t_member<std::wstring (*)(t_io*, t_object*), f_read_line>())
+		(a_extension->f_symbol_close(), t_member<void (io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
+		(a_extension->f_symbol_read(), t_member<std::wstring (io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
+		(a_extension->f_symbol_read_line(), t_member<std::wstring (io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
 	;
 }
 

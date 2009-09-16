@@ -59,85 +59,93 @@ struct t_construct<T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__ XEMMAI
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, bool A_function, bool A_void, bool A_extension>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, bool A_function, bool A_void, bool A_extension, typename T_with>
 struct XEMMAI__MACRO__CALL_MEMBERN_WITH
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		return f_extension<T_extension>(a_module)->f_as((f_as<T_self*>(a_self)->*a_function)(XEMMAI__MACRO__AS_A_N__));
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, false, false, true>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, false, false, true, T_with>
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		return f_extension<T_extension>(a_module)->f_as((f_as<T_self*>(a_self)->*a_function)(f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__));
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, false, true, false>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, false, true, false, T_with>
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		(f_as<T_self*>(a_self)->*a_function)(XEMMAI__MACRO__AS_A_N__);
 		return f_global()->f_null();
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, false, true, true>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, false, true, true, T_with>
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		(f_as<T_self*>(a_self)->*a_function)(f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__);
 		return f_global()->f_null();
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, false, false>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, false, false, T_with>
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		return f_extension<T_extension>(a_module)->f_as(a_function(f_as<T_self>(a_self) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__));
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, false, true>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, false, true, T_with>
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		return f_extension<T_extension>(a_module)->f_as(a_function(f_extension<T_extension>(a_module), f_as<T_self>(a_self) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__));
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, true, false>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, true, false, T_with>
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		a_function(f_as<T_self>(a_self) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__);
 		return f_global()->f_null();
 	}
 };
 
-template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, true, true>
+template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, true, true, true, T_with>
 {
 	template<typename T_function>
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
+		T_with with(a_self);
 		a_function(f_extension<T_extension>(a_module), f_as<T_self>(a_self) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__);
 		return f_global()->f_null();
 	}
@@ -146,7 +154,7 @@ struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA
 template<typename T_extension, typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
 struct XEMMAI__MACRO__CALL_MEMBERN
 {
-	template<bool A_function, bool A_void, bool A_extension>
+	template<bool A_function, bool A_void, bool A_extension, typename T_with>
 	struct t_bind
 	{
 		template<typename T_function>
@@ -157,13 +165,13 @@ struct XEMMAI__MACRO__CALL_MEMBERN
 			if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
 			XEMMAI__MACRO__REVERSE_REPEAT(XEMMAI__MACRO__POP, XEMMAI__MACRO__N)
 			XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK, XEMMAI__MACRO__N)
-			a_stack.f_return(XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_function, A_void, A_extension>::f_call(a_function, a_module, a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));
+			a_stack.f_return(XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_function, A_void, A_extension, T_with>::f_call(a_function, a_module, a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));
 		}
 		template<typename T_function>
 		static void f_call(T_function a_function, t_object* a_module, t_object* a_self, t_stack& a_stack)
 		{
 			XEMMAI__MACRO__REVERSE_REPEAT(XEMMAI__MACRO__POP, XEMMAI__MACRO__N)
-			a_stack.f_return(XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_function, A_void, A_extension>::f_call(a_function, a_module, a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));
+			a_stack.f_return(XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_function, A_void, A_extension, T_with>::f_call(a_function, a_module, a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));
 		}
 	};
 
@@ -177,46 +185,46 @@ struct XEMMAI__MACRO__CALL_MEMBERN
 	}
 };
 
-template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct t_call_member<T_extension, T_r (T_self::*)(XEMMAI__MACRO__T_AN__) const>
+template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct t_call_member<T_extension, T_r (T_self::*)(XEMMAI__MACRO__T_AN__) const, T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, false> t_call;
+	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, false, T_with> t_call;
 };
 
-template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct t_call_member<T_extension, T_r (T_self::*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__) const>
+template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct t_call_member<T_extension, T_r (T_self::*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__) const, T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, true> t_call;
+	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, true, T_with> t_call;
 };
 
-template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct t_call_member<T_extension, T_r (T_self::*)(XEMMAI__MACRO__T_AN__)>
+template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct t_call_member<T_extension, T_r (T_self::*)(XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, false> t_call;
+	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, false, T_with> t_call;
 };
 
-template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct t_call_member<T_extension, T_r (T_self::*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__)>
+template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct t_call_member<T_extension, T_r (T_self::*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, true> t_call;
+	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, true, T_with> t_call;
 };
 
-template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct t_call_member<T_extension, T_r (*)(T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__)>
+template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct t_call_member<T_extension, T_r (*)(T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<true, t_is_void<T_r>::v_value, false> t_call;
+	typedef typename t_type::template t_bind<true, t_is_void<T_r>::v_value, false, T_with> t_call;
 };
 
-template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct t_call_member<T_extension, T_r (*)(T_extension*, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__)>
+template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
+struct t_call_member<T_extension, T_r (*)(T_extension*, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<true, t_is_void<T_r>::v_value, true> t_call;
+	typedef typename t_type::template t_bind<true, t_is_void<T_r>::v_value, true, T_with> t_call;
 };
 
 template<typename T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, bool A_void, bool A_extension>

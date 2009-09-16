@@ -123,51 +123,16 @@ void t_writer::f_flush(t_io* a_extension)
 
 }
 
-void t_type_of<io::t_writer>::f_close(t_io* a_extension, t_object* a_self)
-{
-	f_check<io::t_writer>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_writer&>(a_self).f_close(a_extension);
-}
-
-void t_type_of<io::t_writer>::f_write(t_io* a_extension, t_object* a_self, t_object* a_value)
-{
-	f_check<io::t_writer>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_writer&>(a_self).f_write(a_extension, a_value);
-}
-
-void t_type_of<io::t_writer>::f_write_line(t_io* a_extension, t_object* a_self)
-{
-	f_check<io::t_writer>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_writer&>(a_self).f_write_line(a_extension);
-}
-
-void t_type_of<io::t_writer>::f_write_line(t_io* a_extension, t_object* a_self, t_object* a_value)
-{
-	f_check<io::t_writer>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_writer&>(a_self).f_write_line(a_extension, a_value);
-}
-
-void t_type_of<io::t_writer>::f_flush(t_io* a_extension, t_object* a_self)
-{
-	f_check<io::t_writer>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_writer&>(a_self).f_flush(a_extension);
-}
-
 void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
 	t_define<io::t_writer, t_object>(a_extension, L"Writer")
-		(a_extension->f_symbol_close(), t_member<void (*)(t_io*, t_object*), f_close>())
-		(a_extension->f_symbol_write(), t_member<void (*)(t_io*, t_object*, t_object*), f_write>())
+		(a_extension->f_symbol_close(), t_member<void (io::t_writer::*)(t_io*), &io::t_writer::f_close, t_with_lock_for_write>())
+		(a_extension->f_symbol_write(), t_member<void (io::t_writer::*)(t_io*, t_object*), &io::t_writer::f_write, t_with_lock_for_write>())
 		(a_extension->f_symbol_write_line(),
-			t_member<void (*)(t_io*, t_object*), f_write_line>(),
-			t_member<void (*)(t_io*, t_object*, t_object*), f_write_line>()
+			t_member<void (io::t_writer::*)(t_io*), &io::t_writer::f_write_line, t_with_lock_for_write>(),
+			t_member<void (io::t_writer::*)(t_io*, t_object*), &io::t_writer::f_write_line, t_with_lock_for_write>()
 		)
-		(a_extension->f_symbol_flush(), t_member<void (*)(t_io*, t_object*), f_flush>())
+		(a_extension->f_symbol_flush(), t_member<void (io::t_writer::*)(t_io*), &io::t_writer::f_flush, t_with_lock_for_write>())
 	;
 }
 

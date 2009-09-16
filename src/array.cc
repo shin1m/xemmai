@@ -251,20 +251,6 @@ int t_type_of<t_array>::f_hash(t_object* a_self)
 	return n;
 }
 
-t_object* t_type_of<t_array>::f_get_at(t_object* a_self, int a_index)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_read lock(a_self->v_lock);
-	return f_as<const t_array&>(a_self)[a_index];
-}
-
-t_object* t_type_of<t_array>::f_set_at(t_object* a_self, int a_index, const t_transfer& a_value)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_array&>(a_self)[a_index] = a_value;
-}
-
 bool t_type_of<t_array>::f_equals(t_object* a_self, t_object* a_other)
 {
 	if (a_self == a_other) return true;
@@ -272,21 +258,19 @@ bool t_type_of<t_array>::f_equals(t_object* a_self, t_object* a_other)
 	if (!f_is<t_array>(a_other)) return false;
 	const t_array& a0 = f_as<const t_array&>(a_self);
 	const t_array& a1 = f_as<const t_array&>(a_other);
-	{
-		portable::t_scoped_lock_for_read lock0(a_self->v_lock);
-		portable::t_scoped_lock_for_read lock1(a_other->v_lock);
-		if (a0.f_size() != a1.f_size()) return false;
-	}
+	if (a0.f_size() != a1.f_size()) return false;
 	size_t i = 0;
 	while (true) {
 		t_transfer x;
 		t_transfer y;
 		{
 			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
-			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
 			if (i >= a0.f_size()) break;
-			if (i >= a1.f_size()) return false;
 			x = a0[i];
+		}
+		{
+			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+			if (i >= a1.f_size()) return false;
 			y = a1[i];
 		}
 		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(y))) return false;
@@ -295,79 +279,23 @@ bool t_type_of<t_array>::f_equals(t_object* a_self, t_object* a_other)
 	return true;
 }
 
-void t_type_of<t_array>::f_clear(t_object* a_self)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_array&>(a_self).f_clear();
-}
-
-size_t t_type_of<t_array>::f_size(t_object* a_self)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_read lock(a_self->v_lock);
-	return f_as<t_array&>(a_self).f_size();
-}
-
-void t_type_of<t_array>::f_push(t_object* a_self, const t_transfer& a_value)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_array&>(a_self).f_push(a_value);
-}
-
-t_transfer t_type_of<t_array>::f_pop(t_object* a_self)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_array&>(a_self).f_pop();
-}
-
-void t_type_of<t_array>::f_unshift(t_object* a_self, const t_transfer& a_value)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_array&>(a_self).f_unshift(a_value);
-}
-
-t_transfer t_type_of<t_array>::f_shift(t_object* a_self)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_array&>(a_self).f_shift();
-}
-
-void t_type_of<t_array>::f_insert(t_object* a_self, int a_index, const t_transfer& a_value)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<t_array&>(a_self).f_insert(a_index, a_value);
-}
-
-t_transfer t_type_of<t_array>::f_remove(t_object* a_self, int a_index)
-{
-	f_check<t_array>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<t_array&>(a_self).f_remove(a_index);
-}
-
 void t_type_of<t_array>::f_define()
 {
 	t_define<t_array, t_object>(f_global(), L"Array")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(t_object*), f_hash>())
-		(f_global()->f_symbol_get_at(), t_member<t_object* (*)(t_object*, int), f_get_at>())
-		(f_global()->f_symbol_set_at(), t_member<t_object* (*)(t_object*, int, const t_transfer&), f_set_at>())
+		(f_global()->f_symbol_get_at(), t_member<t_object* (t_array::*)(int) const, &t_array::f_get_at, t_with_lock_for_read>())
+		(f_global()->f_symbol_set_at(), t_member<t_object* (t_array::*)(int, const t_transfer&), &t_array::f_set_at, t_with_lock_for_write>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(t_object*, t_object*), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(t_object*, t_object*), f_not_equals>())
-		(L"clear", t_member<void (*)(t_object*), f_clear>())
-		(f_global()->f_symbol_size(), t_member<size_t (*)(t_object*), f_size>())
-		(f_global()->f_symbol_push(), t_member<void (*)(t_object*, const t_transfer&), f_push>())
-		(L"pop", t_member<t_transfer (*)(t_object*), f_pop>())
-		(L"unshift", t_member<void (*)(t_object*, const t_transfer&), f_unshift>())
-		(L"shift", t_member<t_transfer (*)(t_object*), f_shift>())
-		(L"insert", t_member<void (*)(t_object*, int, const t_transfer&), f_insert>())
-		(L"remove", t_member<t_transfer (*)(t_object*, int), f_remove>())
+		(L"clear", t_member<void (t_array::*)(), &t_array::f_clear, t_with_lock_for_write>())
+		(f_global()->f_symbol_size(), t_member<size_t (t_array::*)() const, &t_array::f_size>())
+		(f_global()->f_symbol_push(), t_member<void (t_array::*)(const t_transfer&), &t_array::f_push, t_with_lock_for_write>())
+		(L"pop", t_member<t_transfer (t_array::*)(), &t_array::f_pop, t_with_lock_for_write>())
+		(L"unshift", t_member<void (t_array::*)(const t_transfer&), &t_array::f_unshift, t_with_lock_for_write>())
+		(L"shift", t_member<t_transfer (t_array::*)(), &t_array::f_shift, t_with_lock_for_write>())
+		(L"insert", t_member<void (t_array::*)(int, const t_transfer&), &t_array::f_insert, t_with_lock_for_write>())
+		(L"remove", t_member<t_transfer (t_array::*)(int), &t_array::f_remove, t_with_lock_for_write>())
 	;
 }
 
@@ -410,7 +338,8 @@ void t_type_of<t_array>::f_get_at(t_object* a_this, t_stack& a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
 	f_check<int>(a0, L"index");
-	a_stack.f_return(f_get_at(a_this, f_as<int>(a0)));
+	portable::t_scoped_lock_for_read lock(a_this->v_lock);
+	a_stack.f_return(f_as<const t_array&>(a_this).f_get_at(f_as<int>(a0)));
 	context.f_done();
 }
 
@@ -420,7 +349,8 @@ void t_type_of<t_array>::f_set_at(t_object* a_this, t_stack& a_stack)
 	t_transfer a1 = a_stack.f_pop();
 	t_transfer a0 = a_stack.f_pop();
 	f_check<int>(a0, L"index");
-	a_stack.f_return(f_set_at(a_this, f_as<int>(a0), a1));
+	portable::t_scoped_lock_for_write lock(a_this->v_lock);
+	a_stack.f_return(f_as<t_array&>(a_this).f_set_at(f_as<int>(a0), a1));
 	context.f_done();
 }
 

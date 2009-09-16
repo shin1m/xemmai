@@ -112,65 +112,16 @@ void t_file::f_flush()
 
 }
 
-void t_type_of<io::t_file>::f_reopen(t_object* a_self, const std::wstring& a_path, const std::wstring& a_mode)
-{
-	f_check<io::t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_file&>(a_self).f_reopen(a_path, a_mode);
-}
-
-void t_type_of<io::t_file>::f_close(t_object* a_self)
-{
-	f_check<io::t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_file&>(a_self).f_close();
-}
-
-void t_type_of<io::t_file>::f_seek(t_object* a_self, int a_offset, int a_whence)
-{
-	f_check<io::t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_file&>(a_self).f_seek(a_offset, a_whence);
-}
-
-int t_type_of<io::t_file>::f_tell(t_object* a_self)
-{
-	f_check<io::t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<io::t_file&>(a_self).f_tell();
-}
-
-size_t t_type_of<io::t_file>::f_read(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
-{
-	f_check<io::t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	return f_as<io::t_file&>(a_self).f_read(a_bytes, a_offset, a_size);
-}
-
-void t_type_of<io::t_file>::f_write(t_object* a_self, t_bytes& a_bytes, size_t a_offset, size_t a_size)
-{
-	f_check<io::t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_file&>(a_self).f_write(a_bytes, a_offset, a_size);
-}
-
-void t_type_of<io::t_file>::f_flush(t_object* a_self)
-{
-	f_check<io::t_file>(a_self, L"this");
-	portable::t_scoped_lock_for_write lock(a_self->v_lock);
-	f_as<io::t_file&>(a_self).f_flush();
-}
-
 void t_type_of<io::t_file>::f_define(t_io* a_extension)
 {
 	t_define<io::t_file, t_object>(a_extension, L"File")
-		(L"reopen", t_member<void (*)(t_object*, const std::wstring&, const std::wstring&), f_reopen>())
-		(a_extension->f_symbol_close(), t_member<void (*)(t_object*), f_close>())
-		(L"seek", t_member<void (*)(t_object*, int, int), f_seek>())
-		(L"tell", t_member<int (*)(t_object*), f_tell>())
-		(a_extension->f_symbol_read(), t_member<size_t (*)(t_object*, t_bytes&, size_t, size_t), f_read>())
-		(a_extension->f_symbol_write(), t_member<void (*)(t_object*, t_bytes&, size_t, size_t), f_write>())
-		(a_extension->f_symbol_flush(), t_member<void (*)(t_object*), f_flush>())
+		(L"reopen", t_member<void (io::t_file::*)(const std::wstring&, const std::wstring&), &io::t_file::f_reopen, t_with_lock_for_write>())
+		(a_extension->f_symbol_close(), t_member<void (io::t_file::*)(), &io::t_file::f_close, t_with_lock_for_write>())
+		(L"seek", t_member<void (io::t_file::*)(int, int), &io::t_file::f_seek, t_with_lock_for_write>())
+		(L"tell", t_member<int (io::t_file::*)(), &io::t_file::f_tell, t_with_lock_for_write>())
+		(a_extension->f_symbol_read(), t_member<size_t (io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_read, t_with_lock_for_write>())
+		(a_extension->f_symbol_write(), t_member<void (io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_write, t_with_lock_for_write>())
+		(a_extension->f_symbol_flush(), t_member<void (io::t_file::*)(), &io::t_file::f_flush, t_with_lock_for_write>())
 	;
 }
 
