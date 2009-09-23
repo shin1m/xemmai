@@ -8,7 +8,33 @@
 namespace xemmai
 {
 
+template<typename T>
+struct t_type_of;
 class t_global;
+
+template<typename T>
+struct t_fundamental
+{
+	typedef T t_type;
+};
+
+template<typename T>
+struct t_fundamental<const T>
+{
+	typedef typename t_fundamental<T>::t_type t_type;
+};
+
+template<typename T>
+struct t_fundamental<T*>
+{
+	typedef typename t_fundamental<T>::t_type t_type;
+};
+
+template<typename T>
+struct t_fundamental<T&>
+{
+	typedef typename t_fundamental<T>::t_type t_type;
+};
 
 struct t_stack
 {
@@ -70,6 +96,100 @@ struct t_scoped_stack : t_stack
 
 struct t_type
 {
+	template<typename T0, typename T1>
+	struct t_as
+	{
+		typedef T0 t_type;
+
+		static T0 f_call(T1 a_object)
+		{
+			return *static_cast<T0*>(a_object->v_pointer);
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_as<T0*, T1>
+	{
+		typedef T0* t_type;
+
+		static T0* f_call(T1 a_object)
+		{
+			return static_cast<T0*>(a_object->v_pointer);
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_as<const T0*, T1>
+	{
+		typedef const T0* t_type;
+
+		static const T0* f_call(T1 a_object)
+		{
+			return static_cast<T0*>(a_object->v_pointer);
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_as<T0&, T1>
+	{
+		typedef T0& t_type;
+
+		static T0& f_call(T1 a_object)
+		{
+			return *static_cast<T0*>(a_object->v_pointer);
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_as<const T0&, T1>
+	{
+		typedef const T0& t_type;
+
+		static const T0& f_call(T1 a_object)
+		{
+			return *static_cast<T0*>(a_object->v_pointer);
+		}
+	};
+	template<typename T>
+	struct t_as<t_object*, T>
+	{
+		typedef t_object* t_type;
+
+		static t_object* f_call(T a_object)
+		{
+			return a_object;
+		}
+	};
+	template<typename T>
+	struct t_as<const t_transfer&, T>
+	{
+		typedef t_transfer t_type;
+
+		static t_object* f_call(T a_object)
+		{
+			return a_object;
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_is
+	{
+		static bool f_call(T1 a_object)
+		{
+			return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type*>(a_object->f_type()->v_pointer));
+		}
+	};
+	template<typename T>
+	struct t_is<t_object*, T>
+	{
+		static bool f_call(T a_object)
+		{
+			return true;
+		}
+	};
+	template<typename T>
+	struct t_is<const t_transfer&, T>
+	{
+		static bool f_call(T a_object)
+		{
+			return true;
+		}
+	};
 	typedef t_global t_extension;
 
 	t_slot v_module;
@@ -141,11 +261,45 @@ struct t_type
 	XEMMAI__PORTABLE__EXPORT virtual void f_send(t_object* a_this, t_stack& a_stack);
 };
 
-template<typename T>
-struct t_type_of
+template<>
+struct t_type::t_as<const t_transfer&, const t_transfer&>
 {
-	typedef t_global t_extension;
+	typedef const t_transfer& t_type;
+
+	static const t_transfer& f_call(const t_transfer& a_object)
+	{
+		return a_object;
+	}
 };
+
+template<typename T>
+struct t_type_of : t_type
+{
+};
+
+template<typename T>
+inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, t_object*>::t_type f_as(t_object* a_object)
+{
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, t_object*>::f_call(a_object);
+}
+
+template<typename T>
+inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_transfer&>::t_type f_as(const t_transfer& a_object)
+{
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_transfer&>::f_call(a_object);
+}
+
+template<typename T>
+inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_shared&>::t_type f_as(const t_shared& a_object)
+{
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_shared&>::f_call(a_object);
+}
+
+template<typename T>
+inline bool f_is(t_object* a_object)
+{
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_is<T, t_object*>::f_call(a_object);
+}
 
 }
 

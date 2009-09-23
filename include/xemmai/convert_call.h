@@ -66,7 +66,7 @@ struct XEMMAI__MACRO__CALL_MEMBERN_WITH
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
 		T_with with(a_self);
-		return f_extension<T_extension>(a_module)->f_as((f_as<T_self*>(a_self)->*a_function)(XEMMAI__MACRO__AS_A_N__));
+		return f_extension<T_extension>(a_module)->f_as((f_as<T_self&>(a_self).*a_function)(XEMMAI__MACRO__AS_A_N__));
 	}
 };
 
@@ -77,7 +77,7 @@ struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
 		T_with with(a_self);
-		return f_extension<T_extension>(a_module)->f_as((f_as<T_self*>(a_self)->*a_function)(f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__));
+		return f_extension<T_extension>(a_module)->f_as((f_as<T_self&>(a_self).*a_function)(f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__));
 	}
 };
 
@@ -88,7 +88,7 @@ struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
 		T_with with(a_self);
-		(f_as<T_self*>(a_self)->*a_function)(XEMMAI__MACRO__AS_A_N__);
+		(f_as<T_self&>(a_self).*a_function)(XEMMAI__MACRO__AS_A_N__);
 		return f_global()->f_null();
 	}
 };
@@ -100,7 +100,7 @@ struct XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA
 	static t_transfer f_call(T_function a_function, t_object* a_module, t_object* a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TRANSFER_A_N__)
 	{
 		T_with with(a_self);
-		(f_as<T_self*>(a_self)->*a_function)(f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__);
+		(f_as<T_self&>(a_self).*a_function)(f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_A_N__);
 		return f_global()->f_null();
 	}
 };

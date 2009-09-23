@@ -34,31 +34,10 @@ struct t_fiber
 				p->f_finalize();
 			}
 		}
-		static void f_initiate(const t_transfer& a_scope, void** a_pc)
-		{
-			t_fiber* fiber = f_as<t_fiber*>(v_current);
-			v_instance = fiber->v_context = f_instantiate(0, a_scope, 0, a_pc);
-		}
-		static void f_terminate()
-		{
-			assert(!v_instance->v_next);
-			v_instance->f_finalize();
-			v_instance = f_as<t_fiber*>(v_current)->v_context = 0;
-		}
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc)
-		{
-			t_fiber* fiber = f_as<t_fiber*>(v_current);
-			if (v_instance->v_native > 0) ++fiber->v_native;
-			v_instance = fiber->v_context = f_instantiate(fiber->v_context, a_scope, a_code, a_pc);
-		}
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_pop()
-		{
-			t_fiber* fiber = f_as<t_fiber*>(v_current);
-			t_context* p = v_instance;
-			v_instance = fiber->v_context = p->v_next;
-			p->f_finalize();
-			if (v_instance->v_native > 0) --fiber->v_native;
-		}
+		static void f_initiate(const t_transfer& a_scope, void** a_pc);
+		static void f_terminate();
+		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc);
+		XEMMAI__PORTABLE__FORCE_INLINE static void f_pop();
 		static void f_backtrace();
 
 		t_context* v_next;
@@ -93,25 +72,8 @@ struct t_fiber
 		};
 
 		static t_try* f_allocate();
-		static void f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally)
-		{
-			t_fiber* fiber = f_as<t_fiber*>(v_current);
-			t_try* p = t_local_pool<t_try>::f_allocate(f_allocate);
-			p->v_next = fiber->v_try;
-			p->v_stack = a_stack;
-			p->v_context = a_context;
-			p->v_state = e_state__TRY;
-			p->v_catch = a_catch;
-			p->v_finally = a_finally;
-			fiber->v_try = p;
-		}
-		static void f_pop()
-		{
-			t_fiber* fiber = f_as<t_fiber*>(v_current);
-			t_try* p = fiber->v_try;
-			fiber->v_try = p->v_next;
-			t_local_pool<t_try>::f_free(p);
-		}
+		static void f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally);
+		static void f_pop();
 
 		t_try* v_next;
 		t_slot* v_stack;
@@ -187,6 +149,56 @@ public:
 		v_done = true;
 	}
 };
+
+inline void t_fiber::t_context::f_initiate(const t_transfer& a_scope, void** a_pc)
+{
+	t_fiber* fiber = f_as<t_fiber*>(v_current);
+	v_instance = fiber->v_context = f_instantiate(0, a_scope, 0, a_pc);
+}
+
+inline void t_fiber::t_context::f_terminate()
+{
+	assert(!v_instance->v_next);
+	v_instance->f_finalize();
+	v_instance = f_as<t_fiber*>(v_current)->v_context = 0;
+}
+
+XEMMAI__PORTABLE__FORCE_INLINE inline void t_fiber::t_context::f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc)
+{
+	t_fiber* fiber = f_as<t_fiber*>(v_current);
+	if (v_instance->v_native > 0) ++fiber->v_native;
+	v_instance = fiber->v_context = f_instantiate(fiber->v_context, a_scope, a_code, a_pc);
+}
+
+XEMMAI__PORTABLE__FORCE_INLINE inline void t_fiber::t_context::f_pop()
+{
+	t_fiber* fiber = f_as<t_fiber*>(v_current);
+	t_context* p = v_instance;
+	v_instance = fiber->v_context = p->v_next;
+	p->f_finalize();
+	if (v_instance->v_native > 0) --fiber->v_native;
+}
+
+inline void t_fiber::t_try::f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally)
+{
+	t_fiber* fiber = f_as<t_fiber*>(v_current);
+	t_try* p = t_local_pool<t_try>::f_allocate(f_allocate);
+	p->v_next = fiber->v_try;
+	p->v_stack = a_stack;
+	p->v_context = a_context;
+	p->v_state = e_state__TRY;
+	p->v_catch = a_catch;
+	p->v_finally = a_finally;
+	fiber->v_try = p;
+}
+
+inline void t_fiber::t_try::f_pop()
+{
+	t_fiber* fiber = f_as<t_fiber*>(v_current);
+	t_try* p = fiber->v_try;
+	fiber->v_try = p->v_next;
+	t_local_pool<t_try>::f_free(p);
+}
 
 }
 

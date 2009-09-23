@@ -36,27 +36,8 @@ void f_throw_type_error(const wchar_t* a_name)
 }
 
 template<typename T>
-struct t_allow_null
-{
-	static const bool v_value = false;
-};
-
-template<typename T>
-struct t_allow_null<T*>
-{
-	static const bool v_value = true;
-};
-
-template<>
-struct t_allow_null<t_object*>
-{
-	static const bool v_value = false;
-};
-
-template<typename T>
 inline void f_check(t_object* a_object, const wchar_t* a_name)
 {
-	if (t_allow_null<T>::v_value && a_object == f_global()->f_null()) return;
 	if (!f_is<T>(a_object)) f_throw_type_error<T>(a_name);
 }
 

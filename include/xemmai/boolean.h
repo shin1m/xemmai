@@ -9,6 +9,17 @@ namespace xemmai
 template<>
 struct t_type_of<bool> : t_type
 {
+	template<typename T0, typename T1>
+	struct t_as
+	{
+		typedef T0 t_type;
+
+		static T0 f_call(T1 a_object)
+		{
+			return static_cast<T0>(a_object->v_boolean);
+		}
+	};
+
 	static std::wstring f_string(bool a_self)
 	{
 		return a_self ? L"true" : L"false";
@@ -40,17 +51,6 @@ struct t_type_of<bool> : t_type
 	virtual void f_and(t_object* a_this, t_stack& a_stack);
 	virtual void f_xor(t_object* a_this, t_stack& a_stack);
 	virtual void f_or(t_object* a_this, t_stack& a_stack);
-};
-
-template<typename T>
-struct t_as<bool, T>
-{
-	typedef bool t_type;
-
-	static bool f_call(T a_object)
-	{
-		return a_object->v_boolean;
-	}
 };
 
 }

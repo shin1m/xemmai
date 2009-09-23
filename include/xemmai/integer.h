@@ -7,8 +7,25 @@ namespace xemmai
 {
 
 template<>
+struct t_fundamental<size_t>
+{
+	typedef int t_type;
+};
+
+template<>
 struct t_type_of<int> : t_type
 {
+	template<typename T0, typename T1>
+	struct t_as
+	{
+		typedef T0 t_type;
+
+		static T0 f_call(T1 a_object)
+		{
+			return static_cast<T0>(a_object->v_integer);
+		}
+	};
+
 	static t_transfer f_construct(t_object* a_class, int a_value)
 	{
 		t_transfer object = t_object::f_allocate_uninitialized(a_class);
@@ -131,34 +148,6 @@ struct t_type_of<int> : t_type
 	virtual void f_and(t_object* a_this, t_stack& a_stack);
 	virtual void f_xor(t_object* a_this, t_stack& a_stack);
 	virtual void f_or(t_object* a_this, t_stack& a_stack);
-};
-
-template<typename T>
-struct t_as<int, T>
-{
-	typedef int t_type;
-
-	static int f_call(T a_object)
-	{
-		return a_object->v_integer;
-	}
-};
-
-template<typename T>
-struct t_as<size_t, T>
-{
-	typedef size_t t_type;
-
-	static size_t f_call(T a_object)
-	{
-		return a_object->v_integer;
-	}
-};
-
-template<>
-struct t_fundamental<size_t>
-{
-	typedef int t_type;
 };
 
 }
