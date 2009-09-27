@@ -281,7 +281,7 @@ struct XEMMAI__MACRO__CALL_STATICN
 			if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
 			XEMMAI__MACRO__REVERSE_REPEAT(XEMMAI__MACRO__POP, XEMMAI__MACRO__N)
 			XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK, XEMMAI__MACRO__N)
-			a_stack.f_return(XEMMAI__MACRO__CALL_STATICN_WITH<T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_void, A_extension>::f_call(a_function, static_cast<T_extension*>(f_as<t_library*>(a_module)->v_extension) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));
+			a_stack.f_return(XEMMAI__MACRO__CALL_STATICN_WITH<T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_void, A_extension>::f_call(a_function, f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));
 		}
 		template<typename T_function>
 		static void f_call(T_function a_function, t_object* a_module, t_stack& a_stack)

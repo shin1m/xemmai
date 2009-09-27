@@ -1,6 +1,7 @@
 #ifndef XEMMAI__GLOBAL_H
 #define XEMMAI__GLOBAL_H
 
+#include "class.h"
 #include "module.h"
 #include "integer.h"
 #include "float.h"
@@ -10,7 +11,6 @@
 namespace xemmai
 {
 
-struct t_class;
 struct t_symbol;
 class t_scope;
 struct t_method;

@@ -10,7 +10,6 @@
 namespace xemmai
 {
 
-struct t_class;
 class t_symbol;
 class t_global;
 
@@ -20,7 +19,7 @@ class t_engine : public t_pointer::t_collector
 	friend class t_hash::t_entry;
 	friend struct t_hash::t_table;
 	friend class t_object;
-	friend struct t_class;
+	friend struct t_type_of<t_type>;
 	friend struct t_module;
 	friend class t_module::t_scoped_lock;
 	friend struct t_library;

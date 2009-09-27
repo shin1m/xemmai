@@ -1,6 +1,7 @@
 #include <xemmai/object.h>
 
 #include <xemmai/engine.h>
+#include <xemmai/class.h>
 
 namespace xemmai
 {

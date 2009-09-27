@@ -47,7 +47,7 @@ void* t_thread::f_main(void* a_p)
 	internal->f_initialize();
 	p->v_active = p->v_fiber;
 	t_fiber::v_current = p->v_active;
-	t_global::v_instance = static_cast<t_global*>(f_as<t_library*>(f_engine()->f_module_global())->v_extension);
+	t_global::v_instance = f_extension<t_global>(f_engine()->f_module_global());
 	t_module::f_main(xemmai::f_main, 0);
 	f_cache_clear();
 	p->v_active = 0;

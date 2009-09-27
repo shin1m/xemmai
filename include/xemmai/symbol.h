@@ -10,8 +10,8 @@ namespace xemmai
 
 class t_symbol
 {
-	friend struct t_type;
-	friend struct t_class;
+	friend struct t_type_of<t_object>;
+	friend struct t_type_of<t_type>;
 	friend struct t_type_of<t_symbol>;
 
 	std::map<std::wstring, t_slot>::iterator v_entry;

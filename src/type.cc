@@ -41,7 +41,7 @@ void t_type::f_initialize(t_object* a_module, t_object* a_self, size_t a_n, t_st
 
 void t_type::f_define(t_object* a_class)
 {
-	t_define<t_object*, t_object>(f_global(), L"Object", a_class)
+	t_define<t_object, t_object>(f_global(), L"Object", a_class)
 		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
@@ -51,7 +51,7 @@ void t_type::f_define(t_object* a_class)
 	;
 }
 
-t_type::~t_type()
+t_type::~t_type_of()
 {
 }
 

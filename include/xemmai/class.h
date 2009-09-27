@@ -6,11 +6,12 @@
 namespace xemmai
 {
 
-struct t_class : t_type
+template<>
+struct t_type_of<t_type> : t_type
 {
 	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(t_type* a_type);
 
-	t_class(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
 	}
 	virtual t_type* f_derive(t_object* a_this);
@@ -23,6 +24,8 @@ struct t_class : t_type
 	virtual void f_call(t_object* a_this, t_object* a_self, size_t a_n, t_stack& a_stack);
 	virtual void f_send(t_object* a_this, t_stack& a_stack);
 };
+
+typedef t_type_of<t_type> t_class;
 
 }
 

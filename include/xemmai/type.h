@@ -8,8 +8,6 @@
 namespace xemmai
 {
 
-template<typename T>
-struct t_type_of;
 class t_global;
 
 template<typename T>
@@ -34,6 +32,12 @@ template<typename T>
 struct t_fundamental<T&>
 {
 	typedef typename t_fundamental<T>::t_type t_type;
+};
+
+template<>
+struct t_fundamental<t_transfer>
+{
+	typedef t_object t_type;
 };
 
 struct t_stack
@@ -94,7 +98,13 @@ struct t_scoped_stack : t_stack
 	}
 };
 
-struct t_type
+template<typename T>
+struct t_type_of
+{
+};
+
+template<>
+struct t_type_of<t_object>
 {
 	template<typename T0, typename T1>
 	struct t_as
@@ -171,7 +181,7 @@ struct t_type
 	{
 		static bool f_call(T1 a_object)
 		{
-			return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type*>(a_object->f_type()->v_pointer));
+			return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(a_object->f_type()->v_pointer));
 		}
 	};
 	template<typename T>
@@ -221,11 +231,11 @@ struct t_type
 	}
 	XEMMAI__PORTABLE__EXPORT static void f_define(t_object* a_class);
 
-	t_type(const t_transfer& a_module, const t_transfer& a_super) : v_module(a_module), v_super(a_super), v_builtin(false), v_primitive(false), v_revive(false)
+	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : v_module(a_module), v_super(a_super), v_builtin(false), v_primitive(false), v_revive(false)
 	{
 	}
-	XEMMAI__PORTABLE__EXPORT virtual ~t_type();
-	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive(t_object* a_this);
+	XEMMAI__PORTABLE__EXPORT virtual ~t_type_of();
+	XEMMAI__PORTABLE__EXPORT virtual t_type_of* f_derive(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
@@ -262,7 +272,7 @@ struct t_type
 };
 
 template<>
-struct t_type::t_as<const t_transfer&, const t_transfer&>
+struct t_type_of<t_object>::t_as<const t_transfer&, const t_transfer&>
 {
 	typedef const t_transfer& t_type;
 
@@ -272,10 +282,7 @@ struct t_type::t_as<const t_transfer&, const t_transfer&>
 	}
 };
 
-template<typename T>
-struct t_type_of : t_type
-{
-};
+typedef t_type_of<t_object> t_type;
 
 template<typename T>
 inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, t_object*>::t_type f_as(t_object* a_object)

@@ -4,7 +4,6 @@
 #include <typeinfo>
 
 #include "portable/convert.h"
-#include "class.h"
 #include "symbol.h"
 #include "throwable.h"
 #include "global.h"
