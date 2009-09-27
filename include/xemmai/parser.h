@@ -36,6 +36,10 @@ class t_parser
 	std::vector<void*>* v_objects;
 	t_targets* v_targets;
 
+	bool f_single_colon() const
+	{
+		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1;
+	}
 	void f_throw(const std::wstring& a_message);
 	void f_emit(t_instruction a_instruction)
 	{

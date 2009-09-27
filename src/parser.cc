@@ -99,7 +99,7 @@ void t_parser::f_target()
 		v_lexer.f_next();
 		if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
 		f_emit(e_instruction__INSTANCE);
-		f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1)));
+		f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())));
 		f_at(position, line, column);
 		v_lexer.f_next();
 		break;
@@ -116,12 +116,12 @@ void t_parser::f_target()
 			if (v_lexer.f_token() == t_lexer::e_token__LEFT_PARENTHESIS) {
 				v_lexer.f_next();
 				if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
-					symbols.push_back(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
+					symbols.push_back(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					while (v_lexer.f_token() == t_lexer::e_token__COMMA) {
 						v_lexer.f_next();
 						if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
-						symbols.push_back(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
+						symbols.push_back(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 						v_lexer.f_next();
 					}
 				}
@@ -185,7 +185,7 @@ void t_parser::f_target()
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
 				f_expression();
 				++n;
-				if (v_lexer.f_token() != t_lexer::e_token__COLON) f_throw(L"expecting ':'.");
+				if (!f_single_colon()) f_throw(L"expecting ':'.");
 				v_lexer.f_next();
 				f_expression();
 				++n;
@@ -193,7 +193,7 @@ void t_parser::f_target()
 					v_lexer.f_next();
 					f_expression();
 					++n;
-					if (v_lexer.f_token() != t_lexer::e_token__COLON) f_throw(L"expecting ':'.");
+					if (!f_single_colon()) f_throw(L"expecting ':'.");
 					v_lexer.f_next();
 					f_expression();
 					++n;
@@ -230,7 +230,7 @@ void t_parser::f_target()
 		break;
 	case t_lexer::e_token__STRING:
 		{
-			std::wstring value(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1);
+			std::wstring value(v_lexer.f_value().begin(), v_lexer.f_value().end());
 			v_lexer.f_next();
 			f_emit(e_instruction__INSTANCE);
 			f_operand(f_global()->f_as(value));
@@ -264,11 +264,15 @@ void t_parser::f_dot()
 	t_lexer::t_token token = v_lexer.f_token();
 	switch (token) {
 	case t_lexer::e_token__COLON:
-		f_emit(e_instruction__CLASS);
-		break;
+		if (v_lexer.f_value().size() == 1) {
+			f_emit(e_instruction__CLASS);
+			v_lexer.f_next();
+			return;
+		}
 	case t_lexer::e_token__HAT:
 		f_emit(e_instruction__SUPER);
-		break;
+		v_lexer.f_next();
+		return;
 	case t_lexer::e_token__QUESTION:
 	case t_lexer::e_token__TILDE:
 		v_lexer.f_next();
@@ -281,16 +285,15 @@ void t_parser::f_dot()
 			break;
 		case t_lexer::e_token__SYMBOL:
 			f_emit(token == t_lexer::e_token__QUESTION ? e_instruction__OBJECT_HAS : e_instruction__OBJECT_REMOVE);
-			f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1)));
+			f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())));
 			break;
 		default:
 			f_throw(L"expecting '(' or symbol.");
 		}
-		break;
-	default:
-		f_throw(L"expecting '(' or ':' or '?' or '^' or '~' or symbol.");
+		v_lexer.f_next();
+		return;
 	}
-	v_lexer.f_next();
+	f_throw(L"expecting '(' or ':' or '?' or '^' or '~' or symbol.");
 }
 
 void t_parser::f_action()
@@ -316,7 +319,7 @@ void t_parser::f_action()
 					break;
 				case t_lexer::e_token__SYMBOL:
 					f_emit(e_instruction__OBJECT_GET);
-					f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1)));
+					f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())));
 					v_lexer.f_next();
 					break;
 				default:
@@ -355,29 +358,30 @@ void t_parser::f_primary()
 			size_t line = v_lexer.f_line();
 			size_t column = v_lexer.f_column();
 			size_t outer = 0;
-			while (v_lexer.f_token() == t_lexer::e_token__COLON) {
-				++outer;
+			t_scope* scope = v_scope;
+			if (v_lexer.f_token() == t_lexer::e_token__COLON) {
+				outer = v_lexer.f_value().size();
+				for (size_t i = 0; i < outer; ++i) {
+					if (!scope) t_throwable::f_throw(L"no more outer scope.");
+					scope = scope->v_outer;
+				}
 				v_lexer.f_next();
 			}
 			switch (v_lexer.f_token()) {
 			case t_lexer::e_token__SYMBOL:
 				{
-					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
+					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
-					t_scope* scope = v_scope;
-					for (size_t i = 0; i < outer; ++i) {
-						if (!scope) t_throwable::f_throw(L"no more outer scope.");
-						scope = scope->v_outer;
-					}
 					f_get(position, line, column, outer, scope, symbol);
 				}
 				break;
 			case t_lexer::e_token__SELF:
 				{
+					if (!scope) t_throwable::f_throw(L"no more outer scope.");
 					f_emit(e_instruction__SELF);
 					f_operand(outer);
 					f_at(position, line, column);
-					std::vector<wchar_t>::const_iterator end = v_lexer.f_value().end() - 1;
+					std::vector<wchar_t>::const_iterator end = v_lexer.f_value().end();
 					for (std::vector<wchar_t>::const_iterator i = v_lexer.f_value().begin(); i != end; ++i) {
 						f_emit(*i == L':' ? e_instruction__CLASS : e_instruction__SUPER);
 						f_at(position, line, column);
@@ -385,7 +389,7 @@ void t_parser::f_primary()
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 						f_emit(e_instruction__OBJECT_GET);
-						f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1)));
+						f_operand(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())));
 						f_at(v_lexer.f_position(), v_lexer.f_line(), v_lexer.f_column());
 						v_lexer.f_next();
 					}
@@ -740,7 +744,7 @@ void t_parser::f_or_else()
 
 void t_parser::f_send()
 {
-	while (v_lexer.f_token() == t_lexer::e_token__SEND) {
+	while (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 2) {
 		long position = v_lexer.f_position();
 		size_t line = v_lexer.f_line();
 		size_t column = v_lexer.f_column();
@@ -777,7 +781,7 @@ void t_parser::f_conditional()
 	f_emit(e_instruction__JUMP);
 	f_operand(label1);
 	f_at(position, line, column);
-	if (v_lexer.f_token() != t_lexer::e_token__COLON) f_throw(L"expecting ':'.");
+	if (!f_single_colon()) f_throw(L"expecting ':'.");
 	v_lexer.f_next();
 	f_resolve(label0);
 	f_expression();
@@ -855,20 +859,20 @@ void t_parser::f_expression()
 			size_t line = v_lexer.f_line();
 			size_t column = v_lexer.f_column();
 			size_t outer = 0;
-			while (v_lexer.f_token() == t_lexer::e_token__COLON) {
-				++outer;
+			t_scope* scope = v_scope;
+			if (v_lexer.f_token() == t_lexer::e_token__COLON) {
+				outer = v_lexer.f_value().size();
+				for (size_t i = 0; i < outer; ++i) {
+					if (!scope) t_throwable::f_throw(L"no more outer scope.");
+					scope = scope->v_outer;
+				}
 				v_lexer.f_next();
 			}
 			switch (v_lexer.f_token()) {
 			case t_lexer::e_token__SYMBOL:
 				{
-					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
+					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
-					t_scope* scope = v_scope;
-					for (size_t i = 0; i < outer; ++i) {
-						if (!scope) t_throwable::f_throw(L"no more outer scope.");
-						scope = scope->v_outer;
-					}
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 						v_lexer.f_next();
 						if (scope) {
@@ -898,10 +902,11 @@ void t_parser::f_expression()
 				break;
 			case t_lexer::e_token__SELF:
 				{
+					if (!scope) t_throwable::f_throw(L"no more outer scope.");
 					f_emit(e_instruction__SELF);
 					f_operand(outer);
 					f_at(position, line, column);
-					std::vector<wchar_t>::const_iterator end = v_lexer.f_value().end() - 1;
+					std::vector<wchar_t>::const_iterator end = v_lexer.f_value().end();
 					for (std::vector<wchar_t>::const_iterator i = v_lexer.f_value().begin(); i != end; ++i) {
 						f_emit(*i == L':' ? e_instruction__CLASS : e_instruction__SUPER);
 						f_at(position, line, column);
@@ -911,7 +916,7 @@ void t_parser::f_expression()
 						long position = v_lexer.f_position();
 						size_t line = v_lexer.f_line();
 						size_t column = v_lexer.f_column();
-						std::wstring symbol(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1);
+						std::wstring symbol(v_lexer.f_value().begin(), v_lexer.f_value().end());
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 							v_lexer.f_next();
@@ -1034,7 +1039,7 @@ void t_parser::f_expression()
 					v_lexer.f_next();
 					f_expression();
 					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
-					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
+					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 					v_lexer.f_next();
@@ -1129,7 +1134,7 @@ void t_parser::f_expression()
 					break;
 				case t_lexer::e_token__SYMBOL:
 					{
-						t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end() - 1));
+						t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 							v_lexer.f_next();
@@ -1199,8 +1204,8 @@ void t_parser::f_expression()
 			f_and_also();
 		case t_lexer::e_token__OR_ELSE:
 			f_or_else();
-		case t_lexer::e_token__SEND:
-			f_send();
+		case t_lexer::e_token__COLON:
+			if (v_lexer.f_value().size() == 2) f_send();
 		case t_lexer::e_token__QUESTION:
 			f_conditional();
 		default:

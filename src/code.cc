@@ -539,10 +539,7 @@ t_transfer t_code::f_loop()
 						size_t outer = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						t_object* scope = f_context()->v_scope;
-						for (size_t i = 0; i < outer; ++i) {
-							scope = f_as<t_scope*>(scope)->v_outer;
-							if (!scope) t_throwable::f_throw(L"no more outer scope.");
-						}
+						for (size_t i = 0; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
 						t_object* self = f_as<t_scope*>(scope)->v_self;
 						if (!self) t_throwable::f_throw(L"$ not given.");
 						stack->f_push(self);

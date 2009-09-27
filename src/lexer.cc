@@ -110,7 +110,6 @@ void t_lexer::f_next()
 			}
 			f_get();
 		}
-		v_value.push_back(L'\0');
 		break;
 	case L'$':
 		v_token = e_token__SELF;
@@ -119,7 +118,6 @@ void t_lexer::f_next()
 			v_value.push_back(v_c);
 			f_get();
 		}
-		v_value.push_back(L'\0');
 		break;
 	case L'%':
 		v_token = e_token__PERCENT;
@@ -171,13 +169,11 @@ void t_lexer::f_next()
 		f_get();
 		break;
 	case L':':
-		f_get();
-		if (v_c == L':') {
-			v_token = e_token__SEND;
+		v_token = e_token__COLON;
+		do {
+			v_value.push_back(v_c);
 			f_get();
-		} else {
-			v_token = e_token__COLON;
-		}
+		} while (v_c == L':');
 		break;
 	case L';':
 		v_token = e_token__SEMICOLON;
@@ -528,7 +524,6 @@ void t_lexer::f_next()
 				v_value.push_back(v_c);
 				f_get();
 			}
-			v_value.push_back(L'\0');
 			v_token = e_token__SYMBOL;
 		} else if (std::iswdigit(v_c)) {
 			do {
