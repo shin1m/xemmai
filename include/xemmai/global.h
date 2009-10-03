@@ -11,24 +11,32 @@
 namespace xemmai
 {
 
-struct t_symbol;
+class t_symbol;
 class t_scope;
-struct t_method;
+class t_method;
 struct t_code;
-struct t_lambda;
+class t_lambda;
 class t_null;
 class t_tuple;
 class t_array;
 class t_dictionary;
 class t_bytes;
 
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 t_global* f_global();
+#else
+XEMMAI__PORTABLE__EXPORT t_global* f_global();
+#endif
 
 class t_global : public t_extension
 {
 	friend struct t_thread;
 	template<typename T, typename T_super> friend class t_define;
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	friend t_global* f_global();
+#else
+	friend XEMMAI__PORTABLE__EXPORT t_global* f_global();
+#endif
 
 	static XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
@@ -566,8 +574,6 @@ inline t_global* f_global()
 {
 	return t_global::v_instance;
 }
-#else
-XEMMAI__PORTABLE__EXPORT t_global* f_global();
 #endif
 
 }

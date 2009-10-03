@@ -1047,7 +1047,7 @@ void t_parser::f_expression()
 					std::vector<size_t> label0;
 					f_emit(e_instruction__CATCH);
 					f_operand(label0);
-					f_operand(f_index(v_scope, symbol, v_targets->v_break));
+					f_operand(f_index(v_scope, symbol, v_targets->v_break != 0));
 					f_at(position, line, column);
 					f_block();
 					f_emit(e_instruction__FINALLY);

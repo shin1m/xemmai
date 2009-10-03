@@ -163,14 +163,14 @@ inline void t_fiber::t_context::f_terminate()
 	v_instance = f_as<t_fiber*>(v_current)->v_context = 0;
 }
 
-XEMMAI__PORTABLE__FORCE_INLINE inline void t_fiber::t_context::f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc)
+inline void t_fiber::t_context::f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc)
 {
 	t_fiber* fiber = f_as<t_fiber*>(v_current);
 	if (v_instance->v_native > 0) ++fiber->v_native;
 	v_instance = fiber->v_context = f_instantiate(fiber->v_context, a_scope, a_code, a_pc);
 }
 
-XEMMAI__PORTABLE__FORCE_INLINE inline void t_fiber::t_context::f_pop()
+inline void t_fiber::t_context::f_pop()
 {
 	t_fiber* fiber = f_as<t_fiber*>(v_current);
 	t_context* p = v_instance;

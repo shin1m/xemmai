@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <xemmai/portable/convert.h>
 #include <xemmai/portable/path.h>
 #include <xemmai/class.h>
 #include <xemmai/array.h>

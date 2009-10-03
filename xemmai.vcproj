@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include"
+				AdditionalIncludeDirectories="include;win_iconv"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;XEMMAI__PORTABLE__EXPORT=__declspec(dllexport)"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -114,7 +114,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="include"
+				AdditionalIncludeDirectories="include;win_iconv"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;XEMMAI__PORTABLE__EXPORT=__declspec(dllexport)"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\xemmai\bytes.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\xemmai\class.h"
 				>
 			</File>
@@ -193,11 +197,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\xemmai\convert.h"
+				RelativePath=".\include\xemmai\portable\convert.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\xemmai\portable\convert.h"
+				RelativePath=".\include\xemmai\convert.h"
 				>
 			</File>
 			<File
@@ -229,6 +233,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\xemmai\io\file.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\xemmai\float.h"
 				>
 			</File>
@@ -241,7 +249,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\win_iconv\iconv.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\xemmai\integer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\xemmai\io.h"
 				>
 			</File>
 			<File
@@ -258,6 +274,10 @@
 			</File>
 			<File
 				RelativePath=".\include\xemmai\macro.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\xemmai\math.h"
 				>
 			</File>
 			<File
@@ -285,6 +305,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\xemmai\os.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\xemmai\parser.h"
 				>
 			</File>
@@ -301,6 +325,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\xemmai\io\reader.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\xemmai\scope.h"
 				>
 			</File>
@@ -313,11 +341,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\xemmai\thread.h"
+				RelativePath=".\include\xemmai\portable\thread.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\xemmai\portable\thread.h"
+				RelativePath=".\include\xemmai\thread.h"
 				>
 			</File>
 			<File
@@ -330,6 +358,10 @@
 			</File>
 			<File
 				RelativePath=".\include\xemmai\type.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\xemmai\io\writer.h"
 				>
 			</File>
 		</Filter>
@@ -350,6 +382,10 @@
 			</File>
 			<File
 				RelativePath=".\src\boolean.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bytes.cc"
 				>
 			</File>
 			<File
@@ -389,6 +425,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\io.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\src\io__file.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\src\io__reader.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\src\io__writer.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\src\lambda.cc"
 				>
 			</File>
@@ -398,6 +450,10 @@
 			</File>
 			<File
 				RelativePath=".\src\main.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\src\math.cc"
 				>
 			</File>
 			<File
@@ -418,6 +474,10 @@
 			</File>
 			<File
 				RelativePath=".\src\object.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\src\os.cc"
 				>
 			</File>
 			<File
@@ -458,6 +518,10 @@
 			</File>
 			<File
 				RelativePath=".\src\type.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\win_iconv\win_iconv.c"
 				>
 			</File>
 		</Filter>

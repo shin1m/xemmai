@@ -96,7 +96,7 @@ void t_code::f_generate(void** a_p)
 		case e_instruction__SCOPE_GET0:
 			{
 				int index = *static_cast<int*>(a_p[1]);
-				if ((index & (e_access__SHARED | e_access__VARIES)) != e_access__SHARED | e_access__VARIES) XEMMAI__CODE__REPLACE(SCOPE_GET0_WITHOUT_LOCK)
+				if ((index & (e_access__SHARED | e_access__VARIES)) != (e_access__SHARED | e_access__VARIES)) XEMMAI__CODE__REPLACE(SCOPE_GET0_WITHOUT_LOCK)
 				*++a_p = reinterpret_cast<void*>(index & e_access__INDEX);
 				++a_p;
 			}

@@ -181,7 +181,7 @@ struct t_type_of<t_object>
 	{
 		static bool f_call(T1 a_object)
 		{
-			return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(a_object->f_type()->v_pointer));
+			return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(a_object->f_type()->v_pointer)) != 0;
 		}
 	};
 	template<typename T>

@@ -1,39 +1,38 @@
 set TARGET=%1\
 set XEMMAI=%TARGET%xemmai --verbose
 
-%XEMMAI% test\field.xm
-pause
-%XEMMAI% test\flow.xm
-pause
-%XEMMAI% test\race.xm
-pause
-%XEMMAI% test\ring.xm
-pause
-%XEMMAI% test\symbol.xm
-pause
-%XEMMAI% test\fiber.xm
-pause
-%XEMMAI% test\fiber2.xm
-pause
-%XEMMAI% test\fiber3.xm
-pause
-%XEMMAI% test\thread.xm
-pause
-%XEMMAI% test\hanoi.xm
-pause
-%XEMMAI% test\hanoi2.xm
-pause
-%XEMMAI% test\prime.xm
-pause
-%XEMMAI% test\prime2.xm
-pause
-%XEMMAI% test\prime3.xm
-pause
-%XEMMAI% test\psmtp.xm
-pause
-%XEMMAI% test\mandelbrot.xm
-pause
-%XEMMAI% %TARGET%test_container.xm
-pause
-%XEMMAI% %TARGET%test_callback.xm
-pause
+for %%i in (
+	field.xm
+	flow.xm
+	race.xm
+	ring.xm
+	symbol.xm
+	fiber.xm
+	fiber2.xm
+	fiber3.xm
+	thread.xm
+	array.xm
+	dictionary.xm
+	bytes.xm
+	file.xm
+	text.xm
+	hanoi.xm
+	hanoi2.xm
+	prime.xm
+	prime2.xm
+	prime3.xm
+	psmtp.xm
+	mandelbrot.xm
+) do (
+	%XEMMAI% test\%%i
+	if errorlevel 1 goto :eof
+)
+for %%i in (
+	test_container.xm
+	test_callback.xm
+) do (
+	%XEMMAI% %TARGET%%%i
+	if errorlevel 1 goto :eof
+)
+
+echo Passed all tests.

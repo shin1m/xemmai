@@ -60,7 +60,7 @@ t_transfer t_reader::f_instantiate(const t_transfer& a_stream, const std::wstrin
 	return object;
 }
 
-t_reader::t_reader(const t_transfer& a_stream, const std::wstring& a_encoding) : v_cd(iconv_open("WCHAR_T", portable::f_convert(a_encoding).c_str())), v_n(0)
+t_reader::t_reader(const t_transfer& a_stream, const std::wstring& a_encoding) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
 {
 	if (v_cd == iconv_t(-1)) t_throwable::f_throw(L"failed to iconv_open.");
 	v_stream = a_stream;

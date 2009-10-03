@@ -47,7 +47,7 @@ public:
 	}
 	bool f_has(t_object* a_key) const
 	{
-		return v_hash.f_find<t_hash_traits>(a_key);
+		return v_hash.f_find<t_hash_traits>(a_key) != 0;
 	}
 	t_transfer f_remove(t_object* a_key);
 };

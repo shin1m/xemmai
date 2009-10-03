@@ -1,7 +1,6 @@
 #ifndef XEMMAI__IO_H
 #define XEMMAI__IO_H
 
-#include "module.h"
 #include "symbol.h"
 #include "global.h"
 #include "io/file.h"

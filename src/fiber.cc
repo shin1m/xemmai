@@ -1,6 +1,6 @@
 #include <xemmai/fiber.h>
 
-#include <cwctype>
+#include <cctype>
 #include <xemmai/engine.h>
 #include <xemmai/scope.h>
 #include <xemmai/convert.h>
