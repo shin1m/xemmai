@@ -22,7 +22,6 @@ class t_method
 
 public:
 	static t_transfer f_instantiate(const t_transfer& a_function, const t_transfer& a_self);
-	static void f_define(t_object* a_class);
 
 	t_transfer f_bind(const t_transfer& a_target) const
 	{

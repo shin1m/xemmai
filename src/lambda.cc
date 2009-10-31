@@ -2,6 +2,7 @@
 
 #include <xemmai/scope.h>
 #include <xemmai/code.h>
+#include <xemmai/method.h>
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -45,6 +46,14 @@ void t_type_of<t_lambda>::f_call(t_object* a_this, t_object* a_self, size_t a_n,
 	t_scope& s = f_as<t_scope&>(scope);
 	while (a_n > 0) s[--a_n].f_construct(a_stack.f_pop());
 	t_fiber::t_context::f_push(scope, p->v_code, &code->v_instructions[0]);
+}
+
+void t_type_of<t_lambda>::f_get_at(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	a_stack.f_return(t_method::f_instantiate(a_this, a0));
+	context.f_done();
 }
 
 }

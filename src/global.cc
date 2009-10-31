@@ -77,7 +77,7 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type*>(v_type_symbol)->v_builtin = true;
 	v_type_scope = t_class::f_instantiate(new t_type_of<t_scope>(a_module, v_type_object));
 	xemmai::f_as<t_type*>(v_type_scope)->v_builtin = true;
-	t_method::f_define(v_type_method);
+	t_define<t_method, t_object>(this, L"Method", v_type_method);
 	xemmai::f_as<t_type*>(v_type_method)->v_builtin = true;
 	t_define<t_code, t_object>(this, L"Code");
 	xemmai::f_as<t_type*>(v_type_code)->v_builtin = true;

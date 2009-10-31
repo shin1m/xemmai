@@ -150,6 +150,21 @@ struct t_type_of<int> : t_type
 	virtual void f_or(t_object* a_this, t_stack& a_stack);
 };
 
+template<typename T, typename T_extension>
+struct t_enum_of : t_type_of<int>
+{
+	typedef T_extension t_extension;
+	typedef t_enum_of t_base;
+
+	t_enum_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<int>(a_module, a_super)
+	{
+	}
+	virtual t_type* f_derive(t_object* a_this)
+	{
+		return new t_type_of<T>(v_module, a_this);
+	}
+};
+
 }
 
 #endif

@@ -1,5 +1,6 @@
 #include <xemmai/native.h>
 
+#include <xemmai/method.h>
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -37,6 +38,14 @@ void t_type_of<t_native>::f_call(t_object* a_this, t_object* a_self, size_t a_n,
 	t_native_context context;
 	t_native* p = f_as<t_native*>(a_this);
 	p->v_function(p->v_module, a_self, a_n, a_stack);
+	context.f_done();
+}
+
+void t_type_of<t_native>::f_get_at(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	a_stack.f_return(t_method::f_instantiate(a_this, a0));
 	context.f_done();
 }
 

@@ -12,13 +12,6 @@ t_transfer t_method::f_instantiate(const t_transfer& a_function, const t_transfe
 	return object;
 }
 
-void t_method::f_define(t_object* a_class)
-{
-	t_define<t_method, t_object>(f_global(), L"Method", a_class)
-		(f_global()->f_symbol_get_at(), t_member<t_transfer (t_method::*)(const t_transfer&) const, &t_method::f_bind>())
-	;
-}
-
 t_type* t_type_of<t_method>::f_derive(t_object* a_this)
 {
 	return 0;
