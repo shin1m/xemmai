@@ -1,8 +1,7 @@
 #include <xemmai/engine.h>
 
 #include <cassert>
-#include <cstring>
-#include <xemmai/portable/convert.h>
+#include <cstdlib>
 #include <xemmai/portable/path.h>
 #include <xemmai/class.h>
 #include <xemmai/array.h>
@@ -171,7 +170,7 @@ void t_engine::f_collector()
 	}
 }
 
-t_engine::t_engine(int& argc, char** argv) :
+t_engine::t_engine(bool a_verbose, size_t a_count, char** a_arguments) :
 v_object__cycle(0),
 v_object__reviving(false),
 v_object__release(0),
@@ -181,20 +180,8 @@ v_synchronizers(0),
 v_synchronizer__wake(0),
 v_module__thread(0),
 v_library__handle__finalizing(0),
-v_verbose(false)
+v_verbose(a_verbose)
 {
-	{
-		char** end = argv + argc;
-		char** q = argv;
-		for (char** p = argv; p < end; ++p) {
-			if ((*p)[0] == '-' && (*p)[1] == '-') {
-				if (std::strcmp(*p + 2, "verbose") == 0) v_verbose = true;
-			} else {
-				*q++ = *p;
-			}
-		}
-		argc = q - argv;
-	}
 	v_hash__table__pools[0].f_initialize(0, 11);
 	v_hash__table__pools[1].f_initialize(1, 31);
 	v_hash__table__pools[2].f_initialize(2, 67);
@@ -261,15 +248,30 @@ v_verbose(false)
 	library->v_extension = new t_global(v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
 	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
 	t_transfer path = t_array::f_instantiate();
-	if (argc > 0) {
-		v_module_system->f_put(f_global()->f_symbol_executable(), f_global()->f_as(portable::t_path(portable::f_convert(argv[0]))));
-		if (argc > 1) {
-			portable::t_path script(portable::f_convert(argv[1]));
-			v_module_system->f_put(f_global()->f_symbol_script(), f_global()->f_as(script));
-			f_as<t_array*>(path)->f_push(f_global()->f_as(script / L".."));
+	{
+		char* p = std::getenv("XEMMAI_MODULE_PATH");
+		if (p != NULL) {
+			std::wstring s = portable::f_convert(p);
+			size_t i = 0;
+			while (true) {
+				size_t j = s.find(L':', i);
+				if (j == std::wstring::npos) break;
+				if (i < j) f_as<t_array*>(path)->f_push(f_global()->f_as(s.substr(i, j - i)));
+				i = j + 1;
+			}
+			if (i < s.size()) f_as<t_array*>(path)->f_push(f_global()->f_as(s.substr(i)));
+		}
+	}
+	f_as<t_array*>(path)->f_push(f_global()->f_as(std::wstring(XEMMAI__MACRO__L(XEMMAI_MODULE_PATH))));
+	if (a_count > 0) {
+		v_module_system->f_put(f_global()->f_symbol_executable(), f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_convert(a_arguments[0])))));
+		if (a_count > 1) {
+			portable::t_path script(portable::f_convert(a_arguments[1]));
+			v_module_system->f_put(f_global()->f_symbol_script(), f_global()->f_as(static_cast<const std::wstring&>(script)));
+			f_as<t_array*>(path)->f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L"..")));
 			t_transfer arguments = t_array::f_instantiate();
 			t_array* p = f_as<t_array*>(arguments);
-			for (int i = 2; i < argc; ++i) p->f_push(f_global()->f_as(portable::f_convert(argv[i])));
+			for (int i = 2; i < a_count; ++i) p->f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
 			v_module_system->f_put(f_global()->f_symbol_arguments(), arguments);
 		}
 	}

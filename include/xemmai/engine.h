@@ -127,7 +127,7 @@ class t_engine : public t_pointer::t_collector
 	void f_collector();
 
 public:
-	t_engine(int& argc, char** argv);
+	t_engine(bool a_verbose, size_t a_count, char** a_arguments);
 	~t_engine();
 	void f_collect()
 	{

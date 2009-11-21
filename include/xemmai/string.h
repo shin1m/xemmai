@@ -9,6 +9,13 @@ namespace xemmai
 template<>
 struct t_type_of<std::wstring> : t_type
 {
+	template<typename T_extension, typename T>
+	static t_transfer f_transfer(T_extension* a_extension, T a_value)
+	{
+		t_transfer object = t_object::f_allocate_uninitialized(a_extension->template f_type<typename t_fundamental<T>::t_type>());
+		object->v_pointer = new std::wstring(a_value);
+		return object;
+	}
 	static std::wstring f_from_code(int a_code)
 	{
 		return std::wstring(1, a_code);

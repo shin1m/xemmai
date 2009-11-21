@@ -30,7 +30,7 @@ public:
 	}
 	t_library(const std::wstring& a_path) : v_handle(dlopen(f_convert(a_path + L".so").c_str(), RTLD_LAZY | RTLD_GLOBAL))
 	{
-		if (v_handle == NULL) std::fprintf(stderr, "dlopen: %s\n", dlerror());
+//		if (v_handle == NULL) std::fprintf(stderr, "dlopen: %s\n", dlerror());
 	}
 	~t_library()
 	{

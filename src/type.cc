@@ -3,6 +3,7 @@
 #include <xemmai/thread.h>
 #include <xemmai/method.h>
 #include <xemmai/throwable.h>
+#include <xemmai/boolean.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
 

@@ -1,4 +1,4 @@
-AC_INIT([xemmai], [200806])
+AC_INIT([xemmai], [200911])
 AM_INIT_AUTOMAKE([foreign nostdinc dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR([src/main.cc])
 
@@ -13,7 +13,7 @@ AC_TYPE_SIZE_T
 
 AC_ARG_ENABLE(
 	[debug],
-	[  --enable-debug	Turn on debugging],
+	AS_HELP_STRING([--enable-debug], [turn on debugging]),
 	[case "${enableval}" in
 	  yes) debug=true ;;
 	  no) debug=false ;;
@@ -24,7 +24,7 @@ AC_ARG_ENABLE(
 AM_CONDITIONAL([DEBUG], [test x$debug = xtrue])
 AC_ARG_ENABLE(
 	[profile],
-	[  --enable-profile	Turn on profiling],
+	AS_HELP_STRING([--enable-profile], [turn on profiling]),
 	[case "${enableval}" in
 	  yes) profile=true ;;
 	  no) profile=false ;;
@@ -34,7 +34,7 @@ AC_ARG_ENABLE(
 )
 AM_CONDITIONAL([PROFILE], [test x$profile = xtrue])
 
-AC_CONFIG_HEADERS([include/xemmai/portable/configure.h])
+AM_CONFIG_HEADER([include/xemmai/portable/configure.h])
 AC_CONFIG_FILES([
 	Makefile
 	include/Makefile

@@ -208,6 +208,14 @@ struct t_type_of<t_object>
 	bool v_primitive;
 	bool v_revive;
 
+	static t_transfer f_transfer(const t_global* a_extension, t_object* a_value)
+	{
+		return a_value;
+	}
+	static t_transfer f_transfer(const t_global* a_extension, const t_transfer& a_value)
+	{
+		return a_value;
+	}
 	XEMMAI__PORTABLE__EXPORT static bool f_derives(t_object* a_this, t_object* a_type);
 	static void f_construct(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack);
 	static void f_initialize(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack);

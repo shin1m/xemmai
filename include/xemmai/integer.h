@@ -26,6 +26,11 @@ struct t_type_of<int> : t_type
 		}
 	};
 
+	template<typename T_extension, typename T>
+	static t_transfer f_transfer(T_extension* a_extension, T a_value)
+	{
+		return f_construct(a_extension->template f_type<typename t_fundamental<T>::t_type>(), static_cast<int>(a_value));
+	}
 	static t_transfer f_construct(t_object* a_class, int a_value)
 	{
 		t_transfer object = t_object::f_allocate_uninitialized(a_class);
@@ -159,11 +164,14 @@ struct t_enum_of : t_type_of<int>
 	t_enum_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<int>(a_module, a_super)
 	{
 	}
-	virtual t_type* f_derive(t_object* a_this)
-	{
-		return new t_type_of<T>(v_module, a_this);
-	}
+	virtual t_type* f_derive(t_object* a_this);
 };
+
+template<typename T, typename T_extension>
+t_type* t_enum_of<T, T_extension>::f_derive(t_object* a_this)
+{
+	return new t_type_of<T>(v_module, a_this);
+}
 
 }
 

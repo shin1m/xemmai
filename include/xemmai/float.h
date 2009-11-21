@@ -20,6 +20,11 @@ struct t_type_of<double> : t_type
 		}
 	};
 
+	template<typename T_extension, typename T>
+	static t_transfer f_transfer(T_extension* a_extension, T a_value)
+	{
+		return f_construct(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
+	}
 	static t_transfer f_construct(t_object* a_class, double a_value)
 	{
 		t_transfer object = t_object::f_allocate_uninitialized(a_class);

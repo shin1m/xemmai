@@ -20,6 +20,11 @@ struct t_type_of<bool> : t_type
 		}
 	};
 
+	template<typename T_extension, typename T>
+	static t_transfer f_transfer(T_extension* a_extension, T a_value)
+	{
+		return a_value ? a_extension->f_true() : a_extension->f_false();
+	}
 	static std::wstring f_string(bool a_self)
 	{
 		return a_self ? L"true" : L"false";

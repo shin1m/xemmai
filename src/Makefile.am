@@ -1,5 +1,5 @@
 bin_PROGRAMS = xemmai
-AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai/$(PACKAGE_VERSION)"
 AM_CXXFLAGS =
 AM_LDFLAGS = -rdynamic
 LDADD = -ldl -lpthread

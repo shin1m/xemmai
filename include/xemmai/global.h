@@ -257,39 +257,11 @@ public:
 	{
 		return v_false;
 	}
-	t_transfer f_as(t_object* a_value) const
+	template<typename T>
+	t_transfer f_as(T a_value) const
 	{
-		return a_value;
-	}
-	t_transfer f_as(const t_transfer& a_value) const
-	{
-		return a_value;
-	}
-	t_transfer f_as(bool a_value) const
-	{
-		return a_value ? v_true : v_false;
-	}
-	t_transfer f_as(int a_value) const
-	{
-		t_transfer object = t_object::f_allocate_uninitialized(v_type_integer);
-		object->v_integer = a_value;
-		return object;
-	}
-	t_transfer f_as(size_t a_value) const
-	{
-		return f_as(static_cast<int>(a_value));
-	}
-	t_transfer f_as(double a_value) const
-	{
-		t_transfer object = t_object::f_allocate_uninitialized(v_type_float);
-		object->v_float = a_value;
-		return object;
-	}
-	t_transfer f_as(const std::wstring& a_value) const
-	{
-		t_transfer object = t_object::f_allocate_uninitialized(v_type_string);
-		object->v_pointer = new std::wstring(a_value);
-		return object;
+		typedef t_type_of<typename t_fundamental<T>::t_type> t;
+		return t::f_transfer(this, a_value);
 	}
 };
 

@@ -37,7 +37,7 @@ public:
 		path /= a_path;
 		return path;
 	}
-	operator std::wstring() const
+	operator const std::wstring&() const
 	{
 		return v_path;
 	}
