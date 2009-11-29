@@ -60,7 +60,7 @@ public:
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(T a_value) const
+	t_transfer f_as(const T& a_value) const
 	{
 		return f_global()->f_as(a_value);
 	}

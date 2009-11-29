@@ -258,7 +258,7 @@ public:
 		return v_false;
 	}
 	template<typename T>
-	t_transfer f_as(T a_value) const
+	t_transfer f_as(const T& a_value) const
 	{
 		typedef t_type_of<typename t_fundamental<T>::t_type> t;
 		return t::f_transfer(this, a_value);
