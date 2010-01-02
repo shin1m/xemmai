@@ -106,6 +106,7 @@ class t_engine : public t_pointer::t_collector
 	portable::t_mutex v_symbol__instantiate__mutex;
 	t_slot v_module_global;
 	t_slot v_module_system;
+	t_slot v_module_threading;
 	t_slot v_module_io;
 	t_slot v_module_math;
 	t_slot v_module_os;
@@ -141,6 +142,10 @@ public:
 	t_object* f_module_system() const
 	{
 		return v_module_system;
+	}
+	t_object* f_module_threading() const
+	{
+		return v_module_threading;
 	}
 	t_object* f_module_io() const
 	{

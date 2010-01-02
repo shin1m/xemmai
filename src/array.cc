@@ -1,5 +1,6 @@
 #include <xemmai/array.h>
 
+#include <algorithm>
 #include <xemmai/boolean.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
@@ -61,11 +62,20 @@ t_transfer t_array::f_instantiate()
 	return object;
 }
 
+void t_array::f_swap(t_transfer& a_tuple, size_t& a_head, size_t& a_size)
+{
+	t_transfer tuple = v_tuple.f_transfer();
+	v_tuple = a_tuple;
+	a_tuple = tuple;
+	std::swap(v_head, a_head);
+	std::swap(v_size, a_size);
+}
+
 const t_slot& t_array::operator[](int a_index) const
 {
 	if (a_index < 0) {
 		if (a_index < -static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-		a_index = v_size - a_index;
+		a_index = v_size + a_index;
 	} else {
 		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
@@ -77,7 +87,7 @@ t_slot& t_array::operator[](int a_index)
 {
 	if (a_index < 0) {
 		if (a_index < -static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-		a_index = v_size - a_index;
+		a_index = v_size + a_index;
 	} else {
 		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
@@ -279,6 +289,65 @@ bool t_type_of<t_array>::f_equals(t_object* a_self, t_object* a_other)
 	return true;
 }
 
+void t_type_of<t_array>::f_each(t_object* a_self, t_object* a_callable)
+{
+	f_check<t_array>(a_self, L"this");
+	const t_array& a0 = f_as<const t_array&>(a_self);
+	size_t i = 0;
+	while (true) {
+		t_transfer x;
+		{
+			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+			if (i >= a0.f_size()) break;
+			x = a0[i];
+		}
+		a_callable->f_call(x);
+		++i;
+	}
+}
+
+namespace
+{
+
+struct t_less
+{
+	t_object* v_callable;
+
+	t_less(t_object* a_callable) : v_callable(a_callable)
+	{
+	}
+	bool operator()(t_object* a_x, t_object* a_y) const
+	{
+		return f_as<bool>(v_callable->f_call(a_x, a_y));
+	}
+};
+
+}
+
+void t_type_of<t_array>::f_sort(t_object* a_self, t_object* a_callable)
+{
+	f_check<t_array>(a_self, L"this");
+	t_array& a0 = f_as<t_array&>(a_self);
+	t_transfer tuple;
+	size_t head = 0;
+	size_t size = 0;
+	{
+		portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+		a0.f_swap(tuple, head, size);
+	}
+	if (!tuple) return;
+	t_tuple& t = f_as<t_tuple&>(tuple);
+	std::vector<t_scoped> a(size);
+	for (size_t i = 0; i < size; ++i) a[i] = t[(head + i) % t.f_size()].f_transfer();
+	head = 0;
+	std::sort(a.begin(), a.end(), t_less(a_callable));
+	for (size_t i = 0; i < size; ++i) t[i] = a[i].f_transfer();
+	{
+		portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+		a0.f_swap(tuple, head, size);
+	}
+}
+
 void t_type_of<t_array>::f_define()
 {
 	t_define<t_array, t_object>(f_global(), L"Array")
@@ -296,6 +365,8 @@ void t_type_of<t_array>::f_define()
 		(L"shift", t_member<t_transfer (t_array::*)(), &t_array::f_shift, t_with_lock_for_write>())
 		(L"insert", t_member<void (t_array::*)(int, const t_transfer&), &t_array::f_insert, t_with_lock_for_write>())
 		(L"remove", t_member<t_transfer (t_array::*)(int), &t_array::f_remove, t_with_lock_for_write>())
+		(L"each", t_member<void (*)(t_object*, t_object*), f_each>())
+		(L"sort", t_member<void (*)(t_object*, t_object*), f_sort>())
 	;
 }
 

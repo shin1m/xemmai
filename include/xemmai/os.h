@@ -1,7 +1,6 @@
 #ifndef XEMMAI__OS_H
 #define XEMMAI__OS_H
 
-#include "module.h"
 #include "global.h"
 
 namespace xemmai

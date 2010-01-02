@@ -2,7 +2,7 @@ bin_PROGRAMS = xemmai
 AM_CPPFLAGS = -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai/$(PACKAGE_VERSION)"
 AM_CXXFLAGS =
 AM_LDFLAGS = -rdynamic
-LDADD = -ldl -lpthread
+LDADD = -ldl -lpthread -lrt
 if DEBUG
 AM_CXXFLAGS += -g
 else
@@ -42,6 +42,7 @@ xemmai_SOURCES = \
 	lexer.cc \
 	parser.cc \
 	global.cc \
+	threading.cc \
 	io.cc \
 	io__file.cc \
 	io__reader.cc \

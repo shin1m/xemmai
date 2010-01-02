@@ -1,7 +1,6 @@
 #ifndef XEMMAI__MATH_H
 #define XEMMAI__MATH_H
 
-#include "module.h"
 #include "global.h"
 
 namespace xemmai

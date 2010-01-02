@@ -85,10 +85,10 @@ int t_type_of<t_dictionary>::f_hash(t_object* a_self)
 		t_transfer y;
 		{
 			portable::t_scoped_lock_for_read lock(a_self->v_lock);
-			i.f_next();
 			if (!i.f_entry()) break;
 			x = i.f_entry()->f_key();
 			y = i.f_entry()->v_value;
+			i.f_next();
 		}
 		x = x->f_get(f_global()->f_symbol_hash())->f_call();
 		if (!f_is<int>(x)) t_throwable::f_throw(L"argument must be integer.");
@@ -115,16 +115,35 @@ bool t_type_of<t_dictionary>::f_equals(t_object* a_self, t_object* a_other)
 		{
 			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
 			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
-			i.f_next();
 			if (!i.f_entry()) break;
 			t_hash::t_entry* field = d1.v_hash.f_find<t_dictionary::t_hash_traits>(i.f_entry()->f_key());
 			if (!field) return false;
 			x = i.f_entry()->v_value;
 			y = field->v_value;
+			i.f_next();
 		}
 		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(y))) return false;
 	}
 	return false;
+}
+
+void t_type_of<t_dictionary>::f_each(t_object* a_self, t_object* a_callable)
+{
+	f_check<t_dictionary>(a_self, L"this");
+	const t_dictionary& d0 = f_as<const t_dictionary&>(a_self);
+	t_hash::t_iterator i(d0.v_hash);
+	while (true) {
+		t_transfer key;
+		t_transfer value;
+		{
+			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+			if (!i.f_entry()) break;
+			key = i.f_entry()->f_key();
+			value = i.f_entry()->v_value;
+			i.f_next();
+		}
+		a_callable->f_call(key, value);
+	}
 }
 
 void t_type_of<t_dictionary>::f_define()
@@ -140,6 +159,7 @@ void t_type_of<t_dictionary>::f_define()
 		(L"size", t_member<size_t (t_dictionary::*)() const, &t_dictionary::f_size, t_with_lock_for_read>())
 		(L"has", t_member<bool (t_dictionary::*)(t_object*) const, &t_dictionary::f_has, t_with_lock_for_read>())
 		(L"remove", t_member<t_transfer (t_dictionary::*)(t_object*), &t_dictionary::f_remove, t_with_lock_for_write>())
+		(L"each", t_member<void (*)(t_object*, t_object*), f_each>())
 	;
 }
 

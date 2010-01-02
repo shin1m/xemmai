@@ -83,6 +83,18 @@ public:
 	{
 		pthread_cond_wait(&v_condition, &a_mutex.v_mutex);
 	}
+	void f_wait(t_mutex& a_mutex, size_t a_milliseconds)
+	{
+		timespec ts;
+		clock_gettime(CLOCK_REALTIME, &ts);
+		ts.tv_sec += a_milliseconds / 1000;
+		ts.tv_nsec += a_milliseconds % 1000 * 1000000;
+		if (ts.tv_nsec >= 1000000000) {
+			++ts.tv_sec;
+			ts.tv_nsec -= 1000000000;
+		}
+		pthread_cond_timedwait(&v_condition, &a_mutex.v_mutex, &ts);
+	}
 	void f_signal()
 	{
 		pthread_cond_signal(&v_condition);
@@ -183,14 +195,21 @@ public:
 	}
 	void f_wait(t_mutex& a_mutex)
 	{
+		f_wait(a_mutex, INFINITE);
+	}
+	void f_wait(t_mutex& a_mutex, size_t a_milliseconds)
+	{
 		long wait = ++v_wait;
 		a_mutex.f_release();
+		DWORD n;
 		while (true) {
-			WaitForSingleObject(v_handle, INFINITE);
+			DWORD n = WaitForSingleObject(v_handle, a_milliseconds);
+			if (n == WAIT_TIMEOUT || n == WAIT_FAILED) break;
 			if (wait - v_signal <= 0) break;
 			SwitchToThread();
 		}
 		a_mutex.f_acquire();
+		if (n == WAIT_TIMEOUT || n == WAIT_FAILED) return;
 		if (--v_wake <= 0) ResetEvent(v_handle);
 	}
 	void f_signal()

@@ -62,6 +62,7 @@ struct t_type_of<t_dictionary> : t_type
 	{
 		return !f_equals(a_self, a_other);
 	}
+	static void f_each(t_object* a_self, t_object* a_callable);
 	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

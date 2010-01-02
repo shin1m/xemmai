@@ -1,9 +1,11 @@
 #include <xemmai/engine.h>
 
+#include <clocale>
 #include <cstring>
 
 int main(int argc, char* argv[])
 {
+	std::setlocale(LC_ALL, "");
 	bool verbose = false;
 	{
 		char** end = argv + argc;

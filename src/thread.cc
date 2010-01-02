@@ -84,9 +84,9 @@ void t_thread::f_cache_acquire()
 {
 	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
 		t_cache& cache = v_cache[i];
+		if (cache.v_modified) continue;
 		size_t revision = t_cache::v_revisions[i];
 		if (cache.v_revision == revision) continue;
-		cache.v_modified = false;
 		cache.v_revision = revision;
 		cache.v_object = cache.v_key = cache.v_value = 0;
 	}
@@ -142,8 +142,11 @@ void t_thread::f_join()
 {
 	if (this == f_as<t_thread*>(v_current)) t_throwable::f_throw(L"current thread can not be joined.");
 	if (this == f_as<t_thread*>(f_engine()->v_thread)) t_throwable::f_throw(L"engine thread can not be joined.");
-	portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-	while (v_internal) f_engine()->v_thread__condition.f_wait(f_engine()->v_thread__mutex);
+	{
+		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
+		while (v_internal) f_engine()->v_thread__condition.f_wait(f_engine()->v_thread__mutex);
+	}
+	f_cache_acquire();
 }
 
 t_type* t_type_of<t_thread>::f_derive(t_object* a_this)
