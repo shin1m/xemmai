@@ -2,6 +2,9 @@ AC_INIT([xemmai], [200911])
 AM_INIT_AUTOMAKE([foreign nostdinc dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR([src/main.cc])
 
+DESCRIPTION="A dynamic programming language"
+AC_SUBST([DESCRIPTION])
+
 if test "${CXXFLAGS+set}" != set; then
 	CXXFLAGS=
 fi
@@ -37,8 +40,13 @@ AM_CONDITIONAL([PROFILE], [test x$profile = xtrue])
 AM_CONFIG_HEADER([include/xemmai/portable/configure.h])
 AC_CONFIG_FILES([
 	Makefile
+	doc/Makefile
 	include/Makefile
+	pkgconfig/Makefile
+	pkgconfig/xemmai-${VERSION}.pc:pkgconfig/xemmai.pc.in
+	pkgconfig/xemmai-${VERSION}-uninstalled.pc:pkgconfig/xemmai-uninstalled.pc.in
 	src/Makefile
+	modules/Makefile
 	test/Makefile
 	test/container/Makefile
 	test/callback/Makefile

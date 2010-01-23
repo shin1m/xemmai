@@ -1,0 +1,9 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+module_path=@libdir@/@PACKAGE@-@VERSION@
+
+Name: @PACKAGE@
+Description: @DESCRIPTION@
+Version: @VERSION@
+Libs: -L@libdir@
+Cflags: -I@includedir@/@PACKAGE@-@VERSION@

@@ -40,3 +40,12 @@ void t_os::f_scan(t_scan a_scan)
 }
 
 }
+
+#ifdef _MSC_VER
+extern "C" __declspec(dllexport) xemmai::t_extension* f_factory(xemmai::t_object* a_module)
+#else
+extern "C" xemmai::t_extension* f_factory(xemmai::t_object* a_module)
+#endif
+{
+	return new xemmai::t_os(a_module);
+}

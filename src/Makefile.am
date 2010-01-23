@@ -1,5 +1,5 @@
 bin_PROGRAMS = xemmai
-AM_CPPFLAGS = -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai/$(PACKAGE_VERSION)"
+AM_CPPFLAGS = -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai-$(VERSION)"
 AM_CXXFLAGS =
 AM_LDFLAGS = -rdynamic
 LDADD = -ldl -lpthread -lrt
@@ -42,12 +42,9 @@ xemmai_SOURCES = \
 	lexer.cc \
 	parser.cc \
 	global.cc \
-	threading.cc \
 	io.cc \
 	io__file.cc \
 	io__reader.cc \
 	io__writer.cc \
-	math.cc \
-	os.cc \
 	engine.cc \
 	main.cc

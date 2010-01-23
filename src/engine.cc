@@ -5,10 +5,7 @@
 #include <xemmai/portable/path.h>
 #include <xemmai/class.h>
 #include <xemmai/array.h>
-#include <xemmai/threading.h>
 #include <xemmai/io.h>
-#include <xemmai/os.h>
-#include <xemmai/math.h>
 
 namespace xemmai
 {
@@ -278,11 +275,6 @@ v_verbose(a_verbose)
 	v_module_system->f_put(f_global()->f_symbol_path(), path);
 	{
 		t_library* library = new t_library(std::wstring(), 0);
-		v_module_threading = t_module::f_instantiate(L"threading", library);
-		library->v_extension = new t_threading(v_module_threading);
-	}
-	{
-		t_library* library = new t_library(std::wstring(), 0);
 		v_module_io = t_module::f_instantiate(L"io", library);
 		library->v_extension = new t_io(v_module_io);
 	}
@@ -295,26 +287,13 @@ v_verbose(a_verbose)
 	t_transfer error = io::t_file::f_instantiate(stderr);
 	v_module_system->f_put(t_symbol::f_instantiate(L"native_error"), static_cast<t_object*>(error));
 	v_module_system->f_put(t_symbol::f_instantiate(L"error"), io::t_writer::f_instantiate(error, L""));
-	{
-		t_library* library = new t_library(std::wstring(), 0);
-		v_module_math = t_module::f_instantiate(L"math", library);
-		library->v_extension = new t_math(v_module_math);
-	}
-	{
-		t_library* library = new t_library(std::wstring(), 0);
-		v_module_os = t_module::f_instantiate(L"os", library);
-		library->v_extension = new t_os(v_module_os);
-	}
 }
 
 t_engine::~t_engine()
 {
 	v_module_global = 0;
 	v_module_system = 0;
-	v_module_threading = 0;
 	v_module_io = 0;
-	v_module_math = 0;
-	v_module_os = 0;
 	t_thread::f_cache_clear();
 	{
 		t_thread* thread = f_as<t_thread*>(v_thread);

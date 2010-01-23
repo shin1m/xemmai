@@ -1,4 +1,4 @@
-TESTS_ENVIRONMENT = $(top_builddir)/src/xemmai --verbose
+TESTS_ENVIRONMENT = XEMMAI_MODULE_PATH=$(top_builddir)/modules $(top_builddir)/src/xemmai --verbose
 scripts = \
 	field.xm \
 	flow.xm \

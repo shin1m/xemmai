@@ -13,12 +13,7 @@ int main(int argc, char* argv[])
 		for (char** p = argv; p < end; ++p) {
 			if ((*p)[0] == '-' && (*p)[1] == '-') {
 				const char* v = *p + 2;
-				if (std::strcmp(v, "default-module-path") == 0) {
-					std::puts(xemmai::portable::f_convert(XEMMAI__MACRO__L(XEMMAI_MODULE_PATH)).c_str());
-					return 0;
-				} else if (std::strcmp(v, "verbose") == 0) {
-					verbose = true;
-				}
+				if (std::strcmp(v, "verbose") == 0) verbose = true;
 			} else {
 				*q++ = *p;
 			}
