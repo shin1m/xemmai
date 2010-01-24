@@ -2,8 +2,8 @@ moduledir = $(libdir)/xemmai-$(VERSION)
 
 module_PROGRAMS = math.so os.so threading.so
 AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_LDFLAGS = -shared
 AM_CXXFLAGS = -fPIC
+AM_LDFLAGS = -shared
 if DEBUG
 AM_CXXFLAGS += -g
 else
