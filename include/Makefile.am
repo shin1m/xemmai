@@ -42,10 +42,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/throwable.h \
 	xemmai/tuple.h \
 	xemmai/type.h \
-	xemmai/threading.h \
 	xemmai/io.h \
 	xemmai/io/file.h \
 	xemmai/io/reader.h \
-	xemmai/io/writer.h \
-	xemmai/math.h \
-	xemmai/os.h
+	xemmai/io/writer.h
