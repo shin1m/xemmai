@@ -1,5 +1,6 @@
 #include <cmath>
 #include <xemmai/convert.h>
+#include <xemmai/boolean.h>
 #include <xemmai/array.h>
 
 namespace xemmai
@@ -47,6 +48,12 @@ t_transfer f_modf(double a_value)
 	return p;
 }
 
+template<int (*A_function)(double)>
+bool f_boolean(double a_value)
+{
+	return A_function(a_value);
+}
+
 }
 
 t_math::t_math(t_object* a_module) : t_extension(a_module)
@@ -73,11 +80,13 @@ t_math::t_math(t_object* a_module) : t_extension(a_module)
 	f_define<double (*)(double), std::sqrt>(this, L"sqrt");
 	f_define<double (*)(double), std::tan>(this, L"tan");
 	f_define<double (*)(double), std::tanh>(this, L"tanh");
-	f_define<int (*)(double), std::isfinite>(this, L"isfinite");
-	f_define<int (*)(double), std::isinf>(this, L"isinf");
-	f_define<int (*)(double), std::isnan>(this, L"isnan");
-	f_define<int (*)(double), std::isnormal>(this, L"isnormal");
-	f_define<int (*)(double), std::signbit>(this, L"signbit");
+	f_define<bool (*)(double), f_boolean<std::isfinite> >(this, L"isfinite");
+	f_define<bool (*)(double), f_boolean<std::isinf> >(this, L"isinf");
+	f_define<bool (*)(double), f_boolean<std::isnan> >(this, L"isnan");
+	f_define<bool (*)(double), f_boolean<std::isnormal> >(this, L"isnormal");
+	f_define<bool (*)(double), f_boolean<std::signbit> >(this, L"signbit");
+	a_module->f_put(t_symbol::f_instantiate(L"E"), f_as(M_E));
+	a_module->f_put(t_symbol::f_instantiate(L"PI"), f_as(M_PI));
 }
 
 void t_math::f_scan(t_scan a_scan)
