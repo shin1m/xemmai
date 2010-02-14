@@ -36,6 +36,7 @@ class t_bytes
 	{
 		return const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(this + 1));
 	}
+	void f_validate(int& a_index) const;
 
 public:
 	static t_transfer f_instantiate(size_t a_size);
@@ -61,6 +62,7 @@ public:
 	{
 		return f_entries()[a_index];
 	}
+	void f_copy(int a_index0, size_t a_size, t_bytes& a_other, int a_index1) const;
 };
 
 template<>
