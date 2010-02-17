@@ -26,6 +26,7 @@ class t_array
 	void f_resize();
 	void f_grow();
 	void f_shrink();
+	void f_validate(int& a_index) const;
 
 public:
 	static t_transfer f_instantiate();

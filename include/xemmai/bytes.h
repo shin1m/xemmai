@@ -37,6 +37,7 @@ class t_bytes
 		return const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(this + 1));
 	}
 	void f_validate(int& a_index) const;
+	void f_validate(int& a_index, size_t a_size) const;
 
 public:
 	static t_transfer f_instantiate(size_t a_size);

@@ -55,6 +55,16 @@ void t_array::f_shrink()
 	}
 }
 
+void t_array::f_validate(int& a_index) const
+{
+	if (a_index < 0) {
+		a_index += v_size;
+		if (a_index < 0) t_throwable::f_throw(L"out of range.");
+	} else {
+		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
+	}
+}
+
 t_transfer t_array::f_instantiate()
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_array>());
@@ -73,24 +83,14 @@ void t_array::f_swap(t_transfer& a_tuple, size_t& a_head, size_t& a_size)
 
 const t_slot& t_array::operator[](int a_index) const
 {
-	if (a_index < 0) {
-		if (a_index < -static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-		a_index = v_size + a_index;
-	} else {
-		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-	}
+	f_validate(a_index);
 	const t_tuple& tuple = f_as<const t_tuple&>(v_tuple);
 	return tuple[(v_head + a_index) % tuple.f_size()];
 }
 
 t_slot& t_array::operator[](int a_index)
 {
-	if (a_index < 0) {
-		if (a_index < -static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-		a_index = v_size + a_index;
-	} else {
-		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-	}
+	f_validate(a_index);
 	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
 	return tuple[(v_head + a_index) % tuple.f_size()];
 }
@@ -137,8 +137,8 @@ t_transfer t_array::f_shift()
 void t_array::f_insert(int a_index, const t_transfer& a_value)
 {
 	if (a_index < 0) {
-		if (a_index < -static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-		a_index = v_size - a_index;
+		a_index += v_size;
+		if (a_index < 0) t_throwable::f_throw(L"out of range.");
 	} else {
 		if (a_index > static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
@@ -176,12 +176,7 @@ void t_array::f_insert(int a_index, const t_transfer& a_value)
 
 t_transfer t_array::f_remove(int a_index)
 {
-	if (a_index < 0) {
-		if (a_index < -static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-		a_index = v_size - a_index;
-	} else {
-		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-	}
+	f_validate(a_index);
 	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;

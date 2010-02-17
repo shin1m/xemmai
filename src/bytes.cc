@@ -10,11 +10,20 @@ namespace xemmai
 void t_bytes::f_validate(int& a_index) const
 {
 	if (a_index < 0) {
-		if (a_index < -static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-		a_index = v_size - a_index;
+		a_index += v_size;
+		if (a_index < 0) t_throwable::f_throw(L"out of range.");
 	} else {
 		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
+}
+
+void t_bytes::f_validate(int& a_index, size_t a_size) const
+{
+	if (a_index < 0) {
+		a_index += v_size;
+		if (a_index < 0) t_throwable::f_throw(L"out of range.");
+	}
+	if (a_index + a_size > static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
 }
 
 t_transfer t_bytes::f_instantiate(size_t a_size)
@@ -51,10 +60,8 @@ int t_bytes::f_set_at(int a_index, int a_value)
 
 void t_bytes::f_copy(int a_index0, size_t a_size, t_bytes& a_other, int a_index1) const
 {
-	f_validate(a_index0);
-	if (a_index0 + a_size > static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
-	a_other.f_validate(a_index1);
-	if (a_index1 + a_size > static_cast<int>(a_other.v_size)) t_throwable::f_throw(L"out of range.");
+	f_validate(a_index0, a_size);
+	a_other.f_validate(a_index1, a_size);
 	unsigned char* p = f_entries() + a_index0;
 	std::copy(p, p + a_size, a_other.f_entries() + a_index1);
 }
