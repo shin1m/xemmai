@@ -505,6 +505,7 @@ t_transfer f_parse_xsd(const std::wstring& a_value)
 	double second;
 	wchar_t zone[7];
 	int n = std::swscanf(a_value.c_str(), L"%5d-%2d-%2dT%2d:%2d:%lf%6ls", &year, &month, &day, &hour, &minute, &second, zone);
+	if (n < 6) t_throwable::f_throw(L"invalid format.");
 	t_transfer p = t_array::f_instantiate();
 	t_array& array = f_as<t_array&>(p);
 	array.f_push(f_global()->f_as(year));
