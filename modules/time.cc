@@ -34,12 +34,27 @@ double f_now()
 #ifdef __unix__
 	struct timeval t;
 	gettimeofday(&t, NULL);
-	return t.tv_sec + t.tv_usec * 0.000001;
+	return t.tv_sec + t.tv_usec / 1000000.0;
 #endif
 #ifdef _WIN32
-	std::time_t t;
-	std::time(&t);
-	return t;
+	FILETIME utc;
+	GetSystemAsFileTime(&utc);
+	FILETIME local;
+	FileTimeToLocalFileTime(&utc, &local);
+	ULARGE_INTEGER ui;
+	ui.LowPart = local.dwLowDateTime;
+	ui.HighPart = local.dwHighDateTime;
+	return ui.QuadPart / 10000000.0;
+#endif
+}
+
+int f_tick()
+{
+#ifdef __unix__
+	return static_cast<int>(f_now() * 1000.0);
+#endif
+#ifdef _WIN32
+	return GetTickCount();
 #endif
 }
 
@@ -543,6 +558,7 @@ std::wstring f_format_xsd(const t_array& a_value, int a_offset, int a_precision)
 t_time::t_time(t_object* a_module) : t_extension(a_module)
 {
 	f_define<double (*)(), f_now>(this, L"now");
+	f_define<int (*)(), f_tick>(this, L"tick");
 	f_define<double (*)(const t_array&), f_compose>(this, L"compose");
 	f_define<t_transfer (*)(double), f_decompose>(this, L"decompose");
 	f_define<int (*)(), f_offset>(this, L"offset");
