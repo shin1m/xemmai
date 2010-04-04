@@ -32,6 +32,10 @@ void t_type_of<std::wstring>::f_define()
 		(f_global()->f_symbol_string(), t_member<t_transfer (*)(const t_transfer&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(const std::wstring&), f_hash>())
 		(f_global()->f_symbol_add(), t_member<std::wstring (*)(const std::wstring&, t_object*), f_add>())
+		(f_global()->f_symbol_less(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_less>())
+		(f_global()->f_symbol_less_equal(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_less_equal>())
+		(f_global()->f_symbol_greater(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_greater>())
+		(f_global()->f_symbol_greater_equal(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_greater_equal>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(const std::wstring&, t_object*), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const std::wstring&, t_object*), f_not_equals>())
 		(L"substring",
@@ -68,6 +72,42 @@ void t_type_of<std::wstring>::f_add(t_object* a_this, t_stack& a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
 	a_stack.f_return(f_global()->f_as(f_add(f_as<const std::wstring&>(a_this), a0)));
+	context.f_done();
+}
+
+void t_type_of<std::wstring>::f_less(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	f_check<std::wstring>(a0, L"argument0");
+	a_stack.f_return(f_global()->f_as(f_as<const std::wstring&>(a_this) < f_as<const std::wstring&>(a0)));
+	context.f_done();
+}
+
+void t_type_of<std::wstring>::f_less_equal(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	f_check<std::wstring>(a0, L"argument0");
+	a_stack.f_return(f_global()->f_as(f_as<const std::wstring&>(a_this) <= f_as<const std::wstring&>(a0)));
+	context.f_done();
+}
+
+void t_type_of<std::wstring>::f_greater(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	f_check<std::wstring>(a0, L"argument0");
+	a_stack.f_return(f_global()->f_as(f_as<const std::wstring&>(a_this) > f_as<const std::wstring&>(a0)));
+	context.f_done();
+}
+
+void t_type_of<std::wstring>::f_greater_equal(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	f_check<std::wstring>(a0, L"argument0");
+	a_stack.f_return(f_global()->f_as(f_as<const std::wstring&>(a_this) >= f_as<const std::wstring&>(a0)));
 	context.f_done();
 }
 

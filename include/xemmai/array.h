@@ -64,6 +64,10 @@ struct t_type_of<t_array> : t_type
 {
 	static std::wstring f_string(t_object* a_self);
 	static int f_hash(t_object* a_self);
+	static bool f_less(t_object* a_self, t_object* a_other);
+	static bool f_less_equal(t_object* a_self, t_object* a_other);
+	static bool f_greater(t_object* a_self, t_object* a_other);
+	static bool f_greater_equal(t_object* a_self, t_object* a_other);
 	static bool f_equals(t_object* a_self, t_object* a_other);
 	static bool f_not_equals(t_object* a_self, t_object* a_other)
 	{
@@ -83,6 +87,10 @@ struct t_type_of<t_array> : t_type
 	virtual void f_hash(t_object* a_this, t_stack& a_stack);
 	virtual void f_get_at(t_object* a_this, t_stack& a_stack);
 	virtual void f_set_at(t_object* a_this, t_stack& a_stack);
+	virtual void f_less(t_object* a_this, t_stack& a_stack);
+	virtual void f_less_equal(t_object* a_this, t_stack& a_stack);
+	virtual void f_greater(t_object* a_this, t_stack& a_stack);
+	virtual void f_greater_equal(t_object* a_this, t_stack& a_stack);
 	virtual void f_equals(t_object* a_this, t_stack& a_stack);
 	virtual void f_not_equals(t_object* a_this, t_stack& a_stack);
 };

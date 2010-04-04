@@ -31,6 +31,22 @@ struct t_type_of<std::wstring> : t_type
 		return n;
 	}
 	static std::wstring f_add(const std::wstring& a_self, t_object* a_value);
+	static bool f_less(const std::wstring& a_self, const std::wstring& a_value)
+	{
+		return a_self < a_value;
+	}
+	static bool f_less_equal(const std::wstring& a_self, const std::wstring& a_value)
+	{
+		return a_self <= a_value;
+	}
+	static bool f_greater(const std::wstring& a_self, const std::wstring& a_value)
+	{
+		return a_self > a_value;
+	}
+	static bool f_greater_equal(const std::wstring& a_self, const std::wstring& a_value)
+	{
+		return a_self >= a_value;
+	}
 	static bool f_equals(const std::wstring& a_self, t_object* a_value);
 	static bool f_not_equals(const std::wstring& a_self, t_object* a_value);
 	static std::wstring f_substring(const std::wstring& a_self, size_t a_i)
@@ -51,6 +67,10 @@ struct t_type_of<std::wstring> : t_type
 	virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
 	virtual void f_hash(t_object* a_this, t_stack& a_stack);
 	virtual void f_add(t_object* a_this, t_stack& a_stack);
+	virtual void f_less(t_object* a_this, t_stack& a_stack);
+	virtual void f_less_equal(t_object* a_this, t_stack& a_stack);
+	virtual void f_greater(t_object* a_this, t_stack& a_stack);
+	virtual void f_greater_equal(t_object* a_this, t_stack& a_stack);
 	virtual void f_equals(t_object* a_this, t_stack& a_stack);
 	virtual void f_not_equals(t_object* a_this, t_stack& a_stack);
 };

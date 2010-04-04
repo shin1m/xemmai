@@ -256,6 +256,116 @@ int t_type_of<t_array>::f_hash(t_object* a_self)
 	return n;
 }
 
+bool t_type_of<t_array>::f_less(t_object* a_self, t_object* a_other)
+{
+	if (a_self == a_other) return false;
+	f_check<t_array>(a_self, L"this");
+	f_check<t_array>(a_other, L"other");
+	const t_array& a0 = f_as<const t_array&>(a_self);
+	const t_array& a1 = f_as<const t_array&>(a_other);
+	size_t i = 0;
+	while (true) {
+		t_transfer x;
+		t_transfer y;
+		{
+			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+			if (i >= a0.f_size()) break;
+			x = a0[i];
+		}
+		{
+			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+			if (i >= a1.f_size()) return false;
+			y = a1[i];
+		}
+		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(static_cast<t_object*>(y)))) return f_as<bool>(x->f_get(f_global()->f_symbol_less())->f_call(y));
+		++i;
+	}
+	portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+	return i < a1.f_size();
+}
+
+bool t_type_of<t_array>::f_less_equal(t_object* a_self, t_object* a_other)
+{
+	if (a_self == a_other) return true;
+	f_check<t_array>(a_self, L"this");
+	f_check<t_array>(a_other, L"other");
+	const t_array& a0 = f_as<const t_array&>(a_self);
+	const t_array& a1 = f_as<const t_array&>(a_other);
+	size_t i = 0;
+	while (true) {
+		t_transfer x;
+		t_transfer y;
+		{
+			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+			if (i >= a0.f_size()) break;
+			x = a0[i];
+		}
+		{
+			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+			if (i >= a1.f_size()) return false;
+			y = a1[i];
+		}
+		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(static_cast<t_object*>(y)))) return f_as<bool>(x->f_get(f_global()->f_symbol_less())->f_call(y));
+		++i;
+	}
+	return true;
+}
+
+bool t_type_of<t_array>::f_greater(t_object* a_self, t_object* a_other)
+{
+	if (a_self == a_other) return false;
+	f_check<t_array>(a_self, L"this");
+	f_check<t_array>(a_other, L"other");
+	const t_array& a0 = f_as<const t_array&>(a_self);
+	const t_array& a1 = f_as<const t_array&>(a_other);
+	size_t i = 0;
+	while (true) {
+		t_transfer x;
+		t_transfer y;
+		{
+			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+			if (i >= a0.f_size()) break;
+			x = a0[i];
+		}
+		{
+			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+			if (i >= a1.f_size()) return true;
+			y = a1[i];
+		}
+		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(static_cast<t_object*>(y)))) return f_as<bool>(x->f_get(f_global()->f_symbol_greater())->f_call(y));
+		++i;
+	}
+	return false;
+}
+
+bool t_type_of<t_array>::f_greater_equal(t_object* a_self, t_object* a_other)
+{
+	if (a_self == a_other) return true;
+	f_check<t_array>(a_self, L"this");
+	f_check<t_array>(a_other, L"other");
+	const t_array& a0 = f_as<const t_array&>(a_self);
+	const t_array& a1 = f_as<const t_array&>(a_other);
+	size_t i = 0;
+	while (true) {
+		t_transfer x;
+		t_transfer y;
+		{
+			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+			if (i >= a0.f_size()) break;
+			x = a0[i];
+		}
+		{
+			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+			if (i >= a1.f_size()) return true;
+			y = a1[i];
+		}
+		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(static_cast<t_object*>(y)))) return f_as<bool>(x->f_get(f_global()->f_symbol_greater())->f_call(y));
+		++i;
+	}
+	portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+	return i >= a1.f_size();
+}
+
 bool t_type_of<t_array>::f_equals(t_object* a_self, t_object* a_other)
 {
 	if (a_self == a_other) return true;
@@ -350,6 +460,10 @@ void t_type_of<t_array>::f_define()
 		(f_global()->f_symbol_hash(), t_member<int (*)(t_object*), f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<t_object* (t_array::*)(int) const, &t_array::f_get_at, t_with_lock_for_read>())
 		(f_global()->f_symbol_set_at(), t_member<t_object* (t_array::*)(int, const t_transfer&), &t_array::f_set_at, t_with_lock_for_write>())
+		(f_global()->f_symbol_less(), t_member<bool (*)(t_object*, t_object*), f_less>())
+		(f_global()->f_symbol_less_equal(), t_member<bool (*)(t_object*, t_object*), f_less_equal>())
+		(f_global()->f_symbol_greater(), t_member<bool (*)(t_object*, t_object*), f_greater>())
+		(f_global()->f_symbol_greater_equal(), t_member<bool (*)(t_object*, t_object*), f_greater_equal>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(t_object*, t_object*), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(t_object*, t_object*), f_not_equals>())
 		(L"clear", t_member<void (t_array::*)(), &t_array::f_clear, t_with_lock_for_write>())
@@ -417,6 +531,38 @@ void t_type_of<t_array>::f_set_at(t_object* a_this, t_stack& a_stack)
 	f_check<int>(a0, L"index");
 	portable::t_scoped_lock_for_write lock(a_this->v_lock);
 	a_stack.f_return(f_as<t_array&>(a_this).f_set_at(f_as<int>(a0), a1));
+	context.f_done();
+}
+
+void t_type_of<t_array>::f_less(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	a_stack.f_return(f_global()->f_as(f_less(a_this, a0)));
+	context.f_done();
+}
+
+void t_type_of<t_array>::f_less_equal(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	a_stack.f_return(f_global()->f_as(f_less_equal(a_this, a0)));
+	context.f_done();
+}
+
+void t_type_of<t_array>::f_greater(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	a_stack.f_return(f_global()->f_as(f_greater(a_this, a0)));
+	context.f_done();
+}
+
+void t_type_of<t_array>::f_greater_equal(t_object* a_this, t_stack& a_stack)
+{
+	t_native_context context;
+	t_transfer a0 = a_stack.f_pop();
+	a_stack.f_return(f_global()->f_as(f_greater_equal(a_this, a0)));
 	context.f_done();
 }
 
