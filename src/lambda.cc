@@ -1,6 +1,5 @@
 #include <xemmai/lambda.h>
 
-#include <xemmai/scope.h>
 #include <xemmai/code.h>
 #include <xemmai/method.h>
 #include <xemmai/global.h>
@@ -42,10 +41,16 @@ void t_type_of<t_lambda>::f_call(t_object* a_this, t_object* a_self, size_t a_n,
 	t_lambda* p = f_as<t_lambda*>(a_this);
 	t_code* code = f_as<t_code*>(p->v_code);
 	if (a_n != code->v_arguments) t_throwable::f_throw(L"invalid number of arguments.");
-	t_transfer scope = t_scope::f_instantiate(code->v_size, p->v_scope, a_self);
-	t_scope& s = f_as<t_scope&>(scope);
-	while (a_n > 0) s[--a_n].f_construct(a_stack.f_pop());
-	t_fiber::t_context::f_push(scope, p->v_code, &code->v_instructions[0]);
+	if (code->v_simple) {
+		t_scope& s = *t_fixed_scope::f_instantiate(p->v_scope, a_self);
+		while (a_n > 0) s[--a_n].f_construct(a_stack.f_pop());
+		t_fiber::t_context::f_push(&s, p->v_code, &code->v_instructions[0]);
+	} else {
+		t_transfer scope = t_scope::f_instantiate(code->v_size, p->v_scope, a_self);
+		t_scope& s = f_as<t_scope&>(scope);
+		while (a_n > 0) s[--a_n].f_construct(a_stack.f_pop());
+		t_fiber::t_context::f_push(scope, p->v_code, &code->v_instructions[0]);
+	}
 }
 
 void t_type_of<t_lambda>::f_get_at(t_object* a_this, t_stack& a_stack)

@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <xemmai/engine.h>
 #include <xemmai/class.h>
-#include <xemmai/scope.h>
 #include <xemmai/lambda.h>
 #include <xemmai/throwable.h>
 #include <xemmai/boolean.h>
@@ -297,7 +296,7 @@ t_transfer t_code::f_loop()
 	while (true) {
 		try {
 			pc = f_context()->v_pc;
-			stack = f_as<t_scope*>(f_context()->v_scope);
+			stack = f_context()->v_stack;
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 #define XEMMAI__CODE__CASE(a_name) label__##a_name:
 #define XEMMAI__CODE__BREAK goto **pc;
@@ -335,8 +334,12 @@ t_transfer t_code::f_loop()
 							++pc;
 							t_transfer value = stack->f_pop();
 							f_as<t_fiber*>(t_fiber::f_current())->f_caught(value);
-							portable::t_scoped_lock_for_write lock(f_context()->v_scope->v_lock);
-							(*stack)[index] = value;
+							if (f_context()->v_simple) {
+								(*stack)[index] = value;
+							} else {
+								portable::t_scoped_lock_for_write lock(f_context()->v_scope->v_lock);
+								(*stack)[index] = value;
+							}
 						} else {
 							pc = reinterpret_cast<void**>(*pc);
 						}
@@ -461,10 +464,11 @@ t_transfer t_code::f_loop()
 				XEMMAI__CODE__CASE(SCOPE_GET)
 					{
 						size_t outer = reinterpret_cast<size_t>(*++pc);
+						assert(outer > 0);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = f_context()->v_scope;
-						for (size_t i = 0; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
+						t_object* scope = stack->v_outer;
+						for (size_t i = 1; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
 						portable::t_scoped_lock_for_read lock(scope->v_lock);
 						t_object* value = f_as<const t_scope&>(scope)[index];
 						if (!value) t_throwable::f_throw(L"not initialized.");
@@ -474,11 +478,12 @@ t_transfer t_code::f_loop()
 				XEMMAI__CODE__CASE(SCOPE_GET_WITHOUT_LOCK)
 					{
 						size_t outer = reinterpret_cast<size_t>(*++pc);
+						assert(outer > 0);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = f_context()->v_scope;
-						for (size_t i = 0; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
-						t_object* value = f_as<const t_scope&>(scope)[index];
+						t_scope* scope = f_as<t_scope*>(stack->v_outer);
+						for (size_t i = 1; i < outer; ++i) scope = f_as<t_scope*>(scope->v_outer);
+						t_object* value = (*scope)[index];
 						if (!value) t_throwable::f_throw(L"not initialized.");
 						stack->f_push(value);
 					}
@@ -505,10 +510,11 @@ t_transfer t_code::f_loop()
 				XEMMAI__CODE__CASE(SCOPE_PUT)
 					{
 						size_t outer = reinterpret_cast<size_t>(*++pc);
+						assert(outer > 0);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = f_context()->v_scope;
-						for (size_t i = 0; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
+						t_object* scope = stack->v_outer;
+						for (size_t i = 1; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
 						portable::t_scoped_lock_for_write lock(scope->v_lock);
 						f_as<t_scope&>(scope)[index] = stack->f_top();
 					}
@@ -539,9 +545,9 @@ t_transfer t_code::f_loop()
 					{
 						size_t outer = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = f_context()->v_scope;
-						for (size_t i = 0; i < outer; ++i) scope = f_as<t_scope*>(scope)->v_outer;
-						t_object* self = f_as<t_scope*>(scope)->v_self;
+						t_scope* scope = stack;
+						for (size_t i = 0; i < outer; ++i) scope = f_as<t_scope*>(scope->v_outer);
+						t_object* self = scope->v_self;
 						if (!self) t_throwable::f_throw(L"$ not given.");
 						stack->f_push(self);
 					}
@@ -591,7 +597,7 @@ t_transfer t_code::f_loop()
 						t_fiber::t_context::f_pop();
 						if (f_context()->v_native > 0) return x;
 						pc = f_context()->v_pc;
-						stack = f_as<t_scope*>(f_context()->v_scope);
+						stack = f_context()->v_stack;
 						stack->f_return(x);
 					}
 					XEMMAI__CODE__BREAK
@@ -606,7 +612,7 @@ t_transfer t_code::f_loop()
 						if (f_context() != p) {
 							if (f_context()->v_native > 0) return stack->f_top().f_transfer();
 							pc = f_context()->v_pc;
-							stack = f_as<t_scope*>(f_context()->v_scope);
+							stack = f_context()->v_stack;
 						}
 					}
 					XEMMAI__CODE__BREAK
@@ -620,7 +626,7 @@ t_transfer t_code::f_loop()
 						if (f_context() != p) {\
 							p->v_pc = pc;\
 							pc = f_context()->v_pc;\
-							stack = f_as<t_scope*>(f_context()->v_scope);\
+							stack = f_context()->v_stack;\
 						}\
 					}\
 					XEMMAI__CODE__BREAK
@@ -650,6 +656,8 @@ XEMMAI__CODE__CALL(SEND, 1, f_send)
 				XEMMAI__CODE__CASE(CALL_TAIL)
 					{
 						size_t n = reinterpret_cast<size_t>(*++pc);
+						bool simple = f_context()->v_simple;
+						f_context()->v_simple = false;
 						t_transfer scope = f_context()->v_scope.f_transfer();
 						t_transfer x = stack->f_at(n).f_transfer();
 						t_fiber::t_context::f_pop();
@@ -657,12 +665,17 @@ XEMMAI__CODE__CALL(SEND, 1, f_send)
 						x->f_call(0, n, *stack);
 						if (f_context() == p) {
 							x = stack->f_top().f_transfer();
+							if (simple) t_fixed_scope::f_finalize(stack);
 							if (p->v_native > 0) return x;
-							stack = f_as<t_scope*>(f_context()->v_scope);
+							stack = f_context()->v_stack;
 							stack->f_return(x);
+						} else if (f_context()->v_native > 0) {
+							x = stack->f_top().f_transfer();
+							if (simple) t_fixed_scope::f_finalize(stack);
+							return x;
 						} else {
-							if (f_context()->v_native > 0) return stack->f_top().f_transfer();
-							stack = f_as<t_scope*>(f_context()->v_scope);
+							if (simple) t_fixed_scope::f_finalize(stack);
+							stack = f_context()->v_stack;
 						}
 						pc = f_context()->v_pc;
 					}
@@ -670,6 +683,8 @@ XEMMAI__CODE__CALL(SEND, 1, f_send)
 #define XEMMAI__CODE__CALL_TAIL(a_name, a_n, a_method)\
 				XEMMAI__CODE__CASE(a_name)\
 					{\
+						bool simple = f_context()->v_simple;\
+						f_context()->v_simple = false;\
 						t_transfer scope = f_context()->v_scope.f_transfer();\
 						t_transfer x = stack->f_at(a_n).f_transfer();\
 						t_fiber::t_context::f_pop();\
@@ -677,11 +692,13 @@ XEMMAI__CODE__CALL(SEND, 1, f_send)
 						f_as<t_type*>(x->f_type())->a_method(x, *stack);\
 						if (f_context() == p) {\
 							t_transfer x = stack->f_top().f_transfer();\
+							if (simple) t_fixed_scope::f_finalize(stack);\
 							if (p->v_native > 0) return x;\
-							stack = f_as<t_scope*>(f_context()->v_scope);\
+							stack = f_context()->v_stack;\
 							stack->f_return(x);\
 						} else {\
-							stack = f_as<t_scope*>(f_context()->v_scope);\
+							if (simple) t_fixed_scope::f_finalize(stack);\
+							stack = f_context()->v_stack;\
 						}\
 						pc = f_context()->v_pc;\
 					}\
@@ -735,7 +752,7 @@ XEMMAI__CODE__CALL_TAIL(SEND_TAIL, 1, f_send)
 						pc = f_context()->v_pc;
 						if (state == t_fiber::t_try::e_state__THROW) throw t_scoped(x);
 						if (f_context()->v_native > 0) return x;
-						stack = f_as<t_scope*>(f_context()->v_scope);
+						stack = f_context()->v_stack;
 						stack->f_return(x);
 					}
 					XEMMAI__CODE__BREAK

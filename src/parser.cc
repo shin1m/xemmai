@@ -130,6 +130,7 @@ void t_parser::f_target()
 			}
 			t_transfer code = t_code::f_instantiate(v_lexer.f_path(), symbols.size());
 			for (size_t i = 0; i < symbols.size(); ++i) code->v_fields.f_put<t_object::t_hash_traits>(t_symbol::f_instantiate(symbols[i]), f_global()->f_as(i));
+			v_scope->v_shared = true;
 			t_scope scope(v_scope, code);
 			v_scope = &scope;
 			std::vector<void*>* instructions = v_instructions;
@@ -147,7 +148,7 @@ void t_parser::f_target()
 			f_resolve(return0);
 			f_emit(e_instruction__RETURN);
 			f_at(position, line, column);
-			f_as<t_code*>(code)->f_estimate();
+			f_as<t_code*>(code)->f_estimate(!scope.v_shared);
 			f_as<t_code*>(code)->f_tail();
 			v_scope = scope.v_outer;
 			v_instructions = instructions;
@@ -1358,7 +1359,7 @@ t_transfer t_parser::f_parse()
 		f_at(position, line, column);
 	}
 	f_emit(e_instruction__END);
-	f_as<t_code*>(code)->f_estimate();
+	f_as<t_code*>(code)->f_estimate(false);
 	f_as<t_code*>(code)->f_generate();
 	return code;
 }

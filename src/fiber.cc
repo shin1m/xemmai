@@ -2,7 +2,6 @@
 
 #include <cctype>
 #include <xemmai/engine.h>
-#include <xemmai/scope.h>
 #include <xemmai/convert.h>
 #include <xemmai/io/file.h>
 
@@ -97,16 +96,16 @@ void t_fiber::f_throw(const t_scoped& a_value)
 			if (t_context::v_instance == q->v_context) break;
 			t_context::f_backtrace();
 		}
-		t_scope* scope = f_as<t_scope*>(f_context()->v_scope);
-		while (scope->v_top < q->v_stack) scope->f_pop();
+		t_scope* stack = f_context()->v_stack;
+		while (stack->v_top < q->v_stack) stack->f_pop();
 		if (q->v_state == t_try::e_state__TRY) {
-			scope->f_push(a_value);
+			stack->f_push(a_value);
 			q->v_state = t_try::e_state__CATCH;
 			p->v_caught = f_context()->v_pc;
 			f_context()->v_pc = q->v_catch;
 			break;
 		} else if (q->v_state == t_try::e_state__CATCH) {
-			scope->f_push(a_value);
+			stack->f_push(a_value);
 			q->v_state = t_try::e_state__THROW;
 			p->v_caught = f_context()->v_pc;
 			f_context()->v_pc = q->v_finally;
@@ -148,7 +147,7 @@ void t_fiber::f_caught(t_object* a_object)
 		portable::t_scoped_lock_for_write lock(a_object->v_lock);
 		t_throwable* p = f_as<t_throwable*>(a_object);
 		t_context::f_finalize(p->v_context);
-		p->v_context = t_context::f_instantiate(v_backtrace, v_context->v_scope, v_context->v_code, v_caught);
+		p->v_context = t_context::f_instantiate(v_backtrace, false, t_transfer(), 0, v_context->v_code, v_caught);
 		p->v_context->v_native = v_undone;
 	} else {
 		t_context::f_finalize(v_backtrace);
@@ -169,9 +168,7 @@ void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
 	if (p->v_main || p->v_active) return;
 	if (p->v_active) return;
 	for (t_fiber::t_context* q = p->v_context; q; q = q->v_next) {
-		a_scan(q->v_scope);
-		if (p->v_active) return;
-		a_scan(q->v_code);
+		q->f_scan(a_scan);
 		if (p->v_active) return;
 	}
 }
@@ -210,8 +207,8 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, t_object* a_self, size_t a_n, 
 	t_fiber::v_current = a_this;
 	if (p->v_context) {
 		t_fiber::t_context::v_instance = p->v_context;
-		t_stack& stack = f_context()->v_native > 0 ? a_stack : f_as<t_scope&>(f_context()->v_scope);
-		stack.f_return(x);
+		t_stack* stack = f_context()->v_native > 0 ? &a_stack : f_context()->v_stack;
+		stack->f_return(x);
 	} else {
 		t_transfer scope = t_scope::f_instantiate(0, 0, 0);
 		f_as<t_scope*>(scope)->f_push(p->v_callable);

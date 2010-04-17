@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "object.h"
+#include "scope.h"
 
 namespace xemmai
 {
@@ -99,9 +99,9 @@ struct t_code
 {
 	enum t_access
 	{
-		e_access__SHARED = ~(~0 >> 1),
-		e_access__VARIES = ~(~0 >> 1) >> 1,
-		e_access__INDEX = ~0 >> 2
+		e_access__SHARED = ~(~0u >> 1),
+		e_access__VARIES = ~(~0u >> 1) >> 1,
+		e_access__INDEX = ~0u >> 2
 	};
 	class t_at
 	{
@@ -147,6 +147,7 @@ struct t_code
 	std::vector<void*> v_instructions;
 	std::vector<void*> v_objects;
 	std::vector<t_at> v_ats;
+	bool v_simple;
 
 	t_code(const std::wstring& a_path, size_t a_arguments) : v_path(a_path), v_size(a_arguments), v_arguments(a_arguments)
 	{
@@ -163,9 +164,10 @@ struct t_code
 		f_estimate(a_n, reinterpret_cast<void**>(*a_p));
 	}
 	void f_estimate(size_t a_n, void** a_p);
-	void f_estimate()
+	void f_estimate(bool a_private)
 	{
 		f_estimate(v_size, &v_instructions[0]);
+		v_simple = a_private && v_size <= t_fixed_scope::V_SIZE;
 	}
 	bool f_tail(void** a_p);
 	void f_tail();

@@ -13,8 +13,9 @@ class t_parser
 	{
 		t_scope* v_outer;
 		t_object* v_code;
+		bool v_shared;
 
-		t_scope(t_scope* a_outer, t_object* a_code) : v_outer(a_outer), v_code(a_code)
+		t_scope(t_scope* a_outer, t_object* a_code) : v_outer(a_outer), v_code(a_code), v_shared(false)
 		{
 		}
 	};

@@ -14,6 +14,21 @@ class t_scope : public t_stack
 	{
 		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
 	}
+	void f_initialize()
+	{
+		t_slot* p = f_entries();
+		v_top = p + v_size;
+		while (p < v_top) {
+			new(p) t_slot();
+			++p;
+		}
+	}
+
+protected:
+	t_scope(size_t a_size) : v_size(a_size)
+	{
+		f_initialize();
+	}
 
 public:
 	static t_transfer f_instantiate(size_t a_size, const t_transfer& a_outer, const t_transfer& a_self);
@@ -38,12 +53,7 @@ public:
 
 	t_scope(const t_transfer& a_outer, const t_transfer& a_self) : v_outer(a_outer), v_self(a_self)
 	{
-		t_slot* p = f_entries();
-		v_top = p + v_size;
-		while (p < v_top) {
-			new(p) t_slot();
-			++p;
-		}
+		f_initialize();
 	}
 	void f_scan(t_scan a_scan)
 	{
@@ -67,6 +77,35 @@ public:
 	t_slot& operator[](size_t a_index)
 	{
 		return f_entries()[a_index];
+	}
+};
+
+struct t_fixed_scope : t_scope
+{
+	static const size_t V_SIZE = 16;
+
+	static t_fixed_scope* f_allocate();
+	static t_scope* f_instantiate(const t_transfer& a_outer, const t_transfer& a_self)
+	{
+		t_scope* p = t_local_pool<t_fixed_scope>::f_allocate(f_allocate);
+		p->v_outer.f_construct(a_outer);
+		p->v_self.f_construct(a_self);
+		return p;
+	}
+	static void f_finalize(t_scope* a_p)
+	{
+		a_p->v_top = &(*a_p)[V_SIZE];
+		for (t_slot* p = &(*a_p)[0]; p < a_p->v_top; ++p) *p = 0;
+		a_p->v_outer = 0;
+		a_p->v_self = 0;
+		t_local_pool<t_fixed_scope>::f_free(static_cast<t_fixed_scope*>(a_p));
+	}
+
+	char v_data[sizeof(t_slot) * V_SIZE];
+	t_fixed_scope* v_next;
+
+	t_fixed_scope() : t_scope(V_SIZE), v_next(0)
+	{
 	}
 };
 

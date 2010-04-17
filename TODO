@@ -39,8 +39,9 @@ performance improvement ideas:
 //	increment/decrement counter for native context instead of push/pop.
 //	improve threaded code.
 //	skip locking to get constant scope variable.
-	implement field cache.
-	allocate/free private scope immediately instead of allocating object.
+//	implement field cache.
+//	allocate/free private scope immediately instead of allocating object.
+	use variant to hold primitives and objects.
 	implement thread local memory pool.
 	cache flyweight integers.
 	allocate variables in threaded code.

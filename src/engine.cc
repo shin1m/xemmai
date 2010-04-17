@@ -54,6 +54,7 @@ void t_engine::f_pools__return()
 	t_local_pool<t_object>::f_return(f_instance__object__pool__return);
 	t_local_pool<t_fiber::t_context>::f_return(f_instance__fiber__context__pool__return);
 	t_local_pool<t_fiber::t_try>::f_return(f_instance__fiber__try__pool__return);
+	t_local_pool<t_fixed_scope>::f_return(f_instance__scope__pool__return);
 }
 
 t_hash::t_table* t_engine::f_hash__table__allocate(size_t a_rank)
@@ -333,6 +334,7 @@ t_engine::~t_engine()
 		} while (v_synchronizers);
 	}
 	assert(!v_thread__internals);
+	v_scope__pool.f_clear();
 	v_fiber__try__pool.f_clear();
 	v_fiber__context__pool.f_clear();
 	v_object__pool.f_clear();
