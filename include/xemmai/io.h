@@ -6,6 +6,7 @@
 #include "io/file.h"
 #include "io/reader.h"
 #include "io/writer.h"
+#include "io/path.h"
 
 namespace xemmai
 {
@@ -23,6 +24,7 @@ class t_io : public t_extension
 	t_slot v_type_file;
 	t_slot v_type_reader;
 	t_slot v_type_writer;
+	t_slot v_type_path;
 
 	template<typename T>
 	void f_type__(const t_transfer& a_type);
@@ -30,6 +32,11 @@ class t_io : public t_extension
 public:
 	t_io(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
+	template<typename T>
+	const T* f_extension() const
+	{
+		return f_global();
+	}
 	t_object* f_symbol_close() const
 	{
 		return v_symbol_close;
@@ -62,7 +69,8 @@ public:
 	template<typename T>
 	t_transfer f_as(const T& a_value) const
 	{
-		return f_global()->f_as(a_value);
+		typedef t_type_of<typename t_fundamental<T>::t_type> t;
+		return t::f_transfer(f_extension<typename t::t_extension>(), a_value);
 	}
 };
 
@@ -85,6 +93,18 @@ inline void t_io::f_type__<io::t_writer>(const t_transfer& a_type)
 }
 
 template<>
+inline void t_io::f_type__<portable::t_path>(const t_transfer& a_type)
+{
+	v_type_path = a_type;
+}
+
+template<>
+inline const t_io* t_io::f_extension<t_io>() const
+{
+	return this;
+}
+
+template<>
 inline t_object* t_io::f_type<io::t_file>() const
 {
 	return v_type_file;
@@ -100,6 +120,12 @@ template<>
 inline t_object* t_io::f_type<io::t_writer>() const
 {
 	return v_type_writer;
+}
+
+template<>
+inline t_object* t_io::f_type<portable::t_path>() const
+{
+	return v_type_path;
 }
 
 }

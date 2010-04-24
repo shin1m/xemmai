@@ -45,4 +45,5 @@ nobase_includeversion_HEADERS = \
 	xemmai/io.h \
 	xemmai/io/file.h \
 	xemmai/io/reader.h \
-	xemmai/io/writer.h
+	xemmai/io/writer.h \
+	xemmai/io/path.h

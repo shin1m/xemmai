@@ -2,6 +2,7 @@ TESTS_ENVIRONMENT = XEMMAI_MODULE_PATH=$(top_builddir)/modules $(top_builddir)/s
 scripts = \
 	field.xm \
 	flow.xm \
+	flow2.xm \
 	race.xm \
 	ring.xm \
 	symbol.xm \
@@ -14,6 +15,7 @@ scripts = \
 	bytes.xm \
 	file.xm \
 	text.xm \
+	path.xm \
 	hanoi.xm \
 	hanoi2.xm \
 	prime.xm \

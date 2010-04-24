@@ -17,6 +17,8 @@ t_io::t_io(t_object* a_module) : t_extension(a_module)
 	xemmai::f_as<t_type*>(v_type_reader)->v_builtin = true;
 	t_type_of<io::t_writer>::f_define(this);
 	xemmai::f_as<t_type*>(v_type_writer)->v_builtin = true;
+	t_type_of<portable::t_path>::f_define(this);
+	xemmai::f_as<t_type*>(v_type_path)->v_builtin = true;
 }
 
 void t_io::f_scan(t_scan a_scan)
@@ -30,6 +32,7 @@ void t_io::f_scan(t_scan a_scan)
 	a_scan(v_type_file);
 	a_scan(v_type_reader);
 	a_scan(v_type_writer);
+	a_scan(v_type_path);
 }
 
 }
