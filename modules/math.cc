@@ -6,9 +6,8 @@
 namespace xemmai
 {
 
-class t_math : public t_extension
+struct t_math : t_extension
 {
-public:
 	t_math(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>

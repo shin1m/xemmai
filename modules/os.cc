@@ -4,9 +4,8 @@
 namespace xemmai
 {
 
-class t_os : public t_extension
+struct t_os : t_extension
 {
-public:
 	t_os(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>

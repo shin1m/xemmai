@@ -38,7 +38,7 @@ void t_type_of<bool>::f_and(t_object* a_this, t_stack& a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
 	f_check<bool>(a0, L"argument0");
-	a_stack.f_return(f_global()->f_as(f_as<bool>(a_this) & f_as<bool>(a0)));
+	a_stack.f_return(f_global()->f_as(static_cast<bool>(f_as<bool>(a_this) & f_as<bool>(a0))));
 	context.f_done();
 }
 
@@ -47,7 +47,7 @@ void t_type_of<bool>::f_xor(t_object* a_this, t_stack& a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
 	f_check<bool>(a0, L"argument0");
-	a_stack.f_return(f_global()->f_as(f_as<bool>(a_this) ^ f_as<bool>(a0)));
+	a_stack.f_return(f_global()->f_as(static_cast<bool>(f_as<bool>(a_this) ^ f_as<bool>(a0))));
 	context.f_done();
 }
 
@@ -56,7 +56,7 @@ void t_type_of<bool>::f_or(t_object* a_this, t_stack& a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
 	f_check<bool>(a0, L"argument0");
-	a_stack.f_return(f_global()->f_as(f_as<bool>(a_this) | f_as<bool>(a0)));
+	a_stack.f_return(f_global()->f_as(static_cast<bool>(f_as<bool>(a_this) | f_as<bool>(a0))));
 	context.f_done();
 }
 

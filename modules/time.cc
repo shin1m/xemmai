@@ -9,9 +9,12 @@
 namespace xemmai
 {
 
-class t_time : public t_extension
+struct t_time : t_extension
 {
-public:
+#ifdef __unix__
+	double v_tick_base;
+#endif
+
 	t_time(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
@@ -48,10 +51,10 @@ double f_now()
 #endif
 }
 
-int f_tick()
+int f_tick(t_time* a_extension)
 {
 #ifdef __unix__
-	return static_cast<int>(f_now() * 1000.0);
+	return static_cast<int>((f_now() - a_extension->v_tick_base) * 1000.0);
 #endif
 #ifdef _WIN32
 	return GetTickCount();
@@ -556,9 +559,12 @@ std::wstring f_format_xsd(const t_array& a_value, int a_offset, int a_precision)
 }
 
 t_time::t_time(t_object* a_module) : t_extension(a_module)
+#ifdef __unix__
+, v_tick_base(f_now())
+#endif
 {
 	f_define<double (*)(), f_now>(this, L"now");
-	f_define<int (*)(), f_tick>(this, L"tick");
+	f_define<int (*)(t_time*), f_tick>(this, L"tick");
 	f_define<double (*)(const t_array&), f_compose>(this, L"compose");
 	f_define<t_transfer (*)(double), f_decompose>(this, L"decompose");
 	f_define<int (*)(), f_offset>(this, L"offset");
