@@ -140,7 +140,7 @@ public:
 		{
 			return reinterpret_cast<size_t>(a_key);
 		}
-		static size_t f_equals(t_object* a_x, t_object* a_y)
+		static bool f_equals(t_object* a_x, t_object* a_y)
 		{
 			return a_x == a_y;
 		}

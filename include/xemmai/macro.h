@@ -244,102 +244,99 @@
 #ifdef XEMMAI__MACRO__INCLUDE
 
 #if XEMMAI__MACRO__N == 0
-#include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 1
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 0
-#include "macro.h"
-#define XEMMAI__MACRO__N 1
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 2
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 1
 #include "macro.h"
-#define XEMMAI__MACRO__N 2
+#define XEMMAI__MACRO__N 1
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 3
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 2
 #include "macro.h"
-#define XEMMAI__MACRO__N 3
+#define XEMMAI__MACRO__N 2
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 4
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 3
 #include "macro.h"
-#define XEMMAI__MACRO__N 4
+#define XEMMAI__MACRO__N 3
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 5
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 4
 #include "macro.h"
-#define XEMMAI__MACRO__N 5
+#define XEMMAI__MACRO__N 4
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 6
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 5
 #include "macro.h"
-#define XEMMAI__MACRO__N 6
+#define XEMMAI__MACRO__N 5
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 7
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 6
 #include "macro.h"
-#define XEMMAI__MACRO__N 7
+#define XEMMAI__MACRO__N 6
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 8
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 7
 #include "macro.h"
-#define XEMMAI__MACRO__N 8
+#define XEMMAI__MACRO__N 7
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 9
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 8
 #include "macro.h"
-#define XEMMAI__MACRO__N 9
+#define XEMMAI__MACRO__N 8
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 10
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 9
 #include "macro.h"
-#define XEMMAI__MACRO__N 10
+#define XEMMAI__MACRO__N 9
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 11
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 10
 #include "macro.h"
-#define XEMMAI__MACRO__N 11
+#define XEMMAI__MACRO__N 10
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 12
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 11
 #include "macro.h"
-#define XEMMAI__MACRO__N 12
+#define XEMMAI__MACRO__N 11
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 13
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 12
 #include "macro.h"
-#define XEMMAI__MACRO__N 13
+#define XEMMAI__MACRO__N 12
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 14
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 13
 #include "macro.h"
-#define XEMMAI__MACRO__N 14
+#define XEMMAI__MACRO__N 13
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 15
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 14
 #include "macro.h"
-#define XEMMAI__MACRO__N 15
+#define XEMMAI__MACRO__N 14
 #include XEMMAI__MACRO__ITERATE
 #elif XEMMAI__MACRO__N == 16
 #undef XEMMAI__MACRO__N
 #define XEMMAI__MACRO__N 15
 #include "macro.h"
-#define XEMMAI__MACRO__N 16
+#define XEMMAI__MACRO__N 15
 #include XEMMAI__MACRO__ITERATE
 #endif
 #undef XEMMAI__MACRO__N

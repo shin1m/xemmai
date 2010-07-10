@@ -12,7 +12,7 @@ size_t t_dictionary::t_hash_traits::f_hash(t_object* a_key)
 	return f_as<size_t>(a_key->f_get(f_global()->f_symbol_hash())->f_call());
 }
 
-size_t t_dictionary::t_hash_traits::f_equals(t_object* a_x, t_object* a_y)
+bool t_dictionary::t_hash_traits::f_equals(t_object* a_x, t_object* a_y)
 {
 	return f_as<bool>(a_x->f_get(f_global()->f_symbol_equals())->f_call(a_y));
 }

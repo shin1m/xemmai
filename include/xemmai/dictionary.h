@@ -12,7 +12,7 @@ class t_dictionary
 	struct t_hash_traits
 	{
 		static size_t f_hash(t_object* a_key);
-		static size_t f_equals(t_object* a_x, t_object* a_y);
+		static bool f_equals(t_object* a_x, t_object* a_y);
 	};
 
 	t_hash v_hash;
