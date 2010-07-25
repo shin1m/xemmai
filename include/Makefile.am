@@ -42,6 +42,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/tuple.h \
 	xemmai/type.h \
 	xemmai/value.h \
+	xemmai/value_call.h \
 	xemmai/io.h \
 	xemmai/io/file.h \
 	xemmai/io/reader.h \
