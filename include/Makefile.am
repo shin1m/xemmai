@@ -33,7 +33,6 @@ nobase_includeversion_HEADERS = \
 	xemmai/object.h \
 	xemmai/object_call.h \
 	xemmai/parser.h \
-	xemmai/pointer.h \
 	xemmai/pool.h \
 	xemmai/scope.h \
 	xemmai/string.h \
@@ -42,6 +41,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/throwable.h \
 	xemmai/tuple.h \
 	xemmai/type.h \
+	xemmai/value.h \
 	xemmai/io.h \
 	xemmai/io/file.h \
 	xemmai/io/reader.h \

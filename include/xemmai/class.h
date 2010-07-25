@@ -18,10 +18,10 @@ struct t_type_of<t_type> : t_type
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
-	virtual t_transfer f_get(t_object* a_this, t_object* a_key);
+	virtual t_transfer f_get(const t_value& a_this, t_object* a_key);
 	virtual void f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value);
 	virtual t_transfer f_remove(t_object* a_this, t_object* a_key);
-	virtual void f_call(t_object* a_this, t_object* a_self, size_t a_n, t_stack& a_stack);
+	virtual void f_call(t_object* a_this, const t_value& a_self, size_t a_n, t_stack& a_stack);
 	virtual void f_send(t_object* a_this, t_stack& a_stack);
 };
 

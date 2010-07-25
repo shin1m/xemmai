@@ -29,7 +29,7 @@ void t_bytes::f_validate(int& a_index, size_t a_size) const
 t_transfer t_bytes::f_instantiate(size_t a_size)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_bytes>());
-	object->v_pointer = new(a_size) t_bytes();
+	object.f_pointer__(new(a_size) t_bytes());
 	return object;
 }
 
@@ -66,7 +66,7 @@ void t_bytes::f_copy(int a_index0, size_t a_size, t_bytes& a_other, int a_index1
 	std::copy(p, p + a_size, a_other.f_entries() + a_index1);
 }
 
-bool t_type_of<t_bytes>::f_equals(t_object* a_self, t_object* a_other)
+bool t_type_of<t_bytes>::f_equals(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return true;
 	f_check<t_bytes>(a_self, L"this");
@@ -85,8 +85,8 @@ void t_type_of<t_bytes>::f_define()
 		(f_global()->f_symbol_hash(), t_member<int (t_bytes::*)() const, &t_bytes::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<int (t_bytes::*)(int) const, &t_bytes::f_get_at>())
 		(f_global()->f_symbol_set_at(), t_member<int (t_bytes::*)(int, int), &t_bytes::f_set_at>())
-		(f_global()->f_symbol_equals(), t_member<bool (*)(t_object*, t_object*), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool (*)(t_object*, t_object*), f_not_equals>())
+		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const t_value&, const t_value&), f_not_equals>())
 		(L"size", t_member<size_t (t_bytes::*)() const, &t_bytes::f_size>())
 		(L"copy", t_member<void (t_bytes::*)(int, size_t, t_bytes&, int) const, &t_bytes::f_copy>())
 	;
@@ -99,7 +99,7 @@ t_type* t_type_of<t_bytes>::f_derive(t_object* a_this)
 
 void t_type_of<t_bytes>::f_finalize(t_object* a_this)
 {
-	delete f_as<t_bytes*>(a_this);
+	delete &f_as<t_bytes&>(a_this);
 }
 
 void t_type_of<t_bytes>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)

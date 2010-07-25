@@ -12,48 +12,52 @@ XEMMAI__PORTABLE__THREAD size_t t_object::v_collect;
 
 void t_object::f_decrement(t_slot& a_slot)
 {
-	t_object* p = a_slot;
-	if (!p) return;
+	t_object* p = a_slot.v_p;
+	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
 	p->f_decrement();
 	a_slot.v_p = 0;
 }
 
 void t_object::f_mark_gray(t_slot& a_slot)
 {
-	t_object* p = a_slot;
-	if (!p) return;
+	t_object* p = a_slot.v_p;
+	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
 	p->f_mark_gray();
 	--p->v_cyclic;
 }
 
 void t_object::f_scan_gray(t_slot& a_slot)
 {
-	t_object* p = a_slot;
-	if (p) p->f_scan_gray();
+	t_object* p = a_slot.v_p;
+	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
+	p->f_scan_gray();
 }
 
 void t_object::f_scan_black(t_slot& a_slot)
 {
-	t_object* p = a_slot;
-	if (p) p->f_scan_black();
+	t_object* p = a_slot.v_p;
+	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
+	p->f_scan_black();
 }
 
 void t_object::f_collect_white(t_slot& a_slot)
 {
-	t_object* p = a_slot;
-	if (p) p->f_collect_white();
+	t_object* p = a_slot.v_p;
+	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
+	p->f_collect_white();
 }
 
 void t_object::f_scan_red(t_slot& a_slot)
 {
-	t_object* p = a_slot;
-	if (p && p->v_color == e_color__RED && p->v_cyclic > 0) --p->v_cyclic;
+	t_object* p = a_slot.v_p;
+	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
+	if (p->v_color == e_color__RED && p->v_cyclic > 0) --p->v_cyclic;
 }
 
 void t_object::f_cyclic_decrement(t_slot& a_slot)
 {
-	t_object* p = a_slot;
-	if (!p) return;
+	t_object* p = a_slot.v_p;
+	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
 	if (p->v_color != e_color__RED) {
 		if (p->v_color == e_color__ORANGE) {
 			--p->v_count;
@@ -74,7 +78,7 @@ void t_object::f_collect()
 		t_object* p = cycle;
 		do {
 			p = p->v_next;
-			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && f_as<t_type*>(p->v_type)->v_revive) {
+			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && f_as<t_type&>(p->v_type).v_revive) {
 				p = 0;
 				break;
 			}
@@ -91,7 +95,7 @@ void t_object::f_collect()
 			do {
 				p = cycle->v_next;
 				cycle->v_next = p->v_next;
-				delete f_as<t_type*>(p);
+				delete &f_as<t_type&>(p);
 				++v_collect;
 				t_local_pool<t_object>::f_free(p);
 			} while (p != cycle);
@@ -192,7 +196,7 @@ void t_object::f_collect()
 		do {
 			p = p->v_next;
 			p->v_fields.f_scan(f_scan_red);
-			f_as<t_type*>(p->v_type)->f_scan(p, f_scan_red);
+			f_as<t_type&>(p->v_type).f_scan(p, f_scan_red);
 			f_scan_red(p->v_type);
 		} while (p != cycle);
 		do {
@@ -213,7 +217,7 @@ void t_object::f_mark_gray()
 	v_color = e_color__GRAY;
 	v_cyclic = v_count;
 	v_fields.f_scan(f_mark_gray);
-	f_as<t_type*>(v_type)->f_scan(this, f_mark_gray);
+	f_as<t_type&>(v_type).f_scan(this, f_mark_gray);
 	f_mark_gray(v_type);
 }
 
@@ -222,7 +226,7 @@ void t_object::f_scan_gray()
 	if (v_color == e_color__GRAY && v_cyclic <= 0) {
 		v_color = e_color__WHITE;
 		v_fields.f_scan(f_scan_gray);
-		f_as<t_type*>(v_type)->f_scan(this, f_scan_gray);
+		f_as<t_type&>(v_type).f_scan(this, f_scan_gray);
 		f_scan_gray(v_type);
 	} else if (v_color != e_color__WHITE) {
 		f_scan_black();
@@ -235,18 +239,18 @@ void t_object::f_collect_white()
 	v_color = e_color__ORANGE;
 	f_append(f_engine()->v_object__cycle, this);
 	v_fields.f_scan(f_collect_white);
-	f_as<t_type*>(v_type)->f_scan(this, f_collect_white);
+	f_as<t_type&>(v_type).f_scan(this, f_collect_white);
 	f_collect_white(v_type);
 }
 
 void t_object::f_cyclic_decrement()
 {
 	v_fields.f_scan(f_cyclic_decrement);
-	f_as<t_type*>(v_type)->f_scan(this, f_cyclic_decrement);
+	f_as<t_type&>(v_type).f_scan(this, f_cyclic_decrement);
 	v_fields.f_finalize();
 	if (v_type != f_engine()->v_type_class) {
-		f_as<t_type*>(v_type)->f_finalize(this);
-		v_pointer = 0;
+		f_as<t_type&>(v_type).f_finalize(this);
+		v_type.v_pointer = 0;
 	}
 	f_cyclic_decrement(v_type);
 }
@@ -272,7 +276,7 @@ t_transfer t_object::f_allocate(t_object* a_type)
 }
 #endif
 
-void t_object::f_call_and_return(t_object* a_self, size_t a_n, t_stack& a_stack)
+void t_object::f_call_and_return(const t_value& a_self, size_t a_n, t_stack& a_stack)
 {
 	f_call(a_self, a_n, a_stack);
 	if (f_context()->v_native <= 0) a_stack.f_return(t_code::f_loop());
@@ -283,7 +287,7 @@ t_transfer t_object::f_call(size_t a_n, t_slot* a_slots)
 	std::vector<t_slot> slots(a_n + 1);
 	for (size_t i = 0; i < a_n; ++i) slots[i] = a_slots[i];
 	t_scoped_stack stack(&slots[0], &slots[0] + a_n + 1);
-	f_call_and_return(0, a_n, stack);
+	f_call_and_return(t_value(), a_n, stack);
 	return stack.f_pop();
 }
 

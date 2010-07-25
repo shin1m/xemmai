@@ -13,7 +13,7 @@ struct t_type_of<std::wstring> : t_type
 	static t_transfer f_transfer(T_extension* a_extension, T a_value)
 	{
 		t_transfer object = t_object::f_allocate_uninitialized(a_extension->template f_type<typename t_fundamental<T>::t_type>());
-		object->v_pointer = new std::wstring(a_value);
+		object.f_pointer__(new std::wstring(a_value));
 		return object;
 	}
 	static std::wstring f_from_code(int a_code)
@@ -30,7 +30,7 @@ struct t_type_of<std::wstring> : t_type
 		for (std::wstring::const_iterator i = a_self.begin(); i != a_self.end(); ++i) n ^= static_cast<int>(*i);
 		return n;
 	}
-	static std::wstring f_add(const std::wstring& a_self, t_object* a_value);
+	static std::wstring f_add(const std::wstring& a_self, const t_value& a_value);
 	static bool f_less(const std::wstring& a_self, const std::wstring& a_value)
 	{
 		return a_self < a_value;
@@ -47,8 +47,8 @@ struct t_type_of<std::wstring> : t_type
 	{
 		return a_self >= a_value;
 	}
-	static bool f_equals(const std::wstring& a_self, t_object* a_value);
-	static bool f_not_equals(const std::wstring& a_self, t_object* a_value);
+	static bool f_equals(const std::wstring& a_self, const t_value& a_value);
+	static bool f_not_equals(const std::wstring& a_self, const t_value& a_value);
 	static std::wstring f_substring(const std::wstring& a_self, size_t a_i)
 	{
 		return a_self.substr(a_i);

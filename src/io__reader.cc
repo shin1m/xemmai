@@ -19,7 +19,7 @@ size_t t_reader::f_read(t_io* a_extension)
 	char* p = reinterpret_cast<char*>(&buffer[0]);
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;
-	t_transfer n = v_stream->f_get(a_extension->f_symbol_read())->f_call(v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
+	t_transfer n = v_stream.f_get(a_extension->f_symbol_read())(v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
 	f_check<size_t>(n, L"result of read");
 	v_n += f_as<size_t>(n);
 	return f_as<size_t>(n);
@@ -56,7 +56,7 @@ t_transfer t_reader::f_instantiate(const t_transfer& a_stream, const std::wstrin
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
 	t_transfer object = t_object::f_allocate(extension->f_type<t_reader>());
-	object->v_pointer = new t_reader(a_stream, a_encoding);
+	object.f_pointer__(new t_reader(a_stream, a_encoding));
 	return object;
 }
 
@@ -69,14 +69,14 @@ t_reader::t_reader(const t_transfer& a_stream, const std::wstring& a_encoding) :
 
 void t_reader::f_close(t_io* a_extension)
 {
-	if (!v_stream) t_throwable::f_throw(L"already closed.");
-	v_stream->f_get(a_extension->f_symbol_close())->f_call();
+	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
+	v_stream.f_get(a_extension->f_symbol_close())();
 	v_stream = 0;
 }
 
 std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
 {
-	if (!v_stream) t_throwable::f_throw(L"already closed.");
+	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
 	std::wstring s(a_size, L'\0');
 	for (size_t i = 0; i < a_size; ++i) {
 		wint_t c = f_get(a_extension);
@@ -88,7 +88,7 @@ std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
 
 std::wstring t_reader::f_read_line(t_io* a_extension)
 {
-	if (!v_stream) t_throwable::f_throw(L"already closed.");
+	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
 	std::vector<wchar_t> cs;
 	while (true) {
 		wint_t c = f_get(a_extension);
@@ -117,7 +117,7 @@ t_type* t_type_of<io::t_reader>::f_derive(t_object* a_this)
 
 void t_type_of<io::t_reader>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	io::t_reader* p = f_as<io::t_reader*>(a_this);
+	io::t_reader* p = &f_as<io::t_reader&>(a_this);
 	if (!p) return;
 	a_scan(p->v_stream);
 	a_scan(p->v_buffer);
@@ -125,7 +125,7 @@ void t_type_of<io::t_reader>::f_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<io::t_reader>::f_finalize(t_object* a_this)
 {
-	delete f_as<io::t_reader*>(a_this);
+	delete &f_as<io::t_reader&>(a_this);
 }
 
 void t_type_of<io::t_reader>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)

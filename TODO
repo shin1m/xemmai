@@ -41,9 +41,8 @@ performance improvement ideas:
 //	skip locking to get constant scope variable.
 //	implement field cache.
 //	allocate/free private scope immediately instead of allocating object.
-	use variant to hold primitives and objects.
+//	use variant to hold primitives and objects.
 	implement thread local memory pool.
-	cache flyweight integers.
 	allocate variables in threaded code.
 	implement scope cache.
 	use direct function table instead of virtual function.

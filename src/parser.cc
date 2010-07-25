@@ -2,9 +2,6 @@
 
 #include <xemmai/engine.h>
 #include <xemmai/symbol.h>
-#include <xemmai/integer.h>
-#include <xemmai/float.h>
-#include <xemmai/string.h>
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -21,13 +18,13 @@ void t_parser::f_get(long a_position, size_t a_line, size_t a_column, size_t a_o
 		t_hash::t_entry* field = a_scope->v_code->v_fields.f_find<t_object::t_hash_traits>(a_symbol);
 		if (field) {
 			if (a_outer > 0) {
-				field->v_value->v_integer |= t_code::e_access__SHARED;
+				field->v_value.v_integer |= t_code::e_access__SHARED;
 				f_emit(e_instruction__SCOPE_GET);
 				f_operand(a_outer);
 			} else {
 				f_emit(e_instruction__SCOPE_GET0);
 			}
-			f_operand(&field->v_value->v_integer);
+			f_operand(&field->v_value.v_integer);
 			f_at(a_position, a_line, a_column);
 			return;
 		}
@@ -43,16 +40,14 @@ int* t_parser::f_index(t_scope* a_scope, const t_transfer& a_symbol, bool a_loop
 {
 	t_hash::t_entry* field = a_scope->v_code->v_fields.f_find<t_object::t_hash_traits>(a_symbol);
 	if (field) {
-		field->v_value->v_integer |= t_code::e_access__VARIES;
-		return &field->v_value->v_integer;
+		field->v_value.v_integer |= t_code::e_access__VARIES;
+		return &field->v_value.v_integer;
 	}
-	t_code* code = f_as<t_code*>(a_scope->v_code);
-	t_transfer index = f_global()->f_as(code->v_size);
-	if (a_loop) index->v_integer |= t_code::e_access__VARIES;
-	int* p = &index->v_integer;
-	a_scope->v_code->v_fields.f_put<t_object::t_hash_traits>(a_symbol, index);
-	++code->v_size;
-	return p;
+	t_code& code = f_as<t_code&>(a_scope->v_code);
+	field = a_scope->v_code->v_fields.f_put<t_object::t_hash_traits>(a_symbol, f_global()->f_as(code.v_size)).second;
+	if (a_loop) field->v_value.v_integer |= t_code::e_access__VARIES;
+	++code.v_size;
+	return &field->v_value.v_integer;
 }
 
 void t_parser::f_number(long a_position, size_t a_line, size_t a_column, t_lexer::t_token a_token)
@@ -71,8 +66,8 @@ void t_parser::f_number(long a_position, size_t a_line, size_t a_column, t_lexer
 				break;
 			}
 			v_lexer.f_next();
-			f_emit(e_instruction__INSTANCE);
-			f_operand(f_global()->f_as(value));
+			f_emit(e_instruction__INTEGER);
+			f_operand(value);
 		}
 		break;
 	case t_lexer::e_token__FLOAT:
@@ -81,8 +76,8 @@ void t_parser::f_number(long a_position, size_t a_line, size_t a_column, t_lexer
 			double value = std::wcstod(&v_lexer.f_value()[0], &p);
 			if (a_token == t_lexer::e_token__HYPHEN) value = -value;
 			v_lexer.f_next();
-			f_emit(e_instruction__INSTANCE);
-			f_operand(f_global()->f_as(value));
+			f_emit(e_instruction__FLOAT);
+			f_operand(value);
 		}
 		break;
 	}
@@ -129,14 +124,14 @@ void t_parser::f_target()
 				v_lexer.f_next();
 			}
 			t_transfer code = t_code::f_instantiate(v_lexer.f_path(), symbols.size());
-			for (size_t i = 0; i < symbols.size(); ++i) code->v_fields.f_put<t_object::t_hash_traits>(t_symbol::f_instantiate(symbols[i]), f_global()->f_as(i));
+			for (size_t i = 0; i < symbols.size(); ++i) (*code).v_fields.f_put<t_object::t_hash_traits>(t_symbol::f_instantiate(symbols[i]), f_global()->f_as(i));
 			v_scope->v_shared = true;
-			t_scope scope(v_scope, code);
+			t_scope scope(v_scope, &*code);
 			v_scope = &scope;
 			std::vector<void*>* instructions = v_instructions;
-			v_instructions = &f_as<t_code*>(code)->v_instructions;
+			v_instructions = &f_as<t_code&>(code).v_instructions;
 			std::vector<void*>* objects = v_objects;
-			v_objects = &f_as<t_code*>(code)->v_objects;
+			v_objects = &f_as<t_code&>(code).v_objects;
 			t_targets* targets0 = v_targets;
 			std::vector<size_t> return0;
 			t_targets targets1(0, 0, &return0);
@@ -148,8 +143,8 @@ void t_parser::f_target()
 			f_resolve(return0);
 			f_emit(e_instruction__RETURN);
 			f_at(position, line, column);
-			f_as<t_code*>(code)->f_estimate(!scope.v_shared);
-			f_as<t_code*>(code)->f_tail();
+			f_as<t_code&>(code).f_estimate(!scope.v_shared);
+			f_as<t_code&>(code).f_tail();
 			v_scope = scope.v_outer;
 			v_instructions = instructions;
 			v_objects = objects;
@@ -209,20 +204,19 @@ void t_parser::f_target()
 		break;
 	case t_lexer::e_token__NULL:
 		v_lexer.f_next();
-		f_emit(e_instruction__INSTANCE);
-		f_operand(f_global()->f_null());
+		f_emit(e_instruction__NULL);
 		f_at(position, line, column);
 		break;
 	case t_lexer::e_token__TRUE:
 		v_lexer.f_next();
-		f_emit(e_instruction__INSTANCE);
-		f_operand(f_global()->f_true());
+		f_emit(e_instruction__BOOLEAN);
+		f_operand(true);
 		f_at(position, line, column);
 		break;
 	case t_lexer::e_token__FALSE:
 		v_lexer.f_next();
-		f_emit(e_instruction__INSTANCE);
-		f_operand(f_global()->f_false());
+		f_emit(e_instruction__BOOLEAN);
+		f_operand(false);
 		f_at(position, line, column);
 		break;
 	case t_lexer::e_token__INTEGER:
@@ -705,8 +699,8 @@ void t_parser::f_and_also()
 		f_emit(e_instruction__JUMP);
 		f_operand(label1);
 		f_resolve(label0);
-		f_emit(e_instruction__INSTANCE);
-		f_operand(f_global()->f_false());
+		f_emit(e_instruction__BOOLEAN);
+		f_operand(false);
 		f_at(position, line, column);
 		f_resolve(label1);
 	}
@@ -723,8 +717,8 @@ void t_parser::f_or_else()
 		std::vector<size_t> label1;
 		f_emit(e_instruction__BRANCH);
 		f_operand(label0);
-		f_emit(e_instruction__INSTANCE);
-		f_operand(f_global()->f_true());
+		f_emit(e_instruction__BOOLEAN);
+		f_operand(true);
 		f_emit(e_instruction__JUMP);
 		f_operand(label1);
 		f_at(position, line, column);
@@ -963,8 +957,7 @@ void t_parser::f_expression()
 				v_lexer.f_next();
 				f_block_or_statement();
 			} else {
-				f_emit(e_instruction__INSTANCE);
-				f_operand(f_global()->f_null());
+				f_emit(e_instruction__NULL);
 				f_at(position, line, column);
 			}
 			f_resolve(label1);
@@ -999,8 +992,7 @@ void t_parser::f_expression()
 			f_emit(e_instruction__JUMP);
 			f_operand(loop);
 			f_resolve(label0);
-			f_emit(e_instruction__INSTANCE);
-			f_operand(f_global()->f_null());
+			f_emit(e_instruction__NULL);
 			f_at(position, line, column);
 			f_resolve(break0);
 			f_resolve(continue0, loop);
@@ -1243,8 +1235,7 @@ void t_parser::f_statement()
 			size_t column = v_lexer.f_column();
 			v_lexer.f_next();
 			if (v_lexer.f_token() == t_lexer::e_token__SEMICOLON) {
-				f_emit(e_instruction__INSTANCE);
-				f_operand(f_global()->f_null());
+				f_emit(e_instruction__NULL);
 			} else {
 				f_expression();
 				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
@@ -1277,8 +1268,7 @@ void t_parser::f_statement()
 			size_t column = v_lexer.f_column();
 			v_lexer.f_next();
 			if (v_lexer.f_token() == t_lexer::e_token__SEMICOLON) {
-				f_emit(e_instruction__INSTANCE);
-				f_operand(f_global()->f_null());
+				f_emit(e_instruction__NULL);
 			} else {
 				f_expression();
 				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
@@ -1316,8 +1306,7 @@ void t_parser::f_block()
 		long position = v_lexer.f_position();
 		size_t line = v_lexer.f_line();
 		size_t column = v_lexer.f_column();
-		f_emit(e_instruction__INSTANCE);
-		f_operand(f_global()->f_null());
+		f_emit(e_instruction__NULL);
 		f_at(position, line, column);
 	} else {
 		while (true) {
@@ -1344,10 +1333,10 @@ void t_parser::f_block_or_statement()
 t_transfer t_parser::f_parse()
 {
 	t_transfer code = t_code::f_instantiate(v_lexer.f_path(), 0);
-	t_scope scope(0, code);
+	t_scope scope(0, &*code);
 	v_scope = &scope;
-	v_instructions = &f_as<t_code*>(code)->v_instructions;
-	v_objects = &f_as<t_code*>(code)->v_objects;
+	v_instructions = &f_as<t_code&>(code).v_instructions;
+	v_objects = &f_as<t_code&>(code).v_objects;
 	t_targets targets(0, 0, 0);
 	v_targets = &targets;
 	while (v_lexer.f_token() != t_lexer::e_token__EOF) {
@@ -1359,15 +1348,15 @@ t_transfer t_parser::f_parse()
 		f_at(position, line, column);
 	}
 	f_emit(e_instruction__END);
-	f_as<t_code*>(code)->f_estimate(false);
-	f_as<t_code*>(code)->f_generate();
+	f_as<t_code&>(code).f_estimate(false);
+	f_as<t_code&>(code).f_generate();
 	return code;
 }
 
 t_transfer t_parser::t_error::f_instantiate(const std::wstring& a_message, t_lexer& a_lexer)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_error>());
-	object->v_pointer = new t_error(a_message, a_lexer);
+	object.f_pointer__(new t_error(a_message, a_lexer));
 	return object;
 }
 

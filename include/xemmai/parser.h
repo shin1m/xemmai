@@ -1,7 +1,6 @@
 #ifndef XEMMAI__PARSER_H
 #define XEMMAI__PARSER_H
 
-#include "code.h"
 #include "lexer.h"
 
 namespace xemmai
@@ -54,10 +53,33 @@ class t_parser
 	{
 		v_instructions->push_back(static_cast<void*>(a_operand));
 	}
+	void f_operand(bool a_operand)
+	{
+		v_instructions->push_back(reinterpret_cast<void*>(static_cast<int>(a_operand)));
+	}
+	void f_operand(int a_operand)
+	{
+		v_instructions->push_back(reinterpret_cast<void*>(a_operand));
+	}
+	void f_operand(double a_operand)
+	{
+		union
+		{
+			double v0;
+			void* v1[sizeof(double) / sizeof(void*)];
+		};
+		v0 = a_operand;
+		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_instructions->push_back(v1[i]);
+	}
+	void f_operand(t_object* a_operand)
+	{
+		v_objects->push_back(0);
+		v_instructions->push_back(&**new(&v_objects->back()) t_slot(a_operand));
+	}
 	void f_operand(const t_transfer& a_operand)
 	{
 		v_objects->push_back(0);
-		v_instructions->push_back(static_cast<t_object*>(*new(&v_objects->back()) t_slot(a_operand)));
+		v_instructions->push_back(&**new(&v_objects->back()) t_slot(a_operand));
 	}
 	void f_operand(std::vector<size_t>& a_label)
 	{
@@ -74,7 +96,7 @@ class t_parser
 	}
 	void f_at(long a_position, size_t a_line, size_t a_column)
 	{
-		f_as<t_code*>(v_scope->v_code)->f_at(v_instructions->size(), a_position, a_line, a_column);
+		f_as<t_code&>(v_scope->v_code).f_at(v_instructions->size(), a_position, a_line, a_column);
 	}
 	void f_get(long a_position, size_t a_line, size_t a_column, size_t a_outer, t_scope* a_scope, const t_transfer& a_symbol);
 	int* f_index(t_scope* a_scope, const t_transfer& a_symbol, bool a_loop);

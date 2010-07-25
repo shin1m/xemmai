@@ -19,7 +19,7 @@ t_transfer t_file::f_instantiate(FILE* a_stream)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
 	t_transfer object = t_object::f_allocate(extension->f_type<t_file>());
-	object->v_pointer = new t_file(a_stream);
+	object.f_pointer__(new t_file(a_stream));
 	return object;
 }
 
@@ -27,7 +27,7 @@ t_transfer t_file::f_instantiate(const std::wstring& a_path, const std::wstring&
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
 	t_transfer object = t_object::f_allocate(extension->f_type<t_file>());
-	object->v_pointer = new t_file(a_path, a_mode);
+	object.f_pointer__(new t_file(a_path, a_mode));
 	return object;
 }
 
@@ -135,7 +135,7 @@ t_type* t_type_of<io::t_file>::f_derive(t_object* a_this)
 
 void t_type_of<io::t_file>::f_finalize(t_object* a_this)
 {
-	delete f_as<io::t_file*>(a_this);
+	delete &f_as<io::t_file&>(a_this);
 }
 
 void t_type_of<io::t_file>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)

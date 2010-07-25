@@ -16,18 +16,57 @@ struct t_type_of<bool> : t_type
 
 		static T0 f_call(T1 a_object)
 		{
-			return static_cast<T0>(a_object->v_boolean);
+			return static_cast<T0>(a_object.f_boolean());
+		}
+	};
+	template<typename T>
+	struct t_as<T, t_object*>
+	{
+		typedef T t_type;
+
+		static T f_call(t_object* a_object)
+		{
+			return static_cast<T>(a_object->f_boolean());
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_is
+	{
+		static bool f_call(T1 a_object)
+		{
+			return reinterpret_cast<size_t>(&*a_object) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+		}
+	};
+	template<typename T>
+	struct t_is<bool, T>
+	{
+		static bool f_call(T a_object)
+		{
+			switch (reinterpret_cast<size_t>(&*a_object)) {
+			case t_value::e_tag__BOOLEAN:
+				return true;
+			case t_value::e_tag__NULL:
+			case t_value::e_tag__INTEGER:
+			case t_value::e_tag__FLOAT:
+				return false;
+			default:
+				return dynamic_cast<t_type_of<bool>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+			}
 		}
 	};
 
 	template<typename T_extension, typename T>
 	static t_transfer f_transfer(T_extension* a_extension, T a_value)
 	{
-		return a_value ? a_extension->f_true() : a_extension->f_false();
+		return t_transfer(static_cast<bool>(a_value));
 	}
 	static std::wstring f_string(bool a_self)
 	{
 		return a_self ? L"true" : L"false";
+	}
+	static int f_hash(bool a_self)
+	{
+		return a_self ? 1 : 0;
 	}
 	static bool f_not(bool a_self)
 	{
@@ -52,10 +91,6 @@ struct t_type_of<bool> : t_type
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
-	virtual void f_not(t_object* a_this, t_stack& a_stack);
-	virtual void f_and(t_object* a_this, t_stack& a_stack);
-	virtual void f_xor(t_object* a_this, t_stack& a_stack);
-	virtual void f_or(t_object* a_this, t_stack& a_stack);
 };
 
 }

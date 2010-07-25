@@ -11,8 +11,8 @@ class t_dictionary
 	friend struct t_type_of<t_dictionary>;
 	struct t_hash_traits
 	{
-		static size_t f_hash(t_object* a_key);
-		static bool f_equals(t_object* a_x, t_object* a_y);
+		static size_t f_hash(const t_value& a_key);
+		static bool f_equals(const t_value& a_x, const t_value& a_y);
 	};
 
 	t_hash v_hash;
@@ -38,31 +38,31 @@ public:
 	{
 		return v_size;
 	}
-	t_object* f_get(t_object* a_key) const;
-	t_object* f_put(t_object* a_key, const t_transfer& a_value)
+	const t_value& f_get(const t_value& a_key) const;
+	t_transfer f_put(const t_value& a_key, const t_transfer& a_value)
 	{
-		t_object* p = a_value;
-		if (v_hash.f_put<t_hash_traits>(a_key, a_value)) ++v_size;
+		t_value p = a_value;
+		if (v_hash.f_put<t_hash_traits>(a_key, a_value).first) ++v_size;
 		return p;
 	}
-	bool f_has(t_object* a_key) const
+	bool f_has(const t_value& a_key) const
 	{
 		return v_hash.f_find<t_hash_traits>(a_key) != 0;
 	}
-	t_transfer f_remove(t_object* a_key);
+	t_transfer f_remove(const t_value& a_key);
 };
 
 template<>
 struct t_type_of<t_dictionary> : t_type
 {
-	static std::wstring f_string(t_object* a_self);
-	static int f_hash(t_object* a_self);
-	static bool f_equals(t_object* a_self, t_object* a_other);
-	static bool f_not_equals(t_object* a_self, t_object* a_other)
+	static std::wstring f_string(const t_value& a_self);
+	static int f_hash(const t_value& a_self);
+	static bool f_equals(const t_value& a_self, const t_value& a_other);
+	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return !f_equals(a_self, a_other);
 	}
-	static void f_each(t_object* a_self, t_object* a_callable);
+	static void f_each(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

@@ -43,11 +43,11 @@ public:
 	void f_swap(t_transfer& a_tuple, size_t& a_head, size_t& a_size);
 	const t_slot& operator[](int a_index) const;
 	t_slot& operator[](int a_index);
-	t_object* f_get_at(int a_index) const
+	const t_value& f_get_at(int a_index) const
 	{
 		return (*this)[a_index];
 	}
-	t_object* f_set_at(int a_index, const t_transfer& a_value)
+	const t_value& f_set_at(int a_index, const t_transfer& a_value)
 	{
 		return (*this)[a_index] = a_value;
 	}
@@ -62,19 +62,19 @@ public:
 template<>
 struct t_type_of<t_array> : t_type
 {
-	static std::wstring f_string(t_object* a_self);
-	static int f_hash(t_object* a_self);
-	static bool f_less(t_object* a_self, t_object* a_other);
-	static bool f_less_equal(t_object* a_self, t_object* a_other);
-	static bool f_greater(t_object* a_self, t_object* a_other);
-	static bool f_greater_equal(t_object* a_self, t_object* a_other);
-	static bool f_equals(t_object* a_self, t_object* a_other);
-	static bool f_not_equals(t_object* a_self, t_object* a_other)
+	static std::wstring f_string(const t_value& a_self);
+	static int f_hash(const t_value& a_self);
+	static bool f_less(const t_value& a_self, const t_value& a_other);
+	static bool f_less_equal(const t_value& a_self, const t_value& a_other);
+	static bool f_greater(const t_value& a_self, const t_value& a_other);
+	static bool f_greater_equal(const t_value& a_self, const t_value& a_other);
+	static bool f_equals(const t_value& a_self, const t_value& a_other);
+	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return !f_equals(a_self, a_other);
 	}
-	static void f_each(t_object* a_self, t_object* a_callable);
-	static void f_sort(t_object* a_self, t_object* a_callable);
+	static void f_each(const t_value& a_self, const t_value& a_callable);
+	static void f_sort(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

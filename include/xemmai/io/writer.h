@@ -40,9 +40,9 @@ public:
 		iconv_close(v_cd);
 	}
 	void f_close(t_io* a_extension);
-	void f_write(t_io* a_extension, t_object* a_value);
+	void f_write(t_io* a_extension, const t_value& a_value);
 	void f_write_line(t_io* a_extension);
-	void f_write_line(t_io* a_extension, t_object* a_value);
+	void f_write_line(t_io* a_extension, const t_value& a_value);
 	void f_flush(t_io* a_extension);
 };
 

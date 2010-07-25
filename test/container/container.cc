@@ -7,8 +7,8 @@ namespace xemmai
 
 t_transfer t_type_of<t_pair>::f_instantiate(t_container* a_extension, const t_transfer& a_value)
 {
-	t_transfer object = t_object::f_allocate(a_extension->v_type_pair);
-	object->v_pointer = new t_pair(a_value);
+	t_transfer object = t_object::f_allocate(&*a_extension->v_type_pair);
+	object.f_pointer__(new t_pair(a_value));
 	return object;
 }
 
@@ -24,12 +24,12 @@ t_type* t_type_of<t_pair>::f_derive(t_object* a_this)
 
 void t_type_of<t_pair>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	f_as<t_pair*>(a_this)->f_scan(a_scan);
+	f_as<t_pair&>(a_this).f_scan(a_scan);
 }
 
 void t_type_of<t_pair>::f_finalize(t_object* a_this)
 {
-	delete f_as<t_pair*>(a_this);
+	delete &f_as<t_pair&>(a_this);
 }
 
 void t_type_of<t_pair>::f_instantiate(t_object* a_class, size_t a_n)
@@ -54,12 +54,12 @@ t_type* t_type_of<t_queue>::f_derive(t_object* a_this)
 
 void t_type_of<t_queue>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	f_as<t_queue*>(a_this)->f_scan(a_scan);
+	f_as<t_queue&>(a_this).f_scan(a_scan);
 }
 
 void t_type_of<t_queue>::f_finalize(t_object* a_this)
 {
-	delete f_as<t_queue*>(a_this);
+	delete &f_as<t_queue&>(a_this);
 }
 
 void t_type_of<t_queue>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)

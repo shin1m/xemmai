@@ -69,8 +69,8 @@ public:
 template<>
 struct t_type_of<t_bytes> : t_type
 {
-	static bool f_equals(t_object* a_self, t_object* a_other);
-	static bool f_not_equals(t_object* a_self, t_object* a_other)
+	static bool f_equals(const t_value& a_self, const t_value& a_other);
+	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return !f_equals(a_self, a_other);
 	}

@@ -13,7 +13,7 @@ namespace xemmai
 class t_symbol;
 class t_global;
 
-class t_engine : public t_pointer::t_collector
+class t_engine : public t_value::t_collector
 {
 	friend class t_hash;
 	friend class t_hash::t_entry;
@@ -61,23 +61,23 @@ class t_engine : public t_pointer::t_collector
 	static void* f_collector(void* a_p);
 	static void f_instance__hash__entry__pool__return(t_hash::t_entry* a_p)
 	{
-		static_cast<t_engine*>(t_pointer::v_collector)->v_hash__entry__pool.f_free(a_p);
+		static_cast<t_engine*>(t_value::v_collector)->v_hash__entry__pool.f_free(a_p);
 	}
 	static void f_instance__object__pool__return(t_object* a_p)
 	{
-		static_cast<t_engine*>(t_pointer::v_collector)->v_object__pool.f_free(a_p);
+		static_cast<t_engine*>(t_value::v_collector)->v_object__pool.f_free(a_p);
 	}
 	static void f_instance__fiber__context__pool__return(t_fiber::t_context* a_p)
 	{
-		static_cast<t_engine*>(t_pointer::v_collector)->v_fiber__context__pool.f_free(a_p);
+		static_cast<t_engine*>(t_value::v_collector)->v_fiber__context__pool.f_free(a_p);
 	}
 	static void f_instance__fiber__try__pool__return(t_fiber::t_try* a_p)
 	{
-		static_cast<t_engine*>(t_pointer::v_collector)->v_fiber__try__pool.f_free(a_p);
+		static_cast<t_engine*>(t_value::v_collector)->v_fiber__try__pool.f_free(a_p);
 	}
 	static void f_instance__scope__pool__return(t_fixed_scope* a_p)
 	{
-		static_cast<t_engine*>(t_pointer::v_collector)->v_scope__pool.f_free(a_p);
+		static_cast<t_engine*>(t_value::v_collector)->v_scope__pool.f_free(a_p);
 	}
 
 	t_shared_pool<t_fixed_pool<t_hash::t_entry, 4096> > v_hash__entry__pool;
@@ -140,22 +140,22 @@ public:
 	}
 	t_object* f_module_global() const
 	{
-		return v_module_global;
+		return &*v_module_global;
 	}
 	t_object* f_module_system() const
 	{
-		return v_module_system;
+		return &*v_module_system;
 	}
 	t_object* f_module_io() const
 	{
-		return v_module_io;
+		return &*v_module_io;
 	}
 	int f_run();
 };
 
 inline t_engine* f_engine()
 {
-	return static_cast<t_engine*>(t_pointer::v_collector);
+	return static_cast<t_engine*>(t_value::v_collector);
 }
 
 }

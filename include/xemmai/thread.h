@@ -15,9 +15,9 @@ struct t_thread
 
 		static volatile size_t v_revisions[V_SIZE];
 
-		static size_t f_index(t_object* a_object, t_object* a_key)
+		static size_t f_index(const t_value& a_object, t_object* a_key)
 		{
-			return (reinterpret_cast<size_t>(a_object) ^ reinterpret_cast<size_t>(a_key)) / sizeof(t_object*) & V_MASK;
+			return (reinterpret_cast<size_t>(&*a_object) ^ reinterpret_cast<size_t>(a_key)) / sizeof(t_object*) & V_MASK;
 		}
 		static size_t f_revise(size_t a_i);
 
@@ -36,19 +36,19 @@ struct t_thread
 	{
 		t_internal* v_next;
 		size_t v_done;
-		t_pointer::t_collector* v_collector;
-		t_pointer::t_increments v_increments;
-		t_pointer::t_decrements v_decrements;
+		t_value::t_collector* v_collector;
+		t_value::t_increments v_increments;
+		t_value::t_decrements v_decrements;
 		t_object* volatile* v_reviving;
 		t_cache v_cache[t_cache::V_SIZE];
 
-		t_internal() : v_next(0), v_done(0), v_collector(t_pointer::v_collector), v_reviving(0)
+		t_internal() : v_next(0), v_done(0), v_collector(t_value::v_collector), v_reviving(0)
 		{
 		}
 		void f_initialize()
 		{
-			t_pointer::v_increments = &v_increments;
-			t_pointer::v_decrements = &v_decrements;
+			t_value::v_increments = &v_increments;
+			t_value::v_decrements = &v_decrements;
 			t_thread::v_cache = v_cache;
 		}
 		void f_revive()

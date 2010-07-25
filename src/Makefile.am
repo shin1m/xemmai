@@ -15,7 +15,7 @@ AM_LDFLAGS += -pg
 endif
 xemmai_SOURCES = \
 	portable.cc \
-	pointer.cc \
+	value.cc \
 	hash.cc \
 	type.cc \
 	object.cc \

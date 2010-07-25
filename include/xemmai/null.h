@@ -13,7 +13,7 @@ class t_null
 template<>
 struct t_type_of<t_null> : t_type
 {
-	static std::wstring f_string(t_object* a_self)
+	static std::wstring f_string(const t_value& a_self)
 	{
 		return L"null";
 	}

@@ -1,11 +1,8 @@
 #include <xemmai/global.h>
 
 #include <xemmai/thread.h>
-#include <xemmai/scope.h>
 #include <xemmai/method.h>
 #include <xemmai/lambda.h>
-#include <xemmai/null.h>
-#include <xemmai/boolean.h>
 #include <xemmai/array.h>
 #include <xemmai/dictionary.h>
 #include <xemmai/bytes.h>
@@ -62,62 +59,57 @@ v_type_thread(a_type_thread)
 	v_symbol_arguments = t_symbol::f_instantiate(L"arguments");
 	v_symbol_size = t_symbol::f_instantiate(L"size");
 	v_symbol_push = t_symbol::f_instantiate(L"push");
-	t_type::f_define(v_type_object);
-	xemmai::f_as<t_type*>(v_type_object)->v_builtin = true;
-	xemmai::f_as<t_type*>(v_type_object)->v_primitive = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Class"), v_type_class);
-	xemmai::f_as<t_type*>(v_type_class)->v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Module"), v_type_module);
-	xemmai::f_as<t_type*>(v_type_module)->v_builtin = true;
-	t_fiber::f_define(v_type_fiber);
-	xemmai::f_as<t_type*>(v_type_fiber)->v_builtin = true;
-	t_thread::f_define(v_type_thread);
-	xemmai::f_as<t_type*>(v_type_thread)->v_builtin = true;
-	t_symbol::f_define(v_type_symbol);
-	xemmai::f_as<t_type*>(v_type_symbol)->v_builtin = true;
+	t_type::f_define(&*v_type_object);
+	xemmai::f_as<t_type&>(v_type_object).v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_object).v_primitive = true;
+	a_module->f_put(&*t_symbol::f_instantiate(L"Class"), v_type_class);
+	xemmai::f_as<t_type&>(v_type_class).v_builtin = true;
+	a_module->f_put(&*t_symbol::f_instantiate(L"Module"), v_type_module);
+	xemmai::f_as<t_type&>(v_type_module).v_builtin = true;
+	t_fiber::f_define(&*v_type_fiber);
+	xemmai::f_as<t_type&>(v_type_fiber).v_builtin = true;
+	t_thread::f_define(&*v_type_thread);
+	xemmai::f_as<t_type&>(v_type_thread).v_builtin = true;
+	t_symbol::f_define(&*v_type_symbol);
+	xemmai::f_as<t_type&>(v_type_symbol).v_builtin = true;
 	v_type_scope = t_class::f_instantiate(new t_type_of<t_scope>(a_module, v_type_object));
-	xemmai::f_as<t_type*>(v_type_scope)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_scope).v_builtin = true;
 	t_define<t_method, t_object>(this, L"Method", v_type_method);
-	xemmai::f_as<t_type*>(v_type_method)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_method).v_builtin = true;
 	t_define<t_code, t_object>(this, L"Code");
-	xemmai::f_as<t_type*>(v_type_code)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_code).v_builtin = true;
 	t_define<t_lambda, t_object>(this, L"Lambda");
-	xemmai::f_as<t_type*>(v_type_lambda)->v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Native"), v_type_native);
-	xemmai::f_as<t_type*>(v_type_native)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_lambda).v_builtin = true;
+	a_module->f_put(&*t_symbol::f_instantiate(L"Native"), v_type_native);
+	xemmai::f_as<t_type&>(v_type_native).v_builtin = true;
 	t_type_of<t_throwable>::f_define();
-	xemmai::f_as<t_type*>(v_type_throwable)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_throwable).v_builtin = true;
 	t_type_of<t_null>::f_define();
-	xemmai::f_as<t_type*>(v_type_null)->v_builtin = true;
-	xemmai::f_as<t_type*>(v_type_null)->v_primitive = true;
+	xemmai::f_as<t_type&>(v_type_null).v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_null).v_primitive = true;
 	t_type_of<bool>::f_define();
-	xemmai::f_as<t_type*>(v_type_boolean)->v_builtin = true;
-	xemmai::f_as<t_type*>(v_type_boolean)->v_primitive = true;
+	xemmai::f_as<t_type&>(v_type_boolean).v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_boolean).v_primitive = true;
 	t_type_of<int>::f_define();
-	xemmai::f_as<t_type*>(v_type_integer)->v_builtin = true;
-	xemmai::f_as<t_type*>(v_type_integer)->v_primitive = true;
+	xemmai::f_as<t_type&>(v_type_integer).v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_integer).v_primitive = true;
 	t_type_of<double>::f_define();
-	xemmai::f_as<t_type*>(v_type_float)->v_builtin = true;
-	xemmai::f_as<t_type*>(v_type_float)->v_primitive = true;
+	xemmai::f_as<t_type&>(v_type_float).v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_float).v_primitive = true;
 	t_type_of<std::wstring>::f_define();
-	xemmai::f_as<t_type*>(v_type_string)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_string).v_builtin = true;
 	t_define<t_tuple, t_object>(this, L"Tuple");
-	xemmai::f_as<t_type*>(v_type_tuple)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_tuple).v_builtin = true;
 	t_type_of<t_array>::f_define();
-	xemmai::f_as<t_type*>(v_type_array)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_array).v_builtin = true;
 	t_type_of<t_dictionary>::f_define();
-	xemmai::f_as<t_type*>(v_type_dictionary)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_dictionary).v_builtin = true;
 	t_type_of<t_bytes>::f_define();
-	xemmai::f_as<t_type*>(v_type_bytes)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_bytes).v_builtin = true;
 	t_define<t_lexer::t_error, t_throwable>(this, L"LexerError");
-	xemmai::f_as<t_type*>(v_type_lexer__error)->v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_lexer__error).v_builtin = true;
 	t_define<t_parser::t_error, t_throwable>(this, L"ParserError");
-	xemmai::f_as<t_type*>(v_type_parser__error)->v_builtin = true;
-	v_null = t_object::f_allocate(v_type_null);
-	v_true = t_object::f_allocate(v_type_boolean);
-	v_true->v_boolean = true;
-	v_false = t_object::f_allocate(v_type_boolean);
-	v_false->v_boolean = false;
+	xemmai::f_as<t_type&>(v_type_parser__error).v_builtin = true;
 }
 
 void t_global::f_scan(t_scan a_scan)
@@ -179,9 +171,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_arguments);
 	a_scan(v_symbol_size);
 	a_scan(v_symbol_push);
-	a_scan(v_null);
-	a_scan(v_true);
-	a_scan(v_false);
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT

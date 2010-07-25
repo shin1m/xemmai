@@ -16,20 +16,70 @@ struct t_type_of<double> : t_type
 
 		static T0 f_call(T1 a_object)
 		{
-			return static_cast<T0>(a_object->v_float);
+			return static_cast<T0>(a_object.f_float());
+		}
+	};
+	template<typename T>
+	struct t_as<T, t_object*>
+	{
+		typedef T t_type;
+
+		static T f_call(t_object* a_object)
+		{
+			return static_cast<T>(a_object->f_float());
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_is
+	{
+		static bool f_call(T1 a_object)
+		{
+			return reinterpret_cast<size_t>(&*a_object) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+		}
+	};
+	template<typename T>
+	struct t_is<int, T>
+	{
+		static bool f_call(T a_object)
+		{
+			switch (reinterpret_cast<size_t>(&*a_object)) {
+			case t_value::e_tag__INTEGER:
+				return true;
+			case t_value::e_tag__NULL:
+			case t_value::e_tag__BOOLEAN:
+			case t_value::e_tag__FLOAT:
+				return false;
+			default:
+				return dynamic_cast<t_type_of<int>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+			}
+		}
+	};
+	template<typename T>
+	struct t_is<double, T>
+	{
+		static bool f_call(T a_object)
+		{
+			switch (reinterpret_cast<size_t>(&*a_object)) {
+			case t_value::e_tag__FLOAT:
+				return true;
+			case t_value::e_tag__NULL:
+			case t_value::e_tag__BOOLEAN:
+			case t_value::e_tag__INTEGER:
+				return false;
+			default:
+				return dynamic_cast<t_type_of<double>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+			}
 		}
 	};
 
 	template<typename T_extension, typename T>
 	static t_transfer f_transfer(T_extension* a_extension, T a_value)
 	{
-		return f_construct(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
+		return t_transfer(static_cast<double>(a_value));
 	}
 	static t_transfer f_construct(t_object* a_class, double a_value)
 	{
-		t_transfer object = t_object::f_allocate_uninitialized(a_class);
-		object->v_float = a_value;
-		return object;
+		return t_transfer(a_value);
 	}
 	static t_transfer f_construct(t_object* a_class, int a_value)
 	{
@@ -99,8 +149,8 @@ struct t_type_of<double> : t_type
 	{
 		return a_self >= a_value;
 	}
-	static bool f_equals(double a_self, t_object* a_value);
-	static bool f_not_equals(double a_self, t_object* a_value);
+	static bool f_equals(double a_self, const t_value& a_value);
+	static bool f_not_equals(double a_self, const t_value& a_value);
 	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
@@ -108,19 +158,6 @@ struct t_type_of<double> : t_type
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
-	virtual void f_hash(t_object* a_this, t_stack& a_stack);
-	virtual void f_plus(t_object* a_this, t_stack& a_stack);
-	virtual void f_minus(t_object* a_this, t_stack& a_stack);
-	virtual void f_multiply(t_object* a_this, t_stack& a_stack);
-	virtual void f_divide(t_object* a_this, t_stack& a_stack);
-	virtual void f_add(t_object* a_this, t_stack& a_stack);
-	virtual void f_subtract(t_object* a_this, t_stack& a_stack);
-	virtual void f_less(t_object* a_this, t_stack& a_stack);
-	virtual void f_less_equal(t_object* a_this, t_stack& a_stack);
-	virtual void f_greater(t_object* a_this, t_stack& a_stack);
-	virtual void f_greater_equal(t_object* a_this, t_stack& a_stack);
-	virtual void f_equals(t_object* a_this, t_stack& a_stack);
-	virtual void f_not_equals(t_object* a_this, t_stack& a_stack);
 };
 
 }

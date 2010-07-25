@@ -93,7 +93,7 @@ struct t_type_of<t_module> : t_type
 template<typename T>
 inline T* f_extension(t_object* a_module)
 {
-	return static_cast<T*>(static_cast<t_library*>(f_as<t_module*>(a_module))->v_extension);
+	return static_cast<T*>(static_cast<t_library*>(&f_as<t_module&>(a_module))->v_extension);
 }
 
 }

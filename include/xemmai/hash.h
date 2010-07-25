@@ -1,8 +1,10 @@
 #ifndef XEMMAI__HASH_H
 #define XEMMAI__HASH_H
 
+#include <utility>
+
 #include "pool.h"
-#include "pointer.h"
+#include "value.h"
 
 namespace xemmai
 {
@@ -32,7 +34,7 @@ public:
 	public:
 		t_slot v_value;
 
-		t_object* f_key() const
+		const t_slot& f_key() const
 		{
 			return v_key;
 		}
@@ -130,7 +132,7 @@ public:
 		table->f_clear();
 	}
 	template<typename T_traits>
-	t_entry* f_find(t_object* a_key) const
+	t_entry* f_find(const t_value& a_key) const
 	{
 		if (!v_table) return 0;
 		t_entry* p = *v_table->f_bucket(T_traits::f_hash(a_key));
@@ -141,9 +143,9 @@ public:
 		return 0;
 	}
 	template<typename T_traits>
-	bool f_put(t_object* a_key, const t_transfer& a_value);
+	std::pair<bool, t_entry*> f_put(const t_value& a_key, const t_transfer& a_value);
 	template<typename T_traits>
-	t_transfer f_remove(t_object* a_key);
+	std::pair<bool, t_transfer> f_remove(const t_value& a_key);
 };
 
 template<typename T_traits>
@@ -169,12 +171,12 @@ void t_hash::f_rehash(size_t a_rank)
 }
 
 template<typename T_traits>
-bool t_hash::f_put(t_object* a_key, const t_transfer& a_value)
+std::pair<bool, t_hash::t_entry*> t_hash::f_put(const t_value& a_key, const t_transfer& a_value)
 {
 	t_entry* p = f_find<T_traits>(a_key);
 	if (p) {
 		p->v_value = a_value;
-		return false;
+		return std::make_pair(false, p);
 	} else {
 		if (!v_table) {
 			v_table = t_table::f_allocate(0);
@@ -189,18 +191,18 @@ bool t_hash::f_put(t_object* a_key, const t_transfer& a_value)
 		p->v_value.f_construct(a_value);
 		*bucket = p;
 		++v_table->v_size;
-		return true;
+		return std::make_pair(true, p);
 	}
 }
 
 template<typename T_traits>
-t_transfer t_hash::f_remove(t_object* a_key)
+std::pair<bool, t_transfer> t_hash::f_remove(const t_value& a_key)
 {
-	if (!v_table) return t_transfer();
+	if (!v_table) return std::make_pair(false, t_value());
 	t_entry** bucket = v_table->f_bucket(T_traits::f_hash(a_key));
 	while (true) {
 		t_entry* p = *bucket;
-		if (!p) return t_transfer();
+		if (!p) return std::make_pair(false, t_value());
 		if (T_traits::f_equals(p->v_key, a_key)) break;
 		bucket = &p->v_next;
 	}
@@ -211,7 +213,7 @@ t_transfer t_hash::f_remove(t_object* a_key)
 	t_local_pool<t_entry>::f_free(p);
 	--v_table->v_size;
 	if (v_table->v_rank > 0 && v_table->v_size < v_table->v_capacity / 2) f_rehash<T_traits>(v_table->v_rank - 1);
-	return value;
+	return std::make_pair(true, value);
 }
 
 }

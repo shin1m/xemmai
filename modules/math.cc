@@ -1,6 +1,5 @@
 #include <cmath>
 #include <xemmai/convert.h>
-#include <xemmai/boolean.h>
 #include <xemmai/array.h>
 
 namespace xemmai
@@ -84,8 +83,8 @@ t_math::t_math(t_object* a_module) : t_extension(a_module)
 	f_define<bool (*)(double), f_boolean<std::isnan> >(this, L"isnan");
 	f_define<bool (*)(double), f_boolean<std::isnormal> >(this, L"isnormal");
 	f_define<bool (*)(double), f_boolean<std::signbit> >(this, L"signbit");
-	a_module->f_put(t_symbol::f_instantiate(L"E"), f_as(M_E));
-	a_module->f_put(t_symbol::f_instantiate(L"PI"), f_as(M_PI));
+	a_module->f_put(&*t_symbol::f_instantiate(L"E"), f_as(M_E));
+	a_module->f_put(&*t_symbol::f_instantiate(L"PI"), f_as(M_PI));
 }
 
 void t_math::f_scan(t_scan a_scan)

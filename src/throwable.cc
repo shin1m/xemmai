@@ -14,7 +14,7 @@ t_throwable::~t_throwable()
 t_transfer t_throwable::f_instantiate(const std::wstring& a_message)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_throwable>());
-	object->v_pointer = new t_throwable(a_message);
+	object.f_pointer__(new t_throwable(a_message));
 	return object;
 }
 
@@ -43,12 +43,12 @@ t_type* t_type_of<t_throwable>::f_derive(t_object* a_this)
 
 void t_type_of<t_throwable>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	for (t_fiber::t_context* p = f_as<t_throwable*>(a_this)->v_context; p; p = p->v_next) p->f_scan(a_scan);
+	for (t_fiber::t_context* p = f_as<t_throwable&>(a_this).v_context; p; p = p->v_next) p->f_scan(a_scan);
 }
 
 void t_type_of<t_throwable>::f_finalize(t_object* a_this)
 {
-	delete f_as<t_throwable*>(a_this);
+	delete &f_as<t_throwable&>(a_this);
 }
 
 void t_type_of<t_throwable>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)

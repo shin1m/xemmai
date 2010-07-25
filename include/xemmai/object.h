@@ -5,8 +5,6 @@
 #include "hash.h"
 #include "type.h"
 
-#define XEMMAI__MACRO__ARGUMENTS_LIMIT 16
-
 namespace xemmai
 {
 
@@ -14,7 +12,7 @@ class t_engine;
 
 class t_object
 {
-	friend class t_pointer;
+	friend class t_value;
 	template<typename T_base> friend class t_shared_pool;
 	template<typename T, size_t A_size> friend class t_fixed_pool;
 	friend class t_local_pool<t_object>;
@@ -61,6 +59,10 @@ class t_object
 	size_t v_cyclic;
 	t_slot v_type;
 
+	t_type* f_type_as_type() const
+	{
+		return static_cast<t_type*>(f_type()->f_pointer());
+	}
 	XEMMAI__PORTABLE__FORCE_INLINE void f_increment()
 	{
 		++v_count;
@@ -85,7 +87,7 @@ class t_object
 			v_color = e_color__PURPLE;
 			if (!v_next) f_append(v_roots, this);
 		} else {
-			t_type* type = static_cast<t_type*>(v_type->v_pointer);
+			t_type* type = f_type_as_type();
 			v_fields.f_scan(f_decrement);
 			if (!type->v_primitive) {
 				type->f_scan(this, f_decrement);
@@ -95,20 +97,21 @@ class t_object
 #ifdef XEMMAI__OBJECT__CALL_DECREMENT_TYPE
 			f_decrement(v_type);
 #else
-			if (--v_type->v_count > 0) {
-				v_type->v_color = e_color__PURPLE;
-				if (!v_type->v_next) f_append(v_roots, v_type);
+			t_object* p = f_type();
+			if (--p->v_count > 0) {
+				p->v_color = e_color__PURPLE;
+				if (!p->v_next) f_append(v_roots, p);
 			} else {
-				t_type* type = static_cast<t_type*>(v_type->v_type->v_pointer);
-				v_type->v_fields.f_scan(f_decrement);
-				type->f_scan(v_type, f_decrement);
-				v_type->v_fields.f_finalize();
-				type->f_finalize(v_type);
-				f_decrement(v_type->v_type);
-				v_type->v_color = e_color__BLACK;
-				if (!v_type->v_next) {
+				t_type* type = p->f_type_as_type();
+				p->v_fields.f_scan(f_decrement);
+				type->f_scan(p, f_decrement);
+				p->v_fields.f_finalize();
+				type->f_finalize(p);
+				f_decrement(p->v_type);
+				p->v_color = e_color__BLACK;
+				if (!p->v_next) {
 					++v_release;
-					t_local_pool<t_object>::f_free(v_type);
+					t_local_pool<t_object>::f_free(p);
 				}
 			}
 			v_type.v_p = 0;
@@ -127,7 +130,7 @@ class t_object
 		if (v_color == e_color__BLACK) return;
 		v_color = e_color__BLACK;
 		v_fields.f_scan(f_scan_black);
-		static_cast<t_type*>(v_type->v_pointer)->f_scan(this, f_scan_black);
+		f_type_as_type()->f_scan(this, f_scan_black);
 		f_scan_black(v_type);
 	}
 	void f_collect_white();
@@ -136,13 +139,13 @@ class t_object
 public:
 	struct t_hash_traits
 	{
-		static size_t f_hash(t_object* a_key)
+		static size_t f_hash(const t_value& a_key)
 		{
-			return reinterpret_cast<size_t>(a_key);
+			return reinterpret_cast<size_t>(&*a_key);
 		}
-		static bool f_equals(t_object* a_x, t_object* a_y)
+		static bool f_equals(const t_value& a_x, const t_value& a_y)
 		{
-			return a_x == a_y;
+			return &*a_x == &*a_y;
 		}
 	};
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
@@ -160,7 +163,7 @@ public:
 		p->v_next = 0;
 		p->v_count = 1;
 		p->v_type.f_construct(a_type);
-		p->v_pointer = 0;
+		p->v_type.v_pointer = 0;
 		return t_transfer(p, t_transfer::t_pass());
 	}
 #else
@@ -170,45 +173,53 @@ public:
 
 	portable::t_lock v_lock;
 	t_hash v_fields;
-	union
-	{
-		bool v_boolean;
-		int v_integer;
-		double v_float;
-		void* v_pointer;
-	};
 
 	t_object* f_type() const
 	{
-		return v_type;
+		return &*v_type;
+	}
+	bool f_boolean() const
+	{
+		return v_type.v_boolean;
+	}
+	int f_integer() const
+	{
+		return v_type.v_integer;
+	}
+	double f_float() const
+	{
+		return v_type.v_float;
+	}
+	void* f_pointer() const
+	{
+		return v_type.v_pointer;
 	}
 	bool f_is(t_object* a_class) const
 	{
-		return t_type::f_derives(v_type, a_class);
+		return t_type::f_derives(f_type(), a_class);
 	}
 	t_transfer f_get(t_object* a_key)
 	{
-		return static_cast<t_type*>(v_type->v_pointer)->f_get(this, a_key);
+		return f_type_as_type()->f_get(this, a_key);
 	}
 	void f_put(t_object* a_key, const t_transfer& a_value)
 	{
-		static_cast<t_type*>(v_type->v_pointer)->f_put(this, a_key, a_value);
+		f_type_as_type()->f_put(this, a_key, a_value);
 	}
 	bool f_has(t_object* a_key)
 	{
-		return static_cast<t_type*>(v_type->v_pointer)->f_has(this, a_key);
+		return f_type_as_type()->f_has(this, a_key);
 	}
 	t_transfer f_remove(t_object* a_key)
 	{
-		return static_cast<t_type*>(v_type->v_pointer)->f_remove(this, a_key);
+		return f_type_as_type()->f_remove(this, a_key);
 	}
-	void f_call(t_object* a_self, size_t a_n, t_stack& a_stack)
+	void f_call(const t_value& a_self, size_t a_n, t_stack& a_stack)
 	{
-		static_cast<t_type*>(v_type->v_pointer)->f_call(this, a_self, a_n, a_stack);
+		f_type_as_type()->f_call(this, a_self, a_n, a_stack);
 	}
-	XEMMAI__PORTABLE__EXPORT void f_call_and_return(t_object* a_self, size_t a_n, t_stack& a_stack);
+	XEMMAI__PORTABLE__EXPORT void f_call_and_return(const t_value& a_self, size_t a_n, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT t_transfer f_call(size_t a_n, t_slot* a_slots);
-#define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
 #define XEMMAI__MACRO__A_N_COMMA(n) a_##n,
 #define XEMMAI__MACRO__ITERATE "object_call.h"
 #define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT

@@ -7,39 +7,39 @@
 namespace xemmai
 {
 
-size_t t_dictionary::t_hash_traits::f_hash(t_object* a_key)
+size_t t_dictionary::t_hash_traits::f_hash(const t_value& a_key)
 {
-	return f_as<size_t>(a_key->f_get(f_global()->f_symbol_hash())->f_call());
+	return f_as<size_t>(a_key.f_hash());
 }
 
-bool t_dictionary::t_hash_traits::f_equals(t_object* a_x, t_object* a_y)
+bool t_dictionary::t_hash_traits::f_equals(const t_value& a_x, const t_value& a_y)
 {
-	return f_as<bool>(a_x->f_get(f_global()->f_symbol_equals())->f_call(a_y));
+	return f_as<bool>(a_x.f_equals(a_y));
 }
 
 t_transfer t_dictionary::f_instantiate()
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_dictionary>());
-	object->v_pointer = new t_dictionary();
+	object.f_pointer__(new t_dictionary());
 	return object;
 }
 
-t_object* t_dictionary::f_get(t_object* a_key) const
+const t_value& t_dictionary::f_get(const t_value& a_key) const
 {
 	t_hash::t_entry* field = v_hash.f_find<t_hash_traits>(a_key);
 	if (!field) t_throwable::f_throw(L"key not found.");
 	return field->v_value;
 }
 
-t_transfer t_dictionary::f_remove(t_object* a_key)
+t_transfer t_dictionary::f_remove(const t_value& a_key)
 {
-	t_transfer value = v_hash.f_remove<t_hash_traits>(a_key);
-	if (!value) t_throwable::f_throw(L"key not found.");
+	std::pair<bool, t_transfer> pair = v_hash.f_remove<t_hash_traits>(a_key);
+	if (!pair.first) t_throwable::f_throw(L"key not found.");
 	--v_size;
-	return value;
+	return pair.second;
 }
 
-std::wstring t_type_of<t_dictionary>::f_string(t_object* a_self)
+std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	const t_dictionary& dictionary = f_as<const t_dictionary&>(a_self);
@@ -47,34 +47,34 @@ std::wstring t_type_of<t_dictionary>::f_string(t_object* a_self)
 	t_transfer x;
 	t_transfer y;
 	{
-		portable::t_scoped_lock_for_read lock(a_self->v_lock);
+		portable::t_scoped_lock_for_read lock((*a_self).v_lock);
 		if (!i.f_entry()) return L"{}";
 		x = i.f_entry()->f_key();
 		y = i.f_entry()->v_value;
 	}
-	x = x->f_get(f_global()->f_symbol_string())->f_call();
+	x = x.f_get(f_global()->f_symbol_string())();
 	if (!f_is<std::wstring>(x)) t_throwable::f_throw(L"argument must be string.");
-	y = y->f_get(f_global()->f_symbol_string())->f_call();
+	y = y.f_get(f_global()->f_symbol_string())();
 	if (!f_is<std::wstring>(y)) t_throwable::f_throw(L"argument must be string.");
 	std::wstring s = f_as<std::wstring>(x) + L": " + f_as<std::wstring>(y);
 	while (true) {
 		{
-			portable::t_scoped_lock_for_read lock(a_self->v_lock);
+			portable::t_scoped_lock_for_read lock((*a_self).v_lock);
 			i.f_next();
 			if (!i.f_entry()) break;
 			x = i.f_entry()->f_key();
 			y = i.f_entry()->v_value;
 		}
-		x = x->f_get(f_global()->f_symbol_string())->f_call();
+		x = x.f_get(f_global()->f_symbol_string())();
 		if (!f_is<std::wstring>(x)) t_throwable::f_throw(L"argument must be string.");
-		y = y->f_get(f_global()->f_symbol_string())->f_call();
+		y = y.f_get(f_global()->f_symbol_string())();
 		if (!f_is<std::wstring>(y)) t_throwable::f_throw(L"argument must be string.");
 		s += L", " + f_as<std::wstring>(x) + L": " + f_as<std::wstring>(y);
 	}
 	return L'{' + s + L'}';
 }
 
-int t_type_of<t_dictionary>::f_hash(t_object* a_self)
+int t_type_of<t_dictionary>::f_hash(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	const t_dictionary& dictionary = f_as<const t_dictionary&>(a_self);
@@ -84,23 +84,23 @@ int t_type_of<t_dictionary>::f_hash(t_object* a_self)
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock(a_self->v_lock);
+			portable::t_scoped_lock_for_read lock((*a_self).v_lock);
 			if (!i.f_entry()) break;
 			x = i.f_entry()->f_key();
 			y = i.f_entry()->v_value;
 			i.f_next();
 		}
-		x = x->f_get(f_global()->f_symbol_hash())->f_call();
+		x = x.f_hash();
 		if (!f_is<int>(x)) t_throwable::f_throw(L"argument must be integer.");
 		n ^= f_as<int>(x);
-		y = y->f_get(f_global()->f_symbol_hash())->f_call();
+		y = y.f_hash();
 		if (!f_is<int>(y)) t_throwable::f_throw(L"argument must be integer.");
 		n ^= f_as<int>(y);
 	}
 	return n;
 }
 
-bool t_type_of<t_dictionary>::f_equals(t_object* a_self, t_object* a_other)
+bool t_type_of<t_dictionary>::f_equals(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return true;
 	f_check<t_dictionary>(a_self, L"this");
@@ -113,8 +113,8 @@ bool t_type_of<t_dictionary>::f_equals(t_object* a_self, t_object* a_other)
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
-			portable::t_scoped_lock_for_read lock1(a_other->v_lock);
+			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
 			if (!i.f_entry()) break;
 			t_hash::t_entry* field = d1.v_hash.f_find<t_dictionary::t_hash_traits>(i.f_entry()->f_key());
 			if (!field) return false;
@@ -122,12 +122,12 @@ bool t_type_of<t_dictionary>::f_equals(t_object* a_self, t_object* a_other)
 			y = field->v_value;
 			i.f_next();
 		}
-		if (!f_as<bool>(x->f_get(f_global()->f_symbol_equals())->f_call(y))) return false;
+		if (!f_as<bool>(x.f_equals(y))) return false;
 	}
 	return false;
 }
 
-void t_type_of<t_dictionary>::f_each(t_object* a_self, t_object* a_callable)
+void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_callable)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	const t_dictionary& d0 = f_as<const t_dictionary&>(a_self);
@@ -136,30 +136,30 @@ void t_type_of<t_dictionary>::f_each(t_object* a_self, t_object* a_callable)
 		t_transfer key;
 		t_transfer value;
 		{
-			portable::t_scoped_lock_for_read lock0(a_self->v_lock);
+			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
 			if (!i.f_entry()) break;
 			key = i.f_entry()->f_key();
 			value = i.f_entry()->v_value;
 			i.f_next();
 		}
-		a_callable->f_call(key, value);
+		a_callable(key, value);
 	}
 }
 
 void t_type_of<t_dictionary>::f_define()
 {
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
-		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
-		(f_global()->f_symbol_hash(), t_member<int (*)(t_object*), f_hash>())
-		(f_global()->f_symbol_get_at(), t_member<t_object* (t_dictionary::*)(t_object*) const, &t_dictionary::f_get, t_with_lock_for_read>())
-		(f_global()->f_symbol_set_at(), t_member<t_object* (t_dictionary::*)(t_object*, const t_transfer&), &t_dictionary::f_put, t_with_lock_for_write>())
-		(f_global()->f_symbol_equals(), t_member<bool (*)(t_object*, t_object*), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool (*)(t_object*, t_object*), f_not_equals>())
+		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
+		(f_global()->f_symbol_hash(), t_member<int (*)(const t_value&), f_hash>())
+		(f_global()->f_symbol_get_at(), t_member<const t_value& (t_dictionary::*)(const t_value&) const, &t_dictionary::f_get, t_with_lock_for_read>())
+		(f_global()->f_symbol_set_at(), t_member<t_transfer (t_dictionary::*)(const t_value&, const t_transfer&), &t_dictionary::f_put, t_with_lock_for_write>())
+		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const t_value&, const t_value&), f_not_equals>())
 		(L"clear", t_member<void (t_dictionary::*)(), &t_dictionary::f_clear, t_with_lock_for_write>())
 		(L"size", t_member<size_t (t_dictionary::*)() const, &t_dictionary::f_size, t_with_lock_for_read>())
-		(L"has", t_member<bool (t_dictionary::*)(t_object*) const, &t_dictionary::f_has, t_with_lock_for_read>())
-		(L"remove", t_member<t_transfer (t_dictionary::*)(t_object*), &t_dictionary::f_remove, t_with_lock_for_write>())
-		(L"each", t_member<void (*)(t_object*, t_object*), f_each>())
+		(L"has", t_member<bool (t_dictionary::*)(const t_value&) const, &t_dictionary::f_has, t_with_lock_for_read>())
+		(L"remove", t_member<t_transfer (t_dictionary::*)(const t_value&), &t_dictionary::f_remove, t_with_lock_for_write>())
+		(L"each", t_member<void (*)(const t_value&, const t_value&), f_each>())
 	;
 }
 
@@ -170,13 +170,13 @@ t_type* t_type_of<t_dictionary>::f_derive(t_object* a_this)
 
 void t_type_of<t_dictionary>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_dictionary* p = f_as<t_dictionary*>(a_this);
-	p->v_hash.f_scan(a_scan);
+	t_dictionary& p = f_as<t_dictionary&>(a_this);
+	p.v_hash.f_scan(a_scan);
 }
 
 void t_type_of<t_dictionary>::f_finalize(t_object* a_this)
 {
-	delete f_as<t_dictionary*>(a_this);
+	delete &f_as<t_dictionary&>(a_this);
 }
 
 void t_type_of<t_dictionary>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
@@ -188,7 +188,7 @@ void t_type_of<t_dictionary>::f_construct(t_object* a_class, size_t a_n, t_stack
 		while (i > 0) {
 			t_transfer x = a_stack.f_at(--i).f_transfer();
 			if (i <= 0) {
-				dictionary.f_put(x, f_global()->f_null());
+				dictionary.f_put(x, t_transfer());
 				break;
 			}
 			t_transfer y = a_stack.f_at(--i).f_transfer();

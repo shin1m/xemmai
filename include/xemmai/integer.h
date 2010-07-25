@@ -22,20 +22,61 @@ struct t_type_of<int> : t_type
 
 		static T0 f_call(T1 a_object)
 		{
-			return static_cast<T0>(a_object->v_integer);
+			return static_cast<T0>(a_object.f_integer());
+		}
+	};
+	template<typename T>
+	struct t_as<T, t_object*>
+	{
+		typedef T t_type;
+
+		static T f_call(t_object* a_object)
+		{
+			return static_cast<T>(a_object->f_integer());
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_is
+	{
+		static bool f_call(T1 a_object)
+		{
+			return reinterpret_cast<size_t>(&*a_object) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+		}
+	};
+	template<typename T>
+	struct t_is<int, T>
+	{
+		static bool f_call(T a_object)
+		{
+			switch (reinterpret_cast<size_t>(&*a_object)) {
+			case t_value::e_tag__INTEGER:
+				return true;
+			case t_value::e_tag__NULL:
+			case t_value::e_tag__BOOLEAN:
+			case t_value::e_tag__FLOAT:
+				return false;
+			default:
+				return dynamic_cast<t_type_of<int>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+			}
+		}
+	};
+	template<typename T>
+	struct t_is<size_t, T>
+	{
+		static bool f_call(T a_object)
+		{
+			return t_is<int, T>::f_call(a_object);
 		}
 	};
 
 	template<typename T_extension, typename T>
 	static t_transfer f_transfer(T_extension* a_extension, T a_value)
 	{
-		return f_construct(a_extension->template f_type<typename t_fundamental<T>::t_type>(), static_cast<int>(a_value));
+		return t_transfer(static_cast<int>(a_value));
 	}
 	static t_transfer f_construct(t_object* a_class, int a_value)
 	{
-		t_transfer object = t_object::f_allocate_uninitialized(a_class);
-		object->v_integer = a_value;
-		return object;
+		return t_transfer(a_value);
 	}
 	static t_transfer f_construct(t_object* a_class, double a_value)
 	{
@@ -112,8 +153,8 @@ struct t_type_of<int> : t_type
 	{
 		return a_self >= a_value;
 	}
-	static bool f_equals(int a_self, t_object* a_value);
-	static bool f_not_equals(int a_self, t_object* a_value);
+	static bool f_equals(int a_self, const t_value& a_value);
+	static bool f_not_equals(int a_self, const t_value& a_value);
 	static int f_and(int a_self, int a_value)
 	{
 		return a_self & a_value;
@@ -133,45 +174,7 @@ struct t_type_of<int> : t_type
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
-	virtual void f_hash(t_object* a_this, t_stack& a_stack);
-	virtual void f_plus(t_object* a_this, t_stack& a_stack);
-	virtual void f_minus(t_object* a_this, t_stack& a_stack);
-	virtual void f_complement(t_object* a_this, t_stack& a_stack);
-	virtual void f_multiply(t_object* a_this, t_stack& a_stack);
-	virtual void f_divide(t_object* a_this, t_stack& a_stack);
-	virtual void f_modulus(t_object* a_this, t_stack& a_stack);
-	virtual void f_add(t_object* a_this, t_stack& a_stack);
-	virtual void f_subtract(t_object* a_this, t_stack& a_stack);
-	virtual void f_left_shift(t_object* a_this, t_stack& a_stack);
-	virtual void f_right_shift(t_object* a_this, t_stack& a_stack);
-	virtual void f_less(t_object* a_this, t_stack& a_stack);
-	virtual void f_less_equal(t_object* a_this, t_stack& a_stack);
-	virtual void f_greater(t_object* a_this, t_stack& a_stack);
-	virtual void f_greater_equal(t_object* a_this, t_stack& a_stack);
-	virtual void f_equals(t_object* a_this, t_stack& a_stack);
-	virtual void f_not_equals(t_object* a_this, t_stack& a_stack);
-	virtual void f_and(t_object* a_this, t_stack& a_stack);
-	virtual void f_xor(t_object* a_this, t_stack& a_stack);
-	virtual void f_or(t_object* a_this, t_stack& a_stack);
 };
-
-template<typename T, typename T_extension>
-struct t_enum_of : t_type_of<int>
-{
-	typedef T_extension t_extension;
-	typedef t_enum_of t_base;
-
-	t_enum_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<int>(a_module, a_super)
-	{
-	}
-	virtual t_type* f_derive(t_object* a_this);
-};
-
-template<typename T, typename T_extension>
-t_type* t_enum_of<T, T_extension>::f_derive(t_object* a_this)
-{
-	return new t_type_of<T>(v_module, a_this);
-}
 
 }
 

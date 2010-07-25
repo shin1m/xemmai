@@ -8,7 +8,7 @@ namespace xemmai
 void t_type_of<t_null>::f_define()
 {
 	t_define<t_null, t_object>(f_global(), L"Null")
-		(f_global()->f_symbol_string(), t_member<std::wstring (*)(t_object*), f_string>())
+		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
 	;
 }
 

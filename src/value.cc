@@ -1,11 +1,11 @@
-#include <xemmai/pointer.h>
+#include <xemmai/value.h>
 
 #include <xemmai/engine.h>
 
 namespace xemmai
 {
 
-void t_pointer::t_increments::f_flush()
+void t_value::t_increments::f_flush()
 {
 	t_object* volatile* end = v_objects + V_SIZE - 1;
 	t_object* volatile* tail = v_tail;
@@ -31,7 +31,7 @@ void t_pointer::t_increments::f_flush()
 	v_tail = tail;
 }
 
-void t_pointer::t_decrements::f_flush()
+void t_value::t_decrements::f_flush()
 {
 	t_object* volatile* end = v_objects + V_SIZE - 1;
 	t_object* volatile* tail = v_tail;
@@ -58,17 +58,17 @@ void t_pointer::t_decrements::f_flush()
 	v_last = v_epoch;
 }
 
-XEMMAI__PORTABLE__THREAD t_pointer::t_collector* t_pointer::v_collector;
-XEMMAI__PORTABLE__THREAD t_pointer::t_increments* t_pointer::v_increments;
-XEMMAI__PORTABLE__THREAD t_pointer::t_decrements* t_pointer::v_decrements;
+XEMMAI__PORTABLE__THREAD t_value::t_collector* t_value::v_collector;
+XEMMAI__PORTABLE__THREAD t_value::t_increments* t_value::v_increments;
+XEMMAI__PORTABLE__THREAD t_value::t_decrements* t_value::v_decrements;
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_pointer::t_pointer(t_object* a_p) : v_p(a_p)
+t_value::t_value(t_object* a_p, const t_own&) : v_p(a_p)
 {
 	if (v_p) v_increments->f_push(v_p);
 }
 
-t_pointer::t_pointer(const t_pointer& a_p) : v_p(a_p.v_p)
+t_value::t_value(const t_value& a_p, const t_own&) : v_p(a_p.v_p)
 {
 	if (v_p) v_increments->f_push(v_p);
 }

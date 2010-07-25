@@ -82,13 +82,13 @@ inline void t_threading::f_type__<portable::t_condition>(const t_transfer& a_typ
 template<>
 inline t_object* t_threading::f_type<portable::t_mutex>() const
 {
-	return v_type_mutex;
+	return &*v_type_mutex;
 }
 
 template<>
 inline t_object* t_threading::f_type<portable::t_condition>() const
 {
-	return v_type_condition;
+	return &*v_type_condition;
 }
 
 void t_type_of<portable::t_mutex>::f_acquire(portable::t_mutex& a_self)
@@ -118,7 +118,7 @@ t_type* t_type_of<portable::t_mutex>::f_derive(t_object* a_this)
 
 void t_type_of<portable::t_mutex>::f_finalize(t_object* a_this)
 {
-	delete f_as<portable::t_mutex*>(a_this);
+	delete &f_as<portable::t_mutex&>(a_this);
 }
 
 void t_type_of<portable::t_mutex>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
@@ -171,7 +171,7 @@ t_type* t_type_of<portable::t_condition>::f_derive(t_object* a_this)
 
 void t_type_of<portable::t_condition>::f_finalize(t_object* a_this)
 {
-	delete f_as<portable::t_condition*>(a_this);
+	delete &f_as<portable::t_condition&>(a_this);
 }
 
 void t_type_of<portable::t_condition>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
@@ -182,9 +182,7 @@ void t_type_of<portable::t_condition>::f_construct(t_object* a_class, size_t a_n
 t_threading::t_threading(t_object* a_module) : t_extension(a_module)
 {
 	t_type_of<portable::t_mutex>::f_define(this);
-	xemmai::f_as<t_type*>(v_type_mutex)->v_builtin = true;
 	t_type_of<portable::t_condition>::f_define(this);
-	xemmai::f_as<t_type*>(v_type_condition)->v_builtin = true;
 }
 
 void t_threading::f_scan(t_scan a_scan)

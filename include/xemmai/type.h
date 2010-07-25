@@ -2,8 +2,9 @@
 #define XEMMAI__TYPE_H
 
 #include <string>
+#include <typeinfo>
 
-#include "pointer.h"
+#include "value.h"
 
 namespace xemmai
 {
@@ -35,67 +36,15 @@ struct t_fundamental<T&>
 };
 
 template<>
-struct t_fundamental<t_transfer>
+struct t_fundamental<t_value>
 {
 	typedef t_object t_type;
 };
 
-struct t_stack
+template<>
+struct t_fundamental<t_transfer>
 {
-	t_slot* v_top;
-
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(t_object* a_value)
-	{
-		(--v_top)->f_construct(a_value);
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(const t_transfer& a_value)
-	{
-		(--v_top)->f_construct(a_value);
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(const t_shared& a_value)
-	{
-		f_push(static_cast<t_object*>(a_value));
-	}
-	t_transfer f_pop()
-	{
-		t_transfer p = v_top->f_transfer();
-		++v_top;
-		return p;
-	}
-	t_slot& f_top()
-	{
-		return *v_top;
-	}
-	t_slot& f_at(size_t a_i)
-	{
-		return v_top[a_i];
-	}
-	void f_return(t_object* a_value)
-	{
-		v_top->f_construct(a_value);
-	}
-	void f_return(const t_transfer& a_value)
-	{
-		v_top->f_construct(a_value);
-	}
-	void f_return(const t_shared& a_value)
-	{
-		f_return(static_cast<t_object*>(a_value));
-	}
-};
-
-struct t_scoped_stack : t_stack
-{
-	t_slot* v_base;
-
-	t_scoped_stack(t_slot* a_top, t_slot* a_base) : v_base(a_base)
-	{
-		v_top = a_top;
-	}
-	~t_scoped_stack()
-	{
-		while (v_top < v_base) f_pop();
-	}
+	typedef t_object t_type;
 };
 
 template<typename T>
@@ -113,7 +62,7 @@ struct t_type_of<t_object>
 
 		static T0 f_call(T1 a_object)
 		{
-			return *static_cast<T0*>(a_object->v_pointer);
+			return *static_cast<T0*>((*a_object).f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -123,7 +72,7 @@ struct t_type_of<t_object>
 
 		static T0* f_call(T1 a_object)
 		{
-			return static_cast<T0*>(a_object->v_pointer);
+			return reinterpret_cast<size_t>(&*a_object) == t_value::e_tag__NULL ? 0 : static_cast<T0*>((*a_object).f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -133,7 +82,7 @@ struct t_type_of<t_object>
 
 		static const T0* f_call(T1 a_object)
 		{
-			return static_cast<T0*>(a_object->v_pointer);
+			return reinterpret_cast<size_t>(&*a_object) == t_value::e_tag__NULL ? 0 : static_cast<T0*>((*a_object).f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -143,7 +92,7 @@ struct t_type_of<t_object>
 
 		static T0& f_call(T1 a_object)
 		{
-			return *static_cast<T0*>(a_object->v_pointer);
+			return *static_cast<T0*>((*a_object).f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -153,15 +102,25 @@ struct t_type_of<t_object>
 
 		static const T0& f_call(T1 a_object)
 		{
-			return *static_cast<T0*>(a_object->v_pointer);
+			return *static_cast<T0*>((*a_object).f_pointer());
 		}
 	};
-	template<typename T>
+/*	template<typename T>
 	struct t_as<t_object*, T>
 	{
 		typedef t_object* t_type;
 
 		static t_object* f_call(T a_object)
+		{
+			return &*a_object;
+		}
+	};*/
+	template<typename T>
+	struct t_as<const t_value&, T>
+	{
+		typedef t_transfer t_type;
+
+		static t_transfer f_call(T a_object)
 		{
 			return a_object;
 		}
@@ -171,7 +130,7 @@ struct t_type_of<t_object>
 	{
 		typedef t_transfer t_type;
 
-		static t_object* f_call(T a_object)
+		static t_transfer f_call(T a_object)
 		{
 			return a_object;
 		}
@@ -181,11 +140,53 @@ struct t_type_of<t_object>
 	{
 		static bool f_call(T1 a_object)
 		{
-			return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(a_object->f_type()->v_pointer)) != 0;
+			return reinterpret_cast<size_t>(&*a_object) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>((*a_object).f_type()->f_pointer())) != 0;
 		}
 	};
-	template<typename T>
+	template<typename T0, typename T1>
+	struct t_is<T0*, T1>
+	{
+		static bool f_call(T1 a_object)
+		{
+			switch (reinterpret_cast<size_t>(&*a_object)) {
+			case t_value::e_tag__NULL:
+				return true;
+			case t_value::e_tag__BOOLEAN:
+			case t_value::e_tag__INTEGER:
+			case t_value::e_tag__FLOAT:
+				return false;
+			default:
+				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>((*a_object).f_type()->f_pointer())) != 0;
+			}
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_is<const T0*, T1>
+	{
+		static bool f_call(T1 a_object)
+		{
+			switch (reinterpret_cast<size_t>(&*a_object)) {
+			case t_value::e_tag__NULL:
+				return true;
+			case t_value::e_tag__BOOLEAN:
+			case t_value::e_tag__INTEGER:
+			case t_value::e_tag__FLOAT:
+				return false;
+			default:
+				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>((*a_object).f_type()->f_pointer())) != 0;
+			}
+		}
+	};
+/*	template<typename T>
 	struct t_is<t_object*, T>
+	{
+		static bool f_call(T a_object)
+		{
+			return true;
+		}
+	};*/
+	template<typename T>
+	struct t_is<const t_value&, T>
 	{
 		static bool f_call(T a_object)
 		{
@@ -212,28 +213,32 @@ struct t_type_of<t_object>
 	{
 		return a_value;
 	}
+	static t_transfer f_transfer(const t_global* a_extension, const t_value& a_value)
+	{
+		return a_value;
+	}
 	static t_transfer f_transfer(const t_global* a_extension, const t_transfer& a_value)
 	{
 		return a_value;
 	}
 	XEMMAI__PORTABLE__EXPORT static bool f_derives(t_object* a_this, t_object* a_type);
-	static void f_construct(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack);
-	static void f_initialize(t_object* a_module, t_object* a_self, size_t a_n, t_stack& a_stack);
-	XEMMAI__PORTABLE__EXPORT static std::wstring f_string(t_object* a_self)
+	static void f_construct(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack);
+	static void f_initialize(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack);
+	XEMMAI__PORTABLE__EXPORT static std::wstring f_string(const t_value& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", a_self);
+		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", &*a_self);
 		return cs;
 	}
-	XEMMAI__PORTABLE__EXPORT static int f_hash(t_object* a_self)
+	XEMMAI__PORTABLE__EXPORT static int f_hash(const t_value& a_self)
 	{
-		return reinterpret_cast<int>(a_self);
+		return reinterpret_cast<int>(&*a_self);
 	}
-	XEMMAI__PORTABLE__EXPORT static bool f_equals(t_object* a_self, t_object* a_other)
+	XEMMAI__PORTABLE__EXPORT static bool f_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return a_self == a_other;
 	}
-	XEMMAI__PORTABLE__EXPORT static bool f_not_equals(t_object* a_self, t_object* a_other)
+	XEMMAI__PORTABLE__EXPORT static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return a_self != a_other;
 	}
@@ -248,12 +253,12 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_get(t_object* a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_get(const t_value& a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value);
-	XEMMAI__PORTABLE__EXPORT virtual bool f_has(t_object* a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT virtual bool f_has(const t_value& a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_remove(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_stack& a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_call(t_object* a_this, t_object* a_self, size_t a_n, t_stack& a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_call(t_object* a_this, const t_value& a_self, size_t a_n, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_get_at(t_object* a_this, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_set_at(t_object* a_this, t_stack& a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_plus(t_object* a_this, t_stack& a_stack);
@@ -280,6 +285,17 @@ struct t_type_of<t_object>
 };
 
 template<>
+struct t_type_of<t_object>::t_as<const t_value&, const t_value&>
+{
+	typedef const t_value& t_type;
+
+	static const t_value& f_call(const t_value& a_object)
+	{
+		return a_object;
+	}
+};
+
+template<>
 struct t_type_of<t_object>::t_as<const t_transfer&, const t_transfer&>
 {
 	typedef const t_transfer& t_type;
@@ -299,21 +315,41 @@ inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, t
 }
 
 template<typename T>
+inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_value&>::t_type f_as(const t_value& a_object)
+{
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_value&>::f_call(a_object);
+}
+
+template<typename T>
 inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_transfer&>::t_type f_as(const t_transfer& a_object)
 {
 	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_transfer&>::f_call(a_object);
 }
 
 template<typename T>
-inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_shared&>::t_type f_as(const t_shared& a_object)
-{
-	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_shared&>::f_call(a_object);
-}
-
-template<typename T>
 inline bool f_is(t_object* a_object)
 {
 	return t_type_of<typename t_fundamental<T>::t_type>::template t_is<T, t_object*>::f_call(a_object);
+}
+
+template<typename T>
+inline bool f_is(const t_value& a_object)
+{
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_is<T, const t_value&>::f_call(a_object);
+}
+
+XEMMAI__PORTABLE__EXPORT void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name);
+
+template<typename T>
+void f_throw_type_error(const wchar_t* a_name)
+{
+	f_throw_type_error(typeid(typename t_fundamental<T>::t_type), a_name);
+}
+
+template<typename T>
+inline void f_check(const t_value& a_object, const wchar_t* a_name)
+{
+	if (!f_is<T>(a_object)) f_throw_type_error<T>(a_name);
 }
 
 }

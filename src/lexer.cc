@@ -549,7 +549,7 @@ void t_lexer::f_next()
 t_transfer t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_error>());
-	object->v_pointer = new t_error(a_lexer);
+	object.f_pointer__(new t_error(a_lexer));
 	return object;
 }
 

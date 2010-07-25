@@ -3,6 +3,9 @@
 
 #include "class.h"
 #include "module.h"
+#include "symbol.h"
+#include "null.h"
+#include "boolean.h"
 #include "integer.h"
 #include "float.h"
 #include "string.h"
@@ -11,12 +14,8 @@
 namespace xemmai
 {
 
-class t_symbol;
-class t_scope;
 class t_method;
-struct t_code;
 class t_lambda;
-class t_null;
 class t_tuple;
 class t_array;
 class t_dictionary;
@@ -97,9 +96,6 @@ class t_global : public t_extension
 	t_slot v_symbol_arguments;
 	t_slot v_symbol_size;
 	t_slot v_symbol_push;
-	t_slot v_null;
-	t_slot v_true;
-	t_slot v_false;
 
 	template<typename T>
 	void f_type__(const t_transfer& a_type);
@@ -111,151 +107,139 @@ public:
 	t_object* f_type() const;
 	t_object* f_symbol_construct() const
 	{
-		return v_symbol_construct;
+		return &*v_symbol_construct;
 	}
 	t_object* f_symbol_initialize() const
 	{
-		return v_symbol_initialize;
+		return &*v_symbol_initialize;
 	}
 	t_object* f_symbol_string() const
 	{
-		return v_symbol_string;
+		return &*v_symbol_string;
 	}
 	t_object* f_symbol_hash() const
 	{
-		return v_symbol_hash;
+		return &*v_symbol_hash;
 	}
 	t_object* f_symbol_call() const
 	{
-		return v_symbol_call;
+		return &*v_symbol_call;
 	}
 	t_object* f_symbol_get_at() const
 	{
-		return v_symbol_get_at;
+		return &*v_symbol_get_at;
 	}
 	t_object* f_symbol_set_at() const
 	{
-		return v_symbol_set_at;
+		return &*v_symbol_set_at;
 	}
 	t_object* f_symbol_plus() const
 	{
-		return v_symbol_plus;
+		return &*v_symbol_plus;
 	}
 	t_object* f_symbol_minus() const
 	{
-		return v_symbol_minus;
+		return &*v_symbol_minus;
 	}
 	t_object* f_symbol_not() const
 	{
-		return v_symbol_not;
+		return &*v_symbol_not;
 	}
 	t_object* f_symbol_complement() const
 	{
-		return v_symbol_complement;
+		return &*v_symbol_complement;
 	}
 	t_object* f_symbol_multiply() const
 	{
-		return v_symbol_multiply;
+		return &*v_symbol_multiply;
 	}
 	t_object* f_symbol_divide() const
 	{
-		return v_symbol_divide;
+		return &*v_symbol_divide;
 	}
 	t_object* f_symbol_modulus() const
 	{
-		return v_symbol_modulus;
+		return &*v_symbol_modulus;
 	}
 	t_object* f_symbol_add() const
 	{
-		return v_symbol_add;
+		return &*v_symbol_add;
 	}
 	t_object* f_symbol_subtract() const
 	{
-		return v_symbol_subtract;
+		return &*v_symbol_subtract;
 	}
 	t_object* f_symbol_left_shift() const
 	{
-		return v_symbol_left_shift;
+		return &*v_symbol_left_shift;
 	}
 	t_object* f_symbol_right_shift() const
 	{
-		return v_symbol_right_shift;
+		return &*v_symbol_right_shift;
 	}
 	t_object* f_symbol_less() const
 	{
-		return v_symbol_less;
+		return &*v_symbol_less;
 	}
 	t_object* f_symbol_less_equal() const
 	{
-		return v_symbol_less_equal;
+		return &*v_symbol_less_equal;
 	}
 	t_object* f_symbol_greater() const
 	{
-		return v_symbol_greater;
+		return &*v_symbol_greater;
 	}
 	t_object* f_symbol_greater_equal() const
 	{
-		return v_symbol_greater_equal;
+		return &*v_symbol_greater_equal;
 	}
 	t_object* f_symbol_equals() const
 	{
-		return v_symbol_equals;
+		return &*v_symbol_equals;
 	}
 	t_object* f_symbol_not_equals() const
 	{
-		return v_symbol_not_equals;
+		return &*v_symbol_not_equals;
 	}
 	t_object* f_symbol_and() const
 	{
-		return v_symbol_and;
+		return &*v_symbol_and;
 	}
 	t_object* f_symbol_xor() const
 	{
-		return v_symbol_xor;
+		return &*v_symbol_xor;
 	}
 	t_object* f_symbol_or() const
 	{
-		return v_symbol_or;
+		return &*v_symbol_or;
 	}
 	t_object* f_symbol_send() const
 	{
-		return v_symbol_send;
+		return &*v_symbol_send;
 	}
 	t_object* f_symbol_path() const
 	{
-		return v_symbol_path;
+		return &*v_symbol_path;
 	}
 	t_object* f_symbol_executable() const
 	{
-		return v_symbol_executable;
+		return &*v_symbol_executable;
 	}
 	t_object* f_symbol_script() const
 	{
-		return v_symbol_script;
+		return &*v_symbol_script;
 	}
 	t_object* f_symbol_arguments() const
 	{
-		return v_symbol_arguments;
+		return &*v_symbol_arguments;
 	}
 	t_object* f_symbol_size() const
 	{
-		return v_symbol_size;
+		return &*v_symbol_size;
 	}
 	t_object* f_symbol_push() const
 	{
-		return v_symbol_push;
-	}
-	t_object* f_null() const
-	{
-		return v_null;
-	}
-	t_object* f_true() const
-	{
-		return v_true;
-	}
-	t_object* f_false() const
-	{
-		return v_false;
+		return &*v_symbol_push;
 	}
 	template<typename T>
 	t_transfer f_as(const T& a_value) const
@@ -406,139 +390,139 @@ inline void t_global::f_type__<t_parser::t_error>(const t_transfer& a_type)
 template<>
 inline t_object* t_global::f_type<t_object>() const
 {
-	return v_type_object;
+	return &*v_type_object;
 }
 
 template<>
 inline t_object* t_global::f_type<t_class>() const
 {
-	return v_type_class;
+	return &*v_type_class;
 }
 
 template<>
 inline t_object* t_global::f_type<t_module>() const
 {
-	return v_type_module;
+	return &*v_type_module;
 }
 
 template<>
 inline t_object* t_global::f_type<t_fiber>() const
 {
-	return v_type_fiber;
+	return &*v_type_fiber;
 }
 
 template<>
 inline t_object* t_global::f_type<t_thread>() const
 {
-	return v_type_thread;
+	return &*v_type_thread;
 }
 
 template<>
 inline t_object* t_global::f_type<t_symbol>() const
 {
-	return v_type_symbol;
+	return &*v_type_symbol;
 }
 
 template<>
 inline t_object* t_global::f_type<t_scope>() const
 {
-	return v_type_scope;
+	return &*v_type_scope;
 }
 
 template<>
 inline t_object* t_global::f_type<t_method>() const
 {
-	return v_type_method;
+	return &*v_type_method;
 }
 
 template<>
 inline t_object* t_global::f_type<t_code>() const
 {
-	return v_type_code;
+	return &*v_type_code;
 }
 
 template<>
 inline t_object* t_global::f_type<t_lambda>() const
 {
-	return v_type_lambda;
+	return &*v_type_lambda;
 }
 
 template<>
 inline t_object* t_global::f_type<t_native>() const
 {
-	return v_type_native;
+	return &*v_type_native;
 }
 
 template<>
 inline t_object* t_global::f_type<t_throwable>() const
 {
-	return v_type_throwable;
+	return &*v_type_throwable;
 }
 
 template<>
 inline t_object* t_global::f_type<t_null>() const
 {
-	return v_type_null;
+	return &*v_type_null;
 }
 
 template<>
 inline t_object* t_global::f_type<bool>() const
 {
-	return v_type_boolean;
+	return &*v_type_boolean;
 }
 
 template<>
 inline t_object* t_global::f_type<int>() const
 {
-	return v_type_integer;
+	return &*v_type_integer;
 }
 
 template<>
 inline t_object* t_global::f_type<double>() const
 {
-	return v_type_float;
+	return &*v_type_float;
 }
 
 template<>
 inline t_object* t_global::f_type<std::wstring>() const
 {
-	return v_type_string;
+	return &*v_type_string;
 }
 
 template<>
 inline t_object* t_global::f_type<t_tuple>() const
 {
-	return v_type_tuple;
+	return &*v_type_tuple;
 }
 
 template<>
 inline t_object* t_global::f_type<t_array>() const
 {
-	return v_type_array;
+	return &*v_type_array;
 }
 
 template<>
 inline t_object* t_global::f_type<t_dictionary>() const
 {
-	return v_type_dictionary;
+	return &*v_type_dictionary;
 }
 
 template<>
 inline t_object* t_global::f_type<t_bytes>() const
 {
-	return v_type_bytes;
+	return &*v_type_bytes;
 }
 
 template<>
 inline t_object* t_global::f_type<t_lexer::t_error>() const
 {
-	return v_type_lexer__error;
+	return &*v_type_lexer__error;
 }
 
 template<>
 inline t_object* t_global::f_type<t_parser::t_error>() const
 {
-	return v_type_parser__error;
+	return &*v_type_parser__error;
 }
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
@@ -547,6 +531,516 @@ inline t_global* f_global()
 	return t_global::v_instance;
 }
 #endif
+
+inline bool t_value::f_boolean() const
+{
+	return reinterpret_cast<size_t>(v_p) < e_tag__OBJECT ? v_boolean : v_p->f_boolean();
+}
+
+inline void t_value::f_boolean__(bool a_value)
+{
+	v_p->v_type.v_boolean = a_value;
+}
+
+inline int t_value::f_integer() const
+{
+	return reinterpret_cast<size_t>(v_p) < e_tag__OBJECT ? v_integer : v_p->f_integer();
+}
+
+inline void t_value::f_integer__(int a_value)
+{
+	v_p->v_type.v_integer = a_value;
+}
+
+inline double t_value::f_float() const
+{
+	return reinterpret_cast<size_t>(v_p) < e_tag__OBJECT ? v_float : v_p->f_float();
+}
+
+inline void t_value::f_float__(double a_value)
+{
+	v_p->v_type.v_float = a_value;
+}
+
+inline void t_value::f_pointer__(void* a_value)
+{
+	v_p->v_type.v_pointer = a_value;
+}
+
+inline t_object* t_value::f_type() const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+		return f_global()->f_type<t_null>();
+	case e_tag__BOOLEAN:
+		return f_global()->f_type<bool>();
+	case e_tag__INTEGER:
+		return f_global()->f_type<int>();
+	case e_tag__FLOAT:
+		return f_global()->f_type<double>();
+	default:
+		return v_p->f_type();
+	}
+}
+
+inline bool t_value::f_is(t_object* a_class) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+		return a_class == f_global()->f_type<t_null>();
+	case e_tag__BOOLEAN:
+		return a_class == f_global()->f_type<bool>();
+	case e_tag__INTEGER:
+		return a_class == f_global()->f_type<int>();
+	case e_tag__FLOAT:
+		return a_class == f_global()->f_type<double>();
+	default:
+		return v_p->f_is(a_class);
+	}
+}
+
+inline t_transfer t_value::f_get(t_object* a_key) const
+{
+	return static_cast<t_type*>(f_type()->f_pointer())->f_get(*this, a_key);
+}
+
+inline void t_value::f_put(t_object* a_key, const t_transfer& a_value) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	f_as<t_type&>(v_p->f_type()).f_put(v_p, a_key, a_value);
+}
+
+inline bool t_value::f_has(t_object* a_key) const
+{
+	return static_cast<t_type*>(f_type()->f_pointer())->f_has(*this, a_key);
+}
+
+inline t_transfer t_value::f_remove(t_object* a_key) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
+}
+
+inline void t_value::f_call(const t_value& a_self, size_t a_n, t_stack& a_stack) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	v_p->f_call(a_self, a_n, a_stack);
+}
+
+inline void t_value::f_call_and_return(const t_value& a_self, size_t a_n, t_stack& a_stack) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	v_p->f_call_and_return(a_self, a_n, a_stack);
+}
+
+inline t_transfer t_value::f_call(size_t a_n, t_slot* a_slots) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	return v_p->f_call(a_n, a_slots);
+}
+
+#define XEMMAI__VALUE__UNARY(a_method)\
+		{\
+			t_slot slots[] = {t_slot()};\
+			t_scoped_stack stack(slots, slots + 1);\
+			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
+			if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());\
+			return stack.f_pop();\
+		}
+#define XEMMAI__VALUE__BINARY(a_method)\
+		{\
+			t_slot slots[] = {a_value, t_slot()};\
+			t_scoped_stack stack(slots, slots + 2);\
+			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
+			if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());\
+			return stack.f_pop();\
+		}
+
+inline t_transfer t_value::f_hash() const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+		return t_value(t_type_of<t_null>::f_hash(*this));
+	case e_tag__BOOLEAN:
+		return t_value(t_type_of<bool>::f_hash(v_boolean));
+	case e_tag__INTEGER:
+		return t_value(t_type_of<int>::f_hash(v_integer));
+	case e_tag__FLOAT:
+		return t_value(t_type_of<double>::f_hash(v_float));
+	default:
+		XEMMAI__VALUE__UNARY(f_hash)
+	}
+}
+
+#define XEMMAI__MACRO__ITERATE "value_call.h"
+#define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT
+#include "macro.h"
+
+inline t_transfer t_value::f_get_at(const t_value& a_index) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	t_slot slots[] = {a_index, t_slot()};
+	t_scoped_stack stack(slots, slots + 2);
+	f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack);
+	if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());
+	return stack.f_pop();
+}
+
+inline t_transfer t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	t_slot slots[] = {a_value, a_index, t_slot()};
+	t_scoped_stack stack(slots, slots + 3);
+	f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack);
+	if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());
+	return stack.f_pop();
+}
+
+inline t_transfer t_value::f_plus() const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		return t_value(v_integer);
+	case e_tag__FLOAT:
+		return t_value(v_float);
+	default:
+		XEMMAI__VALUE__UNARY(f_plus)
+	}
+}
+
+inline t_transfer t_value::f_minus() const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		return t_value(-v_integer);
+	case e_tag__FLOAT:
+		return t_value(-v_float);
+	default:
+		XEMMAI__VALUE__UNARY(f_minus)
+	}
+}
+
+inline t_transfer t_value::f_not() const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__BOOLEAN:
+		return t_value(!v_boolean);
+	case e_tag__NULL:
+	case e_tag__INTEGER:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__UNARY(f_not)
+	}
+}
+
+inline t_transfer t_value::f_complement() const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__INTEGER:
+		return t_value(~v_integer);
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__UNARY(f_complement)
+	}
+}
+
+inline t_transfer t_value::f_multiply(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer * f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float * f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_multiply)
+	}
+}
+
+inline t_transfer t_value::f_divide(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer / f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float / f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_divide)
+	}
+}
+
+inline t_transfer t_value::f_modulus(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer % f_as<int>(a_value));
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__BINARY(f_modulus)
+	}
+}
+
+inline t_transfer t_value::f_add(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer + f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float + f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_add)
+	}
+}
+
+inline t_transfer t_value::f_subtract(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer - f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float - f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_subtract)
+	}
+}
+
+inline t_transfer t_value::f_left_shift(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer << f_as<int>(a_value));
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__BINARY(f_left_shift)
+	}
+}
+
+inline t_transfer t_value::f_right_shift(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer >> f_as<int>(a_value));
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__BINARY(f_right_shift)
+	}
+}
+
+inline t_transfer t_value::f_less(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer < f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float < f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_less)
+	}
+}
+
+inline t_transfer t_value::f_less_equal(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer <= f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float <= f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_less_equal)
+	}
+}
+
+inline t_transfer t_value::f_greater(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer > f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float > f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_greater)
+	}
+}
+
+inline t_transfer t_value::f_greater_equal(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		t_throwable::f_throw(L"not supported");
+		break;
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer >= f_as<int>(a_value));
+	case e_tag__FLOAT:
+		f_check<double>(a_value, L"argument0");
+		return t_value(v_float >= f_as<double>(a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_greater_equal)
+	}
+}
+
+inline t_transfer t_value::f_equals(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+		return t_value(v_p == a_value.v_p);
+	case e_tag__BOOLEAN:
+		return t_value(v_p == a_value.v_p && v_boolean == a_value.v_boolean);
+	case e_tag__INTEGER:
+		return t_value(t_type_of<int>::f_equals(v_integer, a_value));
+	case e_tag__FLOAT:
+		return t_value(t_type_of<double>::f_equals(v_float, a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_equals)
+	}
+}
+
+inline t_transfer t_value::f_not_equals(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+		return t_value(v_p != a_value.v_p);
+	case e_tag__BOOLEAN:
+		return t_value(v_p != a_value.v_p || v_boolean != a_value.v_boolean);
+	case e_tag__INTEGER:
+		return t_value(t_type_of<int>::f_not_equals(v_integer, a_value));
+	case e_tag__FLOAT:
+		return t_value(t_type_of<double>::f_not_equals(v_float, a_value));
+	default:
+		XEMMAI__VALUE__BINARY(f_not_equals)
+	}
+}
+
+inline t_transfer t_value::f_and(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__BOOLEAN:
+		f_check<bool>(a_value, L"argument0");
+		return t_value(static_cast<bool>(v_boolean & f_as<bool>(a_value)));
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer & f_as<int>(a_value));
+	case e_tag__NULL:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__BINARY(f_and)
+	}
+}
+
+inline t_transfer t_value::f_xor(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__BOOLEAN:
+		f_check<bool>(a_value, L"argument0");
+		return t_value(static_cast<bool>(v_boolean ^ f_as<bool>(a_value)));
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer ^ f_as<int>(a_value));
+	case e_tag__NULL:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__BINARY(f_xor)
+	}
+}
+
+inline t_transfer t_value::f_or(const t_value& a_value) const
+{
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__BOOLEAN:
+		f_check<bool>(a_value, L"argument0");
+		return t_value(static_cast<bool>(v_boolean | f_as<bool>(a_value)));
+	case e_tag__INTEGER:
+		f_check<int>(a_value, L"argument0");
+		return t_value(v_integer | f_as<int>(a_value));
+	case e_tag__NULL:
+	case e_tag__FLOAT:
+		t_throwable::f_throw(L"not supported");
+		break;
+	default:
+		XEMMAI__VALUE__BINARY(f_or)
+	}
+}
+
+inline t_transfer t_value::f_send(const t_value& a_value) const
+{
+	if (reinterpret_cast<size_t>(v_p) < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	XEMMAI__VALUE__BINARY(f_send)
+}
 
 }
 
