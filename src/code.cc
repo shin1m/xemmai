@@ -665,433 +665,11 @@ t_transfer t_code::f_loop()
 						}
 					}
 					XEMMAI__CODE__BREAK
-#define XEMMAI__CODE__CALL_GET_AT\
-						if (reinterpret_cast<size_t>(x.v_p) < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");\
-						XEMMAI__CODE__OBJECT_CALL(f_get_at)
-#define XEMMAI__CODE__CALL_SET_AT\
-						if (reinterpret_cast<size_t>(x.v_p) < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");\
-						XEMMAI__CODE__OBJECT_CALL(f_set_at)
-#define XEMMAI__CODE__CALL_PLUS\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer);\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							XEMMAI__CODE__PRIMITIVE_CALL(x.v_float);\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_plus)\
-						}
-#define XEMMAI__CODE__CALL_MINUS\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							XEMMAI__CODE__PRIMITIVE_CALL(-x.v_integer);\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							XEMMAI__CODE__PRIMITIVE_CALL(-x.v_float);\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_minus)\
-						}
-#define XEMMAI__CODE__CALL_NOT\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__BOOLEAN:\
-							XEMMAI__CODE__PRIMITIVE_CALL(!x.v_boolean);\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__INTEGER:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_not)\
-						}
-#define XEMMAI__CODE__CALL_COMPLEMENT\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__INTEGER:\
-							XEMMAI__CODE__PRIMITIVE_CALL(~x.v_integer);\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_complement)\
-						}
-#define XEMMAI__CODE__CALL_MULTIPLY\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer * f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float * f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_multiply)\
-						}
-#define XEMMAI__CODE__CALL_DIVIDE\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer / f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float / f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_divide)\
-						}
-#define XEMMAI__CODE__CALL_MODULUS\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer % f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_modulus)\
-						}
-#define XEMMAI__CODE__CALL_ADD\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer + f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float + f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_add)\
-						}
-#define XEMMAI__CODE__CALL_SUBTRACT\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer - f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float - f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_subtract)\
-						}
-#define XEMMAI__CODE__CALL_LEFT_SHIFT\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer << f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_left_shift)\
-						}
-#define XEMMAI__CODE__CALL_RIGHT_SHIFT\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer >> f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_right_shift)\
-						}
-#define XEMMAI__CODE__CALL_LESS\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer < f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float < f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_less)\
-						}
-#define XEMMAI__CODE__CALL_LESS_EQUAL\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer <= f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float <= f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_less_equal)\
-						}
-#define XEMMAI__CODE__CALL_GREATER\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer > f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float > f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_greater)\
-						}
-#define XEMMAI__CODE__CALL_GREATER_EQUAL\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__BOOLEAN:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer >= f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<double>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float >= f_as<double>(a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_greater_equal)\
-						}
-#define XEMMAI__CODE__CALL_EQUALS\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p == a0.v_p);\
-							}\
-							break;\
-						case t_value::e_tag__BOOLEAN:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p == a0.v_p && x.v_boolean == a0.v_boolean);\
-							}\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<int>::f_equals(x.v_integer, a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<double>::f_equals(x.v_float, a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_equals)\
-						}
-#define XEMMAI__CODE__CALL_NOT_EQUALS\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__NULL:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p != a0.v_p);\
-							}\
-							break;\
-						case t_value::e_tag__BOOLEAN:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p != a0.v_p || x.v_boolean != a0.v_boolean);\
-							}\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<int>::f_not_equals(x.v_integer, a0));\
-							}\
-							break;\
-						case t_value::e_tag__FLOAT:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<double>::f_not_equals(x.v_float, a0));\
-							}\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_not_equals)\
-						}
-#define XEMMAI__CODE__CALL_AND\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__BOOLEAN:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<bool>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(x.v_boolean & f_as<bool>(a0)));\
-							}\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer & f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_and)\
-						}
-#define XEMMAI__CODE__CALL_XOR\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__BOOLEAN:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<bool>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(x.v_boolean ^ f_as<bool>(a0)));\
-							}\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer ^ f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_xor)\
-						}
-#define XEMMAI__CODE__CALL_OR\
-						switch (reinterpret_cast<size_t>(x.v_p)) {\
-						case t_value::e_tag__BOOLEAN:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<bool>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(x.v_boolean | f_as<bool>(a0)));\
-							}\
-							break;\
-						case t_value::e_tag__INTEGER:\
-							{\
-								t_transfer a0 = stack->f_pop();\
-								f_check<int>(a0, L"argument0");\
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer | f_as<int>(a0));\
-							}\
-							break;\
-						case t_value::e_tag__NULL:\
-						case t_value::e_tag__FLOAT:\
-							t_throwable::f_throw(L"not supported");\
-							break;\
-						default:\
-							XEMMAI__CODE__OBJECT_CALL(f_or)\
-						}
-#define XEMMAI__CODE__CALL_SEND\
-						if (reinterpret_cast<size_t>(x.v_p) < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");\
-						XEMMAI__CODE__OBJECT_CALL(f_send)
+#define XEMMAI__CODE__CASE_BEGIN(a_name, a_n)\
+				XEMMAI__CODE__CASE(a_name)\
+					{\
+						++pc;\
+						t_transfer x = stack->f_at(a_n).f_transfer();
 #define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
 						stack->f_return(t_value(a_x));
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
@@ -1104,40 +682,14 @@ t_transfer t_code::f_loop()
 								stack = f_context()->v_stack;\
 							}\
 						}
-#define XEMMAI__CODE__CALL(a_name, a_n)\
-				XEMMAI__CODE__CASE(a_name)\
-					{\
-						++pc;\
-						t_transfer x = stack->f_at(a_n).f_transfer();\
-						XEMMAI__CODE__CALL_##a_name\
+#define XEMMAI__CODE__CASE_END\
 					}\
 					XEMMAI__CODE__BREAK
-XEMMAI__CODE__CALL(GET_AT, 1)
-XEMMAI__CODE__CALL(SET_AT, 2)
-XEMMAI__CODE__CALL(PLUS, 0)
-XEMMAI__CODE__CALL(MINUS, 0)
-XEMMAI__CODE__CALL(NOT, 0)
-XEMMAI__CODE__CALL(COMPLEMENT, 0)
-XEMMAI__CODE__CALL(MULTIPLY, 1)
-XEMMAI__CODE__CALL(DIVIDE, 1)
-XEMMAI__CODE__CALL(MODULUS, 1)
-XEMMAI__CODE__CALL(ADD, 1)
-XEMMAI__CODE__CALL(SUBTRACT, 1)
-XEMMAI__CODE__CALL(LEFT_SHIFT, 1)
-XEMMAI__CODE__CALL(RIGHT_SHIFT, 1)
-XEMMAI__CODE__CALL(LESS, 1)
-XEMMAI__CODE__CALL(LESS_EQUAL, 1)
-XEMMAI__CODE__CALL(GREATER, 1)
-XEMMAI__CODE__CALL(GREATER_EQUAL, 1)
-XEMMAI__CODE__CALL(EQUALS, 1)
-XEMMAI__CODE__CALL(NOT_EQUALS, 1)
-XEMMAI__CODE__CALL(AND, 1)
-XEMMAI__CODE__CALL(XOR, 1)
-XEMMAI__CODE__CALL(OR, 1)
-XEMMAI__CODE__CALL(SEND, 1)
+#include "code_call.h"
+#undef XEMMAI__CODE__CASE_BEGIN
 #undef XEMMAI__CODE__PRIMITIVE_CALL
 #undef XEMMAI__CODE__OBJECT_CALL
-#undef XEMMAI__CODE__CALL
+#undef XEMMAI__CODE__CASE_END
 #define XEMMAI__CODE__CALL_TAIL\
 							t_fiber::t_context::f_pop();\
 							t_fiber::t_context* p = f_context();\
@@ -1166,70 +718,50 @@ XEMMAI__CODE__CALL(SEND, 1)
 						pc = f_context()->v_pc;
 					}
 					XEMMAI__CODE__BREAK
-#define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
-					{\
-						t_value y(a_x);\
-						if (p->v_native > 0) return y;\
-						stack = p->v_stack;\
-						stack->f_return(y);\
-					}
-#define XEMMAI__CODE__OBJECT_CALL(a_method)\
-					{\
-						f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, *stack);\
-						if (f_context() == p) {\
-							t_transfer x = stack->f_top().f_transfer();\
-							if (p->v_native > 0) return x;\
-							stack = p->v_stack;\
-							stack->f_return(x);\
-						} else {\
-							stack = f_context()->v_stack;\
-						}\
-					}
-#define XEMMAI__CODE__CALL(a_name, a_n)\
+#undef XEMMAI__CODE__CALL_TAIL
+#define XEMMAI__CODE__CASE_BEGIN(a_name, a_n)\
 				XEMMAI__CODE__CASE(a_name##_TAIL)\
 					{\
-						t_transfer x = stack->f_at(a_n).f_transfer();\
+						t_transfer x = stack->f_at(a_n).f_transfer();
+#define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
+						{\
+							t_value y(a_x);\
+							t_fiber::t_context::f_pop();\
+							if (f_context()->v_native > 0) return y;\
+							stack = f_context()->v_stack;\
+							stack->f_return(y);\
+						}
+#define XEMMAI__CODE__CALL_TAIL(a_method)\
+							t_fiber::t_context::f_pop();\
+							t_fiber::t_context* p = f_context();\
+							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, *stack);\
+							if (f_context() == p) {\
+								t_transfer x = stack->f_top().f_transfer();\
+								if (p->v_native > 0) return x;\
+								stack = p->v_stack;\
+								stack->f_return(x);\
+							} else {\
+								stack = f_context()->v_stack;\
+							}
+#define XEMMAI__CODE__OBJECT_CALL(a_method)\
 						if (f_context()->v_simple) {\
 							t_finalize_fixed_scope finalize(stack);\
 							f_context()->v_simple = false;\
-							t_fiber::t_context::f_pop();\
-							t_fiber::t_context* p = f_context();\
-							XEMMAI__CODE__CALL_##a_name\
+							XEMMAI__CODE__CALL_TAIL(a_method)\
 						} else {\
 							t_transfer scope = f_context()->v_scope.f_transfer();\
-							t_fiber::t_context::f_pop();\
-							t_fiber::t_context* p = f_context();\
-							XEMMAI__CODE__CALL_##a_name\
-						}\
+							XEMMAI__CODE__CALL_TAIL(a_method)\
+						}
+#define XEMMAI__CODE__CASE_END\
 						pc = f_context()->v_pc;\
 					}\
 					XEMMAI__CODE__BREAK
-XEMMAI__CODE__CALL(GET_AT, 1)
-XEMMAI__CODE__CALL(SET_AT, 2)
-XEMMAI__CODE__CALL(PLUS, 0)
-XEMMAI__CODE__CALL(MINUS, 0)
-XEMMAI__CODE__CALL(NOT, 0)
-XEMMAI__CODE__CALL(COMPLEMENT, 0)
-XEMMAI__CODE__CALL(MULTIPLY, 1)
-XEMMAI__CODE__CALL(DIVIDE, 1)
-XEMMAI__CODE__CALL(MODULUS, 1)
-XEMMAI__CODE__CALL(ADD, 1)
-XEMMAI__CODE__CALL(SUBTRACT, 1)
-XEMMAI__CODE__CALL(LEFT_SHIFT, 1)
-XEMMAI__CODE__CALL(RIGHT_SHIFT, 1)
-XEMMAI__CODE__CALL(LESS, 1)
-XEMMAI__CODE__CALL(LESS_EQUAL, 1)
-XEMMAI__CODE__CALL(GREATER, 1)
-XEMMAI__CODE__CALL(GREATER_EQUAL, 1)
-XEMMAI__CODE__CALL(EQUALS, 1)
-XEMMAI__CODE__CALL(NOT_EQUALS, 1)
-XEMMAI__CODE__CALL(AND, 1)
-XEMMAI__CODE__CALL(XOR, 1)
-XEMMAI__CODE__CALL(OR, 1)
-XEMMAI__CODE__CALL(SEND, 1)
+#include "code_call.h"
+#undef XEMMAI__CODE__CASE_BEGIN
 #undef XEMMAI__CODE__PRIMITIVE_CALL
+#undef XEMMAI__CODE__CALL_TAIL
 #undef XEMMAI__CODE__OBJECT_CALL
-#undef XEMMAI__CODE__CALL
+#undef XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE(FIBER_EXIT)
 					{
 						t_transfer x = stack->f_top().f_transfer();

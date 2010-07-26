@@ -70,53 +70,80 @@ t_value::t_value(t_object* a_p, const t_own&) : v_p(a_p)
 
 t_value::t_value(const t_value& a_p, const t_own&) : v_p(a_p.v_p)
 {
-	if (v_p) v_increments->f_push(v_p);
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__NULL:
+		break;
+	case e_tag__BOOLEAN:
+		v_boolean = a_p.v_boolean;
+		break;
+	case e_tag__INTEGER:
+		v_integer = a_p.v_integer;
+		break;
+	case e_tag__FLOAT:
+		v_float = a_p.v_float;
+		break;
+	default:
+		v_increments->f_push(v_p);
+	}
+}
+
+void t_value::f_assign(t_object* a_p)
+{
+	if (a_p) v_increments->f_push(a_p);
+	t_object* p = v_p;
+	v_p = a_p;
+	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
+}
+
+void t_value::f_assign(const t_value& a_p)
+{
+	switch (reinterpret_cast<size_t>(a_p.v_p)) {
+	case e_tag__NULL:
+		break;
+	case e_tag__BOOLEAN:
+		v_boolean = a_p.v_boolean;
+		break;
+	case e_tag__INTEGER:
+		v_integer = a_p.v_integer;
+		break;
+	case e_tag__FLOAT:
+		v_float = a_p.v_float;
+		break;
+	default:
+		v_increments->f_push(a_p.v_p);
+	}
+	t_object* p = v_p;
+	v_p = a_p.v_p;
+	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
+}
+
+void t_value::f_assign(const t_transfer& a_p)
+{
+	t_object* p = v_p;
+	v_p = a_p.v_p;
+	switch (reinterpret_cast<size_t>(v_p)) {
+	case e_tag__BOOLEAN:
+		v_boolean = a_p.v_boolean;
+		break;
+	case e_tag__INTEGER:
+		v_integer = a_p.v_integer;
+		break;
+	case e_tag__FLOAT:
+		v_float = a_p.v_float;
+		break;
+	}
+	a_p.v_p = 0;
+	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
 }
 
 t_transfer::~t_transfer()
 {
-	if (v_p) v_decrements->f_push(v_p);
-}
-
-t_transfer& t_transfer::operator=(t_object* a_p)
-{
-	if (a_p) v_increments->f_push(a_p);
-	t_object* p = v_p;
-	v_p = a_p;
-	if (p) v_decrements->f_push(p);
-	return *this;
-}
-
-t_transfer& t_transfer::operator=(const t_transfer& a_p)
-{
-	t_object* p = v_p;
-	v_p = a_p;
-	a_p.v_p = 0;
-	if (p) v_decrements->f_push(p);
-	return *this;
-}
-
-t_shared& t_shared::operator=(t_object* a_p)
-{
-	if (a_p) v_increments->f_push(a_p);
-	t_object* p = v_p;
-	v_p = a_p;
-	if (p) v_decrements->f_push(p);
-	return *this;
-}
-
-t_shared& t_shared::operator=(const t_transfer& a_p)
-{
-	t_object* p = v_p;
-	v_p = a_p;
-	a_p.v_p = 0;
-	if (p) v_decrements->f_push(p);
-	return *this;
+	if (reinterpret_cast<size_t>(v_p) >= e_tag__OBJECT) v_decrements->f_push(v_p);
 }
 
 t_scoped::~t_scoped()
 {
-	if (v_p) v_decrements->f_push(v_p);
+	if (reinterpret_cast<size_t>(v_p) >= e_tag__OBJECT) v_decrements->f_push(v_p);
 }
 
 void t_slot::f_construct(t_object* a_p)
@@ -124,6 +151,27 @@ void t_slot::f_construct(t_object* a_p)
 	assert(!v_p);
 	if (a_p) v_increments->f_push(a_p);
 	v_p = a_p;
+}
+
+void t_slot::f_construct(const t_value& a_p)
+{
+	assert(!v_p);
+	switch (reinterpret_cast<size_t>(a_p.v_p)) {
+	case e_tag__NULL:
+		break;
+	case e_tag__BOOLEAN:
+		v_boolean = a_p.v_boolean;
+		break;
+	case e_tag__INTEGER:
+		v_integer = a_p.v_integer;
+		break;
+	case e_tag__FLOAT:
+		v_float = a_p.v_float;
+		break;
+	default:
+		v_increments->f_push(a_p.v_p);
+	}
+	v_p = a_p.v_p;
 }
 #endif
 

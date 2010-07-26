@@ -271,7 +271,7 @@ t_transfer t_object::f_allocate(t_object* a_type)
 	p->v_next = 0;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
-	p->v_pointer = 0;
+	p->v_type.v_pointer = 0;
 	return t_transfer(p, t_transfer::t_pass());
 }
 #endif

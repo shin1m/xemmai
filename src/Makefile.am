@@ -25,6 +25,7 @@ xemmai_SOURCES = \
 	thread.cc \
 	symbol.cc \
 	scope.cc \
+	code_call.h \
 	code.cc \
 	method.cc \
 	lambda.cc \
