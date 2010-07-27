@@ -82,13 +82,13 @@ inline void t_threading::f_type__<portable::t_condition>(const t_transfer& a_typ
 template<>
 inline t_object* t_threading::f_type<portable::t_mutex>() const
 {
-	return &*v_type_mutex;
+	return v_type_mutex.f_object();
 }
 
 template<>
 inline t_object* t_threading::f_type<portable::t_condition>() const
 {
-	return &*v_type_condition;
+	return v_type_condition.f_object();
 }
 
 void t_type_of<portable::t_mutex>::f_acquire(portable::t_mutex& a_self)

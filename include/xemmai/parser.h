@@ -74,12 +74,12 @@ class t_parser
 	void f_operand(t_object* a_operand)
 	{
 		v_objects->push_back(0);
-		v_instructions->push_back(&**new(&v_objects->back()) t_slot(a_operand));
+		v_instructions->push_back((*new(&v_objects->back()) t_slot(a_operand)).f_object());
 	}
 	void f_operand(const t_transfer& a_operand)
 	{
 		v_objects->push_back(0);
-		v_instructions->push_back(&**new(&v_objects->back()) t_slot(a_operand));
+		v_instructions->push_back((*new(&v_objects->back()) t_slot(a_operand)).f_object());
 	}
 	void f_operand(std::vector<size_t>& a_label)
 	{

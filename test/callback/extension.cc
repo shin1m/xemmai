@@ -85,13 +85,13 @@ inline void t_callback_extension::f_type__<t_server>(const t_transfer& a_type)
 template<>
 inline t_object* t_callback_extension::f_type<t_client>() const
 {
-	return &*v_type_client;
+	return v_type_client.f_object();
 }
 
 template<>
 inline t_object* t_callback_extension::f_type<t_server>() const
 {
-	return &*v_type_server;
+	return v_type_server.f_object();
 }
 
 class t_client_wrapper : public t_client
@@ -104,7 +104,7 @@ public:
 	static t_transfer f_construct(t_object* a_class)
 	{
 		t_transfer object = t_object::f_allocate(a_class);
-		object.f_pointer__(new t_client_wrapper(&*object));
+		object.f_pointer__(new t_client_wrapper(object.f_object()));
 		return object;
 	}
 	static void f_super__on_message(t_client* a_self, const std::wstring& a_message)
@@ -123,8 +123,8 @@ public:
 
 void t_client_wrapper::f_on_message(const std::wstring& a_message)
 {
-	t_callback_extension* extension = f_extension<t_callback_extension>(&*f_as<t_type&>(v_self->f_type()).v_module);
-	v_self->f_get(&*extension->v_symbol_on_message)(extension->f_as(a_message));
+	t_callback_extension* extension = f_extension<t_callback_extension>(f_as<t_type&>(v_self->f_type()).v_module.f_object());
+	v_self->f_get(extension->v_symbol_on_message.f_object())(extension->f_as(a_message));
 }
 
 namespace xemmai
@@ -133,7 +133,7 @@ namespace xemmai
 void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_client, t_object>(a_extension, L"Client")
-		(&*a_extension->v_symbol_on_message, t_member<void (*)(t_client*, const std::wstring&), t_client_wrapper::f_super__on_message>())
+		(a_extension->v_symbol_on_message.f_object(), t_member<void (*)(t_client*, const std::wstring&), t_client_wrapper::f_super__on_message>())
 		(L"remove", t_member<void (t_client::*)(), &t_client::f_remove>())
 	;
 }
@@ -190,7 +190,7 @@ t_transfer t_callback_extension::f_as(t_client* a_value) const
 {
 	t_client_wrapper* p = dynamic_cast<t_client_wrapper*>(a_value);
 	if (p) return p->v_self;
-	t_transfer object = t_object::f_allocate(&*v_type_client);
+	t_transfer object = t_object::f_allocate(v_type_client.f_object());
 	object.f_pointer__(a_value);
 	return object;
 }

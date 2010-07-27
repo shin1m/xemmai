@@ -34,7 +34,7 @@ struct t_type_of<double> : t_type
 	{
 		static bool f_call(T1 a_object)
 		{
-			return reinterpret_cast<size_t>(&*a_object) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+			return reinterpret_cast<size_t>(f_object(a_object)) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != 0;
 		}
 	};
 	template<typename T>
@@ -42,7 +42,7 @@ struct t_type_of<double> : t_type
 	{
 		static bool f_call(T a_object)
 		{
-			switch (reinterpret_cast<size_t>(&*a_object)) {
+			switch (reinterpret_cast<size_t>(f_object(a_object))) {
 			case t_value::e_tag__INTEGER:
 				return true;
 			case t_value::e_tag__NULL:
@@ -50,7 +50,7 @@ struct t_type_of<double> : t_type
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<int>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+				return dynamic_cast<t_type_of<int>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != 0;
 			}
 		}
 	};
@@ -59,7 +59,7 @@ struct t_type_of<double> : t_type
 	{
 		static bool f_call(T a_object)
 		{
-			switch (reinterpret_cast<size_t>(&*a_object)) {
+			switch (reinterpret_cast<size_t>(f_object(a_object))) {
 			case t_value::e_tag__FLOAT:
 				return true;
 			case t_value::e_tag__NULL:
@@ -67,7 +67,7 @@ struct t_type_of<double> : t_type
 			case t_value::e_tag__INTEGER:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<double>*>(&f_as<t_type&>((*a_object).f_type())) != 0;
+				return dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != 0;
 			}
 		}
 	};

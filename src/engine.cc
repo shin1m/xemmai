@@ -200,13 +200,13 @@ v_verbose(a_verbose)
 	thread->v_internal->f_initialize();
 	v_thread__internals = thread->v_internal->v_next = thread->v_internal;
 	t_scoped type_class = t_object::f_allocate(0);
-	(*type_class).v_type = type_class;
+	type_class.f_object()->v_type = type_class;
 	type_class.f_pointer__(new t_class(0, 0));
-	v_type_class = &*type_class;
+	v_type_class = type_class.f_object();
 	t_scoped type_object = t_class::f_instantiate(new t_type(0, 0));
 	f_as<t_type&>(type_class).v_super = type_object;
 	t_scoped type_module = t_class::f_instantiate(new t_type_of<t_module>(0, type_object));
-	v_module_global = t_object::f_allocate(&*type_module);
+	v_module_global = t_object::f_allocate(type_module.f_object());
 	t_library* library = new t_library(std::wstring(), 0);
 	v_module_global.f_pointer__(library);
 	v_module__instances__null = v_module__instances.insert(std::make_pair(std::wstring(), t_slot())).first;
@@ -217,13 +217,13 @@ v_verbose(a_verbose)
 	f_as<t_type&>(type_module).v_module = v_module_global;
 	t_scoped type_fiber = t_class::f_instantiate(new t_type_of<t_fiber>(v_module_global, type_object));
 	t_scoped type_thread = t_class::f_instantiate(new t_type_of<t_thread>(v_module_global, type_object));
-	v_thread = t_object::f_allocate(&*type_thread);
+	v_thread = t_object::f_allocate(type_thread.f_object());
 	v_thread.f_pointer__(thread);
-	t_thread::v_current = &*v_thread;
-	(*thread).v_fiber = t_object::f_allocate(&*type_fiber);
+	t_thread::v_current = v_thread.f_object();
+	(*thread).v_fiber = t_object::f_allocate(type_fiber.f_object());
 	(*thread).v_fiber.f_pointer__(new t_fiber(0, true, true));
 	(*thread).v_active = thread->v_fiber;
-	t_fiber::v_current = &*thread->v_active;
+	t_fiber::v_current = thread->v_active.f_object();
 	{
 		portable::t_affinity affinity;
 		affinity.f_from_thread();
@@ -243,7 +243,7 @@ v_verbose(a_verbose)
 		portable::f_thread(f_collector, this);
 		while (v_collector__running) v_collector__done.f_wait(v_collector__mutex);
 	}
-	library->v_extension = new t_global(&*v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
+	library->v_extension = new t_global(v_module_global.f_object(), type_object.f_transfer(), type_class.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
 	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
 	t_transfer path = t_array::f_instantiate();
 	{
@@ -277,17 +277,17 @@ v_verbose(a_verbose)
 	{
 		t_library* library = new t_library(std::wstring(), 0);
 		v_module_io = t_module::f_instantiate(L"io", library);
-		library->v_extension = new t_io(&*v_module_io);
+		library->v_extension = new t_io(v_module_io.f_object());
 	}
 	t_transfer in = io::t_file::f_instantiate(stdin);
-	v_module_system.f_put(&*t_symbol::f_instantiate(L"native_in"), t_value(in));
-	v_module_system.f_put(&*t_symbol::f_instantiate(L"in"), io::t_reader::f_instantiate(in, L""));
+	v_module_system.f_put(t_symbol::f_instantiate(L"native_in").f_object(), t_value(in));
+	v_module_system.f_put(t_symbol::f_instantiate(L"in").f_object(), io::t_reader::f_instantiate(in, L""));
 	t_transfer out = io::t_file::f_instantiate(stdout);
-	v_module_system.f_put(&*t_symbol::f_instantiate(L"native_out"), t_value(out));
-	v_module_system.f_put(&*t_symbol::f_instantiate(L"out"), io::t_writer::f_instantiate(out, L""));
+	v_module_system.f_put(t_symbol::f_instantiate(L"native_out").f_object(), t_value(out));
+	v_module_system.f_put(t_symbol::f_instantiate(L"out").f_object(), io::t_writer::f_instantiate(out, L""));
 	t_transfer error = io::t_file::f_instantiate(stderr);
-	v_module_system.f_put(&*t_symbol::f_instantiate(L"native_error"), t_value(error));
-	v_module_system.f_put(&*t_symbol::f_instantiate(L"error"), io::t_writer::f_instantiate(error, L""));
+	v_module_system.f_put(t_symbol::f_instantiate(L"native_error").f_object(), t_value(error));
+	v_module_system.f_put(t_symbol::f_instantiate(L"error").f_object(), io::t_writer::f_instantiate(error, L""));
 }
 
 t_engine::~t_engine()

@@ -24,7 +24,7 @@ void t_hash::t_table::f_scan(t_scan a_scan)
 {
 	for (size_t i = 0; i < v_capacity; ++i) {
 		for (t_entry* p = v_entries[i]; p; p = p->v_next) {
-			if (!&*p->v_key) return;
+			if (!p->v_key.f_object()) return;
 			a_scan(p->v_key);
 			a_scan(p->v_value);
 		}

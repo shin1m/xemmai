@@ -35,7 +35,7 @@ void t_type_of<portable::t_path>::f_divide(t_object* a_this, t_stack& a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
 	f_check<std::wstring>(a0, L"argument0");
-	a_stack.f_return(f_extension<t_io>(&*v_module)->f_as(f_as<const portable::t_path&>(a_this) / f_as<const std::wstring&>(a0)));
+	a_stack.f_return(f_extension<t_io>(v_module.f_object())->f_as(f_as<const portable::t_path&>(a_this) / f_as<const std::wstring&>(a0)));
 	context.f_done();
 }
 

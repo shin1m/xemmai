@@ -6,7 +6,7 @@
 #include <xemmai/lambda.h>
 #include <xemmai/throwable.h>
 #include <xemmai/array.h>
-#include <xemmai/global.h>
+#include <xemmai/convert.h>
 
 namespace xemmai
 {
@@ -358,7 +358,7 @@ t_transfer t_code::f_loop()
 					{
 						++pc;
 						t_transfer type = stack->f_pop();
-						if (stack->f_top().f_is(&*type)) {
+						if (stack->f_top().f_is(type.f_object())) {
 							size_t index = reinterpret_cast<size_t>(*++pc);
 							++pc;
 							t_transfer value = stack->f_pop();
@@ -366,7 +366,7 @@ t_transfer t_code::f_loop()
 							if (f_context()->v_simple) {
 								(*stack)[index] = value;
 							} else {
-								portable::t_scoped_lock_for_write lock((*f_context()->v_scope).v_lock);
+								t_with_lock_for_write lock(f_context()->v_scope);
 								(*stack)[index] = value;
 							}
 						} else {
@@ -428,7 +428,7 @@ t_transfer t_code::f_loop()
 						++pc;
 						t_transfer key = stack->f_pop();
 						t_slot& top = stack->f_top();
-						top = top.f_get(&*key);
+						top = top.f_get(key.f_object());
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_PUT)
@@ -447,7 +447,7 @@ t_transfer t_code::f_loop()
 						t_transfer value = stack->f_pop();
 						t_transfer key = stack->f_pop();
 						t_slot& top = stack->f_top();
-						top.f_put(&*key, t_value(value));
+						top.f_put(key.f_object(), t_value(value));
 						top = value;
 					}
 					XEMMAI__CODE__BREAK
@@ -464,7 +464,7 @@ t_transfer t_code::f_loop()
 						++pc;
 						t_transfer key = stack->f_pop();
 						t_slot& top = stack->f_top();
-						top = f_global()->f_as(top.f_has(&*key));
+						top = f_global()->f_as(top.f_has(key.f_object()));
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_REMOVE)
@@ -480,7 +480,7 @@ t_transfer t_code::f_loop()
 						++pc;
 						t_transfer key = stack->f_pop();
 						t_slot& top = stack->f_top();
-						top = top.f_remove(&*key);
+						top = top.f_remove(key.f_object());
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(GLOBAL_GET)
@@ -496,8 +496,8 @@ t_transfer t_code::f_loop()
 						assert(outer > 0);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = &*stack->v_outer;
-						for (size_t i = 1; i < outer; ++i) scope = &*f_as<t_scope&>(scope).v_outer;
+						t_object* scope = stack->v_outer.f_object();
+						for (size_t i = 1; i < outer; ++i) scope = f_as<t_scope&>(scope).v_outer.f_object();
 						portable::t_scoped_lock_for_read lock(scope->v_lock);
 						stack->f_push(f_as<const t_scope&>(scope)[index]);
 					}
@@ -517,7 +517,7 @@ t_transfer t_code::f_loop()
 					{
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						portable::t_scoped_lock_for_read lock((*f_context()->v_scope).v_lock);
+						t_with_lock_for_read lock(f_context()->v_scope);
 						stack->f_push((*stack)[index]);
 					}
 					XEMMAI__CODE__BREAK
@@ -534,8 +534,8 @@ t_transfer t_code::f_loop()
 						assert(outer > 0);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = &*stack->v_outer;
-						for (size_t i = 1; i < outer; ++i) scope = &*f_as<t_scope&>(scope).v_outer;
+						t_object* scope = stack->v_outer.f_object();
+						for (size_t i = 1; i < outer; ++i) scope = f_as<t_scope&>(scope).v_outer.f_object();
 						portable::t_scoped_lock_for_write lock(scope->v_lock);
 						f_as<t_scope&>(scope)[index] = stack->f_top();
 					}
@@ -544,7 +544,7 @@ t_transfer t_code::f_loop()
 					{
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						portable::t_scoped_lock_for_write lock((*f_context()->v_scope).v_lock);
+						t_with_lock_for_write lock(f_context()->v_scope);
 						(*stack)[index] = stack->f_top();
 					}
 					XEMMAI__CODE__BREAK
@@ -584,7 +584,7 @@ t_transfer t_code::f_loop()
 						t_slot& top = stack->f_top();
 						if (top.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"not class.");
 						top = f_as<t_type&>(top).v_super;
-						if (!&*top) t_throwable::f_throw(L"no more super class.");
+						if (!top.f_object()) t_throwable::f_throw(L"no more super class.");
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(NULL)
@@ -782,7 +782,7 @@ t_transfer t_code::f_loop()
 						}
 						q.v_active = true;
 						thread.v_active = thread.v_fiber;
-						t_fiber::v_current = &*thread.v_fiber;
+						t_fiber::v_current = thread.v_fiber.f_object();
 						t_fiber::t_context::v_instance = q.v_context;
 						p.v_active = false;
 						pc = f_context()->v_pc;

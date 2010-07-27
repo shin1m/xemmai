@@ -17,7 +17,7 @@ struct t_thread
 
 		static size_t f_index(const t_value& a_object, t_object* a_key)
 		{
-			return (reinterpret_cast<size_t>(&*a_object) ^ reinterpret_cast<size_t>(a_key)) / sizeof(t_object*) & V_MASK;
+			return (a_object.f_tag() ^ reinterpret_cast<size_t>(a_key)) / sizeof(t_object*) & V_MASK;
 		}
 		static size_t f_revise(size_t a_i);
 

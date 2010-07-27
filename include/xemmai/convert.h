@@ -63,7 +63,7 @@ class t_with_lock_for_read
 	portable::t_scoped_lock_for_read v_lock;
 
 public:
-	t_with_lock_for_read(const t_value& a_self) : v_lock((*a_self).v_lock)
+	t_with_lock_for_read(const t_value& a_self) : v_lock(a_self.f_object()->v_lock)
 	{
 	}
 	~t_with_lock_for_read()
@@ -76,7 +76,7 @@ class t_with_lock_for_write
 	portable::t_scoped_lock_for_write v_lock;
 
 public:
-	t_with_lock_for_write(const t_value& a_self) : v_lock((*a_self).v_lock)
+	t_with_lock_for_write(const t_value& a_self) : v_lock(a_self.f_object()->v_lock)
 	{
 	}
 	~t_with_lock_for_write()
@@ -214,12 +214,12 @@ public:
 	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name) :
 	v_extension(a_extension), v_type(t_class::f_instantiate(new t_type_of<T>(v_extension->f_module(), a_extension->template f_type<T_super>())))
 	{
-		v_extension->template f_type__<T>(&*v_type);
-		v_extension->f_module()->f_put(&*t_symbol::f_instantiate(a_name), &*v_type);
+		v_extension->template f_type__<T>(v_type.f_object());
+		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name).f_object(), v_type.f_object());
 	}
 	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name, const t_transfer& a_type) : v_extension(a_extension), v_type(a_type)
 	{
-		v_extension->f_module()->f_put(&*t_symbol::f_instantiate(a_name), t_value(v_type));
+		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name).f_object(), t_value(v_type));
 	}
 	operator t_transfer() const
 	{
@@ -234,7 +234,7 @@ public:
 	template<typename T_value>
 	t_define& operator()(const std::wstring& a_name, T_value a_value)
 	{
-		return (*this)(&*t_symbol::f_instantiate(a_name), a_value);
+		return (*this)(t_symbol::f_instantiate(a_name).f_object(), a_value);
 	}
 	t_define& operator()(t_object* a_name, t_native::t_function a_function)
 	{
@@ -243,7 +243,7 @@ public:
 	}
 	t_define& operator()(const std::wstring& a_name, t_native::t_function a_function)
 	{
-		return (*this)(&*t_symbol::f_instantiate(a_name), a_function);
+		return (*this)(t_symbol::f_instantiate(a_name).f_object(), a_function);
 	}
 	template<typename T_function, T_function A_function, typename T_with>
 	t_define& operator()(t_object* a_name, const t_member<T_function, A_function, T_with>&)
@@ -254,7 +254,7 @@ public:
 	template<typename T_function, T_function A_function, typename T_with>
 	t_define& operator()(const std::wstring& a_name, const t_member<T_function, A_function, T_with>& a_member0)
 	{
-		return (*this)(&*t_symbol::f_instantiate(a_name), a_member0);
+		return (*this)(t_symbol::f_instantiate(a_name).f_object(), a_member0);
 	}
 	template<typename T_function, T_function A_function>
 	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&)
@@ -265,7 +265,7 @@ public:
 	template<typename T_function, T_function A_function>
 	t_define& operator()(const std::wstring& a_name, const t_static<T_function, A_function>& a_member0)
 	{
-		return (*this)(&*t_symbol::f_instantiate(a_name), a_member0);
+		return (*this)(t_symbol::f_instantiate(a_name).f_object(), a_member0);
 	}
 #define XEMMAI__MACRO__TYPENAME_T_OVERLOADN(n) typename T_overload##n
 #define XEMMAI__MACRO__CONST_T_OVERLOADN(n) const T_overload##n&
@@ -287,7 +287,7 @@ inline void f_define(T_extension* a_extension, t_object* a_name)
 template<typename T_function, T_function A_function, typename T_extension>
 inline void f_define(T_extension* a_extension, const std::wstring& a_name)
 {
-	f_define<T_function, A_function, T_extension>(a_extension, &*t_symbol::f_instantiate(a_name));
+	f_define<T_function, A_function, T_extension>(a_extension, t_symbol::f_instantiate(a_name).f_object());
 }
 
 template<typename T, typename T_extension>

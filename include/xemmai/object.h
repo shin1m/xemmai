@@ -141,11 +141,11 @@ public:
 	{
 		static size_t f_hash(const t_value& a_key)
 		{
-			return reinterpret_cast<size_t>(&*a_key);
+			return a_key.f_tag();
 		}
 		static bool f_equals(const t_value& a_x, const t_value& a_y)
 		{
-			return &*a_x == &*a_y;
+			return a_x.f_object() == a_y.f_object();
 		}
 	};
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
@@ -176,7 +176,7 @@ public:
 
 	t_object* f_type() const
 	{
-		return &*v_type;
+		return v_type.f_object();
 	}
 	bool f_boolean() const
 	{

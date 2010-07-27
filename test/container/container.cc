@@ -7,7 +7,7 @@ namespace xemmai
 
 t_transfer t_type_of<t_pair>::f_instantiate(t_container* a_extension, const t_transfer& a_value)
 {
-	t_transfer object = t_object::f_allocate(&*a_extension->v_type_pair);
+	t_transfer object = t_object::f_allocate(a_extension->v_type_pair.f_object());
 	object.f_pointer__(new t_pair(a_value));
 	return object;
 }

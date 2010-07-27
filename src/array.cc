@@ -213,7 +213,7 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 	const t_array& array = f_as<const t_array&>(a_self);
 	t_transfer x;
 	{
-		portable::t_scoped_lock_for_read lock((*a_self).v_lock);
+		t_with_lock_for_read lock(a_self);
 		if (array.f_size() <= 0) return L"[]";
 		x = array[0];
 	}
@@ -223,7 +223,7 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 	size_t i = 1;
 	while (true) {
 		{
-			portable::t_scoped_lock_for_read lock((*a_self).v_lock);
+			t_with_lock_for_read lock(a_self);
 			if (i >= array.f_size()) break;
 			x = array[i];
 		}
@@ -244,7 +244,7 @@ int t_type_of<t_array>::f_hash(const t_value& a_self)
 	while (true) {
 		t_transfer x;
 		{
-			portable::t_scoped_lock_for_read lock((*a_self).v_lock);
+			t_with_lock_for_read lock(a_self);
 			if (i >= array.f_size()) break;
 			x = array[i];
 		}
@@ -268,19 +268,19 @@ bool t_type_of<t_array>::f_less(const t_value& a_self, const t_value& a_other)
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			t_with_lock_for_read lock0(a_self);
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
 		{
-			portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+			t_with_lock_for_read lock1(a_other);
 			if (i >= a1.f_size()) return false;
 			y = a1[i];
 		}
 		if (!f_as<bool>(x.f_equals(t_value(y)))) return f_as<bool>(x.f_less(y));
 		++i;
 	}
-	portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+	t_with_lock_for_read lock1(a_other);
 	return i < a1.f_size();
 }
 
@@ -296,12 +296,12 @@ bool t_type_of<t_array>::f_less_equal(const t_value& a_self, const t_value& a_ot
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			t_with_lock_for_read lock0(a_self);
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
 		{
-			portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+			t_with_lock_for_read lock1(a_other);
 			if (i >= a1.f_size()) return false;
 			y = a1[i];
 		}
@@ -323,12 +323,12 @@ bool t_type_of<t_array>::f_greater(const t_value& a_self, const t_value& a_other
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			t_with_lock_for_read lock0(a_self);
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
 		{
-			portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+			t_with_lock_for_read lock1(a_other);
 			if (i >= a1.f_size()) return true;
 			y = a1[i];
 		}
@@ -350,19 +350,19 @@ bool t_type_of<t_array>::f_greater_equal(const t_value& a_self, const t_value& a
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			t_with_lock_for_read lock0(a_self);
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
 		{
-			portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+			t_with_lock_for_read lock1(a_other);
 			if (i >= a1.f_size()) return true;
 			y = a1[i];
 		}
 		if (!f_as<bool>(x.f_equals(t_value(y)))) return f_as<bool>(x.f_greater(y));
 		++i;
 	}
-	portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+	t_with_lock_for_read lock1(a_other);
 	return i >= a1.f_size();
 }
 
@@ -379,12 +379,12 @@ bool t_type_of<t_array>::f_equals(const t_value& a_self, const t_value& a_other)
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			t_with_lock_for_read lock0(a_self);
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
 		{
-			portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+			t_with_lock_for_read lock1(a_other);
 			if (i >= a1.f_size()) return false;
 			y = a1[i];
 		}
@@ -402,7 +402,7 @@ void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable
 	while (true) {
 		t_transfer x;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			t_with_lock_for_read lock0(a_self);
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
@@ -437,10 +437,10 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 	size_t head = 0;
 	size_t size = 0;
 	{
-		portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+		t_with_lock_for_read lock0(a_self);
 		a0.f_swap(tuple, head, size);
 	}
-	if (!&*tuple) return;
+	if (!tuple.f_object()) return;
 	t_tuple& t = f_as<t_tuple&>(tuple);
 	std::vector<t_scoped> a(size);
 	for (size_t i = 0; i < size; ++i) a[i] = t[(head + i) % t.f_size()].f_transfer();
@@ -448,7 +448,7 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 	std::sort(a.begin(), a.end(), t_less(a_callable));
 	for (size_t i = 0; i < size; ++i) t[i] = a[i].f_transfer();
 	{
-		portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+		t_with_lock_for_read lock0(a_self);
 		a0.f_swap(tuple, head, size);
 	}
 }

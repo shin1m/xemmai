@@ -177,19 +177,19 @@ protected:
 	{
 		if (v_p) v_increments->f_push(v_p);
 	}
-	t_value(const t_value& a_p, const t_own&) : v_p(a_p.v_p)
+	t_value(const t_value& a_value, const t_own&) : v_p(a_value.v_p)
 	{
-		switch (reinterpret_cast<size_t>(v_p)) {
+		switch (f_tag()) {
 		case e_tag__NULL:
 			break;
 		case e_tag__BOOLEAN:
-			v_boolean = a_p.v_boolean;
+			v_boolean = a_value.v_boolean;
 			break;
 		case e_tag__INTEGER:
-			v_integer = a_p.v_integer;
+			v_integer = a_value.v_integer;
 			break;
 		case e_tag__FLOAT:
-			v_float = a_p.v_float;
+			v_float = a_value.v_float;
 			break;
 		default:
 			v_increments->f_push(v_p);
@@ -202,34 +202,34 @@ protected:
 		v_p = a_p;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
 	}
-	void f_assign(const t_value& a_p)
+	void f_assign(const t_value& a_value)
 	{
-		switch (reinterpret_cast<size_t>(a_p.v_p)) {
+		switch (a_value.f_tag()) {
 		case e_tag__NULL:
 			break;
 		case e_tag__BOOLEAN:
-			v_boolean = a_p.v_boolean;
+			v_boolean = a_value.v_boolean;
 			break;
 		case e_tag__INTEGER:
-			v_integer = a_p.v_integer;
+			v_integer = a_value.v_integer;
 			break;
 		case e_tag__FLOAT:
-			v_float = a_p.v_float;
+			v_float = a_value.v_float;
 			break;
 		default:
-			v_increments->f_push(a_p.v_p);
+			v_increments->f_push(a_value.v_p);
 		}
 		t_object* p = v_p;
-		v_p = a_p.v_p;
+		v_p = a_value.v_p;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
 	}
-	void f_assign(const t_transfer& a_p);
+	void f_assign(const t_transfer& a_value);
 #else
 	XEMMAI__PORTABLE__EXPORT t_value(t_object* a_p, const t_own&);
-	XEMMAI__PORTABLE__EXPORT t_value(const t_value& a_p, const t_own&);
+	XEMMAI__PORTABLE__EXPORT t_value(const t_value& a_value, const t_own&);
 	XEMMAI__PORTABLE__EXPORT void f_assign(t_object* a_p);
-	XEMMAI__PORTABLE__EXPORT void f_assign(const t_value& a_p);
-	XEMMAI__PORTABLE__EXPORT void f_assign(const t_transfer& a_p);
+	XEMMAI__PORTABLE__EXPORT void f_assign(const t_value& a_value);
+	XEMMAI__PORTABLE__EXPORT void f_assign(const t_transfer& a_value);
 #endif
 
 public:
@@ -245,41 +245,45 @@ public:
 	explicit t_value(double a_value) : v_p(reinterpret_cast<t_object*>(e_tag__FLOAT)), v_float(a_value)
 	{
 	}
-	t_value(const t_value& a_p) : v_p(a_p.v_p)
+	t_value(const t_value& a_value) : v_p(a_value.v_p)
 	{
-		switch (reinterpret_cast<size_t>(v_p)) {
+		switch (f_tag()) {
 		case e_tag__BOOLEAN:
-			v_boolean = a_p.v_boolean;
+			v_boolean = a_value.v_boolean;
 			break;
 		case e_tag__INTEGER:
-			v_integer = a_p.v_integer;
+			v_integer = a_value.v_integer;
 			break;
 		case e_tag__FLOAT:
-			v_float = a_p.v_float;
+			v_float = a_value.v_float;
 			break;
 		}
 	}
-	bool operator==(const t_value& a_p) const
+	bool operator==(const t_value& a_value) const
 	{
-		if (v_p != a_p.v_p) return false;
-		switch (reinterpret_cast<size_t>(v_p)) {
+		if (v_p != a_value.v_p) return false;
+		switch (f_tag()) {
 		case e_tag__BOOLEAN:
-			return v_boolean == a_p.v_boolean;
+			return v_boolean == a_value.v_boolean;
 		case e_tag__INTEGER:
-			return v_integer == a_p.v_integer;
+			return v_integer == a_value.v_integer;
 		case e_tag__FLOAT:
-			return v_float == a_p.v_float;
+			return v_float == a_value.v_float;
 		default:
 			return true;
 		}
 	}
-	bool operator!=(const t_value& a_p) const
+	bool operator!=(const t_value& a_value) const
 	{
-		return !operator==(a_p);
+		return !operator==(a_value);
 	}
-	t_object& operator*() const
+	size_t f_tag() const
 	{
-		return *v_p;
+		return reinterpret_cast<size_t>(v_p);
+	}
+	t_object* f_object() const
+	{
+		return v_p;
 	}
 	bool f_boolean() const;
 	void f_boolean__(bool a_value);
@@ -335,7 +339,7 @@ class t_transfer : public t_value
 	t_transfer(t_object* a_p, const t_pass&) : t_value(a_p)
 	{
 	}
-	t_transfer(const t_value& a_p, const t_pass&) : t_value(a_p)
+	t_transfer(const t_value& a_value, const t_pass&) : t_value(a_value)
 	{
 	}
 
@@ -352,17 +356,17 @@ public:
 	explicit t_transfer(double a_value) : t_value(a_value)
 	{
 	}
-	t_transfer(const t_value& a_p) : t_value(a_p, t_own())
+	t_transfer(const t_value& a_value) : t_value(a_value, t_own())
 	{
 	}
-	t_transfer(const t_transfer& a_p) : t_value(a_p)
+	t_transfer(const t_transfer& a_value) : t_value(a_value)
 	{
-		a_p.v_p = 0;
+		a_value.v_p = 0;
 	}
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	XEMMAI__PORTABLE__ALWAYS_INLINE ~t_transfer()
 	{
-		if (reinterpret_cast<size_t>(v_p) >= e_tag__OBJECT) v_decrements->f_push(v_p);
+		if (f_tag() >= e_tag__OBJECT) v_decrements->f_push(v_p);
 	}
 #else
 	XEMMAI__PORTABLE__EXPORT ~t_transfer();
@@ -372,14 +376,14 @@ public:
 		f_assign(a_p);
 		return *this;
 	}
-	t_transfer& operator=(const t_value& a_p)
+	t_transfer& operator=(const t_value& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
-	t_transfer& operator=(const t_transfer& a_p)
+	t_transfer& operator=(const t_transfer& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
 };
@@ -399,14 +403,14 @@ protected:
 	t_shared(double a_value) : t_value(a_value)
 	{
 	}
-	t_shared(const t_value& a_p) : t_value(a_p, t_own())
+	t_shared(const t_value& a_value) : t_value(a_value, t_own())
 	{
 	}
-	t_shared(const t_transfer& a_p) : t_value(a_p)
+	t_shared(const t_transfer& a_value) : t_value(a_value)
 	{
-		a_p.v_p = 0;
+		a_value.v_p = 0;
 	}
-	t_shared(const t_shared& a_p) : t_value(a_p, t_own())
+	t_shared(const t_shared& a_value) : t_value(a_value, t_own())
 	{
 	}
 
@@ -433,19 +437,19 @@ struct t_scoped : t_shared
 	explicit t_scoped(double a_value) : t_shared(a_value)
 	{
 	}
-	t_scoped(const t_value& a_p) : t_shared(a_p)
+	t_scoped(const t_value& a_value) : t_shared(a_value)
 	{
 	}
-	t_scoped(const t_transfer& a_p) : t_shared(a_p)
+	t_scoped(const t_transfer& a_value) : t_shared(a_value)
 	{
 	}
-	t_scoped(const t_scoped& a_p) : t_shared(a_p)
+	t_scoped(const t_scoped& a_value) : t_shared(a_value)
 	{
 	}
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	~t_scoped()
 	{
-		if (reinterpret_cast<size_t>(v_p) >= e_tag__OBJECT) v_decrements->f_push(v_p);
+		if (f_tag() >= e_tag__OBJECT) v_decrements->f_push(v_p);
 	}
 #else
 	XEMMAI__PORTABLE__EXPORT ~t_scoped();
@@ -455,19 +459,19 @@ struct t_scoped : t_shared
 		f_assign(a_p);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_value& a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_value& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_transfer& a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_transfer& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_scoped& a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_scoped& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
 };
@@ -488,13 +492,13 @@ struct t_slot : t_shared
 	explicit t_slot(double a_value) : t_shared(a_value)
 	{
 	}
-	t_slot(const t_value& a_p) : t_shared(a_p)
+	t_slot(const t_value& a_value) : t_shared(a_value)
 	{
 	}
-	t_slot(const t_transfer& a_p) : t_shared(a_p)
+	t_slot(const t_transfer& a_value) : t_shared(a_value)
 	{
 	}
-	t_slot(const t_slot& a_p) : t_shared(a_p)
+	t_slot(const t_slot& a_value) : t_shared(a_value)
 	{
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_object* a_p)
@@ -502,19 +506,19 @@ struct t_slot : t_shared
 		f_assign(a_p);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_value& a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_value& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_transfer& a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_transfer& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_slot& a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_slot& a_value)
 	{
-		f_assign(a_p);
+		f_assign(a_value);
 		return *this;
 	}
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
@@ -524,46 +528,46 @@ struct t_slot : t_shared
 		if (a_p) v_increments->f_push(a_p);
 		v_p = a_p;
 	}
-	void f_construct(const t_value& a_p)
+	void f_construct(const t_value& a_value)
 	{
 		assert(!v_p);
-		switch (reinterpret_cast<size_t>(a_p.v_p)) {
+		switch (a_value.f_tag()) {
 		case e_tag__NULL:
 			break;
 		case e_tag__BOOLEAN:
-			v_boolean = a_p.v_boolean;
+			v_boolean = a_value.v_boolean;
 			break;
 		case e_tag__INTEGER:
-			v_integer = a_p.v_integer;
+			v_integer = a_value.v_integer;
 			break;
 		case e_tag__FLOAT:
-			v_float = a_p.v_float;
+			v_float = a_value.v_float;
 			break;
 		default:
-			v_increments->f_push(a_p.v_p);
+			v_increments->f_push(a_value.v_p);
 		}
-		v_p = a_p.v_p;
+		v_p = a_value.v_p;
 	}
 #else
 	XEMMAI__PORTABLE__EXPORT void f_construct(t_object* a_p);
-	XEMMAI__PORTABLE__EXPORT void f_construct(const t_value& a_p);
+	XEMMAI__PORTABLE__EXPORT void f_construct(const t_value& a_value);
 #endif
-	void f_construct(const t_transfer& a_p)
+	void f_construct(const t_transfer& a_value)
 	{
 		assert(!v_p);
-		v_p = a_p.v_p;
-		switch (reinterpret_cast<size_t>(v_p)) {
+		v_p = a_value.v_p;
+		switch (f_tag()) {
 		case e_tag__BOOLEAN:
-			v_boolean = a_p.v_boolean;
+			v_boolean = a_value.v_boolean;
 			break;
 		case e_tag__INTEGER:
-			v_integer = a_p.v_integer;
+			v_integer = a_value.v_integer;
 			break;
 		case e_tag__FLOAT:
-			v_float = a_p.v_float;
+			v_float = a_value.v_float;
 			break;
 		}
-		a_p.v_p = 0;
+		a_value.v_p = 0;
 	}
 };
 
@@ -587,22 +591,22 @@ void t_value::t_queue<A_SIZE>::f_next(t_object* a_object)
 }
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-inline void t_value::f_assign(const t_transfer& a_p)
+inline void t_value::f_assign(const t_transfer& a_value)
 {
 	t_object* p = v_p;
-	v_p = a_p.v_p;
-	switch (reinterpret_cast<size_t>(v_p)) {
+	v_p = a_value.v_p;
+	switch (f_tag()) {
 	case e_tag__BOOLEAN:
-		v_boolean = a_p.v_boolean;
+		v_boolean = a_value.v_boolean;
 		break;
 	case e_tag__INTEGER:
-		v_integer = a_p.v_integer;
+		v_integer = a_value.v_integer;
 		break;
 	case e_tag__FLOAT:
-		v_float = a_p.v_float;
+		v_float = a_value.v_float;
 		break;
 	}
-	a_p.v_p = 0;
+	a_value.v_p = 0;
 	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
 }
 #endif

@@ -1,13 +1,13 @@
 				XEMMAI__CODE__CASE_BEGIN(GET_AT, 1)
-						if (reinterpret_cast<size_t>(x.v_p) < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+						if (x.f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 						XEMMAI__CODE__OBJECT_CALL(f_get_at)
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SET_AT, 2)
-						if (reinterpret_cast<size_t>(x.v_p) < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+						if (x.f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 						XEMMAI__CODE__OBJECT_CALL(f_set_at)
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(PLUS, 0)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -23,7 +23,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MINUS, 0)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -39,7 +39,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT, 0)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__BOOLEAN:
 							XEMMAI__CODE__PRIMITIVE_CALL(!x.v_boolean);
 							break;
@@ -53,7 +53,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(COMPLEMENT, 0)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__INTEGER:
 							XEMMAI__CODE__PRIMITIVE_CALL(~x.v_integer);
 							break;
@@ -67,7 +67,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MULTIPLY, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -91,7 +91,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -115,7 +115,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -133,7 +133,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -157,7 +157,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -181,7 +181,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -199,7 +199,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -217,7 +217,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -241,7 +241,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -265,7 +265,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -289,7 +289,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
@@ -313,7 +313,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -343,7 +343,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT_EQUALS, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__NULL:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -373,7 +373,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(AND, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__BOOLEAN:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -397,7 +397,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(XOR, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__BOOLEAN:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -421,7 +421,7 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(OR, 1)
-						switch (reinterpret_cast<size_t>(x.v_p)) {
+						switch (x.f_tag()) {
 						case t_value::e_tag__BOOLEAN:
 							{
 								t_transfer a0 = stack->f_pop();
@@ -445,6 +445,6 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SEND, 1)
-						if (reinterpret_cast<size_t>(x.v_p) < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+						if (x.f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 						XEMMAI__CODE__OBJECT_CALL(f_send)
 				XEMMAI__CODE__CASE_END

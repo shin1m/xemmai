@@ -39,27 +39,27 @@ public:
 	}
 	t_object* f_symbol_close() const
 	{
-		return &*v_symbol_close;
+		return v_symbol_close.f_object();
 	}
 	t_object* f_symbol_read() const
 	{
-		return &*v_symbol_read;
+		return v_symbol_read.f_object();
 	}
 	t_object* f_symbol_write() const
 	{
-		return &*v_symbol_write;
+		return v_symbol_write.f_object();
 	}
 	t_object* f_symbol_flush() const
 	{
-		return &*v_symbol_flush;
+		return v_symbol_flush.f_object();
 	}
 	t_object* f_symbol_read_line() const
 	{
-		return &*v_symbol_read_line;
+		return v_symbol_read_line.f_object();
 	}
 	t_object* f_symbol_write_line() const
 	{
-		return &*v_symbol_write_line;
+		return v_symbol_write_line.f_object();
 	}
 	template<typename T>
 	t_object* f_type() const
@@ -107,25 +107,25 @@ inline const t_io* t_io::f_extension<t_io>() const
 template<>
 inline t_object* t_io::f_type<io::t_file>() const
 {
-	return &*v_type_file;
+	return v_type_file.f_object();
 }
 
 template<>
 inline t_object* t_io::f_type<io::t_reader>() const
 {
-	return &*v_type_reader;
+	return v_type_reader.f_object();
 }
 
 template<>
 inline t_object* t_io::f_type<io::t_writer>() const
 {
-	return &*v_type_writer;
+	return v_type_writer.f_object();
 }
 
 template<>
 inline t_object* t_io::f_type<portable::t_path>() const
 {
-	return &*v_type_path;
+	return v_type_path.f_object();
 }
 
 }

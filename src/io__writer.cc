@@ -73,7 +73,7 @@ t_writer::t_writer(const t_transfer& a_stream, const std::wstring& a_encoding) :
 
 void t_writer::f_close(t_io* a_extension)
 {
-	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
 	f_unshift(a_extension);
 	v_stream.f_get(a_extension->f_symbol_close())();
 	v_stream = 0;
@@ -81,7 +81,7 @@ void t_writer::f_close(t_io* a_extension)
 
 void t_writer::f_write(t_io* a_extension, const t_value& a_value)
 {
-	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
 	if (f_is<std::wstring>(a_value)) {
 		f_write(a_extension, f_as<const std::wstring&>(a_value));
 	} else {
@@ -93,7 +93,7 @@ void t_writer::f_write(t_io* a_extension, const t_value& a_value)
 
 void t_writer::f_write_line(t_io* a_extension)
 {
-	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
 	f_write(a_extension, L"\n", 1);
 	f_unshift(a_extension);
 	v_stream.f_get(a_extension->f_symbol_flush())();
@@ -101,7 +101,7 @@ void t_writer::f_write_line(t_io* a_extension)
 
 void t_writer::f_write_line(t_io* a_extension, const t_value& a_value)
 {
-	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
 	if (f_is<std::wstring>(a_value)) {
 		f_write(a_extension, f_as<const std::wstring&>(a_value));
 	} else {
@@ -116,7 +116,7 @@ void t_writer::f_write_line(t_io* a_extension, const t_value& a_value)
 
 void t_writer::f_flush(t_io* a_extension)
 {
-	if (!&*v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
 	f_unshift(a_extension);
 	v_stream.f_get(a_extension->f_symbol_flush())();
 }

@@ -55,6 +55,14 @@ struct t_type_of
 template<>
 struct t_type_of<t_object>
 {
+	static t_object* f_object(t_object* a_p)
+	{
+		return a_p;
+	}
+	static t_object* f_object(const t_value& a_value)
+	{
+		return a_value.f_object();
+	}
 	template<typename T0, typename T1>
 	struct t_as
 	{
@@ -62,7 +70,7 @@ struct t_type_of<t_object>
 
 		static T0 f_call(T1 a_object)
 		{
-			return *static_cast<T0*>((*a_object).f_pointer());
+			return *static_cast<T0*>(f_object(a_object)->f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -72,7 +80,7 @@ struct t_type_of<t_object>
 
 		static T0* f_call(T1 a_object)
 		{
-			return reinterpret_cast<size_t>(&*a_object) == t_value::e_tag__NULL ? 0 : static_cast<T0*>((*a_object).f_pointer());
+			return reinterpret_cast<size_t>(f_object(a_object)) == t_value::e_tag__NULL ? 0 : static_cast<T0*>(f_object(a_object)->f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -82,7 +90,7 @@ struct t_type_of<t_object>
 
 		static const T0* f_call(T1 a_object)
 		{
-			return reinterpret_cast<size_t>(&*a_object) == t_value::e_tag__NULL ? 0 : static_cast<T0*>((*a_object).f_pointer());
+			return reinterpret_cast<size_t>(f_object(a_object)) == t_value::e_tag__NULL ? 0 : static_cast<T0*>(f_object(a_object)->f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -92,7 +100,7 @@ struct t_type_of<t_object>
 
 		static T0& f_call(T1 a_object)
 		{
-			return *static_cast<T0*>((*a_object).f_pointer());
+			return *static_cast<T0*>(f_object(a_object)->f_pointer());
 		}
 	};
 	template<typename T0, typename T1>
@@ -102,7 +110,7 @@ struct t_type_of<t_object>
 
 		static const T0& f_call(T1 a_object)
 		{
-			return *static_cast<T0*>((*a_object).f_pointer());
+			return *static_cast<T0*>(f_object(a_object)->f_pointer());
 		}
 	};
 /*	template<typename T>
@@ -112,7 +120,7 @@ struct t_type_of<t_object>
 
 		static t_object* f_call(T a_object)
 		{
-			return &*a_object;
+			return f_object(a_object);
 		}
 	};*/
 	template<typename T>
@@ -140,7 +148,7 @@ struct t_type_of<t_object>
 	{
 		static bool f_call(T1 a_object)
 		{
-			return reinterpret_cast<size_t>(&*a_object) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>((*a_object).f_type()->f_pointer())) != 0;
+			return reinterpret_cast<size_t>(f_object(a_object)) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(f_object(a_object)->f_type()->f_pointer())) != 0;
 		}
 	};
 	template<typename T0, typename T1>
@@ -148,7 +156,7 @@ struct t_type_of<t_object>
 	{
 		static bool f_call(T1 a_object)
 		{
-			switch (reinterpret_cast<size_t>(&*a_object)) {
+			switch (reinterpret_cast<size_t>(f_object(a_object))) {
 			case t_value::e_tag__NULL:
 				return true;
 			case t_value::e_tag__BOOLEAN:
@@ -156,7 +164,7 @@ struct t_type_of<t_object>
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>((*a_object).f_type()->f_pointer())) != 0;
+				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(f_object(a_object)->f_type()->f_pointer())) != 0;
 			}
 		}
 	};
@@ -165,7 +173,7 @@ struct t_type_of<t_object>
 	{
 		static bool f_call(T1 a_object)
 		{
-			switch (reinterpret_cast<size_t>(&*a_object)) {
+			switch (reinterpret_cast<size_t>(f_object(a_object))) {
 			case t_value::e_tag__NULL:
 				return true;
 			case t_value::e_tag__BOOLEAN:
@@ -173,7 +181,7 @@ struct t_type_of<t_object>
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>((*a_object).f_type()->f_pointer())) != 0;
+				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(f_object(a_object)->f_type()->f_pointer())) != 0;
 			}
 		}
 	};
@@ -227,12 +235,12 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT static std::wstring f_string(const t_value& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", &*a_self);
+		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", a_self.f_object());
 		return cs;
 	}
 	XEMMAI__PORTABLE__EXPORT static int f_hash(const t_value& a_self)
 	{
-		return reinterpret_cast<int>(&*a_self);
+		return a_self.f_tag();
 	}
 	XEMMAI__PORTABLE__EXPORT static bool f_equals(const t_value& a_self, const t_value& a_other)
 	{

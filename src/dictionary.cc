@@ -47,7 +47,7 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 	t_transfer x;
 	t_transfer y;
 	{
-		portable::t_scoped_lock_for_read lock((*a_self).v_lock);
+		t_with_lock_for_read lock(a_self);
 		if (!i.f_entry()) return L"{}";
 		x = i.f_entry()->f_key();
 		y = i.f_entry()->v_value;
@@ -59,7 +59,7 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 	std::wstring s = f_as<std::wstring>(x) + L": " + f_as<std::wstring>(y);
 	while (true) {
 		{
-			portable::t_scoped_lock_for_read lock((*a_self).v_lock);
+			t_with_lock_for_read lock(a_self);
 			i.f_next();
 			if (!i.f_entry()) break;
 			x = i.f_entry()->f_key();
@@ -84,7 +84,7 @@ int t_type_of<t_dictionary>::f_hash(const t_value& a_self)
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock((*a_self).v_lock);
+			t_with_lock_for_read lock(a_self);
 			if (!i.f_entry()) break;
 			x = i.f_entry()->f_key();
 			y = i.f_entry()->v_value;
@@ -113,8 +113,8 @@ bool t_type_of<t_dictionary>::f_equals(const t_value& a_self, const t_value& a_o
 		t_transfer x;
 		t_transfer y;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
-			portable::t_scoped_lock_for_read lock1((*a_other).v_lock);
+			t_with_lock_for_read lock0(a_self);
+			t_with_lock_for_read lock1(a_other);
 			if (!i.f_entry()) break;
 			t_hash::t_entry* field = d1.v_hash.f_find<t_dictionary::t_hash_traits>(i.f_entry()->f_key());
 			if (!field) return false;
@@ -136,7 +136,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 		t_transfer key;
 		t_transfer value;
 		{
-			portable::t_scoped_lock_for_read lock0((*a_self).v_lock);
+			t_with_lock_for_read lock0(a_self);
 			if (!i.f_entry()) break;
 			key = i.f_entry()->f_key();
 			value = i.f_entry()->v_value;
