@@ -13,6 +13,18 @@ struct t_fundamental<size_t>
 };
 
 template<>
+struct t_fundamental<long>
+{
+	typedef int t_type;
+};
+
+template<>
+struct t_fundamental<unsigned long>
+{
+	typedef int t_type;
+};
+
+template<>
 struct t_type_of<int> : t_type
 {
 	template<typename T0, typename T1>
@@ -36,7 +48,7 @@ struct t_type_of<int> : t_type
 		}
 	};
 	template<typename T0, typename T1>
-	struct t_is
+	struct t_of
 	{
 		static bool f_call(T1 a_object)
 		{
@@ -44,7 +56,7 @@ struct t_type_of<int> : t_type
 		}
 	};
 	template<typename T>
-	struct t_is<int, T>
+	struct t_of<int, T>
 	{
 		static bool f_call(T a_object)
 		{
@@ -60,12 +72,12 @@ struct t_type_of<int> : t_type
 			}
 		}
 	};
-	template<typename T>
-	struct t_is<size_t, T>
+	template<typename T0, typename T1>
+	struct t_is
 	{
-		static bool f_call(T a_object)
+		static bool f_call(T1 a_object)
 		{
-			return t_is<int, T>::f_call(a_object);
+			return t_of<typename t_fundamental<T0>::t_type, T1>::f_call(a_object);
 		}
 	};
 

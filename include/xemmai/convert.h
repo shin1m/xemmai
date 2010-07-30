@@ -296,7 +296,7 @@ struct t_enum_of : t_type_of<int>
 	typedef T_extension t_extension;
 	typedef t_enum_of t_base;
 
-	static t_transfer f_transfer(T_extension* a_extension, T a_value)
+	static t_transfer f_transfer(const T_extension* a_extension, T a_value)
 	{
 		return f_construct(a_extension->template f_type<typename t_fundamental<T>::t_type>(), static_cast<int>(a_value));
 	}
@@ -323,7 +323,7 @@ t_type* t_enum_of<T, T_extension>::f_derive(t_object* a_this)
 template<typename T, typename T_extension>
 void t_enum_of<T, T_extension>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
 {
-	t_construct_with<t_transfer (*)(t_object*, int), f_construct>::f_call(a_class, a_n, a_stack);
+	t_construct_with<t_transfer (*)(t_object*, int), t_enum_of<T, T_extension>::f_construct>::f_call(a_class, a_n, a_stack);
 }
 
 }

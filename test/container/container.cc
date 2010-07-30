@@ -1,7 +1,5 @@
 #include "container.h"
 
-#include <xemmai/boolean.h>
-
 namespace xemmai
 {
 

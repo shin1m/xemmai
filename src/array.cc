@@ -1,7 +1,6 @@
 #include <xemmai/array.h>
 
 #include <algorithm>
-#include <xemmai/boolean.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
 

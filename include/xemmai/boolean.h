@@ -30,7 +30,7 @@ struct t_type_of<bool> : t_type
 		}
 	};
 	template<typename T0, typename T1>
-	struct t_is
+	struct t_of
 	{
 		static bool f_call(T1 a_object)
 		{
@@ -38,7 +38,7 @@ struct t_type_of<bool> : t_type
 		}
 	};
 	template<typename T>
-	struct t_is<bool, T>
+	struct t_of<bool, T>
 	{
 		static bool f_call(T a_object)
 		{
@@ -52,6 +52,14 @@ struct t_type_of<bool> : t_type
 			default:
 				return dynamic_cast<t_type_of<bool>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != 0;
 			}
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_is
+	{
+		static bool f_call(T1 a_object)
+		{
+			return t_of<typename t_fundamental<T0>::t_type, T1>::f_call(a_object);
 		}
 	};
 

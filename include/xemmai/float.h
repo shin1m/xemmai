@@ -7,6 +7,12 @@ namespace xemmai
 {
 
 template<>
+struct t_fundamental<float>
+{
+	typedef double t_type;
+};
+
+template<>
 struct t_type_of<double> : t_type
 {
 	template<typename T0, typename T1>
@@ -30,7 +36,7 @@ struct t_type_of<double> : t_type
 		}
 	};
 	template<typename T0, typename T1>
-	struct t_is
+	struct t_of
 	{
 		static bool f_call(T1 a_object)
 		{
@@ -38,24 +44,7 @@ struct t_type_of<double> : t_type
 		}
 	};
 	template<typename T>
-	struct t_is<int, T>
-	{
-		static bool f_call(T a_object)
-		{
-			switch (reinterpret_cast<size_t>(f_object(a_object))) {
-			case t_value::e_tag__INTEGER:
-				return true;
-			case t_value::e_tag__NULL:
-			case t_value::e_tag__BOOLEAN:
-			case t_value::e_tag__FLOAT:
-				return false;
-			default:
-				return dynamic_cast<t_type_of<int>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != 0;
-			}
-		}
-	};
-	template<typename T>
-	struct t_is<double, T>
+	struct t_of<double, T>
 	{
 		static bool f_call(T a_object)
 		{
@@ -69,6 +58,14 @@ struct t_type_of<double> : t_type
 			default:
 				return dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != 0;
 			}
+		}
+	};
+	template<typename T0, typename T1>
+	struct t_is
+	{
+		static bool f_call(T1 a_object)
+		{
+			return t_of<typename t_fundamental<T0>::t_type, T1>::f_call(a_object);
 		}
 	};
 
