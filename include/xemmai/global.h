@@ -107,139 +107,139 @@ public:
 	t_object* f_type() const;
 	t_object* f_symbol_construct() const
 	{
-		return v_symbol_construct.f_object();
+		return v_symbol_construct;
 	}
 	t_object* f_symbol_initialize() const
 	{
-		return v_symbol_initialize.f_object();
+		return v_symbol_initialize;
 	}
 	t_object* f_symbol_string() const
 	{
-		return v_symbol_string.f_object();
+		return v_symbol_string;
 	}
 	t_object* f_symbol_hash() const
 	{
-		return v_symbol_hash.f_object();
+		return v_symbol_hash;
 	}
 	t_object* f_symbol_call() const
 	{
-		return v_symbol_call.f_object();
+		return v_symbol_call;
 	}
 	t_object* f_symbol_get_at() const
 	{
-		return v_symbol_get_at.f_object();
+		return v_symbol_get_at;
 	}
 	t_object* f_symbol_set_at() const
 	{
-		return v_symbol_set_at.f_object();
+		return v_symbol_set_at;
 	}
 	t_object* f_symbol_plus() const
 	{
-		return v_symbol_plus.f_object();
+		return v_symbol_plus;
 	}
 	t_object* f_symbol_minus() const
 	{
-		return v_symbol_minus.f_object();
+		return v_symbol_minus;
 	}
 	t_object* f_symbol_not() const
 	{
-		return v_symbol_not.f_object();
+		return v_symbol_not;
 	}
 	t_object* f_symbol_complement() const
 	{
-		return v_symbol_complement.f_object();
+		return v_symbol_complement;
 	}
 	t_object* f_symbol_multiply() const
 	{
-		return v_symbol_multiply.f_object();
+		return v_symbol_multiply;
 	}
 	t_object* f_symbol_divide() const
 	{
-		return v_symbol_divide.f_object();
+		return v_symbol_divide;
 	}
 	t_object* f_symbol_modulus() const
 	{
-		return v_symbol_modulus.f_object();
+		return v_symbol_modulus;
 	}
 	t_object* f_symbol_add() const
 	{
-		return v_symbol_add.f_object();
+		return v_symbol_add;
 	}
 	t_object* f_symbol_subtract() const
 	{
-		return v_symbol_subtract.f_object();
+		return v_symbol_subtract;
 	}
 	t_object* f_symbol_left_shift() const
 	{
-		return v_symbol_left_shift.f_object();
+		return v_symbol_left_shift;
 	}
 	t_object* f_symbol_right_shift() const
 	{
-		return v_symbol_right_shift.f_object();
+		return v_symbol_right_shift;
 	}
 	t_object* f_symbol_less() const
 	{
-		return v_symbol_less.f_object();
+		return v_symbol_less;
 	}
 	t_object* f_symbol_less_equal() const
 	{
-		return v_symbol_less_equal.f_object();
+		return v_symbol_less_equal;
 	}
 	t_object* f_symbol_greater() const
 	{
-		return v_symbol_greater.f_object();
+		return v_symbol_greater;
 	}
 	t_object* f_symbol_greater_equal() const
 	{
-		return v_symbol_greater_equal.f_object();
+		return v_symbol_greater_equal;
 	}
 	t_object* f_symbol_equals() const
 	{
-		return v_symbol_equals.f_object();
+		return v_symbol_equals;
 	}
 	t_object* f_symbol_not_equals() const
 	{
-		return v_symbol_not_equals.f_object();
+		return v_symbol_not_equals;
 	}
 	t_object* f_symbol_and() const
 	{
-		return v_symbol_and.f_object();
+		return v_symbol_and;
 	}
 	t_object* f_symbol_xor() const
 	{
-		return v_symbol_xor.f_object();
+		return v_symbol_xor;
 	}
 	t_object* f_symbol_or() const
 	{
-		return v_symbol_or.f_object();
+		return v_symbol_or;
 	}
 	t_object* f_symbol_send() const
 	{
-		return v_symbol_send.f_object();
+		return v_symbol_send;
 	}
 	t_object* f_symbol_path() const
 	{
-		return v_symbol_path.f_object();
+		return v_symbol_path;
 	}
 	t_object* f_symbol_executable() const
 	{
-		return v_symbol_executable.f_object();
+		return v_symbol_executable;
 	}
 	t_object* f_symbol_script() const
 	{
-		return v_symbol_script.f_object();
+		return v_symbol_script;
 	}
 	t_object* f_symbol_arguments() const
 	{
-		return v_symbol_arguments.f_object();
+		return v_symbol_arguments;
 	}
 	t_object* f_symbol_size() const
 	{
-		return v_symbol_size.f_object();
+		return v_symbol_size;
 	}
 	t_object* f_symbol_push() const
 	{
-		return v_symbol_push.f_object();
+		return v_symbol_push;
 	}
 	template<typename T>
 	t_transfer f_as(const T& a_value) const
@@ -390,139 +390,139 @@ inline void t_global::f_type__<t_parser::t_error>(const t_transfer& a_type)
 template<>
 inline t_object* t_global::f_type<t_object>() const
 {
-	return v_type_object.f_object();
+	return v_type_object;
 }
 
 template<>
 inline t_object* t_global::f_type<t_class>() const
 {
-	return v_type_class.f_object();
+	return v_type_class;
 }
 
 template<>
 inline t_object* t_global::f_type<t_module>() const
 {
-	return v_type_module.f_object();
+	return v_type_module;
 }
 
 template<>
 inline t_object* t_global::f_type<t_fiber>() const
 {
-	return v_type_fiber.f_object();
+	return v_type_fiber;
 }
 
 template<>
 inline t_object* t_global::f_type<t_thread>() const
 {
-	return v_type_thread.f_object();
+	return v_type_thread;
 }
 
 template<>
 inline t_object* t_global::f_type<t_symbol>() const
 {
-	return v_type_symbol.f_object();
+	return v_type_symbol;
 }
 
 template<>
 inline t_object* t_global::f_type<t_scope>() const
 {
-	return v_type_scope.f_object();
+	return v_type_scope;
 }
 
 template<>
 inline t_object* t_global::f_type<t_method>() const
 {
-	return v_type_method.f_object();
+	return v_type_method;
 }
 
 template<>
 inline t_object* t_global::f_type<t_code>() const
 {
-	return v_type_code.f_object();
+	return v_type_code;
 }
 
 template<>
 inline t_object* t_global::f_type<t_lambda>() const
 {
-	return v_type_lambda.f_object();
+	return v_type_lambda;
 }
 
 template<>
 inline t_object* t_global::f_type<t_native>() const
 {
-	return v_type_native.f_object();
+	return v_type_native;
 }
 
 template<>
 inline t_object* t_global::f_type<t_throwable>() const
 {
-	return v_type_throwable.f_object();
+	return v_type_throwable;
 }
 
 template<>
 inline t_object* t_global::f_type<t_null>() const
 {
-	return v_type_null.f_object();
+	return v_type_null;
 }
 
 template<>
 inline t_object* t_global::f_type<bool>() const
 {
-	return v_type_boolean.f_object();
+	return v_type_boolean;
 }
 
 template<>
 inline t_object* t_global::f_type<int>() const
 {
-	return v_type_integer.f_object();
+	return v_type_integer;
 }
 
 template<>
 inline t_object* t_global::f_type<double>() const
 {
-	return v_type_float.f_object();
+	return v_type_float;
 }
 
 template<>
 inline t_object* t_global::f_type<std::wstring>() const
 {
-	return v_type_string.f_object();
+	return v_type_string;
 }
 
 template<>
 inline t_object* t_global::f_type<t_tuple>() const
 {
-	return v_type_tuple.f_object();
+	return v_type_tuple;
 }
 
 template<>
 inline t_object* t_global::f_type<t_array>() const
 {
-	return v_type_array.f_object();
+	return v_type_array;
 }
 
 template<>
 inline t_object* t_global::f_type<t_dictionary>() const
 {
-	return v_type_dictionary.f_object();
+	return v_type_dictionary;
 }
 
 template<>
 inline t_object* t_global::f_type<t_bytes>() const
 {
-	return v_type_bytes.f_object();
+	return v_type_bytes;
 }
 
 template<>
 inline t_object* t_global::f_type<t_lexer::t_error>() const
 {
-	return v_type_lexer__error.f_object();
+	return v_type_lexer__error;
 }
 
 template<>
 inline t_object* t_global::f_type<t_parser::t_error>() const
 {
-	return v_type_parser__error.f_object();
+	return v_type_parser__error;
 }
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT

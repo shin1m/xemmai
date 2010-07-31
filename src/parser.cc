@@ -124,9 +124,9 @@ void t_parser::f_target()
 				v_lexer.f_next();
 			}
 			t_transfer code = t_code::f_instantiate(v_lexer.f_path(), symbols.size());
-			for (size_t i = 0; i < symbols.size(); ++i) code.f_object()->v_fields.f_put<t_object::t_hash_traits>(t_symbol::f_instantiate(symbols[i]), f_global()->f_as(i));
+			for (size_t i = 0; i < symbols.size(); ++i) static_cast<t_object*>(code)->v_fields.f_put<t_object::t_hash_traits>(t_symbol::f_instantiate(symbols[i]), f_global()->f_as(i));
 			v_scope->v_shared = true;
-			t_scope scope(v_scope, code.f_object());
+			t_scope scope(v_scope, code);
 			v_scope = &scope;
 			std::vector<void*>* instructions = v_instructions;
 			v_instructions = &f_as<t_code&>(code).v_instructions;
@@ -1333,7 +1333,7 @@ void t_parser::f_block_or_statement()
 t_transfer t_parser::f_parse()
 {
 	t_transfer code = t_code::f_instantiate(v_lexer.f_path(), 0);
-	t_scope scope(0, code.f_object());
+	t_scope scope(0, code);
 	v_scope = &scope;
 	v_instructions = &f_as<t_code&>(code).v_instructions;
 	v_objects = &f_as<t_code&>(code).v_objects;

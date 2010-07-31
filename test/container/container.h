@@ -82,13 +82,13 @@ inline void t_container::f_type__<t_queue>(const t_transfer& a_type)
 template<>
 inline t_object* t_container::f_type<t_pair>() const
 {
-	return v_type_pair.f_object();
+	return v_type_pair;
 }
 
 template<>
 inline t_object* t_container::f_type<t_queue>() const
 {
-	return v_type_queue.f_object();
+	return v_type_queue;
 }
 
 #endif

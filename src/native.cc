@@ -37,7 +37,7 @@ void t_type_of<t_native>::f_call(t_object* a_this, const t_value& a_self, size_t
 {
 	t_native_context context;
 	t_native& p = f_as<t_native&>(a_this);
-	p.v_function(p.v_module.f_object(), a_self, a_n, a_stack);
+	p.v_function(p.v_module, a_self, a_n, a_stack);
 	context.f_done();
 }
 

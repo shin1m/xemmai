@@ -14,7 +14,7 @@ bool t_type::f_derives(t_object* a_this, t_object* a_type)
 	t_object* p = a_this;
 	do {
 		if (p == a_type) return true;
-		p = f_as<t_type&>(p).v_super.f_object();
+		p = f_as<t_type&>(p).v_super;
 	} while (p);
 	return false;
 }
@@ -22,7 +22,7 @@ bool t_type::f_derives(t_object* a_this, t_object* a_type)
 void t_type::f_construct(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack)
 {
 	if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-	f_as<t_type&>(a_self).f_construct(a_self.f_object(), a_n, a_stack);
+	f_as<t_type&>(a_self).f_construct(a_self, a_n, a_stack);
 }
 
 void t_type::f_initialize(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack)
@@ -86,7 +86,7 @@ t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	t_thread::t_cache& cache = t_thread::v_cache[i];
 	t_symbol& symbol = f_as<t_symbol&>(a_key);
-	if (cache.v_object == a_this && cache.v_key.f_object() == a_key) {
+	if (cache.v_object == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
 		if (cache.v_key_revision == symbol.v_revision) return cache.v_value;
 		if (cache.v_modified) {
 			cache.v_key_revision = symbol.v_revision;
@@ -98,7 +98,7 @@ t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 	t_transfer value;
 	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
 		t_with_lock_for_read lock(a_this);
-		field = a_this.f_object()->v_fields.f_find<t_object::t_hash_traits>(a_key);
+		field = static_cast<t_object*>(a_this)->v_fields.f_find<t_object::t_hash_traits>(a_key);
 		if (field) value = field->v_value;
 	}
 	if (!field) {
@@ -108,7 +108,7 @@ t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 	if (cache.v_modified) {
 		{
 			t_with_lock_for_write lock(cache.v_object);
-			cache.v_object.f_object()->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
+			static_cast<t_object*>(cache.v_object)->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
 		}
 		cache.v_modified = false;
 		cache.v_revision = t_thread::t_cache::f_revise(i);
@@ -122,11 +122,11 @@ void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 {
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	t_thread::t_cache& cache = t_thread::v_cache[i];
-	if (cache.v_object != a_this || cache.v_key.f_object() != a_key) {
+	if (static_cast<t_object*>(cache.v_object) != a_this || static_cast<t_object*>(cache.v_key) != a_key) {
 		if (cache.v_modified) {
 			{
 				t_with_lock_for_write lock(cache.v_object);
-				cache.v_object.f_object()->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
+				static_cast<t_object*>(cache.v_object)->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
 			}
 			cache.v_revision = t_thread::t_cache::f_revise(i);
 		}
@@ -154,7 +154,7 @@ t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	t_thread::t_cache& cache = t_thread::v_cache[i];
 	t_transfer value;
-	if (cache.v_object == a_this && cache.v_key.f_object() == a_key) {
+	if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
 		{
 			portable::t_scoped_lock_for_write lock(a_this->v_lock);
 			a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);

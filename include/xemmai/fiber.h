@@ -169,7 +169,7 @@ public:
 inline void t_fiber::t_context::f_initiate(const t_transfer& a_scope, void** a_pc)
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	t_scope* stack = a_scope.f_object() ? &f_as<t_scope&>(a_scope) : 0;
+	t_scope* stack = a_scope ? &f_as<t_scope&>(a_scope) : 0;
 	v_instance = fiber.v_context = f_instantiate(0, false, a_scope, stack, 0, a_pc);
 }
 

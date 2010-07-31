@@ -20,7 +20,7 @@
 	template<typename T_function, T_function A_function, typename T_with, XEMMAI__MACRO__TYPENAME_T_OVERLOADN__>
 	t_define& operator()(const std::wstring& a_name, const t_member<T_function, A_function, T_with>& a_member0, XEMMAI__MACRO__CONST_T_OVERLOADN_A_OVERLOADN__)
 	{
-		return (*this)(t_symbol::f_instantiate(a_name).f_object(), a_member0, XEMMAI__MACRO__A_OVERLOADN__);
+		return (*this)(t_symbol::f_instantiate(a_name), a_member0, XEMMAI__MACRO__A_OVERLOADN__);
 	}
 	template<typename T_function, T_function A_function, XEMMAI__MACRO__TYPENAME_T_OVERLOADN__>
 	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&, XEMMAI__MACRO__CONST_T_OVERLOADN__)
@@ -35,7 +35,7 @@
 	template<typename T_function, T_function A_function, XEMMAI__MACRO__TYPENAME_T_OVERLOADN__>
 	t_define& operator()(const std::wstring& a_name, const t_static<T_function, A_function>& a_static0, XEMMAI__MACRO__CONST_T_OVERLOADN_A_OVERLOADN__)
 	{
-		return (*this)(t_symbol::f_instantiate(a_name).f_object(), a_static0, XEMMAI__MACRO__A_OVERLOADN__);
+		return (*this)(t_symbol::f_instantiate(a_name), a_static0, XEMMAI__MACRO__A_OVERLOADN__);
 	}
 
 #undef XEMMAI__MACRO__TYPENAME_T_OVERLOADN__

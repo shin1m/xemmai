@@ -69,14 +69,14 @@ t_reader::t_reader(const t_transfer& a_stream, const std::wstring& a_encoding) :
 
 void t_reader::f_close(t_io* a_extension)
 {
-	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
+	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	v_stream.f_get(a_extension->f_symbol_close())();
 	v_stream = 0;
 }
 
 std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
 {
-	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
+	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	std::wstring s(a_size, L'\0');
 	for (size_t i = 0; i < a_size; ++i) {
 		wint_t c = f_get(a_extension);
@@ -88,7 +88,7 @@ std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
 
 std::wstring t_reader::f_read_line(t_io* a_extension)
 {
-	if (!v_stream.f_object()) t_throwable::f_throw(L"already closed.");
+	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	std::vector<wchar_t> cs;
 	while (true) {
 		wint_t c = f_get(a_extension);

@@ -145,7 +145,7 @@ public:
 		}
 		static bool f_equals(const t_value& a_x, const t_value& a_y)
 		{
-			return a_x.f_object() == a_y.f_object();
+			return a_x.f_tag() == a_y.f_tag();
 		}
 	};
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
@@ -176,7 +176,7 @@ public:
 
 	t_object* f_type() const
 	{
-		return v_type.f_object();
+		return v_type;
 	}
 	bool f_boolean() const
 	{

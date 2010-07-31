@@ -277,14 +277,18 @@ public:
 	{
 		return !operator==(a_value);
 	}
+	operator t_object*() const
+	{
+		return v_p;
+	}
 	size_t f_tag() const
 	{
 		return reinterpret_cast<size_t>(v_p);
 	}
-	t_object* f_object() const
+/*	t_object* f_object() const
 	{
 		return v_p;
-	}
+	}*/
 	bool f_boolean() const;
 	void f_boolean__(bool a_value);
 	int f_integer() const;

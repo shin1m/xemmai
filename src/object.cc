@@ -248,7 +248,7 @@ void t_object::f_cyclic_decrement()
 	v_fields.f_scan(f_cyclic_decrement);
 	f_as<t_type&>(v_type).f_scan(this, f_cyclic_decrement);
 	v_fields.f_finalize();
-	if (v_type != f_engine()->v_type_class) {
+	if (static_cast<t_object*>(v_type) != f_engine()->v_type_class) {
 		f_as<t_type&>(v_type).f_finalize(this);
 		v_type.v_pointer = 0;
 	}

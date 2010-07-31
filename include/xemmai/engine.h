@@ -140,15 +140,15 @@ public:
 	}
 	t_object* f_module_global() const
 	{
-		return v_module_global.f_object();
+		return v_module_global;
 	}
 	t_object* f_module_system() const
 	{
-		return v_module_system.f_object();
+		return v_module_system;
 	}
 	t_object* f_module_io() const
 	{
-		return v_module_io.f_object();
+		return v_module_io;
 	}
 	int f_run();
 };

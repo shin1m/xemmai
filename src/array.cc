@@ -439,7 +439,7 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 		t_with_lock_for_read lock0(a_self);
 		a0.f_swap(tuple, head, size);
 	}
-	if (!tuple.f_object()) return;
+	if (!tuple) return;
 	t_tuple& t = f_as<t_tuple&>(tuple);
 	std::vector<t_scoped> a(size);
 	for (size_t i = 0; i < size; ++i) a[i] = t[(head + i) % t.f_size()].f_transfer();

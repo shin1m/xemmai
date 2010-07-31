@@ -60,7 +60,7 @@ void t_fiber::t_context::f_dump() const
 		std::fputs("<native code>\n", stderr);
 		std::fputs("from ", stderr);
 	}
-	if (v_code.f_object()) {
+	if (v_code) {
 		t_code& code = f_as<t_code&>(v_code);
 		std::fprintf(stderr, "%ls", code.v_path.c_str());
 		const t_code::t_at* at = code.f_at(v_pc);
@@ -192,9 +192,9 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, size_t 
 	t_fiber& q = f_as<t_fiber&>(t_fiber::v_current);
 	t_thread& thread = f_as<t_thread&>(t_thread::v_current);
 	if (p.v_main) {
-		if (a_this != thread.v_fiber.f_object()) t_throwable::f_throw(L"can not yield to other thread.");
+		if (a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
 	} else {
-		if (t_fiber::v_current != thread.v_fiber.f_object() && (q.v_native > 0 || q.v_context->v_native > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
+		if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || q.v_context->v_native > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
 	}
 	{
 		portable::t_scoped_lock_for_write lock(a_this->v_lock);

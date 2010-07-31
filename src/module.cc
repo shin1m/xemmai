@@ -34,7 +34,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name, t_module* a_modul
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_module>());
 	object.f_pointer__(a_module);
-	t_transfer second = object.f_object();
+	t_transfer second = static_cast<t_object*>(object);
 	{
 		portable::t_scoped_lock lock(f_engine()->v_module__mutex);
 		a_module->v_iterator = f_engine()->v_module__instances.insert(std::make_pair(a_name, t_slot())).first;
@@ -95,15 +95,15 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 		std::wstring path = portable::t_path(f_as<const std::wstring&>(x)) / a_name;
 		std::wstring s = path + L".xm";
 		t_transfer script = f_load_script(s);
-		if (script.f_object()) {
+		if (script) {
 			t_transfer module = f_instantiate(a_name, new t_module(s));
-			f_execute_script(module.f_object(), script.f_object());
+			f_execute_script(module, script);
 			return module;
 		}
 		t_library* library = f_load_library(path);
 		if (library) {
 			t_transfer module = f_instantiate(a_name, library);
-			library->f_initialize(module.f_object());
+			library->f_initialize(module);
 			return module;
 		}
 	}
@@ -128,7 +128,7 @@ int t_module::f_main(void (*a_main)(void*), void* a_p)
 			} catch (...) {
 			}
 			std::fprintf(stderr, "caught: %ls\n", s.c_str());
-			if (f_is<t_throwable>(thrown)) thrown.f_get(t_symbol::f_instantiate(L"dump").f_object())();
+			if (f_is<t_throwable>(thrown)) thrown.f_get(t_symbol::f_instantiate(L"dump"))();
 		}
 	} catch (...) {
 		std::fprintf(stderr, "caught <unexpected>.\n");
@@ -144,8 +144,8 @@ void t_module::f_main(void* a_p)
 	const std::wstring& path = f_as<const std::wstring&>(x);
 	if (path.empty()) t_throwable::f_throw(L"script path is empty.");
 	t_transfer script = f_load_script(path);
-	if (!script.f_object()) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
-	f_execute_script(f_instantiate(L"__main", new t_module(path)).f_object(), script.f_object());
+	if (!script) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
+	f_execute_script(f_instantiate(L"__main", new t_module(path)), script);
 }
 
 t_module::t_module(const std::wstring& a_path) : v_path(a_path), v_iterator(f_engine()->v_module__instances__null)
