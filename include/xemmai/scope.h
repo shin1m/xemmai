@@ -92,7 +92,7 @@ struct t_fixed_scope : t_scope
 		p->v_self.f_construct(a_self);
 		return p;
 	}
-	static void f_finalize(t_scope* a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE static void f_finalize(t_scope* a_p)
 	{
 		a_p->v_top = &(*a_p)[V_SIZE];
 		for (t_slot* p = &(*a_p)[0]; p < a_p->v_top; ++p) *p = 0;

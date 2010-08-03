@@ -40,7 +40,7 @@ struct t_fiber
 		static void f_terminate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc);
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(t_scope* a_stack, const t_transfer& a_code, void** a_pc);
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_pop();
+		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE static void f_pop();
 		static void f_backtrace();
 
 		t_context* v_next;

@@ -113,7 +113,7 @@ void t_type_of<t_bytes>::f_hash(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	f_check<t_bytes>(a_this, L"this");
-	a_stack.f_return(f_global()->f_as(f_as<const t_bytes&>(a_this).f_hash()));
+	a_stack.f_return(f_as<const t_bytes&>(a_this).f_hash());
 	context.f_done();
 }
 
@@ -123,7 +123,7 @@ void t_type_of<t_bytes>::f_get_at(t_object* a_this, t_stack& a_stack)
 	f_check<t_bytes>(a_this, L"this");
 	t_transfer a0 = a_stack.f_pop();
 	f_check<int>(a0, L"index");
-	a_stack.f_return(f_global()->f_as(f_as<const t_bytes&>(a_this).f_get_at(f_as<int>(a0))));
+	a_stack.f_return(f_as<const t_bytes&>(a_this).f_get_at(f_as<int>(a0)));
 	context.f_done();
 }
 
@@ -135,7 +135,7 @@ void t_type_of<t_bytes>::f_set_at(t_object* a_this, t_stack& a_stack)
 	t_transfer a0 = a_stack.f_pop();
 	f_check<int>(a0, L"index");
 	f_check<int>(a1, L"value");
-	a_stack.f_return(f_global()->f_as(f_as<t_bytes&>(a_this).f_set_at(f_as<int>(a0), f_as<int>(a1))));
+	a_stack.f_return(f_as<t_bytes&>(a_this).f_set_at(f_as<int>(a0), f_as<int>(a1)));
 	context.f_done();
 }
 
@@ -143,7 +143,7 @@ void t_type_of<t_bytes>::f_equals(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_equals(a_this, a0)));
+	a_stack.f_return(f_equals(a_this, a0));
 	context.f_done();
 }
 
@@ -151,7 +151,7 @@ void t_type_of<t_bytes>::f_not_equals(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_not_equals(a_this, a0)));
+	a_stack.f_return(f_not_equals(a_this, a0));
 	context.f_done();
 }
 

@@ -13,10 +13,10 @@
 							t_throwable::f_throw(L"not supported");
 							break;
 						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer);
+							XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer);
 							break;
 						case t_value::e_tag__FLOAT:
-							XEMMAI__CODE__PRIMITIVE_CALL(x.v_float);
+							XEMMAI__CODE__PRIMITIVE_CALL(double, x.v_float);
 							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_plus)
@@ -29,10 +29,10 @@
 							t_throwable::f_throw(L"not supported");
 							break;
 						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(-x.v_integer);
+							XEMMAI__CODE__PRIMITIVE_CALL(int, -x.v_integer);
 							break;
 						case t_value::e_tag__FLOAT:
-							XEMMAI__CODE__PRIMITIVE_CALL(-x.v_float);
+							XEMMAI__CODE__PRIMITIVE_CALL(double, -x.v_float);
 							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_minus)
@@ -41,7 +41,7 @@
 				XEMMAI__CODE__CASE_BEGIN(NOT, 0)
 						switch (x.f_tag()) {
 						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(!x.v_boolean);
+							XEMMAI__CODE__PRIMITIVE_CALL(bool, !x.v_boolean);
 							break;
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__INTEGER:
@@ -55,7 +55,7 @@
 				XEMMAI__CODE__CASE_BEGIN(COMPLEMENT, 0)
 						switch (x.f_tag()) {
 						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(~x.v_integer);
+							XEMMAI__CODE__PRIMITIVE_CALL(int, ~x.v_integer);
 							break;
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
@@ -76,14 +76,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer * f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer * f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float * f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(double, x.v_float * f_as<double>(a0));
 							}
 							break;
 						default:
@@ -100,14 +100,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer / f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer / f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float / f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(double, x.v_float / f_as<double>(a0));
 							}
 							break;
 						default:
@@ -120,7 +120,7 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer % f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer % f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__NULL:
@@ -142,14 +142,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer + f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer + f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float + f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(double, x.v_float + f_as<double>(a0));
 							}
 							break;
 						default:
@@ -166,14 +166,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer - f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer - f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float - f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(double, x.v_float - f_as<double>(a0));
 							}
 							break;
 						default:
@@ -186,7 +186,7 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer << f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer << f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__NULL:
@@ -204,7 +204,7 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer >> f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer >> f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__NULL:
@@ -226,14 +226,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer < f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_integer < f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float < f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_float < f_as<double>(a0));
 							}
 							break;
 						default:
@@ -250,14 +250,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer <= f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_integer <= f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float <= f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_float <= f_as<double>(a0));
 							}
 							break;
 						default:
@@ -274,14 +274,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer > f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_integer > f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float > f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_float > f_as<double>(a0));
 							}
 							break;
 						default:
@@ -298,14 +298,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer >= f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_integer >= f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<double>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_float >= f_as<double>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_float >= f_as<double>(a0));
 							}
 							break;
 						default:
@@ -317,25 +317,25 @@
 						case t_value::e_tag__NULL:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p == a0.v_p);
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_p == a0.v_p);
 							}
 							break;
 						case t_value::e_tag__BOOLEAN:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p == a0.v_p && x.v_boolean == a0.v_boolean);
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_p == a0.v_p && x.v_boolean == a0.v_boolean);
 							}
 							break;
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<int>::f_equals(x.v_integer, a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, t_type_of<int>::f_equals(x.v_integer, a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<double>::f_equals(x.v_float, a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, t_type_of<double>::f_equals(x.v_float, a0));
 							}
 							break;
 						default:
@@ -347,25 +347,25 @@
 						case t_value::e_tag__NULL:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p != a0.v_p);
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_p != a0.v_p);
 							}
 							break;
 						case t_value::e_tag__BOOLEAN:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_p != a0.v_p || x.v_boolean != a0.v_boolean);
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, x.v_p != a0.v_p || x.v_boolean != a0.v_boolean);
 							}
 							break;
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<int>::f_not_equals(x.v_integer, a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, t_type_of<int>::f_not_equals(x.v_integer, a0));
 							}
 							break;
 						case t_value::e_tag__FLOAT:
 							{
 								t_transfer a0 = stack->f_pop();
-								XEMMAI__CODE__PRIMITIVE_CALL(t_type_of<double>::f_not_equals(x.v_float, a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, t_type_of<double>::f_not_equals(x.v_float, a0));
 							}
 							break;
 						default:
@@ -378,14 +378,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<bool>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(x.v_boolean & f_as<bool>(a0)));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, static_cast<bool>(x.v_boolean & f_as<bool>(a0)));
 							}
 							break;
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer & f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer & f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__NULL:
@@ -402,14 +402,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<bool>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(x.v_boolean ^ f_as<bool>(a0)));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, static_cast<bool>(x.v_boolean ^ f_as<bool>(a0)));
 							}
 							break;
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer ^ f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer ^ f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__NULL:
@@ -426,14 +426,14 @@
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<bool>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(x.v_boolean | f_as<bool>(a0)));
+								XEMMAI__CODE__PRIMITIVE_CALL(bool, static_cast<bool>(x.v_boolean | f_as<bool>(a0)));
 							}
 							break;
 						case t_value::e_tag__INTEGER:
 							{
 								t_transfer a0 = stack->f_pop();
 								f_check<int>(a0, L"argument0");
-								XEMMAI__CODE__PRIMITIVE_CALL(x.v_integer | f_as<int>(a0));
+								XEMMAI__CODE__PRIMITIVE_CALL(int, x.v_integer | f_as<int>(a0));
 							}
 							break;
 						case t_value::e_tag__NULL:

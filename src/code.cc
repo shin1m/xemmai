@@ -589,20 +589,20 @@ t_transfer t_code::f_loop()
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(NULL)
 					++pc;
-					stack->f_push(t_value());
+					stack->f_push();
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(BOOLEAN)
 					{
 						bool value = static_cast<bool>(reinterpret_cast<int>(*++pc));
 						++pc;
-						stack->f_push(f_global()->f_as(value));
+						stack->f_push(value);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(INTEGER)
 					{
 						int value = reinterpret_cast<int>(*++pc);
 						++pc;
-						stack->f_push(f_global()->f_as(value));
+						stack->f_push(value);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(FLOAT)
@@ -614,14 +614,14 @@ t_transfer t_code::f_loop()
 						};
 						for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v1[i] = *++pc;
 						++pc;
-						stack->f_push(f_global()->f_as(v0));
+						stack->f_push(v0);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(INSTANCE)
 					{
 						t_object* value = static_cast<t_object*>(*++pc);
 						++pc;
-						stack->f_push(t_value(value));
+						stack->f_push(value);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(IDENTICAL)
@@ -670,8 +670,8 @@ t_transfer t_code::f_loop()
 					{\
 						++pc;\
 						t_transfer x = stack->f_at(a_n).f_transfer();
-#define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
-						stack->f_return(t_value(a_x));
+#define XEMMAI__CODE__PRIMITIVE_CALL(a_type, a_x)\
+						stack->f_return(a_x);
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
 						{\
 							t_fiber::t_context* p = f_context();\
@@ -723,11 +723,11 @@ t_transfer t_code::f_loop()
 				XEMMAI__CODE__CASE(a_name##_TAIL)\
 					{\
 						t_transfer x = stack->f_at(a_n).f_transfer();
-#define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
+#define XEMMAI__CODE__PRIMITIVE_CALL(a_type, a_x)\
 						{\
-							t_value y(a_x);\
+							a_type y(a_x);\
 							t_fiber::t_context::f_pop();\
-							if (f_context()->v_native > 0) return y;\
+							if (f_context()->v_native > 0) return t_value(y);\
 							stack = f_context()->v_stack;\
 							stack->f_return(y);\
 						}

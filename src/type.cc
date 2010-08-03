@@ -31,7 +31,7 @@ void t_type::f_initialize(t_object* a_module, const t_value& a_self, size_t a_n,
 		a_stack.f_pop();
 		--a_n;
 	}
-	a_stack.f_return(t_transfer());
+	a_stack.f_return();
 }
 
 void t_type::f_define(t_object* a_class)

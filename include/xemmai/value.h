@@ -419,7 +419,7 @@ protected:
 	}
 
 public:
-	t_transfer f_transfer()
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_transfer f_transfer()
 	{
 		t_value p = *this;
 		v_p = 0;
@@ -526,7 +526,7 @@ struct t_slot : t_shared
 		return *this;
 	}
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	void f_construct(t_object* a_p)
+	void f_construct(t_object* a_p = 0)
 	{
 		assert(!v_p);
 		if (a_p) v_increments->f_push(a_p);
@@ -553,9 +553,27 @@ struct t_slot : t_shared
 		v_p = a_value.v_p;
 	}
 #else
-	XEMMAI__PORTABLE__EXPORT void f_construct(t_object* a_p);
+	XEMMAI__PORTABLE__EXPORT void f_construct(t_object* a_p = 0);
 	XEMMAI__PORTABLE__EXPORT void f_construct(const t_value& a_value);
 #endif
+	void f_construct(bool a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
+		v_boolean = a_value;
+	}
+	void f_construct(int a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
+	void f_construct(double a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
+		v_float = a_value;
+	}
 	void f_construct(const t_transfer& a_value)
 	{
 		assert(!v_p);
@@ -619,6 +637,22 @@ struct t_stack
 {
 	t_slot* v_top;
 
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(t_object* a_p = 0)
+	{
+		(--v_top)->f_construct(a_p);
+	}
+	void f_push(bool a_value)
+	{
+		(--v_top)->f_construct(a_value);
+	}
+	void f_push(int a_value)
+	{
+		(--v_top)->f_construct(a_value);
+	}
+	void f_push(double a_value)
+	{
+		(--v_top)->f_construct(a_value);
+	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(const t_value& a_value)
 	{
 		(--v_top)->f_construct(a_value);
@@ -627,7 +661,7 @@ struct t_stack
 	{
 		(--v_top)->f_construct(a_value);
 	}
-	t_transfer f_pop()
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_transfer f_pop()
 	{
 		t_transfer p = v_top->f_transfer();
 		++v_top;
@@ -640,6 +674,22 @@ struct t_stack
 	t_slot& f_at(size_t a_i)
 	{
 		return v_top[a_i];
+	}
+	void f_return(t_object* a_p = 0)
+	{
+		v_top->f_construct(a_p);
+	}
+	void f_return(bool a_value)
+	{
+		v_top->f_construct(a_value);
+	}
+	void f_return(int a_value)
+	{
+		v_top->f_construct(a_value);
+	}
+	void f_return(double a_value)
+	{
+		v_top->f_construct(a_value);
 	}
 	void f_return(const t_value& a_value)
 	{

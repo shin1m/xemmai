@@ -508,7 +508,7 @@ void t_type_of<t_array>::f_construct(t_object* a_class, size_t a_n, t_stack& a_s
 void t_type_of<t_array>::f_hash(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
-	a_stack.f_return(f_global()->f_as(f_hash(a_this)));
+	a_stack.f_return(f_hash(a_this));
 	context.f_done();
 }
 
@@ -537,7 +537,7 @@ void t_type_of<t_array>::f_less(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_less(a_this, a0)));
+	a_stack.f_return(f_less(a_this, a0));
 	context.f_done();
 }
 
@@ -545,7 +545,7 @@ void t_type_of<t_array>::f_less_equal(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_less_equal(a_this, a0)));
+	a_stack.f_return(f_less_equal(a_this, a0));
 	context.f_done();
 }
 
@@ -553,7 +553,7 @@ void t_type_of<t_array>::f_greater(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_greater(a_this, a0)));
+	a_stack.f_return(f_greater(a_this, a0));
 	context.f_done();
 }
 
@@ -561,7 +561,7 @@ void t_type_of<t_array>::f_greater_equal(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_greater_equal(a_this, a0)));
+	a_stack.f_return(f_greater_equal(a_this, a0));
 	context.f_done();
 }
 
@@ -569,7 +569,7 @@ void t_type_of<t_array>::f_equals(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_equals(a_this, a0)));
+	a_stack.f_return(f_equals(a_this, a0));
 	context.f_done();
 }
 
@@ -577,7 +577,7 @@ void t_type_of<t_array>::f_not_equals(t_object* a_this, t_stack& a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_not_equals(a_this, a0)));
+	a_stack.f_return(f_not_equals(a_this, a0));
 	context.f_done();
 }
 
