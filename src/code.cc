@@ -11,10 +11,10 @@
 namespace xemmai
 {
 
-t_transfer t_code::f_instantiate(const std::wstring& a_path, size_t a_arguments)
+t_transfer t_code::f_instantiate(const std::wstring& a_path, size_t a_size, size_t a_arguments)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_code>());
-	object.f_pointer__(new t_code(a_path, a_arguments));
+	object.f_pointer__(new t_code(a_path, a_size, a_arguments));
 	return object;
 }
 
@@ -38,12 +38,8 @@ void t_code::f_generate(void** a_p)
 			a_p += 2;
 			break;
 		case e_instruction__TRY:
-			a_p += 3;
-			break;
 		case e_instruction__CATCH:
-			a_p += 2;
-			*a_p = reinterpret_cast<void*>(*static_cast<int*>(*a_p) & e_access__INDEX);
-			++a_p;
+			a_p += 3;
 			break;
 		case e_instruction__FINALLY:
 			a_p += 2;
@@ -83,34 +79,19 @@ void t_code::f_generate(void** a_p)
 			a_p += 2;
 			break;
 		case e_instruction__SCOPE_GET:
-			{
-				int index = *static_cast<int*>(a_p[2]);
-				if ((index & e_access__VARIES) == 0) XEMMAI__CODE__REPLACE(SCOPE_GET_WITHOUT_LOCK)
-				a_p += 2;
-				*a_p = reinterpret_cast<void*>(index & e_access__INDEX);
-				++a_p;
-			}
+		case e_instruction__SCOPE_GET_WITHOUT_LOCK:
+			a_p += 3;
 			break;
 		case e_instruction__SCOPE_GET0:
-			{
-				int index = *static_cast<int*>(a_p[1]);
-				if ((index & (e_access__SHARED | e_access__VARIES)) != (e_access__SHARED | e_access__VARIES)) XEMMAI__CODE__REPLACE(SCOPE_GET0_WITHOUT_LOCK)
-				*++a_p = reinterpret_cast<void*>(index & e_access__INDEX);
-				++a_p;
-			}
+		case e_instruction__SCOPE_GET0_WITHOUT_LOCK:
+			a_p += 2;
 			break;
 		case e_instruction__SCOPE_PUT:
-			a_p += 2;
-			*a_p = reinterpret_cast<void*>(*static_cast<int*>(*a_p) & e_access__INDEX);
-			++a_p;
+			a_p += 3;
 			break;
 		case e_instruction__SCOPE_PUT0:
-			{
-				int index = *static_cast<int*>(a_p[1]);
-				if ((index & e_access__SHARED) == 0) XEMMAI__CODE__REPLACE(SCOPE_PUT0_WITHOUT_LOCK)
-				*++a_p = reinterpret_cast<void*>(index & e_access__INDEX);
-				++a_p;
-			}
+		case e_instruction__SCOPE_PUT0_WITHOUT_LOCK:
+			a_p += 2;
 			break;
 		case e_instruction__LAMBDA:
 			f_as<t_code&>(static_cast<t_object*>(*++a_p)).f_generate();
@@ -815,9 +796,9 @@ void t_code::f_scan(t_scan a_scan)
 	for (std::vector<void*>::iterator i = v_objects.begin(); i != v_objects.end(); ++i) a_scan(*reinterpret_cast<t_slot*>(&*i));
 }
 
-const t_code::t_at* t_code::f_at(void** a_address) const
+const t_at* t_code::f_at(void** a_address) const
 {
-	std::vector<t_at>::const_iterator i = std::lower_bound(v_ats.begin(), v_ats.end(), t_at(a_address - &v_instructions[0], 0, 0, 0));
+	std::vector<t_address_at>::const_iterator i = std::lower_bound(v_ats.begin(), v_ats.end(), t_address_at(a_address - &v_instructions[0], t_at(0, 0, 0)));
 	return i == v_ats.end() ? 0 : &*i;
 }
 
@@ -898,10 +879,12 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 			a_p += 2;
 			break;
 		case e_instruction__SCOPE_GET:
+		case e_instruction__SCOPE_GET_WITHOUT_LOCK:
 			if (++a_n > v_size) v_size = a_n;
 			a_p += 3;
 			break;
 		case e_instruction__SCOPE_GET0:
+		case e_instruction__SCOPE_GET0_WITHOUT_LOCK:
 			if (++a_n > v_size) v_size = a_n;
 			a_p += 2;
 			break;
@@ -909,6 +892,7 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 			a_p += 3;
 			break;
 		case e_instruction__SCOPE_PUT0:
+		case e_instruction__SCOPE_PUT0_WITHOUT_LOCK:
 			a_p += 2;
 			break;
 		case e_instruction__LAMBDA:
@@ -945,14 +929,17 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 		case e_instruction__RETURN:
 			return;
 		case e_instruction__CALL:
+		case e_instruction__CALL_TAIL:
 			a_n -= reinterpret_cast<size_t>(*++a_p);
 			++a_p;
 			break;
 		case e_instruction__GET_AT:
+		case e_instruction__GET_AT_TAIL:
 			--a_n;
 			++a_p;
 			break;
 		case e_instruction__SET_AT:
+		case e_instruction__SET_AT_TAIL:
 			a_n -= 2;
 			++a_p;
 			break;
@@ -960,6 +947,10 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 		case e_instruction__MINUS:
 		case e_instruction__NOT:
 		case e_instruction__COMPLEMENT:
+		case e_instruction__PLUS_TAIL:
+		case e_instruction__MINUS_TAIL:
+		case e_instruction__NOT_TAIL:
+		case e_instruction__COMPLEMENT_TAIL:
 			++a_p;
 			break;
 		case e_instruction__MULTIPLY:
@@ -979,141 +970,25 @@ void t_code::f_estimate(size_t a_n, void** a_p)
 		case e_instruction__XOR:
 		case e_instruction__OR:
 		case e_instruction__SEND:
+		case e_instruction__MULTIPLY_TAIL:
+		case e_instruction__DIVIDE_TAIL:
+		case e_instruction__MODULUS_TAIL:
+		case e_instruction__ADD_TAIL:
+		case e_instruction__SUBTRACT_TAIL:
+		case e_instruction__LEFT_SHIFT_TAIL:
+		case e_instruction__RIGHT_SHIFT_TAIL:
+		case e_instruction__LESS_TAIL:
+		case e_instruction__LESS_EQUAL_TAIL:
+		case e_instruction__GREATER_TAIL:
+		case e_instruction__GREATER_EQUAL_TAIL:
+		case e_instruction__EQUALS_TAIL:
+		case e_instruction__NOT_EQUALS_TAIL:
+		case e_instruction__AND_TAIL:
+		case e_instruction__XOR_TAIL:
+		case e_instruction__OR_TAIL:
+		case e_instruction__SEND_TAIL:
 			--a_n;
 			++a_p;
-			break;
-		case e_instruction__FIBER_EXIT:
-		case e_instruction__END:
-			return;
-		}
-	}
-}
-
-bool t_code::f_tail(void** a_p)
-{
-	while (true) {
-		t_instruction instruction = static_cast<t_instruction>(reinterpret_cast<int>(*a_p));
-		if (instruction == e_instruction__RETURN) return true;
-		if (instruction != e_instruction__JUMP) break;
-		a_p = reinterpret_cast<void**>(*++a_p);
-	}
-	return false;
-}
-
-void t_code::f_tail()
-{
-	void** p = &v_instructions[0];
-	while (true) {
-		switch (static_cast<t_instruction>(reinterpret_cast<int>(*p))) {
-		case e_instruction__JUMP:
-		case e_instruction__BRANCH:
-			p += 2;
-			break;
-		case e_instruction__TRY:
-		case e_instruction__CATCH:
-			p += 3;
-			break;
-		case e_instruction__FINALLY:
-			p += 2;
-			break;
-		case e_instruction__YRT:
-			p += 4;
-			break;
-		case e_instruction__THROW:
-		case e_instruction__POP:
-			++p;
-			break;
-		case e_instruction__OBJECT_GET:
-			p += 2;
-			break;
-		case e_instruction__OBJECT_GET_INDIRECT:
-			++p;
-			break;
-		case e_instruction__OBJECT_PUT:
-			p += 2;
-			break;
-		case e_instruction__OBJECT_PUT_INDIRECT:
-			++p;
-			break;
-		case e_instruction__OBJECT_HAS:
-			p += 2;
-			break;
-		case e_instruction__OBJECT_HAS_INDIRECT:
-			++p;
-			break;
-		case e_instruction__OBJECT_REMOVE:
-			p += 2;
-			break;
-		case e_instruction__OBJECT_REMOVE_INDIRECT:
-			++p;
-			break;
-		case e_instruction__GLOBAL_GET:
-			p += 2;
-			break;
-		case e_instruction__SCOPE_GET:
-			p += 3;
-			break;
-		case e_instruction__SCOPE_GET0:
-			p += 2;
-			break;
-		case e_instruction__SCOPE_PUT:
-			p += 3;
-			break;
-		case e_instruction__SCOPE_PUT0:
-		case e_instruction__LAMBDA:
-		case e_instruction__SELF:
-			p += 2;
-			break;
-		case e_instruction__CLASS:
-		case e_instruction__SUPER:
-		case e_instruction__NULL:
-			++p;
-			break;
-		case e_instruction__BOOLEAN:
-		case e_instruction__INTEGER:
-			p += 2;
-			break;
-		case e_instruction__FLOAT:
-			p += 1 + sizeof(double) / sizeof(void*);
-			break;
-		case e_instruction__INSTANCE:
-			p += 2;
-			break;
-		case e_instruction__IDENTICAL:
-		case e_instruction__NOT_IDENTICAL:
-			++p;
-			break;
-		case e_instruction__RETURN:
-			return;
-		case e_instruction__CALL:
-			if (f_tail(p + 2)) *p = reinterpret_cast<void*>(e_instruction__CALL_TAIL);
-			p += 2;
-			break;
-		case e_instruction__GET_AT:
-		case e_instruction__SET_AT:
-		case e_instruction__PLUS:
-		case e_instruction__MINUS:
-		case e_instruction__NOT:
-		case e_instruction__COMPLEMENT:
-		case e_instruction__MULTIPLY:
-		case e_instruction__DIVIDE:
-		case e_instruction__MODULUS:
-		case e_instruction__ADD:
-		case e_instruction__SUBTRACT:
-		case e_instruction__LEFT_SHIFT:
-		case e_instruction__RIGHT_SHIFT:
-		case e_instruction__LESS:
-		case e_instruction__LESS_EQUAL:
-		case e_instruction__GREATER:
-		case e_instruction__GREATER_EQUAL:
-		case e_instruction__EQUALS:
-		case e_instruction__NOT_EQUALS:
-		case e_instruction__AND:
-		case e_instruction__XOR:
-		case e_instruction__OR:
-		case e_instruction__SEND:
-			if (f_tail(p + 1)) *reinterpret_cast<int*>(p) += e_instruction__CALL_TAIL - e_instruction__CALL;
-			++p;
 			break;
 		case e_instruction__FIBER_EXIT:
 		case e_instruction__END:

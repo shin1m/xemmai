@@ -65,7 +65,7 @@ term11: term10 ('||' term10)* ;
 
 term12: term11 ('::' term11)* ;
 
-term: term12 ('?' expression ':' expression)? ;
+term: term12 ('?' term ':' term)? ;
 
 assignment: (variable | self symbol | term0 ('.' qualifier | subscription)) '=' expression ;
 

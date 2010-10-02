@@ -48,7 +48,10 @@ t_transfer t_module::f_load_script(const std::wstring& a_path)
 	io::t_file stream(a_path, "r");
 	if (!stream) return 0;
 	t_parser parser(a_path, stream);
-	return parser.f_parse();
+	ast::t_module module(a_path);
+	parser.f_parse(module);
+	t_generator generator;
+	return generator.f_generate(module);
 }
 
 t_library* t_module::f_load_library(const std::wstring& a_path)

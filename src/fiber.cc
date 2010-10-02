@@ -63,7 +63,7 @@ void t_fiber::t_context::f_dump() const
 	if (v_code) {
 		t_code& code = f_as<t_code&>(v_code);
 		std::fprintf(stderr, "%ls", code.v_path.c_str());
-		const t_code::t_at* at = code.f_at(v_pc);
+		const t_at* at = code.f_at(v_pc);
 		if (at) {
 			std::fprintf(stderr, ":%d:%d\n", at->f_line(), at->f_column());
 			f_print_with_caret(code.v_path.c_str(), at->f_position(), at->f_column());

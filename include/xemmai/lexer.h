@@ -3,8 +3,10 @@
 
 #include <vector>
 #include <cwchar>
+#include <cwctype>
 
 #include "throwable.h"
+#include "code.h"
 
 namespace xemmai
 {
@@ -72,16 +74,19 @@ public:
 	};
 
 private:
+	static bool f_is_symbol(wint_t a_c)
+	{
+		return std::iswalnum(a_c) || a_c == L'_';
+	}
+
 	std::wstring v_path;
 	FILE* v_stream;
+	long v_p;
 	long v_position;
-	long v_position0;
-	size_t v_line0;
-	size_t v_column0;
+	size_t v_line;
+	size_t v_column;
 	wint_t v_c;
-	long v_position1;
-	size_t v_line1;
-	size_t v_column1;
+	t_at v_at;
 	t_token v_token;
 	std::vector<wchar_t> v_value;
 
@@ -94,19 +99,16 @@ public:
 		static t_transfer f_instantiate(t_lexer& a_lexer);
 
 		std::wstring v_path;
-		long v_position;
-		size_t v_line;
-		size_t v_column;
+		t_at v_at;
 
-		t_error(t_lexer& a_lexer) : t_throwable(L"lexical error."), v_path(a_lexer.f_path()), v_position(a_lexer.v_position1), v_line(a_lexer.v_line1), v_column(a_lexer.v_column1)
+		t_error(t_lexer& a_lexer) : t_throwable(L"lexical error."), v_path(a_lexer.f_path()), v_at(a_lexer.f_at())
 		{
 		}
 		virtual void f_dump() const;
 	};
-	friend struct t_error;
 
 	t_lexer(const std::wstring& a_path, FILE* a_stream) :
-	v_path(a_path), v_stream(a_stream), v_position(0), v_position0(0), v_line0(1), v_column0(1), v_c(std::getwc(v_stream))
+	v_path(a_path), v_stream(a_stream), v_p(0), v_position(0), v_line(1), v_column(1), v_c(std::getwc(v_stream)), v_at(0, 0, 0)
 	{
 		f_next();
 	}
@@ -114,17 +116,9 @@ public:
 	{
 		return v_path;
 	}
-	long f_position() const
+	const t_at& f_at() const
 	{
-		return v_position1;
-	}
-	size_t f_line() const
-	{
-		return v_line1;
-	}
-	size_t f_column() const
-	{
-		return v_column1;
+		return v_at;
 	}
 	t_token f_token() const
 	{

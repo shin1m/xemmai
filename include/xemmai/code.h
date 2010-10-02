@@ -99,45 +99,47 @@ enum t_instruction
 	e_instruction__DEAD = 0x80
 };
 
+class t_at
+{
+	long v_position;
+	size_t v_line;
+	size_t v_column;
+
+public:
+	t_at(long a_position, size_t a_line, size_t a_column) : v_position(a_position), v_line(a_line), v_column(a_column)
+	{
+	}
+	long f_position() const
+	{
+		return v_position;
+	}
+	size_t f_line() const
+	{
+		return v_line;
+	}
+	size_t f_column() const
+	{
+		return v_column;
+	}
+};
+
 struct t_code
 {
-	enum t_access
-	{
-		e_access__SHARED = ~(~0u >> 1),
-		e_access__VARIES = ~(~0u >> 1) >> 1,
-		e_access__INDEX = ~0u >> 2
-	};
-	class t_at
+	class t_address_at : public t_at
 	{
 		size_t v_address;
-		long v_position;
-		size_t v_line;
-		size_t v_column;
 
 	public:
-		t_at(size_t a_address, long a_position, size_t a_line, size_t a_column) :
-		v_address(a_address), v_position(a_position), v_line(a_line), v_column(a_column)
+		t_address_at(size_t a_address, const t_at& a_at) : t_at(a_at), v_address(a_address)
 		{
 		}
-		bool operator<(const t_at& a_other) const
+		bool operator<(const t_address_at& a_other) const
 		{
 			return v_address < a_other.v_address;
 		}
-		long f_position() const
-		{
-			return v_position;
-		}
-		size_t f_line() const
-		{
-			return v_line;
-		}
-		size_t f_column() const
-		{
-			return v_column;
-		}
 	};
 
-	static t_transfer f_instantiate(const std::wstring& a_path, size_t a_arguments);
+	static t_transfer f_instantiate(const std::wstring& a_path, size_t a_size, size_t a_arguments);
 	static void f_generate(void** a_p);
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static t_transfer f_loop(const void*** a_labels = 0);
@@ -150,17 +152,17 @@ struct t_code
 	size_t v_arguments;
 	std::vector<void*> v_instructions;
 	std::vector<void*> v_objects;
-	std::vector<t_at> v_ats;
+	std::vector<t_address_at> v_ats;
 	bool v_simple;
 
-	t_code(const std::wstring& a_path, size_t a_arguments) : v_path(a_path), v_size(a_arguments), v_arguments(a_arguments)
+	t_code(const std::wstring& a_path, size_t a_size, size_t a_arguments) : v_path(a_path), v_size(a_size), v_arguments(a_arguments)
 	{
 	}
 	void f_scan(t_scan a_scan);
 	const t_at* f_at(void** a_address) const;
-	void f_at(size_t a_address, long a_position, size_t a_line, size_t a_column)
+	void f_at(size_t a_address, const t_at& a_at)
 	{
-		v_ats.push_back(t_at(a_address, a_position, a_line, a_column));
+		v_ats.push_back(t_address_at(a_address, a_at));
 	}
 	void f_resolve(size_t a_n, void** a_p)
 	{
@@ -173,11 +175,70 @@ struct t_code
 		f_estimate(v_size, &v_instructions[0]);
 		v_simple = a_private && v_size <= t_fixed_scope::V_SIZE;
 	}
-	bool f_tail(void** a_p);
-	void f_tail();
 	void f_generate()
 	{
 		f_generate(&v_instructions[0]);
+	}
+	size_t f_last() const
+	{
+		return v_instructions.size();
+	}
+	void f_emit(t_instruction a_instruction)
+	{
+		v_instructions.push_back(reinterpret_cast<void*>(a_instruction | e_instruction__DEAD));
+	}
+	void f_operand(size_t a_operand)
+	{
+		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
+	}
+	void f_operand(int* a_operand)
+	{
+		v_instructions.push_back(static_cast<void*>(a_operand));
+	}
+	void f_operand(bool a_operand)
+	{
+		v_instructions.push_back(reinterpret_cast<void*>(static_cast<int>(a_operand)));
+	}
+	void f_operand(int a_operand)
+	{
+		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
+	}
+	void f_operand(double a_operand)
+	{
+		union
+		{
+			double v0;
+			void* v1[sizeof(double) / sizeof(void*)];
+		};
+		v0 = a_operand;
+		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_instructions.push_back(v1[i]);
+	}
+	void f_operand(t_object* a_operand)
+	{
+		v_objects.push_back(0);
+		v_instructions.push_back(*new(&v_objects.back()) t_slot(a_operand));
+	}
+	void f_operand(const t_transfer& a_operand)
+	{
+		v_objects.push_back(0);
+		v_instructions.push_back(*new(&v_objects.back()) t_slot(a_operand));
+	}
+	void f_operand(std::vector<size_t>& a_label)
+	{
+		a_label.push_back(f_last());
+		f_operand(size_t(0));
+	}
+	void f_resolve(const std::vector<size_t>& a_label, size_t a_n)
+	{
+		for (std::vector<size_t>::const_iterator i = a_label.begin(); i != a_label.end(); ++i) v_instructions[*i] = reinterpret_cast<void*>(a_n);
+	}
+	void f_resolve(const std::vector<size_t>& a_label)
+	{
+		f_resolve(a_label, f_last());
+	}
+	void f_at(const t_at& a_at)
+	{
+		f_at(f_last(), a_at);
 	}
 };
 

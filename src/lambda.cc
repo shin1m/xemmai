@@ -1,6 +1,5 @@
 #include <xemmai/lambda.h>
 
-#include <xemmai/code.h>
 #include <xemmai/method.h>
 #include <xemmai/global.h>
 

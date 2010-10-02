@@ -41,6 +41,7 @@ xemmai_SOURCES = \
 	dictionary.cc \
 	bytes.cc \
 	lexer.cc \
+	ast.cc \
 	parser.cc \
 	global.cc \
 	io.cc \

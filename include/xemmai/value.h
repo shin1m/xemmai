@@ -285,10 +285,6 @@ public:
 	{
 		return reinterpret_cast<size_t>(v_p);
 	}
-/*	t_object* f_object() const
-	{
-		return v_p;
-	}*/
 	bool f_boolean() const;
 	void f_boolean__(bool a_value);
 	int f_integer() const;

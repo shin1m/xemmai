@@ -8,6 +8,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/portable/path.h \
 	xemmai/portable/thread.h \
 	xemmai/array.h \
+	xemmai/ast.h \
 	xemmai/boolean.h \
 	xemmai/bytes.h \
 	xemmai/class.h \

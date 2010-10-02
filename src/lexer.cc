@@ -1,6 +1,5 @@
 #include <xemmai/lexer.h>
 
-#include <cwctype>
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -13,27 +12,17 @@ void t_lexer::f_throw()
 
 void t_lexer::f_get()
 {
-	++v_position;
+	++v_p;
 	switch (v_c) {
 	case L'\n':
-		v_position0 = v_position;
-		++v_line0;
-		v_column0 = 1;
+		v_position = v_p;
+		++v_line;
+		v_column = 1;
 		break;
 	default:
-		++v_column0;
+		++v_column;
 	}
 	v_c = std::getwc(v_stream);
-}
-
-namespace
-{
-
-inline bool f_is_symbol(wint_t a_c)
-{
-	return std::iswalnum(a_c) || a_c == L'_';
-}
-
 }
 
 void t_lexer::f_next()
@@ -50,9 +39,7 @@ void t_lexer::f_next()
 			f_get();
 		}
 	}
-	v_position1 = v_position0;
-	v_line1 = v_line0;
-	v_column1 = v_column0;
+	v_at = t_at(v_position, v_line, v_column);
 	v_value.clear();
 	switch (v_c) {
 	case WEOF:
@@ -591,8 +578,8 @@ t_transfer t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 
 void t_lexer::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%d:%d\n", v_path.c_str(), v_line, v_column);
-	f_print_with_caret(v_path.c_str(), v_position, v_column);
+	std::fprintf(stderr, "at %ls:%d:%d\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
+	f_print_with_caret(v_path.c_str(), v_at.f_position(), v_at.f_column());
 	t_throwable::f_dump();
 }
 
