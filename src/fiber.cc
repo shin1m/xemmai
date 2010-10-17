@@ -166,7 +166,6 @@ void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
 	t_fiber& p = f_as<t_fiber&>(a_this);
 	a_scan(p.v_callable);
 	if (p.v_main || p.v_active) return;
-	if (p.v_active) return;
 	for (t_fiber::t_context* q = p.v_context; q; q = q->v_next) {
 		q->f_scan(a_scan);
 		if (p.v_active) return;

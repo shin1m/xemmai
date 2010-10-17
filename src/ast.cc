@@ -40,7 +40,6 @@ void t_lambda::f_generate(t_generator& a_generator, bool a_tail)
 {
 	t_transfer code = t_code::f_instantiate(a_generator.v_path, v_variables.size(), v_arguments);
 	t_scope* scope0 = a_generator.v_scope;
-	scope0->v_shared = true;
 	a_generator.v_scope = this;
 	t_code* code0 = a_generator.v_code;
 	a_generator.v_code = &f_as<t_code&>(code);
