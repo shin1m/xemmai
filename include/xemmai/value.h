@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <new>
 
 #include "portable/define.h"
 #include "portable/thread.h"
@@ -18,7 +19,6 @@ class t_object;
 class t_transfer;
 class t_shared;
 struct t_slot;
-struct t_stack;
 struct t_thread;
 class t_code;
 class t_parser;
@@ -298,9 +298,9 @@ public:
 	void f_put(t_object* a_key, const t_transfer& a_value) const;
 	bool f_has(t_object* a_key) const;
 	t_transfer f_remove(t_object* a_key) const;
-	void f_call(const t_value& a_self, size_t a_n, t_stack& a_stack) const;
-	void f_call_and_return(const t_value& a_self, size_t a_n, t_stack& a_stack) const;
-	t_transfer f_call(size_t a_n, t_slot* a_slots) const;
+	void f_call(const t_value& a_self, size_t a_n) const;
+	void f_call_and_return(const t_value& a_self, size_t a_n) const;
+	t_transfer f_call_with_same(size_t a_n) const;
 	t_transfer f_hash() const;
 #define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
 #define XEMMAI__MACRO__CALL(n) t_transfer operator()(XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TRANSFER_A_N, n)) const;
@@ -631,85 +631,93 @@ inline void t_value::f_assign(const t_transfer& a_value)
 
 struct t_stack
 {
-	t_slot* v_top;
+	static XEMMAI__PORTABLE__THREAD t_stack* v_instance;
 
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(t_object* a_p = 0)
+	t_slot* v_p;
+	char* v_head;
+	t_slot* v_tail;
+
+	t_stack(size_t a_size) : v_head(new char[sizeof(t_value) * a_size]), v_tail(reinterpret_cast<t_slot*>(v_head) - 1)
 	{
-		(--v_top)->f_construct(a_p);
+		v_p = v_tail;
+	}
+	~t_stack()
+	{
+		delete[] v_head;
+	}
+	void f_allocate(size_t a_size)
+	{
+		t_slot* p = v_p + a_size;
+		if (v_tail < p) do new(++v_tail) t_slot(); while (v_tail < p);
+	}
+	void f_push(t_object* a_p = 0)
+	{
+		(++v_p)->f_construct(a_p);
 	}
 	void f_push(bool a_value)
 	{
-		(--v_top)->f_construct(a_value);
+		(++v_p)->f_construct(a_value);
 	}
 	void f_push(int a_value)
 	{
-		(--v_top)->f_construct(a_value);
+		(++v_p)->f_construct(a_value);
 	}
 	void f_push(double a_value)
 	{
-		(--v_top)->f_construct(a_value);
+		(++v_p)->f_construct(a_value);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(const t_value& a_value)
+	void f_push(const t_value& a_value)
 	{
-		(--v_top)->f_construct(a_value);
+		(++v_p)->f_construct(a_value);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_push(const t_transfer& a_value)
+	void f_push(const t_transfer& a_value)
 	{
-		(--v_top)->f_construct(a_value);
+		(++v_p)->f_construct(a_value);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_transfer f_pop()
+	t_transfer f_pop()
 	{
-		t_transfer p = v_top->f_transfer();
-		++v_top;
+		t_transfer p = v_p->f_transfer();
+		--v_p;
 		return p;
 	}
 	t_slot& f_top()
 	{
-		return *v_top;
+		return *v_p;
 	}
 	t_slot& f_at(size_t a_i)
 	{
-		return v_top[a_i];
+		return v_p[-a_i];
 	}
 	void f_return(t_object* a_p = 0)
 	{
-		v_top->f_construct(a_p);
+		v_p->f_construct(a_p);
 	}
 	void f_return(bool a_value)
 	{
-		v_top->f_construct(a_value);
+		v_p->f_construct(a_value);
 	}
 	void f_return(int a_value)
 	{
-		v_top->f_construct(a_value);
+		v_p->f_construct(a_value);
 	}
 	void f_return(double a_value)
 	{
-		v_top->f_construct(a_value);
+		v_p->f_construct(a_value);
 	}
 	void f_return(const t_value& a_value)
 	{
-		v_top->f_construct(a_value);
+		v_p->f_construct(a_value);
 	}
 	void f_return(const t_transfer& a_value)
 	{
-		v_top->f_construct(a_value);
+		v_p->f_construct(a_value);
 	}
 };
 
-struct t_scoped_stack : t_stack
+inline t_stack* f_stack()
 {
-	t_slot* v_base;
-
-	t_scoped_stack(t_slot* a_top, t_slot* a_base) : v_base(a_base)
-	{
-		v_top = a_top;
-	}
-	~t_scoped_stack()
-	{
-		while (v_top < v_base) f_pop();
-	}
-};
+	return t_stack::v_instance;
+}
 
 }
 

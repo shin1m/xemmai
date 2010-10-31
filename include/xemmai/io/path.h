@@ -28,8 +28,8 @@ struct t_type_of<portable::t_path> : t_type
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
-	virtual void f_divide(t_object* a_this, t_stack& a_stack);
+	virtual void f_construct(t_object* a_class, size_t a_n);
+	virtual void f_divide(t_object* a_this);
 };
 
 }

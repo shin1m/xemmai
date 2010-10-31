@@ -96,16 +96,15 @@ void t_fiber::f_throw(const t_scoped& a_value)
 			if (t_context::v_instance == q->v_context) break;
 			t_context::f_backtrace();
 		}
-		t_scope* stack = f_context()->v_stack;
-		while (stack->v_top < q->v_stack) stack->f_pop();
+		while (p.v_stack.v_p > q->v_stack) p.v_stack.f_pop();
 		if (q->v_state == t_try::e_state__TRY) {
-			stack->f_push(a_value);
+			p.v_stack.f_push(a_value);
 			q->v_state = t_try::e_state__CATCH;
 			p.v_caught = f_context()->v_pc;
 			f_context()->v_pc = q->v_catch;
 			break;
 		} else if (q->v_state == t_try::e_state__CATCH) {
-			stack->f_push(a_value);
+			p.v_stack.f_push(a_value);
 			q->v_state = t_try::e_state__THROW;
 			p.v_caught = f_context()->v_pc;
 			f_context()->v_pc = q->v_finally;
@@ -119,7 +118,7 @@ void t_fiber::f_throw(const t_scoped& a_value)
 t_transfer t_fiber::f_instantiate(const t_transfer& a_callable, bool a_main, bool a_active)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_fiber>());
-	object.f_pointer__(new t_fiber(a_callable, a_main, a_active));
+	object.f_pointer__(new t_fiber(a_callable, 1 << 10, a_main, a_active));
 	return object;
 }
 
@@ -147,7 +146,7 @@ void t_fiber::f_caught(const t_value& a_object)
 		t_with_lock_for_write lock(a_object);
 		t_throwable& p = f_as<t_throwable&>(a_object);
 		t_context::f_finalize(p.v_context);
-		p.v_context = t_context::f_instantiate(v_backtrace, false, t_transfer(), 0, v_context->v_code, v_caught);
+		p.v_context = t_context::f_instantiate(v_backtrace, 0, 0, 0, 0, v_context->v_code, v_caught);
 		p.v_context->v_native = v_undone;
 	} else {
 		t_context::f_finalize(v_backtrace);
@@ -165,7 +164,16 @@ void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	t_fiber& p = f_as<t_fiber&>(a_this);
 	a_scan(p.v_callable);
-	if (p.v_main || p.v_active) return;
+	if (p.v_main) return;
+	{
+		t_slot* p0 = p.v_stack.v_p;
+		{
+			portable::t_scoped_lock_for_read lock(a_this->v_lock);
+			if (p.v_active) return;
+		}
+		for (t_slot* p1 = reinterpret_cast<t_slot*>(p.v_stack.v_head); p1 <= p0; ++p1) a_scan(*p1);
+	}
+	if (p.v_active) return;
 	for (t_fiber::t_context* q = p.v_context; q; q = q->v_next) {
 		q->f_scan(a_scan);
 		if (p.v_active) return;
@@ -177,14 +185,15 @@ void t_type_of<t_fiber>::f_finalize(t_object* a_this)
 	delete &f_as<t_fiber&>(a_this);
 }
 
-void t_type_of<t_fiber>::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<t_fiber>::f_instantiate(t_object* a_class, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_transfer x = a_stack.f_pop();
-	a_stack.f_return(t_fiber::f_instantiate(x));
+	t_stack* stack = f_stack();
+	t_transfer x = stack->f_pop();
+	stack->f_return(t_fiber::f_instantiate(x));
 }
 
-void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, size_t a_n, t_stack& a_stack)
+void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	t_fiber& p = f_as<t_fiber&>(a_this);
@@ -199,20 +208,20 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, size_t 
 		portable::t_scoped_lock_for_write lock(a_this->v_lock);
 		if (p.v_active) t_throwable::f_throw(L"already active.");
 		p.v_active = true;
+		q.v_active = false;
 	}
-	t_transfer x = a_stack.f_pop();
-	q.v_active = false;
+	t_transfer x = f_stack()->f_pop();
 	thread.v_active = a_this;
 	t_fiber::v_current = a_this;
 	if (p.v_context) {
+		t_stack::v_instance = &p.v_stack;
 		t_fiber::t_context::v_instance = p.v_context;
-		t_stack* stack = f_context()->v_native > 0 ? &a_stack : f_context()->v_stack;
-		stack->f_return(x);
+		f_stack()->f_return(x);
 	} else {
-		t_transfer scope = t_scope::f_instantiate(0, 0, 0);
-		f_as<t_scope&>(scope).f_push(p.v_callable);
-		f_as<t_scope&>(scope).f_push(x);
-		t_fiber::t_context::f_initiate(scope, f_engine()->v_fiber__instructions);
+		p.v_stack.f_allocate(2);
+		p.v_stack.f_push(p.v_callable);
+		p.v_stack.f_push(x);
+		t_fiber::t_context::f_initiate(f_engine()->v_fiber__instructions);
 	}
 }
 

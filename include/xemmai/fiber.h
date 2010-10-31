@@ -17,13 +17,14 @@ struct t_fiber
 		static XEMMAI__PORTABLE__THREAD t_context* v_instance;
 
 		static t_context* f_allocate();
-		XEMMAI__PORTABLE__FORCE_INLINE static t_context* f_instantiate(t_context* a_next, bool a_simple, const t_transfer& a_scope, t_scope* a_stack, const t_transfer& a_code, void** a_pc)
+		XEMMAI__PORTABLE__FORCE_INLINE static t_context* f_instantiate(t_context* a_next, t_slot* a_base, const t_transfer& a_outer, const t_transfer& a_self, const t_transfer& a_scope, const t_transfer& a_code, void** a_pc)
 		{
 			t_context* p = t_local_pool<t_context>::f_allocate(f_allocate);
 			p->v_next = a_next;
-			p->v_simple = a_simple;
+			p->v_base = a_base;
+			p->v_outer.f_construct(a_outer);
+			p->v_self.f_construct(a_self);
 			p->v_scope.f_construct(a_scope);
-			p->v_stack = a_stack;
 			p->v_code.f_construct(a_code);
 			p->v_pc = a_pc;
 			return p;
@@ -36,17 +37,18 @@ struct t_fiber
 				p->f_finalize();
 			}
 		}
-		static void f_initiate(const t_transfer& a_scope, void** a_pc);
+		static void f_initiate(void** a_pc);
 		static void f_terminate();
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc);
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(t_scope* a_stack, const t_transfer& a_code, void** a_pc);
+		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, size_t a_n);
 		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE static void f_pop();
+		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE static void f_pop(size_t a_n);
 		static void f_backtrace();
 
 		t_context* v_next;
-		bool v_simple;
+		t_slot* v_base;
+		t_slot v_outer;
+		t_slot v_self;
 		t_slot v_scope;
-		t_scope* v_stack;
 		t_slot v_code;
 		void** v_pc;
 		size_t v_native;
@@ -56,18 +58,16 @@ struct t_fiber
 		}
 		void f_scan(t_scan a_scan)
 		{
-			if (v_simple)
-				v_stack->f_scan(a_scan);
-			else
-				a_scan(v_scope);
+			a_scan(v_outer);
+			a_scan(v_self);
+			a_scan(v_scope);
 			a_scan(v_code);
 		}
 		XEMMAI__PORTABLE__FORCE_INLINE void f_finalize()
 		{
-			if (v_simple)
-				t_fixed_scope::f_finalize(v_stack);
-			else
-				v_scope = 0;
+			v_outer = 0;
+			v_self = 0;
+			v_scope = 0;
 			v_code = 0;
 			v_native = 0;
 			t_local_pool<t_context>::f_free(this);
@@ -110,6 +110,7 @@ struct t_fiber
 	static void f_define(t_object* a_class);
 
 	t_slot v_callable;
+	t_stack v_stack;
 	t_context* v_context;
 	t_try* v_try;
 	size_t v_native;
@@ -119,8 +120,7 @@ struct t_fiber
 	bool v_main;
 	volatile bool v_active;
 
-	t_fiber(const t_transfer& a_callable, bool a_main, bool a_active) :
-	v_callable(a_callable), v_context(0), v_try(0), v_native(0), v_backtrace(0), v_undone(0), v_main(a_main), v_active(a_active)
+	t_fiber(const t_transfer& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(a_callable), v_stack(a_stack), v_context(0), v_try(0), v_native(0), v_backtrace(0), v_undone(0), v_main(a_main), v_active(a_active)
 	{
 	}
 	~t_fiber();
@@ -136,8 +136,8 @@ struct t_type_of<t_fiber> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
-	virtual void f_call(t_object* a_this, const t_value& a_self, size_t a_n, t_stack& a_stack);
+	virtual void f_instantiate(t_object* a_class, size_t a_n);
+	virtual void f_call(t_object* a_this, const t_value& a_self, size_t a_n);
 };
 
 inline t_fiber::t_context* f_context()
@@ -166,39 +166,53 @@ public:
 	}
 };
 
-inline void t_fiber::t_context::f_initiate(const t_transfer& a_scope, void** a_pc)
+inline void t_fiber::t_context::f_initiate(void** a_pc)
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	t_scope* stack = a_scope ? &f_as<t_scope&>(a_scope) : 0;
-	v_instance = fiber.v_context = f_instantiate(0, false, a_scope, stack, 0, a_pc);
+	t_stack::v_instance = &fiber.v_stack;
+	v_instance = fiber.v_context = f_instantiate(0, 0, 0, 0, 0, 0, a_pc);
 }
 
 inline void t_fiber::t_context::f_terminate()
 {
 	assert(!v_instance->v_next);
+	t_fiber& fiber = f_as<t_fiber&>(v_current);
+	assert(fiber.v_stack.v_p == reinterpret_cast<t_slot*>(fiber.v_stack.v_head) - 1);
 	v_instance->f_finalize();
 	v_instance = f_as<t_fiber&>(v_current).v_context = 0;
 }
 
-inline void t_fiber::t_context::f_push(const t_transfer& a_scope, const t_transfer& a_code, void** a_pc)
+inline void t_fiber::t_context::f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, size_t a_n)
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
+	t_code& code = f_as<t_code&>(a_code);
+	fiber.v_stack.f_allocate(code.v_size - a_n);
 	if (v_instance->v_native > 0) ++fiber.v_native;
-	t_scope& stack = f_as<t_scope&>(a_scope);
-	v_instance = fiber.v_context = f_instantiate(fiber.v_context, false, a_scope, &stack, a_code, a_pc);
-}
-
-inline void t_fiber::t_context::f_push(t_scope* a_stack, const t_transfer& a_code, void** a_pc)
-{
-	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	if (v_instance->v_native > 0) ++fiber.v_native;
-	v_instance = fiber.v_context = f_instantiate(fiber.v_context, true, t_transfer(), a_stack, a_code, a_pc);
+	fiber.v_stack.v_p -= a_n;
+	v_instance = fiber.v_context = f_instantiate(fiber.v_context, fiber.v_stack.v_p + 1, a_scope, a_self, code.v_shared ? t_scope::f_instantiate(code.v_shareds, a_scope) : t_transfer(), a_code, &code.v_instructions[0]);
+	fiber.v_stack.v_p += code.v_privates;
 }
 
 inline void t_fiber::t_context::f_pop()
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
 	t_context* p = v_instance;
+	for (t_stack& stack = fiber.v_stack; stack.v_p >= p->v_base; --stack.v_p) *stack.v_p = 0;
+	v_instance = fiber.v_context = p->v_next;
+	p->f_finalize();
+	if (v_instance->v_native > 0) --fiber.v_native;
+}
+
+inline void t_fiber::t_context::f_pop(size_t a_n)
+{
+	t_fiber& fiber = f_as<t_fiber&>(v_current);
+	t_context* p = v_instance;
+	t_stack& stack = fiber.v_stack;
+	t_slot* p0 = stack.v_p - a_n;
+	stack.v_p = p->v_base - 1;
+	t_slot* p1 = p0;
+	for (size_t i = 0; i < a_n; ++i) *++stack.v_p = (++p0)->f_transfer();
+	while (--p1 > stack.v_p) *p1 = 0;
 	v_instance = fiber.v_context = p->v_next;
 	p->f_finalize();
 	if (v_instance->v_native > 0) --fiber.v_native;

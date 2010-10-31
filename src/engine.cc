@@ -221,7 +221,7 @@ v_verbose(a_verbose)
 	v_thread.f_pointer__(thread);
 	t_thread::v_current = v_thread;
 	(*thread).v_fiber = t_object::f_allocate(type_fiber);
-	(*thread).v_fiber.f_pointer__(new t_fiber(0, true, true));
+	(*thread).v_fiber.f_pointer__(new t_fiber(0, 1 << 10, true, true));
 	(*thread).v_active = thread->v_fiber;
 	t_fiber::v_current = thread->v_active;
 	{

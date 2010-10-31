@@ -27,13 +27,11 @@ enum t_instruction
 	e_instruction__OBJECT_REMOVE,
 	e_instruction__OBJECT_REMOVE_INDIRECT,
 	e_instruction__GLOBAL_GET,
+	e_instruction__STACK_GET,
+	e_instruction__STACK_PUT,
 	e_instruction__SCOPE_GET,
 	e_instruction__SCOPE_GET_WITHOUT_LOCK,
-	e_instruction__SCOPE_GET0,
-	e_instruction__SCOPE_GET0_WITHOUT_LOCK,
 	e_instruction__SCOPE_PUT,
-	e_instruction__SCOPE_PUT0,
-	e_instruction__SCOPE_PUT0_WITHOUT_LOCK,
 	e_instruction__LAMBDA,
 	e_instruction__SELF,
 	e_instruction__CLASS,
@@ -139,23 +137,25 @@ struct t_code
 		}
 	};
 
-	static t_transfer f_instantiate(const std::wstring& a_path, size_t a_size, size_t a_arguments);
+	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments);
 	static void f_generate(void** a_p);
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-	static t_transfer f_loop(const void*** a_labels = 0);
+	static void f_loop(const void*** a_labels = 0);
 #else
-	static t_transfer f_loop();
+	static void f_loop();
 #endif
 
 	std::wstring v_path;
+	bool v_shared;
 	size_t v_size;
+	size_t v_privates;
+	size_t v_shareds;
 	size_t v_arguments;
 	std::vector<void*> v_instructions;
 	std::vector<void*> v_objects;
 	std::vector<t_address_at> v_ats;
-	bool v_simple;
 
-	t_code(const std::wstring& a_path, size_t a_size, size_t a_arguments) : v_path(a_path), v_size(a_size), v_arguments(a_arguments)
+	t_code(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments) : v_path(a_path), v_shared(a_shared), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments)
 	{
 	}
 	void f_scan(t_scan a_scan);
@@ -170,10 +170,9 @@ struct t_code
 		f_estimate(a_n, reinterpret_cast<void**>(*a_p));
 	}
 	void f_estimate(size_t a_n, void** a_p);
-	void f_estimate(bool a_private)
+	void f_estimate()
 	{
 		f_estimate(v_size, &v_instructions[0]);
-		v_simple = a_private && v_size <= t_fixed_scope::V_SIZE;
 	}
 	void f_generate()
 	{
@@ -251,7 +250,7 @@ struct t_type_of<t_code> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
+	virtual void f_instantiate(t_object* a_class, size_t a_n);
 };
 
 }

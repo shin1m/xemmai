@@ -588,7 +588,7 @@ t_type* t_type_of<t_lexer::t_error>::f_derive(t_object* a_this)
 	return 0;
 }
 
-void t_type_of<t_lexer::t_error>::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<t_lexer::t_error>::f_instantiate(t_object* a_class, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }

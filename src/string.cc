@@ -54,75 +54,82 @@ void t_type_of<std::wstring>::f_finalize(t_object* a_this)
 	delete &f_as<std::wstring&>(a_this);
 }
 
-void t_type_of<std::wstring>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<std::wstring>::f_construct(t_object* a_class, size_t a_n)
 {
-	t_construct<std::wstring, const std::wstring&>::f_call(a_class, a_n, a_stack);
+	t_construct<std::wstring, const std::wstring&>::f_call(a_class, a_n);
 }
 
-void t_type_of<std::wstring>::f_hash(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_hash(t_object* a_this)
 {
 	t_native_context context;
-	a_stack.f_return(f_hash(f_as<const std::wstring&>(a_this)));
+	f_stack()->f_return(f_hash(f_as<const std::wstring&>(a_this)));
 	context.f_done();
 }
 
-void t_type_of<std::wstring>::f_add(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_add(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_global()->f_as(f_add(f_as<const std::wstring&>(a_this), a0)));
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
+	stack->f_return(f_global()->f_as(f_add(f_as<const std::wstring&>(a_this), a0)));
 	context.f_done();
 }
 
-void t_type_of<std::wstring>::f_less(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_less(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
 	f_check<std::wstring>(a0, L"argument0");
-	a_stack.f_return(f_as<const std::wstring&>(a_this) < f_as<const std::wstring&>(a0));
+	stack->f_return(f_as<const std::wstring&>(a_this) < f_as<const std::wstring&>(a0));
 	context.f_done();
 }
 
-void t_type_of<std::wstring>::f_less_equal(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_less_equal(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
 	f_check<std::wstring>(a0, L"argument0");
-	a_stack.f_return(f_as<const std::wstring&>(a_this) <= f_as<const std::wstring&>(a0));
+	stack->f_return(f_as<const std::wstring&>(a_this) <= f_as<const std::wstring&>(a0));
 	context.f_done();
 }
 
-void t_type_of<std::wstring>::f_greater(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_greater(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
 	f_check<std::wstring>(a0, L"argument0");
-	a_stack.f_return(f_as<const std::wstring&>(a_this) > f_as<const std::wstring&>(a0));
+	stack->f_return(f_as<const std::wstring&>(a_this) > f_as<const std::wstring&>(a0));
 	context.f_done();
 }
 
-void t_type_of<std::wstring>::f_greater_equal(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_greater_equal(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
 	f_check<std::wstring>(a0, L"argument0");
-	a_stack.f_return(f_as<const std::wstring&>(a_this) >= f_as<const std::wstring&>(a0));
+	stack->f_return(f_as<const std::wstring&>(a_this) >= f_as<const std::wstring&>(a0));
 	context.f_done();
 }
 
-void t_type_of<std::wstring>::f_equals(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_equals(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_equals(f_as<const std::wstring&>(a_this), a0));
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
+	stack->f_return(f_equals(f_as<const std::wstring&>(a_this), a0));
 	context.f_done();
 }
 
-void t_type_of<std::wstring>::f_not_equals(t_object* a_this, t_stack& a_stack)
+void t_type_of<std::wstring>::f_not_equals(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(f_not_equals(f_as<const std::wstring&>(a_this), a0));
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
+	stack->f_return(f_not_equals(f_as<const std::wstring&>(a_this), a0));
 	context.f_done();
 }
 

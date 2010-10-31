@@ -138,7 +138,7 @@ struct t_type_of<t_lexer::t_error> : t_type_of<t_throwable>
 	{
 	}
 	virtual t_type* f_derive(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack);
+	virtual void f_instantiate(t_object* a_class, size_t a_n);
 };
 
 }

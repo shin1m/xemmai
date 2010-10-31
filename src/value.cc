@@ -175,4 +175,6 @@ void t_slot::f_construct(const t_value& a_value)
 }
 #endif
 
+XEMMAI__PORTABLE__THREAD t_stack* t_stack::v_instance;
+
 }

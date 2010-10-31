@@ -164,11 +164,12 @@ void t_type_of<t_thread>::f_finalize(t_object* a_this)
 	delete &f_as<t_thread&>(a_this);
 }
 
-void t_type_of<t_thread>::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<t_thread>::f_instantiate(t_object* a_class, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_transfer x = a_stack.f_pop();
-	a_stack.f_return(t_thread::f_instantiate(x));
+	t_stack* stack = f_stack();
+	t_transfer x = stack->f_pop();
+	stack->f_return(t_thread::f_instantiate(x));
 }
 
 }

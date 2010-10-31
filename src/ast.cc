@@ -38,7 +38,7 @@ void f_generate_block_without_value(t_generator& a_generator, const t_pointers<t
 
 void t_lambda::f_generate(t_generator& a_generator, bool a_tail)
 {
-	t_transfer code = t_code::f_instantiate(a_generator.v_path, v_variables.size(), v_arguments);
+	t_transfer code = t_code::f_instantiate(a_generator.v_path, v_shared, v_privates.size(), v_shareds, v_arguments);
 	t_scope* scope0 = a_generator.v_scope;
 	a_generator.v_scope = this;
 	t_code* code0 = a_generator.v_code;
@@ -47,10 +47,27 @@ void t_lambda::f_generate(t_generator& a_generator, bool a_tail)
 	std::vector<size_t> return0;
 	t_generator::t_targets targets1(0, false, 0, &return0, true);
 	a_generator.v_targets = &targets1;
+	if (v_self_shared) {
+		a_generator.f_emit(e_instruction__SELF);
+		a_generator.f_operand(0);
+		a_generator.f_emit(e_instruction__SCOPE_PUT);
+		a_generator.f_operand(0);
+		a_generator.f_operand(0);
+		a_generator.f_emit(e_instruction__POP);
+	}
+	for (size_t i = 0; i < v_arguments; ++i) {
+		if (!v_privates[i]->v_shared) continue;
+		a_generator.f_emit(e_instruction__STACK_GET);
+		a_generator.f_operand(i);
+		a_generator.f_emit(e_instruction__SCOPE_PUT);
+		a_generator.f_operand(0);
+		a_generator.f_operand(v_privates[i]->v_index);
+		a_generator.f_emit(e_instruction__POP);
+	}
 	f_generate_block(a_generator, v_block, true);
 	a_generator.f_resolve(return0);
 	a_generator.f_emit(e_instruction__RETURN);
-	a_generator.v_code->f_estimate(!v_shared);
+	a_generator.v_code->f_estimate();
 	a_generator.v_scope = scope0;
 	a_generator.v_code = code0;
 	a_generator.v_targets = targets0;
@@ -140,12 +157,13 @@ void t_try::f_generate(t_generator& a_generator, bool a_tail)
 		a_generator.f_operand(t_fiber::t_try::e_state__STEP);
 		a_generator.f_resolve(catch0);
 		for (t_pointers<t_catch>::t_iterator i = v_catches.f_begin(); i != v_catches.f_end(); ++i) {
-			(*i)->v_expression->f_generate(a_generator, false);
+			t_catch* p = *i;
+			p->v_expression->f_generate(a_generator, false);
 			std::vector<size_t> label0;
 			a_generator.f_emit(e_instruction__CATCH);
 			a_generator.f_operand(label0);
-			a_generator.f_operand((*i)->v_variable.v_index);
-			f_generate_block(a_generator, (*i)->v_block, false);
+			a_generator.f_operand(p->v_variable.v_shared ? ~p->v_variable.v_index : p->v_variable.v_index);
+			f_generate_block(a_generator, p->v_block, false);
 			a_generator.f_emit(e_instruction__FINALLY);
 			a_generator.f_operand(t_fiber::t_try::e_state__STEP);
 			a_generator.f_resolve(label0);
@@ -265,11 +283,11 @@ void t_global_get::f_generate(t_generator& a_generator, bool a_tail)
 
 void t_scope_get::f_generate(t_generator& a_generator, bool a_tail)
 {
-	if (v_outer > 0) {
+	if (v_variable.v_shared) {
 		a_generator.f_emit(v_variable.v_varies ? e_instruction__SCOPE_GET : e_instruction__SCOPE_GET_WITHOUT_LOCK);
 		a_generator.f_operand(v_outer);
 	} else {
-		a_generator.f_emit(v_variable.v_shared && v_variable.v_varies ? e_instruction__SCOPE_GET0 : e_instruction__SCOPE_GET0_WITHOUT_LOCK);
+		a_generator.f_emit(e_instruction__STACK_GET);
 	}
 	a_generator.f_operand(v_variable.v_index);
 	a_generator.f_at(this);
@@ -278,11 +296,11 @@ void t_scope_get::f_generate(t_generator& a_generator, bool a_tail)
 void t_scope_put::f_generate(t_generator& a_generator, bool a_tail)
 {
 	v_value->f_generate(a_generator, false);
-	if (v_outer > 0) {
+	if (v_variable.v_shared) {
 		a_generator.f_emit(e_instruction__SCOPE_PUT);
 		a_generator.f_operand(v_outer);
 	} else {
-		a_generator.f_emit(v_variable.v_shared ? e_instruction__SCOPE_PUT0 : e_instruction__SCOPE_PUT0_WITHOUT_LOCK);
+		a_generator.f_emit(e_instruction__STACK_PUT);
 	}
 	a_generator.f_operand(v_variable.v_index);
 	a_generator.f_at(this);
@@ -390,13 +408,21 @@ t_transfer t_generator::f_generate(ast::t_module& a_module)
 {
 	v_path = a_module.f_path();
 	v_scope = &a_module;
-	t_transfer code = t_code::f_instantiate(v_path, a_module.v_variables.size(), 0);
+	t_transfer code = t_code::f_instantiate(v_path, true, a_module.v_privates.size(), a_module.v_shareds, 0);
 	v_code = &f_as<t_code&>(code);
 	t_targets targets(0, false, 0, 0, false);
 	v_targets = &targets;
+	if (a_module.v_self_shared) {
+		f_emit(e_instruction__STACK_GET);
+		f_operand(0);
+		f_emit(e_instruction__SCOPE_PUT);
+		f_operand(0);
+		f_operand(0);
+		f_emit(e_instruction__POP);
+	}
 	f_generate_block_without_value(*this, a_module.v_block);
-	v_code->f_emit(e_instruction__END);
-	v_code->f_estimate(false);
+	f_emit(e_instruction__END);
+	v_code->f_estimate();
 	v_code->f_generate();
 	return code;
 }

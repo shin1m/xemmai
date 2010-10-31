@@ -125,11 +125,11 @@ void f_generate_block_without_value(t_generator& a_generator, const t_pointers<t
 
 struct t_variable
 {
-	size_t v_index;
 	bool v_shared;
 	bool v_varies;
+	size_t v_index;
 
-	t_variable(size_t a_index) : v_index(a_index), v_shared(false), v_varies(false)
+	t_variable() : v_shared(false), v_varies(false)
 	{
 	}
 };
@@ -138,10 +138,13 @@ struct t_scope
 {
 	t_scope* v_outer;
 	t_pointers<t_node> v_block;
-	std::map<t_scoped, t_variable> v_variables;
 	bool v_shared;
+	bool v_self_shared;
+	std::map<t_scoped, t_variable> v_variables;
+	std::vector<t_variable*> v_privates;
+	size_t v_shareds;
 
-	t_scope(t_scope* a_outer) : v_outer(a_outer), v_shared(false)
+	t_scope(t_scope* a_outer) : v_outer(a_outer), v_shared(false), v_self_shared(false), v_shareds(0)
 	{
 	}
 };

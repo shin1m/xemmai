@@ -28,24 +28,25 @@ void t_type_of<t_native>::f_finalize(t_object* a_this)
 	delete &f_as<t_native&>(a_this);
 }
 
-void t_type_of<t_native>::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<t_native>::f_instantiate(t_object* a_class, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_native>::f_call(t_object* a_this, const t_value& a_self, size_t a_n, t_stack& a_stack)
+void t_type_of<t_native>::f_call(t_object* a_this, const t_value& a_self, size_t a_n)
 {
 	t_native_context context;
 	t_native& p = f_as<t_native&>(a_this);
-	p.v_function(p.v_module, a_self, a_n, a_stack);
+	p.v_function(p.v_module, a_self, a_n);
 	context.f_done();
 }
 
-void t_type_of<t_native>::f_get_at(t_object* a_this, t_stack& a_stack)
+void t_type_of<t_native>::f_get_at(t_object* a_this)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack.f_pop();
-	a_stack.f_return(t_method::f_instantiate(a_this, a0));
+	t_stack* stack = f_stack();
+	t_transfer a0 = stack->f_pop();
+	stack->f_return(t_method::f_instantiate(a_this, a0));
 	context.f_done();
 }
 

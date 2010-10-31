@@ -621,39 +621,42 @@ inline t_transfer t_value::f_remove(t_object* a_key) const
 	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
 }
 
-inline void t_value::f_call(const t_value& a_self, size_t a_n, t_stack& a_stack) const
+inline void t_value::f_call(const t_value& a_self, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	v_p->f_call(a_self, a_n, a_stack);
+	v_p->f_call(a_self, a_n);
 }
 
-inline void t_value::f_call_and_return(const t_value& a_self, size_t a_n, t_stack& a_stack) const
+inline void t_value::f_call_and_return(const t_value& a_self, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	v_p->f_call_and_return(a_self, a_n, a_stack);
+	v_p->f_call_and_return(a_self, a_n);
 }
 
-inline t_transfer t_value::f_call(size_t a_n, t_slot* a_slots) const
+inline t_transfer t_value::f_call_with_same(size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	return v_p->f_call(a_n, a_slots);
+	return v_p->f_call_with_same(a_n);
 }
 
 #define XEMMAI__VALUE__UNARY(a_method)\
 		{\
-			t_slot slots[] = {t_slot()};\
-			t_scoped_stack stack(slots, slots + 1);\
-			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
-			if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());\
-			return stack.f_pop();\
+			t_stack* stack = f_stack();\
+			stack->f_allocate(1);\
+			stack->f_push();\
+			f_as<t_type&>(v_p->f_type()).a_method(v_p);\
+			if (f_context()->v_native <= 0) t_code::f_loop();\
+			return stack->f_pop();\
 		}
 #define XEMMAI__VALUE__BINARY(a_method)\
 		{\
-			t_slot slots[] = {a_value, t_slot()};\
-			t_scoped_stack stack(slots, slots + 2);\
-			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
-			if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());\
-			return stack.f_pop();\
+			t_stack* stack = f_stack();\
+			stack->f_allocate(2);\
+			stack->f_push();\
+			stack->f_push(a_value);\
+			f_as<t_type&>(v_p->f_type()).a_method(v_p);\
+			if (f_context()->v_native <= 0) t_code::f_loop();\
+			return stack->f_pop();\
 		}
 
 inline t_transfer t_value::f_hash() const
@@ -679,21 +682,26 @@ inline t_transfer t_value::f_hash() const
 inline t_transfer t_value::f_get_at(const t_value& a_index) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	t_slot slots[] = {a_index, t_slot()};
-	t_scoped_stack stack(slots, slots + 2);
-	f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack);
-	if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());
-	return stack.f_pop();
+	t_stack* stack = f_stack();
+	stack->f_allocate(2);
+	stack->f_push();
+	stack->f_push(a_index);
+	f_as<t_type&>(v_p->f_type()).f_get_at(v_p);
+	if (f_context()->v_native <= 0) t_code::f_loop();
+	return stack->f_pop();
 }
 
 inline t_transfer t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	t_slot slots[] = {a_value, a_index, t_slot()};
-	t_scoped_stack stack(slots, slots + 3);
-	f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack);
-	if (f_context()->v_native <= 0) stack.f_return(t_code::f_loop());
-	return stack.f_pop();
+	t_stack* stack = f_stack();
+	stack->f_allocate(3);
+	stack->f_push();
+	stack->f_push(a_index);
+	stack->f_push(a_value);
+	f_as<t_type&>(v_p->f_type()).f_set_at(v_p);
+	if (f_context()->v_native <= 0) t_code::f_loop();
+	return stack->f_pop();
 }
 
 inline t_transfer t_value::f_plus() const

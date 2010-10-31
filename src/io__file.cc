@@ -138,9 +138,9 @@ void t_type_of<io::t_file>::f_finalize(t_object* a_this)
 	delete &f_as<io::t_file&>(a_this);
 }
 
-void t_type_of<io::t_file>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<io::t_file>::f_construct(t_object* a_class, size_t a_n)
 {
-	t_construct<io::t_file, const std::wstring&, const std::wstring&>::f_call(a_class, a_n, a_stack);
+	t_construct<io::t_file, const std::wstring&, const std::wstring&>::f_call(a_class, a_n);
 }
 
 }

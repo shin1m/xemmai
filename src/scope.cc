@@ -7,10 +7,10 @@
 namespace xemmai
 {
 
-t_transfer t_scope::f_instantiate(size_t a_size, const t_transfer& a_outer, const t_transfer& a_self)
+t_transfer t_scope::f_instantiate(size_t a_size, const t_transfer& a_outer)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_scope>());
-	object.f_pointer__(a_size > t_fixed_scope::V_SIZE ? new(a_size) t_scope(a_outer, a_self) : t_fixed_scope::f_instantiate(a_outer, a_self));
+	object.f_pointer__(a_size > t_fixed_scope::V_SIZE ? new(a_size) t_scope(a_outer) : t_fixed_scope::f_instantiate(a_outer));
 	return object;
 }
 
@@ -33,7 +33,7 @@ void t_type_of<t_scope>::f_finalize(t_object* a_this)
 		t_fixed_scope::f_finalize(&p);
 }
 
-void t_type_of<t_scope>::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<t_scope>::f_instantiate(t_object* a_class, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }

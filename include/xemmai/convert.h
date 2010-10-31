@@ -39,7 +39,7 @@ struct t_call_static
 
 struct t_unspecified
 {
-	static void f_call(t_object* a_class, size_t a_n, t_stack& a_stack)
+	static void f_call(t_object* a_class, size_t a_n)
 	{
 		t_throwable::f_throw(L"no method matching signature is found.");
 	}
@@ -47,7 +47,7 @@ struct t_unspecified
 	template<typename T_extension>
 	struct t_bind
 	{
-		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack)
+		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n)
 		{
 			t_throwable::f_throw(L"no method matching signature is found.");
 		}
@@ -98,7 +98,7 @@ struct t_construct
 #define XEMMAI__MACRO__AS_A_N(n) f_as<T_a##n>(a_##n)
 #define XEMMAI__MACRO__AN(n) a##n
 #define XEMMAI__MACRO__AS_AN(n) f_as<T_a##n>(a##n)
-#define XEMMAI__MACRO__POP(n) t_transfer a##n = a_stack.f_pop();
+#define XEMMAI__MACRO__POP(n) t_transfer a##n = stack->f_pop();
 #define XEMMAI__MACRO__CHECK(n) f_check<T_a##n>(a##n, L"argument" XEMMAI__MACRO__L(n));
 #define XEMMAI__MACRO__UNSPECIFIED(n) t_unspecified
 #define XEMMAI__MACRO__ITERATE "convert_call.h"
@@ -110,13 +110,13 @@ struct t_construct_with
 {
 	typedef t_call_construct<T_function> t_type;
 
-	static void f_call(t_object* a_class, size_t a_n, t_stack& a_stack)
+	static void f_call(t_object* a_class, size_t a_n)
 	{
-		t_type::f_call(A_function, a_class, a_n, a_stack);
+		t_type::f_call(A_function, a_class, a_n);
 	}
-	static void f_call(t_object* a_class, t_stack& a_stack)
+	static void f_call(t_object* a_class)
 	{
-		t_type::f_call(A_function, a_class, a_stack);
+		t_type::f_call(A_function, a_class);
 	}
 };
 
@@ -129,13 +129,13 @@ struct t_member
 		typedef typename t_call_member<T_extension, T_function, T_with>::t_type t_type;
 		typedef typename t_call_member<T_extension, T_function, T_with>::t_call t_call;
 
-		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack)
+		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n)
 		{
-			t_call::f_call(A_function, a_module, a_self, a_n, a_stack);
+			t_call::f_call(A_function, a_module, a_self, a_n);
 		}
-		static void f_call(t_object* a_module, const t_value& a_self, t_stack& a_stack)
+		static void f_call(t_object* a_module, const t_value& a_self)
 		{
-			t_call::f_call(A_function, a_module, a_self, a_stack);
+			t_call::f_call(A_function, a_module, a_self);
 		}
 	};
 };
@@ -149,13 +149,13 @@ struct t_static
 		typedef typename t_call_static<T_extension, T_function>::t_type t_type;
 		typedef typename t_call_static<T_extension, T_function>::t_call t_call;
 
-		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack)
+		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n)
 		{
-			t_call::f_call(A_function, a_module, a_n, a_stack);
+			t_call::f_call(A_function, a_module, a_n);
 		}
-		static void f_call(t_object* a_module, t_stack& a_stack)
+		static void f_call(t_object* a_module)
 		{
-			t_call::f_call(A_function, a_module, a_stack);
+			t_call::f_call(A_function, a_module);
 		}
 	};
 };
@@ -163,12 +163,12 @@ struct t_static
 template<typename T, typename T_next = t_unspecified>
 struct t_overload
 {
-	static void f_call(t_object* a_class, size_t a_n, t_stack& a_stack)
+	static void f_call(t_object* a_class, size_t a_n)
 	{
-		if (T::t_type::f_match(a_n, a_stack))
-			T::f_call(a_class, a_stack);
+		if (T::t_type::f_match(a_n))
+			T::f_call(a_class);
 		else
-			T_next::f_call(a_class, a_n, a_stack);
+			T_next::f_call(a_class, a_n);
 	}
 
 	template<typename T_extension>
@@ -176,12 +176,12 @@ struct t_overload
 	{
 		typedef typename T::template t_bind<T_extension> t_bound;
 
-		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack)
+		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n)
 		{
-			if (t_bound::t_type::f_match(a_self, a_n, a_stack))
-				t_bound::f_call(a_module, a_self, a_stack);
+			if (t_bound::t_type::f_match(a_self, a_n))
+				t_bound::f_call(a_module, a_self);
 			else
-				T_next::template t_bind<T_extension>::f_call(a_module, a_self, a_n, a_stack);
+				T_next::template t_bind<T_extension>::f_call(a_module, a_self, a_n);
 		}
 	};
 };
@@ -194,12 +194,12 @@ struct t_overload<t_static<T_function, A_function>, T_next>
 	{
 		typedef typename t_static<T_function, A_function>::template t_bind<T_extension> t_bound;
 
-		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n, t_stack& a_stack)
+		static void f_call(t_object* a_module, const t_value& a_self, size_t a_n)
 		{
-			if (t_bound::t_type::f_match(a_n, a_stack))
-				t_bound::f_call(a_module, a_stack);
+			if (t_bound::t_type::f_match(a_n))
+				t_bound::f_call(a_module);
 			else
-				T_next::template t_bind<T_extension>::f_call(a_module, a_self, a_n, a_stack);
+				T_next::template t_bind<T_extension>::f_call(a_module, a_self, a_n);
 		}
 	};
 };
@@ -311,7 +311,7 @@ struct t_enum_of : t_type_of<int>
 	{
 	}
 	virtual t_type* f_derive(t_object* a_this);
-	virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
+	virtual void f_construct(t_object* a_class, size_t a_n);
 };
 
 template<typename T, typename T_extension>
@@ -321,9 +321,9 @@ t_type* t_enum_of<T, T_extension>::f_derive(t_object* a_this)
 }
 
 template<typename T, typename T_extension>
-void t_enum_of<T, T_extension>::f_construct(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_enum_of<T, T_extension>::f_construct(t_object* a_class, size_t a_n)
 {
-	t_construct_with<t_transfer (*)(t_object*, int), t_enum_of<T, T_extension>::f_construct>::f_call(a_class, a_n, a_stack);
+	t_construct_with<t_transfer (*)(t_object*, int), t_enum_of<T, T_extension>::f_construct>::f_call(a_class, a_n);
 }
 
 }

@@ -83,16 +83,16 @@ struct t_type_of<t_array> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_construct(t_object* a_class, size_t a_n, t_stack& a_stack);
-	virtual void f_hash(t_object* a_this, t_stack& a_stack);
-	virtual void f_get_at(t_object* a_this, t_stack& a_stack);
-	virtual void f_set_at(t_object* a_this, t_stack& a_stack);
-	virtual void f_less(t_object* a_this, t_stack& a_stack);
-	virtual void f_less_equal(t_object* a_this, t_stack& a_stack);
-	virtual void f_greater(t_object* a_this, t_stack& a_stack);
-	virtual void f_greater_equal(t_object* a_this, t_stack& a_stack);
-	virtual void f_equals(t_object* a_this, t_stack& a_stack);
-	virtual void f_not_equals(t_object* a_this, t_stack& a_stack);
+	virtual void f_construct(t_object* a_class, size_t a_n);
+	virtual void f_hash(t_object* a_this);
+	virtual void f_get_at(t_object* a_this);
+	virtual void f_set_at(t_object* a_this);
+	virtual void f_less(t_object* a_this);
+	virtual void f_less_equal(t_object* a_this);
+	virtual void f_greater(t_object* a_this);
+	virtual void f_greater_equal(t_object* a_this);
+	virtual void f_equals(t_object* a_this);
+	virtual void f_not_equals(t_object* a_this);
 };
 
 }

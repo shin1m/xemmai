@@ -16,7 +16,8 @@ ast::t_variable& t_parser::f_variable(ast::t_scope* a_scope, const t_value& a_sy
 {
 	std::map<t_scoped, ast::t_variable>::iterator i = a_scope->v_variables.find(a_symbol);
 	if (i == a_scope->v_variables.end()) {
-		i = a_scope->v_variables.insert(i, std::make_pair(a_symbol, ast::t_variable(a_scope->v_variables.size())));
+		i = a_scope->v_variables.insert(i, std::make_pair(a_symbol, ast::t_variable()));
+		a_scope->v_privates.push_back(&i->second);
 		if (a_loop) i->second.v_varies = true;
 	} else {
 		i->second.v_varies = true;
@@ -68,6 +69,7 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 			case t_lexer::e_token__SELF:
 				{
 					if (!scope) t_throwable::f_throw(L"no more outer scope.");
+					if (outer > 0) scope->v_self_shared = true;
 					ast::t_pointer<ast::t_node> target = new ast::t_self(at, outer);
 					std::vector<wchar_t>::const_iterator end = v_lexer.f_value().end();
 					for (std::vector<wchar_t>::const_iterator i = v_lexer.f_value().begin(); i != end; ++i) target = *i == L':' ? static_cast<ast::t_node*>(new ast::t_class(at, target)) : static_cast<ast::t_node*>(new ast::t_super(at, target));
@@ -112,7 +114,7 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 				v_lexer.f_next();
 				if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 					while (true) {
-						lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable(lambda->v_variables.size())));
+						lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable())).first->second);
 						v_lexer.f_next();
 						if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
 						v_lexer.f_next();
@@ -134,6 +136,24 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 				lambda->v_block.f_add(f_expression());
 			v_scope = lambda->v_outer;
 			v_targets = targets0;
+			std::vector<ast::t_variable*> variables;
+			variables.swap(lambda->v_privates);
+			if (lambda->v_self_shared) ++lambda->v_shareds;
+			std::vector<ast::t_variable*>::const_iterator i = variables.begin();
+			for (std::vector<ast::t_variable*>::const_iterator j = i + lambda->v_arguments; i != j; ++i) {
+				ast::t_variable* p = *i;
+				p->v_index = p->v_shared ? lambda->v_shareds++ : lambda->v_privates.size();
+				lambda->v_privates.push_back(p);
+			}
+			for (; i != variables.end(); ++i) {
+				ast::t_variable* p = *i;
+				if (p->v_shared) {
+					p->v_index = lambda->v_shareds++;
+				} else {
+					p->v_index = lambda->v_privates.size();
+					lambda->v_privates.push_back(p);
+				}
+			}
 			return lambda;
 		}
 	case t_lexer::e_token__LEFT_BRACKET:
@@ -724,6 +744,18 @@ void t_parser::f_parse(ast::t_module& a_module)
 	t_targets targets(false, false);
 	v_targets = &targets;
 	while (v_lexer.f_token() != t_lexer::e_token__EOF) a_module.v_block.f_add(f_statement());
+	std::vector<ast::t_variable*> variables;
+	variables.swap(a_module.v_privates);
+	if (a_module.v_self_shared) ++a_module.v_shareds;
+	for (std::vector<ast::t_variable*>::const_iterator i = variables.begin(); i != variables.end(); ++i) {
+		ast::t_variable* p = *i;
+		if (p->v_shared) {
+			p->v_index = a_module.v_shareds++;
+		} else {
+			p->v_index = a_module.v_privates.size();
+			a_module.v_privates.push_back(p);
+		}
+	}
 }
 
 t_transfer t_parser::t_error::f_instantiate(const std::wstring& a_message, t_lexer& a_lexer)
@@ -745,7 +777,7 @@ t_type* t_type_of<t_parser::t_error>::f_derive(t_object* a_this)
 	return 0;
 }
 
-void t_type_of<t_parser::t_error>::f_instantiate(t_object* a_class, size_t a_n, t_stack& a_stack)
+void t_type_of<t_parser::t_error>::f_instantiate(t_object* a_class, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }
