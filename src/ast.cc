@@ -206,6 +206,7 @@ void t_throw::f_generate(t_generator& a_generator, bool a_tail)
 {
 	v_expression->f_generate(a_generator, false);
 	a_generator.f_emit(e_instruction__THROW);
+	a_generator.f_at(this);
 }
 
 void t_object_get::f_generate(t_generator& a_generator, bool a_tail)

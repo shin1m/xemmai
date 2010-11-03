@@ -115,10 +115,10 @@ void t_fiber::f_throw(const t_scoped& a_value)
 	}
 }
 
-t_transfer t_fiber::f_instantiate(const t_transfer& a_callable, bool a_main, bool a_active)
+t_transfer t_fiber::f_instantiate(const t_transfer& a_callable, size_t a_stack, bool a_main, bool a_active)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_fiber>());
-	object.f_pointer__(new t_fiber(a_callable, 1 << 10, a_main, a_active));
+	object.f_pointer__(new t_fiber(a_callable, a_stack, a_main, a_active));
 	return object;
 }
 
@@ -166,12 +166,12 @@ void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
 	a_scan(p.v_callable);
 	if (p.v_main) return;
 	{
-		t_slot* p0 = p.v_stack.v_p;
+		t_slot* tail = p.v_tail;
 		{
 			portable::t_scoped_lock_for_read lock(a_this->v_lock);
 			if (p.v_active) return;
 		}
-		for (t_slot* p1 = reinterpret_cast<t_slot*>(p.v_stack.v_head); p1 <= p0; ++p1) a_scan(*p1);
+		for (t_slot* q = p.v_stack.f_head(); q <= tail; ++q) a_scan(*q);
 	}
 	if (p.v_active) return;
 	for (t_fiber::t_context* q = p.v_context; q; q = q->v_next) {
@@ -187,10 +187,16 @@ void t_type_of<t_fiber>::f_finalize(t_object* a_this)
 
 void t_type_of<t_fiber>::f_instantiate(t_object* a_class, size_t a_n)
 {
-	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
+	if (a_n != 1 && a_n != 2) t_throwable::f_throw(L"must be called with 1 or 2 argument(s).");
 	t_stack* stack = f_stack();
-	t_transfer x = stack->f_pop();
-	stack->f_return(t_fiber::f_instantiate(x));
+	size_t size = f_engine()->v_stack_size;
+	if (a_n == 2) {
+		t_transfer a1 = stack->f_pop();
+		f_check<size_t>(a1, L"argument1");
+		size = f_as<size_t>(a1);
+	}
+	t_transfer a0 = stack->f_pop();
+	stack->f_return(t_fiber::f_instantiate(a0, size));
 }
 
 void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, size_t a_n)
@@ -210,13 +216,14 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, size_t 
 		p.v_active = true;
 		q.v_active = false;
 	}
-	t_transfer x = f_stack()->f_pop();
+	t_transfer x = q.v_stack.f_pop();
+	q.v_tail = q.v_stack.v_p;
 	thread.v_active = a_this;
 	t_fiber::v_current = a_this;
 	if (p.v_context) {
 		t_stack::v_instance = &p.v_stack;
 		t_fiber::t_context::v_instance = p.v_context;
-		f_stack()->f_return(x);
+		p.v_stack.f_return(x);
 	} else {
 		p.v_stack.f_allocate(2);
 		p.v_stack.f_push(p.v_callable);

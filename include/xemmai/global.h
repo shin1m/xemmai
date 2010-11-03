@@ -641,8 +641,7 @@ inline t_transfer t_value::f_call_with_same(size_t a_n) const
 
 #define XEMMAI__VALUE__UNARY(a_method)\
 		{\
-			t_stack* stack = f_stack();\
-			stack->f_allocate(1);\
+			t_scoped_stack stack(1);\
 			stack->f_push();\
 			f_as<t_type&>(v_p->f_type()).a_method(v_p);\
 			if (f_context()->v_native <= 0) t_code::f_loop();\
@@ -650,8 +649,7 @@ inline t_transfer t_value::f_call_with_same(size_t a_n) const
 		}
 #define XEMMAI__VALUE__BINARY(a_method)\
 		{\
-			t_stack* stack = f_stack();\
-			stack->f_allocate(2);\
+			t_scoped_stack stack(2);\
 			stack->f_push();\
 			stack->f_push(a_value);\
 			f_as<t_type&>(v_p->f_type()).a_method(v_p);\
@@ -682,8 +680,7 @@ inline t_transfer t_value::f_hash() const
 inline t_transfer t_value::f_get_at(const t_value& a_index) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	t_stack* stack = f_stack();
-	stack->f_allocate(2);
+	t_scoped_stack stack(2);
 	stack->f_push();
 	stack->f_push(a_index);
 	f_as<t_type&>(v_p->f_type()).f_get_at(v_p);
@@ -694,8 +691,7 @@ inline t_transfer t_value::f_get_at(const t_value& a_index) const
 inline t_transfer t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	t_stack* stack = f_stack();
-	stack->f_allocate(3);
+	t_scoped_stack stack(3);
 	stack->f_push();
 	stack->f_push(a_index);
 	stack->f_push(a_value);

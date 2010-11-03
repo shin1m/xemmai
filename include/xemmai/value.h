@@ -634,10 +634,11 @@ struct t_stack
 	static XEMMAI__PORTABLE__THREAD t_stack* v_instance;
 
 	t_slot* v_p;
+	size_t v_size;
 	char* v_head;
 	t_slot* v_tail;
 
-	t_stack(size_t a_size) : v_head(new char[sizeof(t_value) * a_size]), v_tail(reinterpret_cast<t_slot*>(v_head) - 1)
+	t_stack(size_t a_size) : v_size(a_size), v_head(new char[sizeof(t_value) * v_size]), v_tail(f_head() - 1)
 	{
 		v_p = v_tail;
 	}
@@ -645,10 +646,14 @@ struct t_stack
 	{
 		delete[] v_head;
 	}
+	t_slot* f_head() const
+	{
+		return reinterpret_cast<t_slot*>(v_head);
+	}
+	void f_expand(size_t a_size);
 	void f_allocate(size_t a_size)
 	{
-		t_slot* p = v_p + a_size;
-		if (v_tail < p) do new(++v_tail) t_slot(); while (v_tail < p);
+		if (v_p + a_size > v_tail) f_expand(a_size);
 	}
 	void f_push(t_object* a_p = 0)
 	{
@@ -718,6 +723,26 @@ inline t_stack* f_stack()
 {
 	return t_stack::v_instance;
 }
+
+class t_scoped_stack
+{
+	t_stack* v_p;
+	t_slot* v_base;
+
+public:
+	t_scoped_stack(size_t a_size) : v_p(f_stack()), v_base(v_p->v_p)
+	{
+		v_p->f_allocate(a_size);
+	}
+	~t_scoped_stack()
+	{
+		while (v_p->v_p > v_base) v_p->f_pop();
+	}
+	t_stack* operator->() const
+	{
+		return v_p;
+	}
+};
 
 }
 

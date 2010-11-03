@@ -106,7 +106,7 @@ struct t_fiber
 		return v_current;
 	}
 	static void f_throw(const t_scoped& a_value);
-	static t_transfer f_instantiate(const t_transfer& a_callable, bool a_main = false, bool a_active = false);
+	static t_transfer f_instantiate(const t_transfer& a_callable, size_t a_stack, bool a_main = false, bool a_active = false);
 	static void f_define(t_object* a_class);
 
 	t_slot v_callable;
@@ -118,9 +118,10 @@ struct t_fiber
 	size_t v_undone;
 	void** v_caught;
 	bool v_main;
-	volatile bool v_active;
+	bool v_active;
+	t_slot* v_tail;
 
-	t_fiber(const t_transfer& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(a_callable), v_stack(a_stack), v_context(0), v_try(0), v_native(0), v_backtrace(0), v_undone(0), v_main(a_main), v_active(a_active)
+	t_fiber(const t_transfer& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(a_callable), v_stack(a_stack), v_context(0), v_try(0), v_native(0), v_backtrace(0), v_undone(0), v_main(a_main), v_active(a_active), v_tail(v_stack.v_p)
 	{
 	}
 	~t_fiber();
@@ -177,7 +178,7 @@ inline void t_fiber::t_context::f_terminate()
 {
 	assert(!v_instance->v_next);
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	assert(fiber.v_stack.v_p == reinterpret_cast<t_slot*>(fiber.v_stack.v_head) - 1);
+	assert(fiber.v_stack.v_p == fiber.v_stack.f_head() - 1);
 	v_instance->f_finalize();
 	v_instance = f_as<t_fiber&>(v_current).v_context = 0;
 }

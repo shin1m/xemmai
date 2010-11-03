@@ -706,6 +706,7 @@ void t_code::f_loop()
 							p.v_backtrace = 0;
 							q.v_backtrace = p.v_context;
 							p.v_context = 0;
+							while (stack->v_p >= stack->f_head()) stack->f_pop();
 						} else {
 							t_fiber::t_context::f_terminate();
 						}

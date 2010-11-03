@@ -29,6 +29,7 @@ class t_engine : public t_value::t_collector
 	friend struct t_fixed_scope;
 	friend struct t_type_of<t_fiber>;
 	friend struct t_thread;
+	friend struct t_type_of<t_thread>;
 	friend class t_symbol;
 	friend struct t_type_of<t_symbol>;
 	friend class t_global;
@@ -114,6 +115,7 @@ class t_engine : public t_value::t_collector
 	t_slot v_module_system;
 	t_slot v_module_io;
 	t_slot v_thread;
+	size_t v_stack_size;
 	bool v_verbose;
 
 	void f_pools__return();
@@ -131,7 +133,7 @@ class t_engine : public t_value::t_collector
 	void f_collector();
 
 public:
-	t_engine(bool a_verbose, size_t a_count, char** a_arguments);
+	t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments);
 	~t_engine();
 	void f_collect()
 	{

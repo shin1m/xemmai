@@ -24,6 +24,6 @@ int main(int argc, char* argv[])
 		std::fprintf(stderr, "usage: %s [options] <script> ...\n", argv[0]);
 		return -1;
 	}
-	xemmai::t_engine engine(verbose, argc, argv);
+	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
 	return engine.f_run();
 }

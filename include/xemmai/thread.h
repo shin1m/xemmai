@@ -68,7 +68,7 @@ struct t_thread
 	static void f_cache_clear();
 	static void f_cache_acquire();
 	static void f_cache_release();
-	static t_transfer f_instantiate(const t_transfer& a_callable);
+	static t_transfer f_instantiate(const t_transfer& a_callable, size_t a_stack);
 	static void f_define(t_object* a_class);
 
 	t_internal* v_internal;

@@ -168,7 +168,7 @@ void t_engine::f_collector()
 	}
 }
 
-t_engine::t_engine(bool a_verbose, size_t a_count, char** a_arguments) :
+t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) :
 v_object__cycle(0),
 v_object__reviving(false),
 v_object__release(0),
@@ -178,6 +178,7 @@ v_synchronizers(0),
 v_synchronizer__wake(0),
 v_module__thread(0),
 v_library__handle__finalizing(0),
+v_stack_size(a_stack),
 v_verbose(a_verbose)
 {
 	v_hash__table__pools[0].f_initialize(0, 11);
@@ -221,7 +222,7 @@ v_verbose(a_verbose)
 	v_thread.f_pointer__(thread);
 	t_thread::v_current = v_thread;
 	(*thread).v_fiber = t_object::f_allocate(type_fiber);
-	(*thread).v_fiber.f_pointer__(new t_fiber(0, 1 << 10, true, true));
+	(*thread).v_fiber.f_pointer__(new t_fiber(0, v_stack_size, true, true));
 	(*thread).v_active = thread->v_fiber;
 	t_fiber::v_current = thread->v_active;
 	{

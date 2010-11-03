@@ -1,6 +1,7 @@
 #include <xemmai/value.h>
 
 #include <xemmai/engine.h>
+#include <xemmai/throwable.h>
 
 namespace xemmai
 {
@@ -176,5 +177,12 @@ void t_slot::f_construct(const t_value& a_value)
 #endif
 
 XEMMAI__PORTABLE__THREAD t_stack* t_stack::v_instance;
+
+void t_stack::f_expand(size_t a_size)
+{
+	t_slot* p = v_p + a_size;
+	if (p >= f_head() + v_size) t_throwable::f_throw(L"stack overflow.");
+	do new(++v_tail) t_slot(); while (v_tail < p);
+}
 
 }
