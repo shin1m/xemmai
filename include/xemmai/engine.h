@@ -26,7 +26,6 @@ class t_engine : public t_value::t_collector
 	friend struct t_fiber;
 	friend struct t_fiber::t_context;
 	friend struct t_fiber::t_try;
-	friend struct t_fixed_scope;
 	friend struct t_type_of<t_fiber>;
 	friend struct t_thread;
 	friend struct t_type_of<t_thread>;
@@ -76,10 +75,6 @@ class t_engine : public t_value::t_collector
 	{
 		static_cast<t_engine*>(t_value::v_collector)->v_fiber__try__pool.f_free(a_p);
 	}
-	static void f_instance__scope__pool__return(t_fixed_scope* a_p)
-	{
-		static_cast<t_engine*>(t_value::v_collector)->v_scope__pool.f_free(a_p);
-	}
 
 	t_shared_pool<t_fixed_pool<t_hash::t_entry, 4096> > v_hash__entry__pool;
 	t_shared_pool<t_variable_pool<t_hash::t_table> > v_hash__table__pools[t_hash::t_table::V_POOLS__SIZE];
@@ -92,7 +87,6 @@ class t_engine : public t_value::t_collector
 	size_t v_object__collect;
 	t_shared_pool<t_fixed_pool<t_fiber::t_context, 256> > v_fiber__context__pool;
 	t_shared_pool<t_fixed_pool<t_fiber::t_try, 256> > v_fiber__try__pool;
-	t_shared_pool<t_fixed_pool<t_fixed_scope, 256> > v_scope__pool;
 	void* v_fiber__instructions[10];
 	t_thread::t_internal* v_thread__internals;
 	portable::t_mutex v_thread__mutex;

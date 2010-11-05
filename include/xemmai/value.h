@@ -195,14 +195,14 @@ protected:
 			v_increments->f_push(v_p);
 		}
 	}
-	void f_assign(t_object* a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_object* a_p)
 	{
 		if (a_p) v_increments->f_push(a_p);
 		t_object* p = v_p;
 		v_p = a_p;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
 	}
-	void f_assign(const t_value& a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(const t_value& a_value)
 	{
 		switch (a_value.f_tag()) {
 		case e_tag__NULL:

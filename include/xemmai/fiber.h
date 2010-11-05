@@ -63,7 +63,7 @@ struct t_fiber
 			a_scan(v_scope);
 			a_scan(v_code);
 		}
-		XEMMAI__PORTABLE__FORCE_INLINE void f_finalize()
+		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_finalize()
 		{
 			v_outer = 0;
 			v_self = 0;
