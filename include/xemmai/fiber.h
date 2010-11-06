@@ -44,8 +44,8 @@ struct t_fiber
 		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE static void f_pop(size_t a_n);
 		static void f_backtrace();
 
-		t_context* v_next;
 		t_slot* v_base;
+		t_context* v_next;
 		t_slot v_outer;
 		t_slot v_self;
 		t_slot v_scope;
