@@ -64,15 +64,15 @@ struct t_type_of<std::wstring> : t_type
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_construct(t_object* a_class, size_t a_n);
-	virtual void f_hash(t_object* a_this);
-	virtual void f_add(t_object* a_this);
-	virtual void f_less(t_object* a_this);
-	virtual void f_less_equal(t_object* a_this);
-	virtual void f_greater(t_object* a_this);
-	virtual void f_greater_equal(t_object* a_this);
-	virtual void f_equals(t_object* a_this);
-	virtual void f_not_equals(t_object* a_this);
+	virtual void f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual void f_hash(t_object* a_this, t_slot* a_stack);
+	virtual void f_add(t_object* a_this, t_slot* a_stack);
+	virtual void f_less(t_object* a_this, t_slot* a_stack);
+	virtual void f_less_equal(t_object* a_this, t_slot* a_stack);
+	virtual void f_greater(t_object* a_this, t_slot* a_stack);
+	virtual void f_greater_equal(t_object* a_this, t_slot* a_stack);
+	virtual void f_equals(t_object* a_this, t_slot* a_stack);
+	virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
 };
 
 }

@@ -87,7 +87,6 @@ class t_engine : public t_value::t_collector
 	size_t v_object__collect;
 	t_shared_pool<t_fixed_pool<t_fiber::t_context, 256> > v_fiber__context__pool;
 	t_shared_pool<t_fixed_pool<t_fiber::t_try, 256> > v_fiber__try__pool;
-	void* v_fiber__instructions[10];
 	t_thread::t_internal* v_thread__internals;
 	portable::t_mutex v_thread__mutex;
 	portable::t_condition v_thread__condition;
@@ -109,6 +108,7 @@ class t_engine : public t_value::t_collector
 	t_slot v_module_system;
 	t_slot v_module_io;
 	t_slot v_thread;
+	t_slot v_code_fiber;
 	size_t v_stack_size;
 	bool v_verbose;
 

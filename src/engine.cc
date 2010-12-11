@@ -185,17 +185,6 @@ v_verbose(a_verbose)
 	v_hash__table__pools[2].f_initialize(2, 67);
 	v_hash__table__pools[3].f_initialize(3, 127);
 	v_object__pool.f_grow();
-	v_fiber__instructions[0] = reinterpret_cast<void*>(e_instruction__TRY);
-	v_fiber__instructions[1] = reinterpret_cast<void*>(v_fiber__instructions + 7);
-	v_fiber__instructions[2] = reinterpret_cast<void*>(v_fiber__instructions + 9);
-	v_fiber__instructions[3] = reinterpret_cast<void*>(e_instruction__CALL);
-	v_fiber__instructions[4] = reinterpret_cast<void*>(1);
-	v_fiber__instructions[5] = reinterpret_cast<void*>(e_instruction__FINALLY);
-	v_fiber__instructions[6] = reinterpret_cast<void*>(t_fiber::t_try::e_state__STEP);
-	v_fiber__instructions[7] = reinterpret_cast<void*>(e_instruction__FINALLY);
-	v_fiber__instructions[8] = reinterpret_cast<void*>(t_fiber::t_try::e_state__THROW);
-	v_fiber__instructions[9] = reinterpret_cast<void*>(e_instruction__FIBER_EXIT);
-	t_code::f_generate(v_fiber__instructions);
 	t_thread* thread = new t_thread(0);
 	thread->v_internal->f_initialize();
 	v_thread__internals = thread->v_internal->v_next = thread->v_internal;
@@ -288,6 +277,28 @@ v_verbose(a_verbose)
 	t_transfer error = io::t_file::f_instantiate(stderr);
 	v_module_system.f_put(t_symbol::f_instantiate(L"native_error"), t_value(error));
 	v_module_system.f_put(t_symbol::f_instantiate(L"error"), io::t_writer::f_instantiate(error, L""));
+	{
+		v_code_fiber = t_code::f_instantiate(std::wstring(), false, 2, 0, 0);
+		t_code& code = f_as<t_code&>(v_code_fiber);
+		t_code::t_label catch0;
+		t_code::t_label finally0;
+		code.f_emit(e_instruction__TRY);
+		code.f_operand(0);
+		code.f_operand(catch0);
+		code.f_operand(finally0);
+		code.f_emit(e_instruction__CALL);
+		code.f_operand(0);
+		code.f_operand(1);
+		code.f_emit(e_instruction__FINALLY);
+		code.f_operand(t_fiber::t_try::e_state__STEP);
+		code.f_target(catch0);
+		code.f_emit(e_instruction__FINALLY);
+		code.f_operand(t_fiber::t_try::e_state__THROW);
+		code.f_target(finally0);
+		code.f_emit(e_instruction__FIBER_EXIT);
+		code.f_resolve(catch0);
+		code.f_resolve(finally0);
+	}
 }
 
 t_engine::~t_engine()
@@ -295,6 +306,7 @@ t_engine::~t_engine()
 	v_module_global = 0;
 	v_module_system = 0;
 	v_module_io = 0;
+	v_code_fiber = 0;
 	t_thread::f_cache_clear();
 	{
 		t_thread& thread = f_as<t_thread&>(v_thread);

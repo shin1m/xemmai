@@ -164,18 +164,17 @@ void t_type_of<t_thread>::f_finalize(t_object* a_this)
 	delete &f_as<t_thread&>(a_this);
 }
 
-void t_type_of<t_thread>::f_instantiate(t_object* a_class, size_t a_n)
+void t_type_of<t_thread>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(L"must be called with 1 or 2 argument(s).");
-	t_stack* stack = f_stack();
 	size_t size = f_engine()->v_stack_size;
+	t_transfer a0 = a_stack[1].f_transfer();
 	if (a_n == 2) {
-		t_transfer a1 = stack->f_pop();
+		t_transfer a1 = a_stack[2].f_transfer();
 		f_check<size_t>(a1, L"argument1");
 		size = f_as<size_t>(a1);
 	}
-	t_transfer a0 = stack->f_pop();
-	stack->f_return(t_thread::f_instantiate(a0, size));
+	a_stack[0].f_construct(t_thread::f_instantiate(a0, size));
 }
 
 }

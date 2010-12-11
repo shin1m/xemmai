@@ -34,20 +34,19 @@ void t_class::f_finalize(t_object* a_this)
 	delete &f_as<t_type&>(a_this);
 }
 
-void t_class::f_instantiate(t_object* a_class, size_t a_n)
+void t_class::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n > 1) t_throwable::f_throw(L"must be called with or without an argument.");
-	t_stack* stack = f_stack();
 	t_transfer x;
 	if (a_n > 0) {
-		x = stack->f_pop();
+		x = a_stack[1].f_transfer();
 		if (x.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	} else {
 		x = f_global()->f_type<t_object>();
 	}
 	t_type* type = f_as<t_type&>(x).f_derive(x);
 	if (!type) t_throwable::f_throw(L"underivable.");
-	stack->f_return(f_instantiate(type));
+	a_stack[0].f_construct(f_instantiate(type));
 }
 
 t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
@@ -110,19 +109,18 @@ t_transfer t_class::f_remove(t_object* a_this, t_object* a_key)
 	return value;
 }
 
-void t_class::f_call(t_object* a_this, const t_value& a_self, size_t a_n)
+void t_class::f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n)
 {
 	t_native_context context;
-	f_as<t_type&>(a_this).f_instantiate(a_this, a_n);
+	f_as<t_type&>(a_this).f_instantiate(a_this, a_stack, a_n);
 	context.f_done();
 }
 
-void t_class::f_send(t_object* a_this)
+void t_class::f_send(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
-	t_stack* stack = f_stack();
-	stack->f_pop().f_call_and_return(a_this, 0);
-	stack->f_top() = a_this;
+	a_stack[1].f_transfer().f_call_and_return(a_this, a_stack, 0);
+	a_stack[0] = a_this;
 	context.f_done();
 }
 

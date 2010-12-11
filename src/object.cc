@@ -276,20 +276,18 @@ t_transfer t_object::f_allocate(t_object* a_type)
 }
 #endif
 
-void t_object::f_call_and_return(const t_value& a_self, size_t a_n)
+void t_object::f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n)
 {
-	f_call(a_self, a_n);
+	f_call(a_self, a_stack, a_n);
 	if (f_context()->v_native <= 0) t_code::f_loop();
 }
 
-t_transfer t_object::f_call_with_same(size_t a_n)
+t_transfer t_object::f_call_with_same(t_slot* a_stack, size_t a_n)
 {
 	t_scoped_stack stack(a_n + 1);
-	t_slot* p = &stack->f_at(a_n);
-	stack->f_push();
-	for (size_t i = 0; i < a_n; ++i) stack->f_push(*++p);
-	f_call_and_return(t_value(), a_n);
-	return stack->f_pop();
+	for (size_t i = 1; i <= a_n; ++i) stack[i].f_construct(a_stack[i]);
+	f_call_and_return(t_value(), stack, a_n);
+	return stack.f_return();
 }
 
 }

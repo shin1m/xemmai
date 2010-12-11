@@ -11,178 +11,9 @@
 namespace xemmai
 {
 
-t_transfer t_code::f_instantiate(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments)
-{
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_code>());
-	object.f_pointer__(new t_code(a_path, a_shared, a_privates, a_shareds, a_arguments));
-	return object;
-}
+#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
+const void** t_code::v_labels = t_code::f_labels();
 
-void t_code::f_generate(void** a_p)
-{
-#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-	const void** labels;
-	f_loop(&labels);
-#endif
-	while (true) {
-		int i = reinterpret_cast<int>(*a_p);
-#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-#define XEMMAI__CODE__REPLACE(a_name) *a_p = const_cast<void*>(labels[e_instruction__##a_name]);
-		*a_p = const_cast<void*>(labels[i]);
-#else
-#define XEMMAI__CODE__REPLACE(a_name) *a_p = reinterpret_cast<void*>(e_instruction__##a_name);
-#endif
-		switch (static_cast<t_instruction>(i)) {
-		case e_instruction__JUMP:
-		case e_instruction__BRANCH:
-			a_p += 2;
-			break;
-		case e_instruction__TRY:
-		case e_instruction__CATCH:
-			a_p += 3;
-			break;
-		case e_instruction__FINALLY:
-			a_p += 2;
-			break;
-		case e_instruction__YRT:
-			a_p += 4;
-			break;
-		case e_instruction__THROW:
-		case e_instruction__POP:
-			++a_p;
-			break;
-		case e_instruction__OBJECT_GET:
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_GET_INDIRECT:
-			++a_p;
-			break;
-		case e_instruction__OBJECT_PUT:
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_PUT_INDIRECT:
-			++a_p;
-			break;
-		case e_instruction__OBJECT_HAS:
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_HAS_INDIRECT:
-			++a_p;
-			break;
-		case e_instruction__OBJECT_REMOVE:
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_REMOVE_INDIRECT:
-			++a_p;
-			break;
-		case e_instruction__GLOBAL_GET:
-			a_p += 2;
-			break;
-		case e_instruction__STACK_GET:
-			a_p += 2;
-			break;
-		case e_instruction__STACK_PUT:
-			a_p += 2;
-			break;
-		case e_instruction__SCOPE_GET:
-		case e_instruction__SCOPE_GET_WITHOUT_LOCK:
-			a_p += 3;
-			break;
-		case e_instruction__SCOPE_PUT:
-			a_p += 3;
-			break;
-		case e_instruction__LAMBDA:
-			f_as<t_code&>(static_cast<t_object*>(*++a_p)).f_generate();
-			++a_p;
-			break;
-		case e_instruction__SELF:
-			a_p += 2;
-			break;
-		case e_instruction__CLASS:
-		case e_instruction__SUPER:
-		case e_instruction__NULL:
-			++a_p;
-			break;
-		case e_instruction__BOOLEAN:
-		case e_instruction__INTEGER:
-			a_p += 2;
-			break;
-		case e_instruction__FLOAT:
-			a_p += 1 + sizeof(double) / sizeof(void*);
-			break;
-		case e_instruction__INSTANCE:
-			a_p += 2;
-			break;
-		case e_instruction__IDENTICAL:
-		case e_instruction__NOT_IDENTICAL:
-			++a_p;
-			break;
-		case e_instruction__RETURN:
-			return;
-		case e_instruction__CALL:
-			a_p += 2;
-			break;
-		case e_instruction__GET_AT:
-		case e_instruction__SET_AT:
-		case e_instruction__PLUS:
-		case e_instruction__MINUS:
-		case e_instruction__NOT:
-		case e_instruction__COMPLEMENT:
-		case e_instruction__MULTIPLY:
-		case e_instruction__DIVIDE:
-		case e_instruction__MODULUS:
-		case e_instruction__ADD:
-		case e_instruction__SUBTRACT:
-		case e_instruction__LEFT_SHIFT:
-		case e_instruction__RIGHT_SHIFT:
-		case e_instruction__LESS:
-		case e_instruction__LESS_EQUAL:
-		case e_instruction__GREATER:
-		case e_instruction__GREATER_EQUAL:
-		case e_instruction__EQUALS:
-		case e_instruction__NOT_EQUALS:
-		case e_instruction__AND:
-		case e_instruction__XOR:
-		case e_instruction__OR:
-		case e_instruction__SEND:
-			++a_p;
-			break;
-		case e_instruction__CALL_TAIL:
-			a_p += 2;
-			break;
-		case e_instruction__GET_AT_TAIL:
-		case e_instruction__SET_AT_TAIL:
-		case e_instruction__PLUS_TAIL:
-		case e_instruction__MINUS_TAIL:
-		case e_instruction__NOT_TAIL:
-		case e_instruction__COMPLEMENT_TAIL:
-		case e_instruction__MULTIPLY_TAIL:
-		case e_instruction__DIVIDE_TAIL:
-		case e_instruction__MODULUS_TAIL:
-		case e_instruction__ADD_TAIL:
-		case e_instruction__SUBTRACT_TAIL:
-		case e_instruction__LEFT_SHIFT_TAIL:
-		case e_instruction__RIGHT_SHIFT_TAIL:
-		case e_instruction__LESS_TAIL:
-		case e_instruction__LESS_EQUAL_TAIL:
-		case e_instruction__GREATER_TAIL:
-		case e_instruction__GREATER_EQUAL_TAIL:
-		case e_instruction__EQUALS_TAIL:
-		case e_instruction__NOT_EQUALS_TAIL:
-		case e_instruction__AND_TAIL:
-		case e_instruction__XOR_TAIL:
-		case e_instruction__OR_TAIL:
-		case e_instruction__SEND_TAIL:
-			++a_p;
-			break;
-		case e_instruction__FIBER_EXIT:
-		case e_instruction__END:
-			return;
-		}
-	}
-}
-
-#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 void t_code::f_loop(const void*** a_labels)
 {
 	if (a_labels) {
@@ -213,7 +44,6 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__SELF,
 			&&label__CLASS,
 			&&label__SUPER,
-			&&label__NULL,
 			&&label__BOOLEAN,
 			&&label__INTEGER,
 			&&label__FLOAT,
@@ -279,11 +109,11 @@ void t_code::f_loop(const void*** a_labels)
 void t_code::f_loop()
 {
 #endif
-	t_stack* stack;
+	t_slot* base;
 	void** pc;
 	while (true) {
 		try {
-			stack = f_stack();
+			base = f_context()->v_base;
 			pc = f_context()->v_pc;
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 #define XEMMAI__CODE__CASE(a_name) label__##a_name:
@@ -299,38 +129,45 @@ void t_code::f_loop()
 					pc = reinterpret_cast<void**>(*++pc);
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(BRANCH)
-					++pc;
-					if (f_as<bool>(stack->f_pop()))
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-					else
-						pc = reinterpret_cast<void**>(*pc);
+						if (f_as<bool>(stack[0]))
+							++pc;
+						else
+							pc = reinterpret_cast<void**>(*pc);
+						stack[0] = 0;
+					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(TRY)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						void** catch0 = reinterpret_cast<void**>(*++pc);
 						void** finally0 = reinterpret_cast<void**>(*++pc);
 						f_context()->v_pc = ++pc;
-						t_fiber::t_try::f_push(stack->v_p, f_context(), catch0, finally0);
+						t_fiber::t_try::f_push(stack, f_context(), catch0, finally0);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CATCH)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer type = stack->f_pop();
-						if (stack->f_top().f_is(type)) {
+						t_slot& value = stack[0];
+						t_slot& type = stack[1];
+						if (value.f_is(type)) {
 							size_t index = reinterpret_cast<size_t>(*++pc);
 							++pc;
-							t_transfer value = stack->f_pop();
 							f_as<t_fiber&>(t_fiber::f_current()).f_caught(value);
 							if ((index & ~(~0 >> 1)) != 0) {
 								t_with_lock_for_write lock(f_context()->v_scope);
-								f_as<t_scope&>(f_context()->v_scope)[~index] = value;
+								f_as<t_scope&>(f_context()->v_scope)[~index] = value.f_transfer();
 							} else {
-								f_context()->v_base[index] = value;
+								base[index] = value.f_transfer();
 							}
 						} else {
 							pc = reinterpret_cast<void**>(*pc);
 						}
+						type = 0;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(FINALLY)
@@ -343,6 +180,7 @@ void t_code::f_loop()
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(YRT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						void** break0 = reinterpret_cast<void**>(*++pc);
 						void** continue0 = reinterpret_cast<void**>(*++pc);
 						void** return0 = reinterpret_cast<void**>(*++pc);
@@ -360,7 +198,7 @@ void t_code::f_loop()
 							break;
 						case t_fiber::t_try::e_state__THROW:
 							pc = p.v_caught;
-							throw t_scoped(stack->f_pop());
+							throw t_scoped(stack[0].f_transfer());
 						default:
 							++pc;
 						}
@@ -368,103 +206,125 @@ void t_code::f_loop()
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(THROW)
-					++pc;
-					throw t_scoped(stack->f_pop());
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						++pc;
+						throw t_scoped(stack[0].f_transfer());
+					}
 				XEMMAI__CODE__CASE(POP)
-					++pc;
-					stack->f_pop();
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						++pc;
+						stack[0] = 0;
+					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_GET)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
 						top = top.f_get(key);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_GET_INDIRECT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer key = stack->f_pop();
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
+						t_slot& key = stack[1];
 						top = top.f_get(key);
+						key = 0;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_PUT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
-						t_transfer value = stack->f_pop();
-						t_slot& top = stack->f_top();
-						top.f_put(key, t_value(value));
-						top = value;
+						t_slot& top = stack[0];
+						t_slot& value = stack[1];
+						top.f_put(key, value);
+						top = value.f_transfer();
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_PUT_INDIRECT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer value = stack->f_pop();
-						t_transfer key = stack->f_pop();
-						t_slot& top = stack->f_top();
-						top.f_put(key, t_value(value));
-						top = value;
+						t_slot& top = stack[0];
+						t_slot& key = stack[1];
+						t_slot& value = stack[2];
+						top.f_put(key, value);
+						key = 0;
+						top = value.f_transfer();
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_HAS)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
 						top = f_global()->f_as(top.f_has(key));
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_HAS_INDIRECT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer key = stack->f_pop();
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
+						t_slot& key = stack[1];
 						top = f_global()->f_as(top.f_has(key));
+						key = 0;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_REMOVE)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
 						top = top.f_remove(key);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_REMOVE_INDIRECT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer key = stack->f_pop();
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
+						t_slot& key = stack[1];
 						top = top.f_remove(key);
+						key = 0;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(GLOBAL_GET)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
-						stack->f_push(f_engine()->f_module_global()->f_get(key));
+						stack[0].f_construct(f_engine()->f_module_global()->f_get(key));
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(STACK_GET)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						stack->f_push(f_context()->v_base[index]);
+						stack[0].f_construct(base[index]);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(STACK_PUT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						f_context()->v_base[index] = stack->f_top();
+						base[index] = stack[0];
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_GET)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t outer = reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
@@ -476,11 +336,12 @@ void t_code::f_loop()
 							scope = f_context()->v_scope;
 						}
 						portable::t_scoped_lock_for_read lock(scope->v_lock);
-						stack->f_push(f_as<const t_scope&>(scope)[index]);
+						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_GET_WITHOUT_LOCK)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t outer = reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
@@ -491,11 +352,12 @@ void t_code::f_loop()
 						} else {
 							scope = f_context()->v_scope;
 						}
-						stack->f_push(f_as<const t_scope&>(scope)[index]);
+						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_PUT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t outer = reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
@@ -507,65 +369,68 @@ void t_code::f_loop()
 							scope = f_context()->v_scope;
 						}
 						portable::t_scoped_lock_for_write lock(scope->v_lock);
-						f_as<t_scope&>(scope)[index] = stack->f_top();
+						f_as<t_scope&>(scope)[index] = stack[0];
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(LAMBDA)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						t_object* code = static_cast<t_object*>(*++pc);
 						++pc;
-						stack->f_push(t_lambda::f_instantiate(f_context()->v_scope, code));
+						stack[0].f_construct(t_lambda::f_instantiate(f_context()->v_scope, code));
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SELF)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t outer = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						if (outer > 0) {
 							t_object* scope = f_context()->v_outer;
 							for (size_t i = 1; i < outer; ++i) scope = f_as<t_scope&>(scope).v_outer;
-							stack->f_push(f_as<const t_scope&>(scope)[0]);
+							stack[0].f_construct(f_as<const t_scope&>(scope)[0]);
 						} else {
-							stack->f_push(f_context()->v_self);
+							stack[0].f_construct(f_context()->v_self);
 						}
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CLASS)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
 						top = top.f_type();
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SUPER)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_slot& top = stack->f_top();
+						t_slot& top = stack[0];
 						if (top.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"not class.");
 						top = f_as<t_type&>(top).v_super;
 						if (!top) t_throwable::f_throw(L"no more super class.");
 					}
 					XEMMAI__CODE__BREAK
-				XEMMAI__CODE__CASE(NULL)
-					++pc;
-					stack->f_push();
-					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(BOOLEAN)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						bool value = static_cast<bool>(reinterpret_cast<int>(*++pc));
 						++pc;
-						stack->f_push(value);
+						stack[0].f_construct(value);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(INTEGER)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						int value = reinterpret_cast<int>(*++pc);
 						++pc;
-						stack->f_push(value);
+						stack[0].f_construct(value);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(FLOAT)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						union
 						{
 							double v0;
@@ -573,70 +438,78 @@ void t_code::f_loop()
 						};
 						for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v1[i] = *++pc;
 						++pc;
-						stack->f_push(v0);
+						stack[0].f_construct(v0);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(INSTANCE)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						t_object* value = static_cast<t_object*>(*++pc);
 						++pc;
-						stack->f_push(value);
+						stack[0].f_construct(value);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(IDENTICAL)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer x = stack->f_pop();
-						t_slot& top = stack->f_top();
-						top = f_global()->f_as(x == top);
+						t_slot& top = stack[0];
+						t_slot& x = stack[1];
+						top = f_global()->f_as(top == x);
+						x = 0;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(NOT_IDENTICAL)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer x = stack->f_pop();
-						t_slot& top = stack->f_top();
-						top = f_global()->f_as(x != top);
+						t_slot& top = stack[0];
+						t_slot& x = stack[1];
+						top = f_global()->f_as(top != x);
+						x = 0;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(RETURN)
 					{
-						t_transfer x = stack->f_pop();
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						base[-1].f_construct(stack[0].f_transfer());
 						t_fiber::t_context::f_pop();
-						stack->f_return(x);
 						if (f_context()->v_native > 0) return;
+						base = f_context()->v_base;
 						pc = f_context()->v_pc;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CALL)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_transfer x = stack->f_at(n).f_transfer();
+						t_transfer x = stack[0].f_transfer();
 						t_fiber::t_context* p = f_context();
 						p->v_pc = pc;
-						x.f_call(t_value(), n);
+						x.f_call(t_value(), stack, n);
 						if (f_context() != p) {
 							if (f_context()->v_native > 0) return;
-							stack = f_stack();
+							base = f_context()->v_base;
 							pc = f_context()->v_pc;
 						}
 					}
 					XEMMAI__CODE__BREAK
-#define XEMMAI__CODE__CASE_BEGIN(a_name, a_n)\
+#define XEMMAI__CODE__CASE_BEGIN(a_name)\
 				XEMMAI__CODE__CASE(a_name)\
 					{\
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);\
 						++pc;\
-						t_transfer x = stack->f_at(a_n).f_transfer();
+						t_transfer x = stack[0].f_transfer();
 #define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
-						stack->f_return(a_x);
-#define XEMMAI__CODE__OBJECT_CALL(a_method)\
+						stack[0].f_construct(a_x);
+#define XEMMAI__CODE__OBJECT_CALL(a_method, a_n)\
 						{\
 							t_fiber::t_context* p = f_context();\
-							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p);\
+							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, stack);\
 							if (f_context() != p) {\
 								p->v_pc = pc;\
-								stack = f_stack();\
+								base = f_context()->v_base;\
 								pc = f_context()->v_pc;\
 							}\
 						}
@@ -650,39 +523,34 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE(CALL_TAIL)
 					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t n = reinterpret_cast<size_t>(*++pc);
-						t_transfer x = stack->f_at(n).f_transfer();
-						t_fiber::t_context::f_pop(n);
-						t_fiber::t_context* p = f_context();
-						x.f_call(t_value(), n);
-						if (f_context() == p) {
-							if (p->v_native > 0) return;
-						} else {
-							if (f_context()->v_native > 0) return;
-							stack = f_stack();
-						}
+						t_transfer x = stack[0].f_transfer();
+						t_fiber::t_context::f_pop(stack, n);
+						x.f_call(t_value(), base - 1, n);
+						if (f_context()->v_native > 0) return;
+						base = f_context()->v_base;
 						pc = f_context()->v_pc;
 					}
 					XEMMAI__CODE__BREAK
-#define XEMMAI__CODE__CASE_BEGIN(a_name, a_n)\
+#define XEMMAI__CODE__CASE_BEGIN(a_name)\
 				XEMMAI__CODE__CASE(a_name##_TAIL)\
 					{\
-						size_t n = a_n;\
-						t_transfer x = stack->f_at(n).f_transfer();
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);\
+						t_transfer x = stack[0].f_transfer();
 #define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
+						base[-1].f_construct(a_x);\
 						t_fiber::t_context::f_pop();\
-						stack->f_return(a_x);\
 						if (f_context()->v_native > 0) return;
-#define XEMMAI__CODE__OBJECT_CALL(a_method)\
-						t_fiber::t_context::f_pop(n);\
-						t_fiber::t_context* p = f_context();\
-						f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p);\
-						if (f_context() == p) {\
-							if (p->v_native > 0) return;\
-						} else {\
-							stack = f_stack();\
+#define XEMMAI__CODE__OBJECT_CALL(a_method, a_n)\
+						{\
+							t_fiber::t_context::f_pop(stack, a_n);\
+							t_fiber::t_context* p = f_context();\
+							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, base - 1);\
+							if (f_context() == p && p->v_native > 0) return;\
 						}
 #define XEMMAI__CODE__CASE_END\
+						base = f_context()->v_base;\
 						pc = f_context()->v_pc;\
 					}\
 					XEMMAI__CODE__BREAK
@@ -693,7 +561,7 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE(FIBER_EXIT)
 					{
-						t_transfer x = stack->f_pop();
+						t_transfer x = base[0].f_transfer();
 						f_context()->v_pc = pc;
 						t_fiber& p = f_as<t_fiber&>(t_fiber::v_current);
 						t_thread& thread = f_as<t_thread&>(t_thread::v_current);
@@ -702,12 +570,14 @@ void t_code::f_loop()
 						t_fiber::t_try::f_pop();
 						if (state == t_fiber::t_try::e_state__THROW) {
 							t_fiber::t_context::f_finalize(q.v_backtrace);
-							p.v_context->v_next = p.v_backtrace;
+							t_fiber::t_context::v_instance->v_next = p.v_backtrace;
 							p.v_backtrace = 0;
-							q.v_backtrace = p.v_context;
+							q.v_backtrace = t_fiber::t_context::v_instance;
 							p.v_context = 0;
-							while (stack->v_p >= stack->f_head()) stack->f_pop();
+							p.v_stack.f_clear(p.v_stack.f_head());
+							p.v_stack.v_used = p.v_stack.f_head();
 						} else {
+							p.v_stack.v_used = p.v_stack.f_head();
 							t_fiber::t_context::f_terminate();
 						}
 						q.v_active = true;
@@ -716,11 +586,11 @@ void t_code::f_loop()
 						t_stack::v_instance = &q.v_stack;
 						t_fiber::t_context::v_instance = q.v_context;
 						p.v_active = false;
-						pc = f_context()->v_pc;
 						if (state == t_fiber::t_try::e_state__THROW) throw t_scoped(x);
-						stack = f_stack();
-						stack->f_return(x);
+						q.v_return->f_construct(x);
 						if (f_context()->v_native > 0) return;
+						base = f_context()->v_base;
+						pc = f_context()->v_pc;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(END)
@@ -740,6 +610,13 @@ void t_code::f_loop()
 	}
 }
 
+t_transfer t_code::f_instantiate(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments)
+{
+	t_transfer object = t_object::f_allocate(f_global()->f_type<t_code>());
+	object.f_pointer__(new t_code(a_path, a_shared, a_privates, a_shareds, a_arguments));
+	return object;
+}
+
 void t_code::f_scan(t_scan a_scan)
 {
 	for (std::vector<void*>::iterator i = v_objects.begin(); i != v_objects.end(); ++i) a_scan(*reinterpret_cast<t_slot*>(&*i));
@@ -749,199 +626,6 @@ const t_at* t_code::f_at(void** a_address) const
 {
 	std::vector<t_address_at>::const_iterator i = std::lower_bound(v_ats.begin(), v_ats.end(), t_address_at(a_address - &v_instructions[0], t_at(0, 0, 0)));
 	return i == v_ats.end() ? 0 : &*i;
-}
-
-void t_code::f_estimate(size_t a_n, void** a_p)
-{
-	while (true) {
-		int i = reinterpret_cast<int>(*a_p);
-		if ((i & e_instruction__DEAD) == 0) break;
-		i &= ~e_instruction__DEAD;
-		*a_p = reinterpret_cast<void*>(i);
-		switch (static_cast<t_instruction>(i)) {
-		case e_instruction__JUMP:
-			f_resolve(a_n, ++a_p);
-			++a_p;
-			break;
-		case e_instruction__BRANCH:
-			--a_n;
-			f_resolve(a_n, ++a_p);
-			++a_p;
-			break;
-		case e_instruction__TRY:
-			if (++a_n > v_size) v_size = a_n;
-			f_resolve(a_n, ++a_p);
-			f_resolve(a_n, ++a_p);
-			++a_p;
-			break;
-		case e_instruction__CATCH:
-			--a_n;
-			f_resolve(a_n, ++a_p);
-			--a_n;
-			a_p += 2;
-			break;
-		case e_instruction__FINALLY:
-			a_p += 2;
-			break;
-		case e_instruction__YRT:
-			f_resolve(a_n, ++a_p);
-			f_resolve(a_n, ++a_p);
-			f_resolve(a_n, ++a_p);
-			++a_p;
-			break;
-		case e_instruction__THROW:
-		case e_instruction__POP:
-			--a_n;
-			++a_p;
-			break;
-		case e_instruction__OBJECT_GET:
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_GET_INDIRECT:
-			--a_n;
-			++a_p;
-			break;
-		case e_instruction__OBJECT_PUT:
-			--a_n;
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_PUT_INDIRECT:
-			a_n -= 2;
-			++a_p;
-			break;
-		case e_instruction__OBJECT_HAS:
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_HAS_INDIRECT:
-			--a_n;
-			++a_p;
-			break;
-		case e_instruction__OBJECT_REMOVE:
-			a_p += 2;
-			break;
-		case e_instruction__OBJECT_REMOVE_INDIRECT:
-			--a_n;
-			++a_p;
-			break;
-		case e_instruction__GLOBAL_GET:
-			if (++a_n > v_size) v_size = a_n;
-			a_p += 2;
-			break;
-		case e_instruction__STACK_GET:
-			if (++a_n > v_size) v_size = a_n;
-			a_p += 2;
-			break;
-		case e_instruction__STACK_PUT:
-			a_p += 2;
-			break;
-		case e_instruction__SCOPE_GET:
-		case e_instruction__SCOPE_GET_WITHOUT_LOCK:
-			if (++a_n > v_size) v_size = a_n;
-			a_p += 3;
-			break;
-		case e_instruction__SCOPE_PUT:
-			a_p += 3;
-			break;
-		case e_instruction__LAMBDA:
-		case e_instruction__SELF:
-			if (++a_n > v_size) v_size = a_n;
-			a_p += 2;
-			break;
-		case e_instruction__CLASS:
-		case e_instruction__SUPER:
-			++a_p;
-			break;
-		case e_instruction__NULL:
-			if (++a_n > v_size) v_size = a_n;
-			++a_p;
-			break;
-		case e_instruction__BOOLEAN:
-		case e_instruction__INTEGER:
-			if (++a_n > v_size) v_size = a_n;
-			a_p += 2;
-			break;
-		case e_instruction__FLOAT:
-			if (++a_n > v_size) v_size = a_n;
-			a_p += 1 + sizeof(double) / sizeof(void*);
-			break;
-		case e_instruction__INSTANCE:
-			if (++a_n > v_size) v_size = a_n;
-			a_p += 2;
-			break;
-		case e_instruction__IDENTICAL:
-		case e_instruction__NOT_IDENTICAL:
-			--a_n;
-			++a_p;
-			break;
-		case e_instruction__RETURN:
-			return;
-		case e_instruction__CALL:
-		case e_instruction__CALL_TAIL:
-			a_n -= reinterpret_cast<size_t>(*++a_p);
-			++a_p;
-			break;
-		case e_instruction__GET_AT:
-		case e_instruction__GET_AT_TAIL:
-			--a_n;
-			++a_p;
-			break;
-		case e_instruction__SET_AT:
-		case e_instruction__SET_AT_TAIL:
-			a_n -= 2;
-			++a_p;
-			break;
-		case e_instruction__PLUS:
-		case e_instruction__MINUS:
-		case e_instruction__NOT:
-		case e_instruction__COMPLEMENT:
-		case e_instruction__PLUS_TAIL:
-		case e_instruction__MINUS_TAIL:
-		case e_instruction__NOT_TAIL:
-		case e_instruction__COMPLEMENT_TAIL:
-			++a_p;
-			break;
-		case e_instruction__MULTIPLY:
-		case e_instruction__DIVIDE:
-		case e_instruction__MODULUS:
-		case e_instruction__ADD:
-		case e_instruction__SUBTRACT:
-		case e_instruction__LEFT_SHIFT:
-		case e_instruction__RIGHT_SHIFT:
-		case e_instruction__LESS:
-		case e_instruction__LESS_EQUAL:
-		case e_instruction__GREATER:
-		case e_instruction__GREATER_EQUAL:
-		case e_instruction__EQUALS:
-		case e_instruction__NOT_EQUALS:
-		case e_instruction__AND:
-		case e_instruction__XOR:
-		case e_instruction__OR:
-		case e_instruction__SEND:
-		case e_instruction__MULTIPLY_TAIL:
-		case e_instruction__DIVIDE_TAIL:
-		case e_instruction__MODULUS_TAIL:
-		case e_instruction__ADD_TAIL:
-		case e_instruction__SUBTRACT_TAIL:
-		case e_instruction__LEFT_SHIFT_TAIL:
-		case e_instruction__RIGHT_SHIFT_TAIL:
-		case e_instruction__LESS_TAIL:
-		case e_instruction__LESS_EQUAL_TAIL:
-		case e_instruction__GREATER_TAIL:
-		case e_instruction__GREATER_EQUAL_TAIL:
-		case e_instruction__EQUALS_TAIL:
-		case e_instruction__NOT_EQUALS_TAIL:
-		case e_instruction__AND_TAIL:
-		case e_instruction__XOR_TAIL:
-		case e_instruction__OR_TAIL:
-		case e_instruction__SEND_TAIL:
-			--a_n;
-			++a_p;
-			break;
-		case e_instruction__FIBER_EXIT:
-		case e_instruction__END:
-			return;
-		}
-	}
 }
 
 t_type* t_type_of<t_code>::f_derive(t_object* a_this)
@@ -959,7 +643,7 @@ void t_type_of<t_code>::f_finalize(t_object* a_this)
 	delete &f_as<t_code&>(a_this);
 }
 
-void t_type_of<t_code>::f_instantiate(t_object* a_class, size_t a_n)
+void t_type_of<t_code>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }

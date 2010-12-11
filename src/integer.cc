@@ -48,12 +48,12 @@ t_type* t_type_of<int>::f_derive(t_object* a_this)
 	return new t_derived<t_type_of>(v_module, a_this);
 }
 
-void t_type_of<int>::f_construct(t_object* a_class, size_t a_n)
+void t_type_of<int>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	t_overload<t_construct_with<t_transfer (*)(t_object*, int), f_construct>,
 	t_overload<t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
 	t_overload<t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
-	> > >::f_call(a_class, a_n);
+	> > >::f_call(a_class, a_stack, a_n);
 }
 
 }

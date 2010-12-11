@@ -36,7 +36,6 @@ enum t_instruction
 	e_instruction__SELF,
 	e_instruction__CLASS,
 	e_instruction__SUPER,
-	e_instruction__NULL,
 	e_instruction__BOOLEAN,
 	e_instruction__INTEGER,
 	e_instruction__FLOAT,
@@ -136,14 +135,27 @@ struct t_code
 			return v_address < a_other.v_address;
 		}
 	};
+	class t_label : std::vector<size_t>
+	{
+		friend class t_code;
 
-	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments);
-	static void f_generate(void** a_p);
+		size_t v_target;
+	};
+
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
+	static const void** v_labels;
+
 	static void f_loop(const void*** a_labels = 0);
+	static const void** f_labels()
+	{
+		const void** labels;
+		f_loop(&labels);
+		return labels;
+	}
 #else
 	static void f_loop();
 #endif
+	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments);
 
 	std::wstring v_path;
 	bool v_shared;
@@ -164,27 +176,17 @@ struct t_code
 	{
 		v_ats.push_back(t_address_at(a_address, a_at));
 	}
-	void f_resolve(size_t a_n, void** a_p)
-	{
-		*a_p = reinterpret_cast<void*>(&v_instructions[reinterpret_cast<size_t>(*a_p)]);
-		f_estimate(a_n, reinterpret_cast<void**>(*a_p));
-	}
-	void f_estimate(size_t a_n, void** a_p);
-	void f_estimate()
-	{
-		f_estimate(v_size, &v_instructions[0]);
-	}
-	void f_generate()
-	{
-		f_generate(&v_instructions[0]);
-	}
 	size_t f_last() const
 	{
 		return v_instructions.size();
 	}
 	void f_emit(t_instruction a_instruction)
 	{
-		v_instructions.push_back(reinterpret_cast<void*>(a_instruction | e_instruction__DEAD));
+#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
+		v_instructions.push_back(const_cast<void*>(v_labels[a_instruction]));
+#else
+		v_instructions.push_back(reinterpret_cast<void*>(a_instruction));
+#endif
 	}
 	void f_operand(size_t a_operand)
 	{
@@ -222,18 +224,19 @@ struct t_code
 		v_objects.push_back(0);
 		v_instructions.push_back(*new(&v_objects.back()) t_slot(a_operand));
 	}
-	void f_operand(std::vector<size_t>& a_label)
+	void f_operand(t_label& a_label)
 	{
 		a_label.push_back(f_last());
 		f_operand(size_t(0));
 	}
-	void f_resolve(const std::vector<size_t>& a_label, size_t a_n)
+	void f_target(t_label& a_label)
 	{
-		for (std::vector<size_t>::const_iterator i = a_label.begin(); i != a_label.end(); ++i) v_instructions[*i] = reinterpret_cast<void*>(a_n);
+		a_label.v_target = f_last();
 	}
-	void f_resolve(const std::vector<size_t>& a_label)
+	void f_resolve(const t_label& a_label)
 	{
-		f_resolve(a_label, f_last());
+		void* p = &v_instructions[a_label.v_target];
+		for (t_label::const_iterator i = a_label.begin(); i != a_label.end(); ++i) v_instructions[*i] = p;
 	}
 	void f_at(const t_at& a_at)
 	{
@@ -250,7 +253,7 @@ struct t_type_of<t_code> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, size_t a_n);
+	virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }

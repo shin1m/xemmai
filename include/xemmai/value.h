@@ -298,9 +298,9 @@ public:
 	void f_put(t_object* a_key, const t_transfer& a_value) const;
 	bool f_has(t_object* a_key) const;
 	t_transfer f_remove(t_object* a_key) const;
-	void f_call(const t_value& a_self, size_t a_n) const;
-	void f_call_and_return(const t_value& a_self, size_t a_n) const;
-	t_transfer f_call_with_same(size_t a_n) const;
+	void f_call(const t_value& a_self, t_slot* a_stack, size_t a_n) const;
+	void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n) const;
+	t_transfer f_call_with_same(t_slot* a_stack, size_t a_n) const;
 	t_transfer f_hash() const;
 #define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
 #define XEMMAI__MACRO__CALL(n) t_transfer operator()(XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TRANSFER_A_N, n)) const;
@@ -633,14 +633,13 @@ struct t_stack
 {
 	static XEMMAI__PORTABLE__THREAD t_stack* v_instance;
 
-	t_slot* v_p;
 	size_t v_size;
 	char* v_head;
 	t_slot* v_tail;
+	t_slot* v_used;
 
-	t_stack(size_t a_size) : v_size(a_size), v_head(new char[sizeof(t_value) * v_size]), v_tail(f_head() - 1)
+	t_stack(size_t a_size) : v_size(a_size), v_head(new char[sizeof(t_value) * v_size]), v_tail(f_head()), v_used(v_tail)
 	{
-		v_p = v_tail;
 	}
 	~t_stack()
 	{
@@ -650,72 +649,14 @@ struct t_stack
 	{
 		return reinterpret_cast<t_slot*>(v_head);
 	}
-	void f_expand(size_t a_size);
-	void f_allocate(size_t a_size)
+	void f_expand(t_slot* a_p);
+	void f_allocate(t_slot* a_p)
 	{
-		if (v_p + a_size > v_tail) f_expand(a_size);
+		if (a_p > v_tail) f_expand(a_p);
 	}
-	void f_push(t_object* a_p = 0)
+	void f_clear(t_slot* a_p)
 	{
-		(++v_p)->f_construct(a_p);
-	}
-	void f_push(bool a_value)
-	{
-		(++v_p)->f_construct(a_value);
-	}
-	void f_push(int a_value)
-	{
-		(++v_p)->f_construct(a_value);
-	}
-	void f_push(double a_value)
-	{
-		(++v_p)->f_construct(a_value);
-	}
-	void f_push(const t_value& a_value)
-	{
-		(++v_p)->f_construct(a_value);
-	}
-	void f_push(const t_transfer& a_value)
-	{
-		(++v_p)->f_construct(a_value);
-	}
-	t_transfer f_pop()
-	{
-		t_transfer p = v_p->f_transfer();
-		--v_p;
-		return p;
-	}
-	t_slot& f_top()
-	{
-		return *v_p;
-	}
-	t_slot& f_at(size_t a_i)
-	{
-		return v_p[-a_i];
-	}
-	void f_return(t_object* a_p = 0)
-	{
-		v_p->f_construct(a_p);
-	}
-	void f_return(bool a_value)
-	{
-		v_p->f_construct(a_value);
-	}
-	void f_return(int a_value)
-	{
-		v_p->f_construct(a_value);
-	}
-	void f_return(double a_value)
-	{
-		v_p->f_construct(a_value);
-	}
-	void f_return(const t_value& a_value)
-	{
-		v_p->f_construct(a_value);
-	}
-	void f_return(const t_transfer& a_value)
-	{
-		v_p->f_construct(a_value);
+		while (a_p < v_used) *a_p++ = 0;
 	}
 };
 
@@ -726,21 +667,29 @@ inline t_stack* f_stack()
 
 class t_scoped_stack
 {
-	t_stack* v_p;
-	t_slot* v_base;
+	t_slot* v_p;
+	bool v_done;
 
 public:
-	t_scoped_stack(size_t a_size) : v_p(f_stack()), v_base(v_p->v_p)
+	t_scoped_stack(size_t a_n) : v_p(f_stack()->v_used), v_done(false)
 	{
-		v_p->f_allocate(a_size);
+		t_slot* p = v_p + a_n;
+		f_stack()->f_allocate(p);
+		f_stack()->v_used = p;
 	}
 	~t_scoped_stack()
 	{
-		while (v_p->v_p > v_base) v_p->f_pop();
+		if (!v_done) f_stack()->f_clear(v_p);
+		f_stack()->v_used = v_p;
 	}
-	t_stack* operator->() const
+	operator t_slot*() const
 	{
 		return v_p;
+	}
+	t_transfer f_return()
+	{
+		v_done = true;
+		return v_p[0].f_transfer();
 	}
 };
 

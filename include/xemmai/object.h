@@ -214,13 +214,13 @@ public:
 	{
 		return f_type_as_type()->f_remove(this, a_key);
 	}
-	void f_call(const t_value& a_self, size_t a_n)
+	void f_call(const t_value& a_self, t_slot* a_stack, size_t a_n)
 	{
-		f_type_as_type()->f_call(this, a_self, a_n);
+		f_type_as_type()->f_call(this, a_self, a_stack, a_n);
 	}
-	XEMMAI__PORTABLE__EXPORT void f_call_and_return(const t_value& a_self, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT t_transfer f_call_with_same(size_t a_n);
-#define XEMMAI__MACRO__PUSH_A_N(n) stack->f_push(a_##n);
+	XEMMAI__PORTABLE__EXPORT void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT t_transfer f_call_with_same(t_slot* a_stack, size_t a_n);
+#define XEMMAI__MACRO__CONSTRUCT_A_N(n) stack[n + 1].f_construct(a_##n);
 #define XEMMAI__MACRO__ITERATE "object_call.h"
 #define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT
 #include "macro.h"

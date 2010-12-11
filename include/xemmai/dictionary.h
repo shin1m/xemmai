@@ -71,12 +71,12 @@ struct t_type_of<t_dictionary> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_construct(t_object* a_class, size_t a_n);
-	virtual void f_hash(t_object* a_this);
-	virtual void f_get_at(t_object* a_this);
-	virtual void f_set_at(t_object* a_this);
-	virtual void f_equals(t_object* a_this);
-	virtual void f_not_equals(t_object* a_this);
+	virtual void f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual void f_hash(t_object* a_this, t_slot* a_stack);
+	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
+	virtual void f_set_at(t_object* a_this, t_slot* a_stack);
+	virtual void f_equals(t_object* a_this, t_slot* a_stack);
+	virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
 };
 
 }

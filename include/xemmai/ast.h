@@ -1,6 +1,7 @@
 #ifndef XEMMAI__SYNTAX_H
 #define XEMMAI__SYNTAX_H
 
+#include <deque>
 #include <map>
 
 #include "code.h"
@@ -95,6 +96,10 @@ public:
 	{
 		return v_ps.end();
 	}
+	T* operator[](size_t a_i) const
+	{
+		return v_ps[a_i];
+	}
 	void f_add(T* a_p)
 	{
 		v_ps.push_back(a_p);
@@ -117,11 +122,11 @@ public:
 	{
 	}
 	virtual ~t_node();
-	virtual void f_generate(t_generator& a_generator, bool a_tail) = 0;
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail) = 0;
 };
 
-void f_generate_block(t_generator& a_generator, const t_pointers<t_node>& a_nodes, bool a_tail);
-void f_generate_block_without_value(t_generator& a_generator, const t_pointers<t_node>& a_nodes);
+void f_generate_block(t_generator& a_generator, size_t a_stack, const t_pointers<t_node>& a_nodes, bool a_tail);
+void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, const t_pointers<t_node>& a_nodes);
 
 struct t_variable
 {
@@ -156,7 +161,7 @@ struct t_lambda : t_node, t_scope
 	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer), v_arguments(0)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_if : t_node
@@ -168,7 +173,7 @@ struct t_if : t_node
 	t_if(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_while : t_node
@@ -179,7 +184,7 @@ struct t_while : t_node
 	t_while(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_break : t_node
@@ -189,7 +194,7 @@ struct t_break : t_node
 	t_break(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_continue : t_node
@@ -197,7 +202,7 @@ struct t_continue : t_node
 	t_continue(const t_at& a_at) : t_node(a_at)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_return : t_node
@@ -207,7 +212,7 @@ struct t_return : t_node
 	t_return(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_try : t_node
@@ -230,7 +235,7 @@ struct t_try : t_node
 	t_try(const t_at& a_at) : t_node(a_at)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_throw : t_node
@@ -240,7 +245,7 @@ struct t_throw : t_node
 	t_throw(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_get : t_node
@@ -251,7 +256,7 @@ struct t_object_get : t_node
 	t_object_get(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_get_indirect : t_node
@@ -262,7 +267,7 @@ struct t_object_get_indirect : t_node
 	t_object_get_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_put : t_node
@@ -274,7 +279,7 @@ struct t_object_put : t_node
 	t_object_put(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key, const t_pointer<t_node>& a_value) : t_node(a_at), v_target(a_target), v_key(a_key), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_put_indirect : t_node
@@ -286,7 +291,7 @@ struct t_object_put_indirect : t_node
 	t_object_put_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key, const t_pointer<t_node>& a_value) : t_node(a_at), v_target(a_target), v_key(a_key), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_has : t_node
@@ -297,7 +302,7 @@ struct t_object_has : t_node
 	t_object_has(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_has_indirect : t_node
@@ -308,7 +313,7 @@ struct t_object_has_indirect : t_node
 	t_object_has_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_remove : t_node
@@ -319,7 +324,7 @@ struct t_object_remove : t_node
 	t_object_remove(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_object_remove_indirect : t_node
@@ -330,7 +335,7 @@ struct t_object_remove_indirect : t_node
 	t_object_remove_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_global_get : t_node
@@ -340,7 +345,7 @@ struct t_global_get : t_node
 	t_global_get(const t_at& a_at, const t_transfer& a_key) : t_node(a_at), v_key(a_key)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_scope_get : t_node
@@ -351,7 +356,7 @@ struct t_scope_get : t_node
 	t_scope_get(const t_at& a_at, size_t a_outer, const t_variable& a_variable) : t_node(a_at), v_outer(a_outer), v_variable(a_variable)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_scope_put : t_node
@@ -363,7 +368,7 @@ struct t_scope_put : t_node
 	t_scope_put(const t_at& a_at, size_t a_outer, const t_variable& a_variable, const t_pointer<t_node>& a_value) : t_node(a_at), v_outer(a_outer), v_variable(a_variable), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_self : t_node
@@ -373,7 +378,7 @@ struct t_self : t_node
 	t_self(const t_at& a_at, size_t a_outer) : t_node(a_at), v_outer(a_outer)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_class : t_node
@@ -383,7 +388,7 @@ struct t_class : t_node
 	t_class(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_super : t_node
@@ -393,7 +398,7 @@ struct t_super : t_node
 	t_super(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_null : t_node
@@ -401,7 +406,7 @@ struct t_null : t_node
 	t_null(const t_at& a_at) : t_node(a_at)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_boolean : t_node
@@ -411,7 +416,7 @@ struct t_boolean : t_node
 	t_boolean(const t_at& a_at, bool a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_integer : t_node
@@ -421,7 +426,7 @@ struct t_integer : t_node
 	t_integer(const t_at& a_at, int a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_float : t_node
@@ -431,7 +436,7 @@ struct t_float : t_node
 	t_float(const t_at& a_at, double a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_instance : t_node
@@ -441,7 +446,7 @@ struct t_instance : t_node
 	t_instance(const t_at& a_at, const t_transfer& a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_unary : t_node
@@ -452,7 +457,7 @@ struct t_unary : t_node
 	t_unary(const t_at& a_at, t_instruction a_instruction, const t_pointer<t_node>& a_expression) : t_node(a_at), v_instruction(a_instruction), v_expression(a_expression)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_binary : t_node
@@ -464,7 +469,7 @@ struct t_binary : t_node
 	t_binary(const t_at& a_at, t_instruction a_instruction, const t_pointer<t_node>& a_left, const t_pointer<t_node>& a_right) : t_node(a_at), v_instruction(a_instruction), v_left(a_left), v_right(a_right)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_call : t_node
@@ -475,7 +480,7 @@ struct t_call : t_node
 	t_call(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_get_at : t_node
@@ -486,7 +491,7 @@ struct t_get_at : t_node
 	t_get_at(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_index) : t_node(a_at), v_target(a_target), v_index(a_index)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_set_at : t_node
@@ -498,7 +503,7 @@ struct t_set_at : t_node
 	t_set_at(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_index, const t_pointer<t_node>& a_value) : t_node(a_at), v_target(a_target), v_index(a_index), v_value(a_value)
 	{
 	}
-	virtual void f_generate(t_generator& a_generator, bool a_tail);
+	virtual size_t f_generate(t_generator& a_generator, size_t a_stack, bool a_tail);
 };
 
 struct t_module : t_scope
@@ -520,13 +525,13 @@ struct t_generator
 {
 	struct t_targets
 	{
-		std::vector<size_t>* v_break;
+		t_code::t_label* v_break;
 		bool v_break_is_tail;
-		std::vector<size_t>* v_continue;
-		std::vector<size_t>* v_return;
+		t_code::t_label* v_continue;
+		t_code::t_label* v_return;
 		bool v_return_is_tail;
 
-		t_targets(std::vector<size_t>* a_break, bool a_break_is_tail, std::vector<size_t>* a_continue, std::vector<size_t>* a_return, bool a_return_is_tail) :
+		t_targets(t_code::t_label* a_break, bool a_break_is_tail, t_code::t_label* a_continue, t_code::t_label* a_return, bool a_return_is_tail) :
 		v_break(a_break), v_break_is_tail(a_break_is_tail),
 		v_continue(a_continue),
 		v_return(a_return), v_return_is_tail(a_return_is_tail)
@@ -537,12 +542,17 @@ struct t_generator
 	std::wstring v_path;
 	ast::t_scope* v_scope;
 	t_code* v_code;
+	std::deque<t_code::t_label>* v_labels;
 	t_targets* v_targets;
 
 	t_transfer f_generate(ast::t_module& a_module);
 	void f_emit(t_instruction a_instruction)
 	{
 		v_code->f_emit(a_instruction);
+	}
+	void f_reserve(size_t a_size)
+	{
+		if (a_size > v_code->v_size) v_code->v_size = a_size;
 	}
 	void f_operand(size_t a_operand)
 	{
@@ -576,17 +586,22 @@ struct t_generator
 	{
 		v_code->f_operand(a_operand);
 	}
-	void f_operand(std::vector<size_t>& a_label)
+	void f_operand(t_code::t_label& a_label)
 	{
 		v_code->f_operand(a_label);
 	}
-	void f_resolve(const std::vector<size_t>& a_label, size_t a_n)
+	void f_target(t_code::t_label& a_label)
 	{
-		v_code->f_resolve(a_label, a_n);
+		v_code->f_target(a_label);
 	}
-	void f_resolve(const std::vector<size_t>& a_label)
+	t_code::t_label& f_label()
 	{
-		v_code->f_resolve(a_label);
+		v_labels->push_back(t_code::t_label());
+		return v_labels->back();
+	}
+	void f_resolve()
+	{
+		for (std::deque<t_code::t_label>::const_iterator i = v_labels->begin(); i != v_labels->end(); ++i) v_code->f_resolve(*i);
 	}
 	void f_at(ast::t_node* a_node)
 	{

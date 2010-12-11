@@ -68,13 +68,12 @@ void t_type_of<t_symbol>::f_finalize(t_object* a_this)
 	delete &p;
 }
 
-void t_type_of<t_symbol>::f_instantiate(t_object* a_class, size_t a_n)
+void t_type_of<t_symbol>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_stack* stack = f_stack();
-	t_transfer a0 = stack->f_pop();
+	t_transfer a0 = a_stack[1].f_transfer();
 	f_check<std::wstring>(a0, L"argument0");
-	stack->f_return(t_symbol::f_instantiate(f_as<const std::wstring&>(a0)));
+	a_stack[0].f_construct(t_symbol::f_instantiate(f_as<const std::wstring&>(a0)));
 }
 
 }

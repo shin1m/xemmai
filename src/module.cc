@@ -66,7 +66,7 @@ t_library* t_module::f_load_library(const std::wstring& a_path)
 void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
 	t_scoped_stack stack(0);
-	t_fiber::t_context::f_push(a_code, 0, a_this, 0);
+	t_fiber::t_context::f_push(a_code, 0, a_this, stack, 0);
 	t_code::f_loop();
 	t_fiber::t_context::f_pop();
 }
@@ -209,13 +209,12 @@ void t_type_of<t_module>::f_finalize(t_object* a_this)
 	delete &f_as<t_module&>(a_this);
 }
 
-void t_type_of<t_module>::f_instantiate(t_object* a_class, size_t a_n)
+void t_type_of<t_module>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_stack* stack = f_stack();
-	t_transfer a0 = stack->f_pop();
+	t_transfer a0 = a_stack[1].f_transfer();
 	f_check<std::wstring>(a0, L"argument0");
-	stack->f_return(t_module::f_instantiate(f_as<const std::wstring&>(a0)));
+	a_stack[0].f_construct(t_module::f_instantiate(f_as<const std::wstring&>(a0)));
 }
 
 }
