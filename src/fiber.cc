@@ -151,7 +151,9 @@ void t_fiber::f_caught(const t_value& a_object)
 		t_with_lock_for_write lock(a_object);
 		t_throwable& p = f_as<t_throwable&>(a_object);
 		t_context::f_finalize(p.v_context);
-		p.v_context = t_context::f_instantiate(v_backtrace, 0, 0, 0, 0, 0, t_context::v_instance->v_code, v_caught);
+		p.v_context = t_context::f_instantiate(v_backtrace, 0);
+		p.v_context->v_code.f_construct(t_context::v_instance->v_code);
+		p.v_context->v_pc = v_caught;
 		p.v_context->v_native = v_undone;
 	} else {
 		t_context::f_finalize(v_backtrace);
@@ -212,7 +214,7 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot*
 	if (p.v_main) {
 		if (a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
 	} else {
-		if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || q.v_context->v_native > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
+		if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || t_fiber::t_context::v_instance->v_native > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
 	}
 	{
 		portable::t_scoped_lock_for_write lock(a_this->v_lock);

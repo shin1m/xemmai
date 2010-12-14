@@ -671,16 +671,19 @@ class t_scoped_stack
 	bool v_done;
 
 public:
-	t_scoped_stack(size_t a_n) : v_p(f_stack()->v_used), v_done(false)
+	t_scoped_stack(size_t a_n) : v_done(false)
 	{
-		t_slot* p = v_p + a_n;
-		f_stack()->f_allocate(p);
-		f_stack()->v_used = p;
+		t_stack* stack = f_stack();
+		v_p = stack->v_used;
+		t_slot* used = v_p + a_n;
+		stack->f_allocate(used);
+		stack->v_used = used;
 	}
 	~t_scoped_stack()
 	{
-		if (!v_done) f_stack()->f_clear(v_p);
-		f_stack()->v_used = v_p;
+		t_stack* stack = f_stack();
+		if (!v_done) stack->f_clear(v_p);
+		stack->v_used = v_p;
 	}
 	operator t_slot*() const
 	{

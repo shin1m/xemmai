@@ -22,7 +22,7 @@ void f_generate_block(t_generator& a_generator, size_t a_stack, const t_pointers
 	} else {
 		for (--j; i != j; ++i) {
 			(*i)->f_generate(a_generator, a_stack, false);
-			a_generator.f_emit(e_instruction__POP);
+			a_generator.f_emit(e_instruction__CLEAR);
 			a_generator.f_operand(a_stack);
 		}
 		(*i)->f_generate(a_generator, a_stack, a_tail);
@@ -33,7 +33,7 @@ void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, co
 {
 	for (t_pointers<t_node>::t_iterator i = a_nodes.f_begin(); i != a_nodes.f_end(); ++i) {
 		(*i)->f_generate(a_generator, a_stack, false);
-		a_generator.f_emit(e_instruction__POP);
+		a_generator.f_emit(e_instruction__CLEAR);
 		a_generator.f_operand(a_stack);
 	}
 }
@@ -62,7 +62,7 @@ size_t t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 		a_generator.f_operand(stack);
 		a_generator.f_operand(0);
 		a_generator.f_operand(0);
-		a_generator.f_emit(e_instruction__POP);
+		a_generator.f_emit(e_instruction__CLEAR);
 		a_generator.f_operand(stack);
 	}
 	for (size_t i = 0; i < v_arguments; ++i) {
@@ -75,7 +75,7 @@ size_t t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 		a_generator.f_operand(stack);
 		a_generator.f_operand(0);
 		a_generator.f_operand(v_privates[i]->v_index);
-		a_generator.f_emit(e_instruction__POP);
+		a_generator.f_emit(e_instruction__CLEAR);
 		a_generator.f_operand(stack);
 	}
 	f_generate_block(a_generator, stack, v_block, true);
@@ -512,7 +512,7 @@ t_transfer t_generator::f_generate(ast::t_module& a_module)
 		f_operand(stack);
 		f_operand(0);
 		f_operand(0);
-		f_emit(e_instruction__POP);
+		f_emit(e_instruction__CLEAR);
 		f_operand(stack);
 	}
 	f_generate_block_without_value(*this, stack, a_module.v_block);

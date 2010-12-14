@@ -25,7 +25,7 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__FINALLY,
 			&&label__YRT,
 			&&label__THROW,
-			&&label__POP,
+			&&label__CLEAR,
 			&&label__OBJECT_GET,
 			&&label__OBJECT_GET_INDIRECT,
 			&&label__OBJECT_PUT,
@@ -144,8 +144,9 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						void** catch0 = reinterpret_cast<void**>(*++pc);
 						void** finally0 = reinterpret_cast<void**>(*++pc);
-						f_context()->v_pc = ++pc;
-						t_fiber::t_try::f_push(stack, f_context(), catch0, finally0);
+						t_fiber::t_context* p = f_context();
+						p->v_pc = ++pc;
+						t_fiber::t_try::f_push(stack, p, catch0, finally0);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CATCH)
@@ -159,8 +160,9 @@ void t_code::f_loop()
 							++pc;
 							f_as<t_fiber&>(t_fiber::f_current()).f_caught(value);
 							if ((index & ~(~0 >> 1)) != 0) {
-								t_with_lock_for_write lock(f_context()->v_scope);
-								f_as<t_scope&>(f_context()->v_scope)[~index] = value.f_transfer();
+								t_slot& scope = f_context()->v_scope;
+								t_with_lock_for_write lock(scope);
+								f_as<t_scope&>(scope)[~index] = value.f_transfer();
 							} else {
 								base[index] = value.f_transfer();
 							}
@@ -211,7 +213,7 @@ void t_code::f_loop()
 						++pc;
 						throw t_scoped(stack[0].f_transfer());
 					}
-				XEMMAI__CODE__CASE(POP)
+				XEMMAI__CODE__CASE(CLEAR)
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
@@ -474,9 +476,10 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						base[-1].f_construct(stack[0].f_transfer());
 						t_fiber::t_context::f_pop();
-						if (f_context()->v_native > 0) return;
-						base = f_context()->v_base;
-						pc = f_context()->v_pc;
+						t_fiber::t_context* p = f_context();
+						if (p->v_native > 0) return;
+						base = p->v_base;
+						pc = p->v_pc;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CALL)
@@ -485,13 +488,14 @@ void t_code::f_loop()
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						t_transfer x = stack[0].f_transfer();
-						t_fiber::t_context* p = f_context();
-						p->v_pc = pc;
+						t_fiber::t_context* p0 = f_context();
+						p0->v_pc = pc;
 						x.f_call(t_value(), stack, n);
-						if (f_context() != p) {
-							if (f_context()->v_native > 0) return;
-							base = f_context()->v_base;
-							pc = f_context()->v_pc;
+						t_fiber::t_context* p1 = f_context();
+						if (p1 != p0) {
+							if (p1->v_native > 0) return;
+							base = p1->v_base;
+							pc = p1->v_pc;
 						}
 					}
 					XEMMAI__CODE__BREAK
@@ -505,12 +509,13 @@ void t_code::f_loop()
 						stack[0].f_construct(a_x);
 #define XEMMAI__CODE__OBJECT_CALL(a_method, a_n)\
 						{\
-							t_fiber::t_context* p = f_context();\
+							t_fiber::t_context* p0 = f_context();\
 							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, stack);\
-							if (f_context() != p) {\
-								p->v_pc = pc;\
-								base = f_context()->v_base;\
-								pc = f_context()->v_pc;\
+							t_fiber::t_context* p1 = f_context();\
+							if (p1 != p0) {\
+								p0->v_pc = pc;\
+								base = p1->v_base;\
+								pc = p1->v_pc;\
 							}\
 						}
 #define XEMMAI__CODE__CASE_END\
@@ -528,9 +533,10 @@ void t_code::f_loop()
 						t_transfer x = stack[0].f_transfer();
 						t_fiber::t_context::f_pop(stack, n);
 						x.f_call(t_value(), base - 1, n);
-						if (f_context()->v_native > 0) return;
-						base = f_context()->v_base;
-						pc = f_context()->v_pc;
+						t_fiber::t_context* p = f_context();\
+						if (p->v_native > 0) return;
+						base = p->v_base;
+						pc = p->v_pc;
 					}
 					XEMMAI__CODE__BREAK
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\

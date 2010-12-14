@@ -17,7 +17,7 @@ enum t_instruction
 	e_instruction__FINALLY,
 	e_instruction__YRT,
 	e_instruction__THROW,
-	e_instruction__POP,
+	e_instruction__CLEAR,
 	e_instruction__OBJECT_GET,
 	e_instruction__OBJECT_GET_INDIRECT,
 	e_instruction__OBJECT_PUT,
