@@ -25,7 +25,7 @@ ast::t_variable& t_parser::f_variable(ast::t_scope* a_scope, const t_value& a_sy
 	return i->second;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 {
 	t_at at = v_lexer.f_at();
 	switch (v_lexer.f_token()) {
@@ -70,7 +70,7 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 				{
 					if (!scope) t_throwable::f_throw(L"no more outer scope.");
 					if (outer > 0) scope->v_self_shared = true;
-					ast::t_pointer<ast::t_node> target = new ast::t_self(at, outer);
+					t_pointer<ast::t_node> target = new ast::t_self(at, outer);
 					std::vector<wchar_t>::const_iterator end = v_lexer.f_value().end();
 					for (std::vector<wchar_t>::const_iterator i = v_lexer.f_value().begin(); i != end; ++i) target = *i == L':' ? static_cast<ast::t_node*>(new ast::t_class(at, target)) : static_cast<ast::t_node*>(new ast::t_super(at, target));
 					v_lexer.f_next();
@@ -101,7 +101,7 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 	case t_lexer::e_token__LEFT_PARENTHESIS:
 		{
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_node> expression = f_expression();
+			t_pointer<ast::t_node> expression = f_expression();
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 			v_lexer.f_next();
 			return expression;
@@ -109,7 +109,7 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 	case t_lexer::e_token__ATMARK:
 		{
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_lambda> lambda = new ast::t_lambda(at, v_scope);
+			t_pointer<ast::t_lambda> lambda = new ast::t_lambda(at, v_scope);
 			if (v_lexer.f_token() == t_lexer::e_token__LEFT_PARENTHESIS) {
 				v_lexer.f_next();
 				if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
@@ -159,7 +159,7 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 	case t_lexer::e_token__LEFT_BRACKET:
 		{
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_array>()));
+			t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_array>()));
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) {
 				f_expressions(call->v_arguments);
 				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) f_throw(L"expecting ']'.");
@@ -170,7 +170,7 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 	case t_lexer::e_token__LEFT_BRACE:
 		{
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_dictionary>()));
+			t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_dictionary>()));
 			size_t n = 0;
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
 				call->v_arguments.f_add(f_expression());
@@ -221,13 +221,13 @@ ast::t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_action(const ast::t_pointer<ast::t_node>& a_target, bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_action(const t_pointer<ast::t_node>& a_target, bool a_assignable)
 {
 	switch (v_lexer.f_token()) {
 	case t_lexer::e_token__LEFT_PARENTHESIS:
 		{
 			t_at at = v_lexer.f_at();
-			ast::t_pointer<ast::t_call> call = new ast::t_call(at, a_target);
+			t_pointer<ast::t_call> call = new ast::t_call(at, a_target);
 			v_lexer.f_next();
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) {
 				f_expressions(call->v_arguments);
@@ -245,7 +245,7 @@ ast::t_pointer<ast::t_node> t_parser::f_action(const ast::t_pointer<ast::t_node>
 			case t_lexer::e_token__LEFT_PARENTHESIS:
 				{
 					v_lexer.f_next();
-					ast::t_pointer<ast::t_node> key = f_expression();
+					t_pointer<ast::t_node> key = f_expression();
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
@@ -278,7 +278,7 @@ ast::t_pointer<ast::t_node> t_parser::f_action(const ast::t_pointer<ast::t_node>
 				case t_lexer::e_token__LEFT_PARENTHESIS:
 					{
 						v_lexer.f_next();
-						ast::t_pointer<ast::t_node> key = f_expression();
+						t_pointer<ast::t_node> key = f_expression();
 						if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 						v_lexer.f_next();
 						return f_action(token == t_lexer::e_token__QUESTION ? static_cast<ast::t_node*>(new ast::t_object_has_indirect(at, a_target, key)) : static_cast<ast::t_node*>(new ast::t_object_remove_indirect(at, a_target, key)), a_assignable);
@@ -300,7 +300,7 @@ ast::t_pointer<ast::t_node> t_parser::f_action(const ast::t_pointer<ast::t_node>
 		{
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_node> index = f_expression();
+			t_pointer<ast::t_node> index = f_expression();
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) f_throw(L"expecting ']'.");
 			v_lexer.f_next();
 			if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
@@ -314,21 +314,21 @@ ast::t_pointer<ast::t_node> t_parser::f_action(const ast::t_pointer<ast::t_node>
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_unary(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_unary(bool a_assignable)
 {
 	t_instruction instruction;
 	switch (v_lexer.f_token()) {
 	case t_lexer::e_token__PLUS:
-		instruction = e_instruction__PLUS;
+		instruction = e_instruction__PLUS_T;
 		break;
 	case t_lexer::e_token__HYPHEN:
-		instruction = e_instruction__MINUS;
+		instruction = e_instruction__MINUS_T;
 		break;
 	case t_lexer::e_token__EXCLAMATION:
-		instruction = e_instruction__NOT;
+		instruction = e_instruction__NOT_T;
 		break;
 	case t_lexer::e_token__TILDE:
-		instruction = e_instruction__COMPLEMENT;
+		instruction = e_instruction__COMPLEMENT_T;
 		break;
 	default:
 		return f_action(f_target(a_assignable), a_assignable);
@@ -336,24 +336,24 @@ ast::t_pointer<ast::t_node> t_parser::f_unary(bool a_assignable)
 	t_at at = v_lexer.f_at();
 	v_lexer.f_next();
 	switch (instruction) {
-	case e_instruction__PLUS:
-	case e_instruction__MINUS:
+	case e_instruction__PLUS_T:
+	case e_instruction__MINUS_T:
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__INTEGER:
 			{
 				int value = f_integer();
 				v_lexer.f_next();
-				return f_action(new ast::t_integer(at, instruction == e_instruction__MINUS ? -value : value), a_assignable);
+				return f_action(new ast::t_integer(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		case t_lexer::e_token__FLOAT:
 			{
 				double value = f_float();
 				v_lexer.f_next();
-				return f_action(new ast::t_float(at, instruction == e_instruction__MINUS ? -value : value), a_assignable);
+				return f_action(new ast::t_float(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		}
 		break;
-	case e_instruction__COMPLEMENT:
+	case e_instruction__COMPLEMENT_T:
 		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
 			int value = f_integer();
 			v_lexer.f_next();
@@ -364,20 +364,20 @@ ast::t_pointer<ast::t_node> t_parser::f_unary(bool a_assignable)
 	return new ast::t_unary(at, instruction, f_unary(false));
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_multiplicative(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_multiplicative(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_unary(a_assignable);
+	t_pointer<ast::t_node> node = f_unary(a_assignable);
 	while (true) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__ASTERISK:
-			instruction = e_instruction__MULTIPLY;
+			instruction = e_instruction__MULTIPLY_TT;
 			break;
 		case t_lexer::e_token__SLASH:
-			instruction = e_instruction__DIVIDE;
+			instruction = e_instruction__DIVIDE_TT;
 			break;
 		case t_lexer::e_token__PERCENT:
-			instruction = e_instruction__MODULUS;
+			instruction = e_instruction__MODULUS_TT;
 			break;
 		default:
 			return node;
@@ -388,17 +388,17 @@ ast::t_pointer<ast::t_node> t_parser::f_multiplicative(bool a_assignable)
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_additive(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_additive(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_multiplicative(a_assignable);
+	t_pointer<ast::t_node> node = f_multiplicative(a_assignable);
 	while (true) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__PLUS:
-			instruction = e_instruction__ADD;
+			instruction = e_instruction__ADD_TT;
 			break;
 		case t_lexer::e_token__HYPHEN:
-			instruction = e_instruction__SUBTRACT;
+			instruction = e_instruction__SUBTRACT_TT;
 			break;
 		default:
 			return node;
@@ -409,17 +409,17 @@ ast::t_pointer<ast::t_node> t_parser::f_additive(bool a_assignable)
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_shift(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_shift(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_additive(a_assignable);
+	t_pointer<ast::t_node> node = f_additive(a_assignable);
 	while (true) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__LEFT_SHIFT:
-			instruction = e_instruction__LEFT_SHIFT;
+			instruction = e_instruction__LEFT_SHIFT_TT;
 			break;
 		case t_lexer::e_token__RIGHT_SHIFT:
-			instruction = e_instruction__RIGHT_SHIFT;
+			instruction = e_instruction__RIGHT_SHIFT_TT;
 			break;
 		default:
 			return node;
@@ -430,23 +430,23 @@ ast::t_pointer<ast::t_node> t_parser::f_shift(bool a_assignable)
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_relational(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_relational(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_shift(a_assignable);
+	t_pointer<ast::t_node> node = f_shift(a_assignable);
 	while (true) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__LESS:
-			instruction = e_instruction__LESS;
+			instruction = e_instruction__LESS_TT;
 			break;
 		case t_lexer::e_token__LESS_EQUAL:
-			instruction = e_instruction__LESS_EQUAL;
+			instruction = e_instruction__LESS_EQUAL_TT;
 			break;
 		case t_lexer::e_token__GREATER:
-			instruction = e_instruction__GREATER;
+			instruction = e_instruction__GREATER_TT;
 			break;
 		case t_lexer::e_token__GREATER_EQUAL:
-			instruction = e_instruction__GREATER_EQUAL;
+			instruction = e_instruction__GREATER_EQUAL_TT;
 			break;
 		default:
 			return node;
@@ -457,23 +457,23 @@ ast::t_pointer<ast::t_node> t_parser::f_relational(bool a_assignable)
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_equality(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_equality(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_relational(a_assignable);
+	t_pointer<ast::t_node> node = f_relational(a_assignable);
 	while (true) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__EQUALS:
-			instruction = e_instruction__EQUALS;
+			instruction = e_instruction__EQUALS_TT;
 			break;
 		case t_lexer::e_token__NOT_EQUALS:
-			instruction = e_instruction__NOT_EQUALS;
+			instruction = e_instruction__NOT_EQUALS_TT;
 			break;
 		case t_lexer::e_token__IDENTICAL:
-			instruction = e_instruction__IDENTICAL;
+			instruction = e_instruction__IDENTICAL_TT;
 			break;
 		case t_lexer::e_token__NOT_IDENTICAL:
-			instruction = e_instruction__NOT_IDENTICAL;
+			instruction = e_instruction__NOT_IDENTICAL_TT;
 			break;
 		default:
 			return node;
@@ -484,46 +484,46 @@ ast::t_pointer<ast::t_node> t_parser::f_equality(bool a_assignable)
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_and(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_and(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_equality(a_assignable);
+	t_pointer<ast::t_node> node = f_equality(a_assignable);
 	while (v_lexer.f_token() == t_lexer::e_token__AMPERSAND) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = new ast::t_binary(at, e_instruction__AND, node, f_equality(false));
+		node = new ast::t_binary(at, e_instruction__AND_TT, node, f_equality(false));
 	}
 	return node;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_xor(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_xor(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_and(a_assignable);
+	t_pointer<ast::t_node> node = f_and(a_assignable);
 	while (v_lexer.f_token() == t_lexer::e_token__HAT) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = new ast::t_binary(at, e_instruction__XOR, node, f_and(false));
+		node = new ast::t_binary(at, e_instruction__XOR_TT, node, f_and(false));
 	}
 	return node;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_or(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_or(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_xor(a_assignable);
+	t_pointer<ast::t_node> node = f_xor(a_assignable);
 	while (v_lexer.f_token() == t_lexer::e_token__BAR) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = new ast::t_binary(at, e_instruction__OR, node, f_xor(false));
+		node = new ast::t_binary(at, e_instruction__OR_TT, node, f_xor(false));
 	}
 	return node;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_and_also(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_and_also(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_or(a_assignable);
+	t_pointer<ast::t_node> node = f_or(a_assignable);
 	while (v_lexer.f_token() == t_lexer::e_token__AND_ALSO) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		ast::t_pointer<ast::t_if> branch = new ast::t_if(at, node);
+		t_pointer<ast::t_if> branch = new ast::t_if(at, node);
 		branch->v_true.f_add(f_or(false));
 		branch->v_false.f_add(new ast::t_boolean(at, false));
 		node = branch;
@@ -531,13 +531,13 @@ ast::t_pointer<ast::t_node> t_parser::f_and_also(bool a_assignable)
 	return node;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_or_else(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_or_else(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_and_also(a_assignable);
+	t_pointer<ast::t_node> node = f_and_also(a_assignable);
 	while (v_lexer.f_token() == t_lexer::e_token__OR_ELSE) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		ast::t_pointer<ast::t_if> branch = new ast::t_if(at, node);
+		t_pointer<ast::t_if> branch = new ast::t_if(at, node);
 		branch->v_true.f_add(new ast::t_boolean(at, true));
 		branch->v_false.f_add(f_and_also(false));
 		node = branch;
@@ -545,9 +545,9 @@ ast::t_pointer<ast::t_node> t_parser::f_or_else(bool a_assignable)
 	return node;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_send(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_send(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_or_else(a_assignable);
+	t_pointer<ast::t_node> node = f_or_else(a_assignable);
 	while (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 2) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
@@ -556,13 +556,13 @@ ast::t_pointer<ast::t_node> t_parser::f_send(bool a_assignable)
 	return node;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_conditional(bool a_assignable)
+t_pointer<ast::t_node> t_parser::f_conditional(bool a_assignable)
 {
-	ast::t_pointer<ast::t_node> node = f_send(a_assignable);
+	t_pointer<ast::t_node> node = f_send(a_assignable);
 	if (v_lexer.f_token() != t_lexer::e_token__QUESTION) return node;
 	t_at at = v_lexer.f_at();
 	v_lexer.f_next();
-	ast::t_pointer<ast::t_if> branch = new ast::t_if(at, node);
+	t_pointer<ast::t_if> branch = new ast::t_if(at, node);
 	branch->v_true.f_add(f_conditional(false));
 	if (!f_single_colon()) f_throw(L"expecting ':'.");
 	v_lexer.f_next();
@@ -570,7 +570,7 @@ ast::t_pointer<ast::t_node> t_parser::f_conditional(bool a_assignable)
 	return branch;
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_expression()
+t_pointer<ast::t_node> t_parser::f_expression()
 {
 	switch (v_lexer.f_token()) {
 	case t_lexer::e_token__IF:
@@ -579,7 +579,7 @@ ast::t_pointer<ast::t_node> t_parser::f_expression()
 			v_lexer.f_next();
 			if (v_lexer.f_token() != t_lexer::e_token__LEFT_PARENTHESIS) f_throw(L"expecting '('.");
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_if> node = new ast::t_if(at, f_expression());
+			t_pointer<ast::t_if> node = new ast::t_if(at, f_expression());
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 			v_lexer.f_next();
 			f_block_or_statement(node->v_true);
@@ -595,7 +595,7 @@ ast::t_pointer<ast::t_node> t_parser::f_expression()
 			v_lexer.f_next();
 			if (v_lexer.f_token() != t_lexer::e_token__LEFT_PARENTHESIS) f_throw(L"expecting '('.");
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_while> node = new ast::t_while(at, f_expression());
+			t_pointer<ast::t_while> node = new ast::t_while(at, f_expression());
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 			v_lexer.f_next();
 			t_targets* targets0 = v_targets;
@@ -610,7 +610,7 @@ ast::t_pointer<ast::t_node> t_parser::f_expression()
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
 			if (v_lexer.f_token() != t_lexer::e_token__LEFT_BRACE) f_throw(L"expecting '{'.");
-			ast::t_pointer<ast::t_try> node = new ast::t_try(at);
+			t_pointer<ast::t_try> node = new ast::t_try(at);
 			t_targets* targets0 = v_targets;
 			bool catching = false;
 			{
@@ -622,14 +622,14 @@ ast::t_pointer<ast::t_node> t_parser::f_expression()
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__LEFT_PARENTHESIS) f_throw(L"expecting '('.");
 					v_lexer.f_next();
-					ast::t_pointer<ast::t_node> expression = f_expression();
+					t_pointer<ast::t_node> expression = f_expression();
 					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
 					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__LEFT_BRACE) f_throw(L"expecting '{'.");
-					ast::t_pointer<ast::t_try::t_catch> c = new ast::t_try::t_catch(expression, f_variable(v_scope, symbol, v_targets->v_loop));
+					t_pointer<ast::t_try::t_catch> c = new ast::t_try::t_catch(expression, f_variable(v_scope, symbol, v_targets->v_loop));
 					f_block(c->v_block);
 					node->v_catches.f_add(c);
 				}
@@ -653,7 +653,7 @@ ast::t_pointer<ast::t_node> t_parser::f_expression()
 	}
 }
 
-void t_parser::f_expressions(ast::t_pointers<ast::t_node>& a_nodes)
+void t_parser::f_expressions(t_pointers<ast::t_node>& a_nodes)
 {
 	a_nodes.f_add(f_expression());
 	while (v_lexer.f_token() == t_lexer::e_token__COMMA) {
@@ -662,7 +662,7 @@ void t_parser::f_expressions(ast::t_pointers<ast::t_node>& a_nodes)
 	}
 }
 
-ast::t_pointer<ast::t_node> t_parser::f_statement()
+t_pointer<ast::t_node> t_parser::f_statement()
 {
 	switch (v_lexer.f_token()) {
 	case t_lexer::e_token__IF:
@@ -674,7 +674,7 @@ ast::t_pointer<ast::t_node> t_parser::f_statement()
 			if (!v_targets->v_loop) f_throw(L"expecting within loop.");
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_node> expression;
+			t_pointer<ast::t_node> expression;
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) {
 				expression = f_expression();
 				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
@@ -696,7 +696,7 @@ ast::t_pointer<ast::t_node> t_parser::f_statement()
 			if (!v_targets->v_return) f_throw(L"expecting within lambda.");
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_node> expression;
+			t_pointer<ast::t_node> expression;
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) {
 				expression = f_expression();
 				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
@@ -708,14 +708,14 @@ ast::t_pointer<ast::t_node> t_parser::f_statement()
 		{
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			ast::t_pointer<ast::t_node> expression = f_expression();
+			t_pointer<ast::t_node> expression = f_expression();
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
 			v_lexer.f_next();
 			return new ast::t_throw(at, expression);
 		}
 	default:
 		{
-			ast::t_pointer<ast::t_node> expression = f_expression();
+			t_pointer<ast::t_node> expression = f_expression();
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
 			v_lexer.f_next();
 			return expression;
@@ -723,14 +723,14 @@ ast::t_pointer<ast::t_node> t_parser::f_statement()
 	}
 }
 
-void t_parser::f_block(ast::t_pointers<ast::t_node>& a_nodes)
+void t_parser::f_block(t_pointers<ast::t_node>& a_nodes)
 {
 	v_lexer.f_next();
 	while (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) a_nodes.f_add(f_statement());
 	v_lexer.f_next();
 }
 
-void t_parser::f_block_or_statement(ast::t_pointers<ast::t_node>& a_nodes)
+void t_parser::f_block_or_statement(t_pointers<ast::t_node>& a_nodes)
 {
 	if (v_lexer.f_token() == t_lexer::e_token__LEFT_BRACE)
 		f_block(a_nodes);

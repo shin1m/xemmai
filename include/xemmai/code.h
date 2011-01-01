@@ -8,6 +8,103 @@
 namespace xemmai
 {
 
+template<typename U>
+class t_pointers;
+
+template<typename T>
+class t_pointer
+{
+	template<typename U>
+	friend class t_pointer;
+	template<typename U>
+	friend class t_pointers;
+
+	mutable T* v_p;
+
+	T* f_release() const
+	{
+		T* p = v_p;
+		v_p = 0;
+		return p;
+	}
+
+public:
+	t_pointer(T* a_p = 0) : v_p(a_p)
+	{
+	}
+	t_pointer(const t_pointer& a_p) : v_p(a_p.f_release())
+	{
+	}
+	template<typename U>
+	t_pointer(const t_pointer<U>& a_p) : v_p(a_p.f_release())
+	{
+	}
+	~t_pointer()
+	{
+		delete v_p;
+	}
+	t_pointer& operator=(const t_pointer& a_p)
+	{
+		delete v_p;
+		v_p = a_p.f_release();
+		return *this;
+	}
+	template<typename U>
+	t_pointer& operator=(const t_pointer<U>& a_p)
+	{
+		delete v_p;
+		v_p = a_p.f_release();
+		return *this;
+	}
+	operator T*() const
+	{
+		return v_p;
+	}
+	T* operator->() const
+	{
+		return v_p;
+	}
+};
+
+template<typename T>
+class t_pointers
+{
+	std::vector<T*> v_ps;
+
+public:
+	typedef typename std::vector<T*>::const_iterator t_iterator;
+
+	~t_pointers()
+	{
+		for (t_iterator i = f_begin(); i != f_end(); ++i) delete *i;
+	}
+	size_t f_size() const
+	{
+		return v_ps.size();
+	}
+	t_iterator f_begin() const
+	{
+		return v_ps.begin();
+	}
+	t_iterator f_end() const
+	{
+		return v_ps.end();
+	}
+	T* operator[](size_t a_i) const
+	{
+		return v_ps[a_i];
+	}
+	void f_add(T* a_p)
+	{
+		v_ps.push_back(a_p);
+	}
+	template<typename U>
+	void f_add(const t_pointer<U>& a_p)
+	{
+		v_ps.push_back(a_p.f_release());
+	}
+};
+
 enum t_instruction
 {
 	e_instruction__JUMP,
@@ -40,60 +137,75 @@ enum t_instruction
 	e_instruction__INTEGER,
 	e_instruction__FLOAT,
 	e_instruction__INSTANCE,
-	e_instruction__IDENTICAL,
-	e_instruction__NOT_IDENTICAL,
 	e_instruction__RETURN,
 	e_instruction__CALL,
 	e_instruction__GET_AT,
 	e_instruction__SET_AT,
-	e_instruction__PLUS,
-	e_instruction__MINUS,
-	e_instruction__NOT,
-	e_instruction__COMPLEMENT,
-	e_instruction__MULTIPLY,
-	e_instruction__DIVIDE,
-	e_instruction__MODULUS,
-	e_instruction__ADD,
-	e_instruction__SUBTRACT,
-	e_instruction__LEFT_SHIFT,
-	e_instruction__RIGHT_SHIFT,
-	e_instruction__LESS,
-	e_instruction__LESS_EQUAL,
-	e_instruction__GREATER,
-	e_instruction__GREATER_EQUAL,
-	e_instruction__EQUALS,
-	e_instruction__NOT_EQUALS,
-	e_instruction__AND,
-	e_instruction__XOR,
-	e_instruction__OR,
+#define XEMMAI__CODE__INSTRUCTION_UNARY(a_name)\
+	e_instruction__##a_name##_V,\
+	e_instruction__##a_name##_L,\
+	e_instruction__##a_name##_T,
+	XEMMAI__CODE__INSTRUCTION_UNARY(PLUS)
+	XEMMAI__CODE__INSTRUCTION_UNARY(MINUS)
+	XEMMAI__CODE__INSTRUCTION_UNARY(NOT)
+	XEMMAI__CODE__INSTRUCTION_UNARY(COMPLEMENT)
+#define XEMMAI__CODE__INSTRUCTION_BINARY(a_name)\
+	e_instruction__##a_name##_VV,\
+	e_instruction__##a_name##_LV,\
+	e_instruction__##a_name##_TV,\
+	e_instruction__##a_name##_VL,\
+	e_instruction__##a_name##_LL,\
+	e_instruction__##a_name##_TL,\
+	e_instruction__##a_name##_VT,\
+	e_instruction__##a_name##_LT,\
+	e_instruction__##a_name##_TT,
+	XEMMAI__CODE__INSTRUCTION_BINARY(MULTIPLY)
+	XEMMAI__CODE__INSTRUCTION_BINARY(DIVIDE)
+	XEMMAI__CODE__INSTRUCTION_BINARY(MODULUS)
+	XEMMAI__CODE__INSTRUCTION_BINARY(ADD)
+	XEMMAI__CODE__INSTRUCTION_BINARY(SUBTRACT)
+	XEMMAI__CODE__INSTRUCTION_BINARY(LEFT_SHIFT)
+	XEMMAI__CODE__INSTRUCTION_BINARY(RIGHT_SHIFT)
+	XEMMAI__CODE__INSTRUCTION_BINARY(LESS)
+	XEMMAI__CODE__INSTRUCTION_BINARY(LESS_EQUAL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(GREATER)
+	XEMMAI__CODE__INSTRUCTION_BINARY(GREATER_EQUAL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(EQUALS)
+	XEMMAI__CODE__INSTRUCTION_BINARY(NOT_EQUALS)
+	XEMMAI__CODE__INSTRUCTION_BINARY(IDENTICAL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(NOT_IDENTICAL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(AND)
+	XEMMAI__CODE__INSTRUCTION_BINARY(XOR)
+	XEMMAI__CODE__INSTRUCTION_BINARY(OR)
 	e_instruction__SEND,
 	e_instruction__CALL_TAIL,
 	e_instruction__GET_AT_TAIL,
 	e_instruction__SET_AT_TAIL,
-	e_instruction__PLUS_TAIL,
-	e_instruction__MINUS_TAIL,
-	e_instruction__NOT_TAIL,
-	e_instruction__COMPLEMENT_TAIL,
-	e_instruction__MULTIPLY_TAIL,
-	e_instruction__DIVIDE_TAIL,
-	e_instruction__MODULUS_TAIL,
-	e_instruction__ADD_TAIL,
-	e_instruction__SUBTRACT_TAIL,
-	e_instruction__LEFT_SHIFT_TAIL,
-	e_instruction__RIGHT_SHIFT_TAIL,
-	e_instruction__LESS_TAIL,
-	e_instruction__LESS_EQUAL_TAIL,
-	e_instruction__GREATER_TAIL,
-	e_instruction__GREATER_EQUAL_TAIL,
-	e_instruction__EQUALS_TAIL,
-	e_instruction__NOT_EQUALS_TAIL,
-	e_instruction__AND_TAIL,
-	e_instruction__XOR_TAIL,
-	e_instruction__OR_TAIL,
+	XEMMAI__CODE__INSTRUCTION_UNARY(PLUS_TAIL)
+	XEMMAI__CODE__INSTRUCTION_UNARY(MINUS_TAIL)
+	XEMMAI__CODE__INSTRUCTION_UNARY(NOT_TAIL)
+	XEMMAI__CODE__INSTRUCTION_UNARY(COMPLEMENT_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(MULTIPLY_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(DIVIDE_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(MODULUS_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(ADD_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(SUBTRACT_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(LEFT_SHIFT_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(RIGHT_SHIFT_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(LESS_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(LESS_EQUAL_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(GREATER_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(GREATER_EQUAL_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(EQUALS_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(NOT_EQUALS_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(IDENTICAL_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(NOT_IDENTICAL_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(AND_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(XOR_TAIL)
+	XEMMAI__CODE__INSTRUCTION_BINARY(OR_TAIL)
 	e_instruction__SEND_TAIL,
 	e_instruction__FIBER_EXIT,
-	e_instruction__END,
-	e_instruction__DEAD = 0x80
+	e_instruction__END
 };
 
 class t_at
@@ -164,7 +276,7 @@ struct t_code
 	size_t v_shareds;
 	size_t v_arguments;
 	std::vector<void*> v_instructions;
-	std::vector<void*> v_objects;
+	t_pointers<t_slot> v_objects;
 	std::vector<t_address_at> v_ats;
 
 	t_code(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments) : v_path(a_path), v_shared(a_shared), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments)
@@ -192,10 +304,6 @@ struct t_code
 	{
 		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
 	}
-	void f_operand(int* a_operand)
-	{
-		v_instructions.push_back(static_cast<void*>(a_operand));
-	}
 	void f_operand(bool a_operand)
 	{
 		v_instructions.push_back(reinterpret_cast<void*>(static_cast<int>(a_operand)));
@@ -216,13 +324,14 @@ struct t_code
 	}
 	void f_operand(t_object* a_operand)
 	{
-		v_objects.push_back(0);
-		v_instructions.push_back(*new(&v_objects.back()) t_slot(a_operand));
+		v_instructions.push_back(a_operand);
+		v_objects.f_add(new t_slot(a_operand));
 	}
 	void f_operand(const t_transfer& a_operand)
 	{
-		v_objects.push_back(0);
-		v_instructions.push_back(*new(&v_objects.back()) t_slot(a_operand));
+		t_slot* p = new t_slot(a_operand);
+		v_instructions.push_back(p);
+		v_objects.f_add(p);
 	}
 	void f_operand(t_label& a_label)
 	{

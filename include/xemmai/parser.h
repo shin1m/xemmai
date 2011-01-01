@@ -39,26 +39,26 @@ class t_parser
 		wchar_t *p;
 		return std::wcstod(&v_lexer.f_value()[0], &p);
 	}
-	ast::t_pointer<ast::t_node> f_target(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_action(const ast::t_pointer<ast::t_node>& a_target, bool a_assignable);
-	ast::t_pointer<ast::t_node> f_unary(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_multiplicative(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_additive(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_shift(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_relational(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_equality(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_and(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_xor(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_or(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_and_also(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_or_else(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_send(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_conditional(bool a_assignable);
-	ast::t_pointer<ast::t_node> f_expression();
-	void f_expressions(ast::t_pointers<ast::t_node>& a_nodes);
-	ast::t_pointer<ast::t_node> f_statement();
-	void f_block(ast::t_pointers<ast::t_node>& a_nodes);
-	void f_block_or_statement(ast::t_pointers<ast::t_node>& a_nodes);
+	t_pointer<ast::t_node> f_target(bool a_assignable);
+	t_pointer<ast::t_node> f_action(const t_pointer<ast::t_node>& a_target, bool a_assignable);
+	t_pointer<ast::t_node> f_unary(bool a_assignable);
+	t_pointer<ast::t_node> f_multiplicative(bool a_assignable);
+	t_pointer<ast::t_node> f_additive(bool a_assignable);
+	t_pointer<ast::t_node> f_shift(bool a_assignable);
+	t_pointer<ast::t_node> f_relational(bool a_assignable);
+	t_pointer<ast::t_node> f_equality(bool a_assignable);
+	t_pointer<ast::t_node> f_and(bool a_assignable);
+	t_pointer<ast::t_node> f_xor(bool a_assignable);
+	t_pointer<ast::t_node> f_or(bool a_assignable);
+	t_pointer<ast::t_node> f_and_also(bool a_assignable);
+	t_pointer<ast::t_node> f_or_else(bool a_assignable);
+	t_pointer<ast::t_node> f_send(bool a_assignable);
+	t_pointer<ast::t_node> f_conditional(bool a_assignable);
+	t_pointer<ast::t_node> f_expression();
+	void f_expressions(t_pointers<ast::t_node>& a_nodes);
+	t_pointer<ast::t_node> f_statement();
+	void f_block(t_pointers<ast::t_node>& a_nodes);
+	void f_block_or_statement(t_pointers<ast::t_node>& a_nodes);
 
 public:
 	struct t_error : t_throwable
