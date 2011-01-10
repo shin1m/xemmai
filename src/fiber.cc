@@ -36,6 +36,33 @@ t_fiber::t_context* t_fiber::t_context::f_allocate()
 	return f_engine()->v_fiber__context__pool.f_allocate(t_engine::V_POOL__ALLOCATION__UNIT);
 }
 
+void t_fiber::t_context::f_pop()
+{
+	t_stack* stack = f_stack();
+	t_context* p = v_instance;
+	t_code& code = f_as<t_code&>(p->v_code);
+	for (size_t i = 0; i < code.v_privates; ++i) p->v_base[i] = 0;
+	stack->v_used = p->v_previous;
+	v_instance = p->v_next;
+	p->f_finalize();
+	if (v_instance->v_native > 0) --f_as<t_fiber&>(v_current).v_native;
+}
+
+void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
+{
+	t_stack* stack = f_stack();
+	t_context* p = v_instance;
+	t_code& code = f_as<t_code&>(p->v_code);
+	++a_stack;
+	size_t i = 0;
+	for (; i < a_n; ++i) p->v_base[i] = a_stack[i].f_transfer();
+	for (; i < code.v_privates; ++i) p->v_base[i] = 0;
+	stack->v_used = std::max(p->v_previous, p->v_base + a_n);
+	v_instance = p->v_next;
+	p->f_finalize();
+	if (v_instance->v_native > 0) --f_as<t_fiber&>(v_current).v_native;
+}
+
 void t_fiber::t_context::f_backtrace()
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);

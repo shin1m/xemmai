@@ -766,8 +766,7 @@ inline t_transfer t_value::f_multiply(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer * f_as<int>(a_value));
+		return t_type_of<int>::f_multiply(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float * f_as<double>(a_value));
@@ -784,8 +783,7 @@ inline t_transfer t_value::f_divide(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer / f_as<int>(a_value));
+		return t_type_of<int>::f_divide(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float / f_as<double>(a_value));
@@ -818,8 +816,7 @@ inline t_transfer t_value::f_add(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer + f_as<int>(a_value));
+		return t_type_of<int>::f_add(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float + f_as<double>(a_value));
@@ -836,8 +833,7 @@ inline t_transfer t_value::f_subtract(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer - f_as<int>(a_value));
+		return t_type_of<int>::f_subtract(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float - f_as<double>(a_value));
@@ -886,8 +882,7 @@ inline t_transfer t_value::f_less(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer < f_as<int>(a_value));
+		return t_value(t_type_of<int>::f_less(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float < f_as<double>(a_value));
@@ -904,8 +899,7 @@ inline t_transfer t_value::f_less_equal(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer <= f_as<int>(a_value));
+		return t_value(t_type_of<int>::f_less_equal(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float <= f_as<double>(a_value));
@@ -922,8 +916,7 @@ inline t_transfer t_value::f_greater(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer > f_as<int>(a_value));
+		return t_value(t_type_of<int>::f_greater(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float > f_as<double>(a_value));
@@ -940,8 +933,7 @@ inline t_transfer t_value::f_greater_equal(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer >= f_as<int>(a_value));
+		return t_value(t_type_of<int>::f_greater_equal(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float >= f_as<double>(a_value));

@@ -121,26 +121,14 @@ struct t_type_of<int> : t_type
 	{
 		return ~a_self;
 	}
-	static int f_multiply(int a_self, int a_value)
-	{
-		return a_self * a_value;
-	}
-	static int f_divide(int a_self, int a_value)
-	{
-		return a_self / a_value;
-	}
+	static t_transfer f_multiply(int a_self, const t_value& a_value);
+	static t_transfer f_divide(int a_self, const t_value& a_value);
 	static int f_modulus(int a_self, int a_value)
 	{
 		return a_self % a_value;
 	}
-	static int f_add(int a_self, int a_value)
-	{
-		return a_self + a_value;
-	}
-	static int f_subtract(int a_self, int a_value)
-	{
-		return a_self - a_value;
-	}
+	static t_transfer f_add(int a_self, const t_value& a_value);
+	static t_transfer f_subtract(int a_self, const t_value& a_value);
 	static int f_left_shift(int a_self, int a_value)
 	{
 		return a_self << a_value;
@@ -149,22 +137,10 @@ struct t_type_of<int> : t_type
 	{
 		return a_self >> a_value;
 	}
-	static bool f_less(int a_self, int a_value)
-	{
-		return a_self < a_value;
-	}
-	static bool f_less_equal(int a_self, int a_value)
-	{
-		return a_self <= a_value;
-	}
-	static bool f_greater(int a_self, int a_value)
-	{
-		return a_self > a_value;
-	}
-	static bool f_greater_equal(int a_self, int a_value)
-	{
-		return a_self >= a_value;
-	}
+	static bool f_less(int a_self, const t_value& a_value);
+	static bool f_less_equal(int a_self, const t_value& a_value);
+	static bool f_greater(int a_self, const t_value& a_value);
+	static bool f_greater_equal(int a_self, const t_value& a_value);
 	static bool f_equals(int a_self, const t_value& a_value);
 	static bool f_not_equals(int a_self, const t_value& a_value);
 	static int f_and(int a_self, int a_value)

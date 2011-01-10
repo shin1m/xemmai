@@ -14,6 +14,8 @@
 namespace xemmai
 {
 
+template<typename T>
+struct t_type_of;
 class t_engine;
 class t_object;
 class t_transfer;
@@ -26,6 +28,8 @@ t_engine* f_engine();
 
 class t_value
 {
+	template<typename T>
+	friend struct t_type_of;
 	friend class t_engine;
 	friend class t_object;
 	friend struct t_slot;

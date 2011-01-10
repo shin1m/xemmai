@@ -22,7 +22,14 @@ struct t_type_of<double> : t_type
 
 		static T0 f_call(T1 a_object)
 		{
-			return static_cast<T0>(a_object.f_float());
+			switch (reinterpret_cast<size_t>(f_object(a_object))) {
+			case t_value::e_tag__INTEGER:
+				return static_cast<T0>(a_object.f_integer());
+			case t_value::e_tag__FLOAT:
+				return static_cast<T0>(a_object.f_float());
+			default:
+				return static_cast<T0>(f_object(a_object)->f_float());
+			}
 		}
 	};
 	template<typename T>
@@ -49,12 +56,12 @@ struct t_type_of<double> : t_type
 		static bool f_call(T a_object)
 		{
 			switch (reinterpret_cast<size_t>(f_object(a_object))) {
-			case t_value::e_tag__FLOAT:
-				return true;
 			case t_value::e_tag__NULL:
 			case t_value::e_tag__BOOLEAN:
-			case t_value::e_tag__INTEGER:
 				return false;
+			case t_value::e_tag__INTEGER:
+			case t_value::e_tag__FLOAT:
+				return true;
 			default:
 				return dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != 0;
 			}
