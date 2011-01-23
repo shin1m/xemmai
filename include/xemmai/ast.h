@@ -82,9 +82,10 @@ struct t_scope
 
 struct t_lambda : t_node, t_scope
 {
+	bool v_variadic;
 	size_t v_arguments;
 
-	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer), v_arguments(0)
+	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer), v_variadic(false), v_arguments(0)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -402,8 +403,9 @@ struct t_call : t_node
 {
 	t_pointer<t_node> v_target;
 	t_pointers<t_node> v_arguments;
+	bool v_expand;
 
-	t_call(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target)
+	t_call(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target), v_expand(false)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);

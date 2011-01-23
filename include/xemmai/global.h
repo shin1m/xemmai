@@ -49,6 +49,7 @@ class t_global : public t_extension
 	t_slot v_type_method;
 	t_slot v_type_code;
 	t_slot v_type_lambda;
+	t_slot v_type_variadic_lambda;
 	t_slot v_type_native;
 	t_slot v_type_throwable;
 	t_slot v_type_null;
@@ -105,6 +106,10 @@ public:
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_object* f_type() const;
+	t_object* f_type_of_variadic_lambda() const
+	{
+		return v_type_variadic_lambda;
+	}
 	t_object* f_symbol_construct() const
 	{
 		return v_symbol_construct;

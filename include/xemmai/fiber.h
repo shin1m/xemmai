@@ -35,7 +35,7 @@ struct t_fiber
 		static void f_initiate(void** a_pc);
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_initiate(const t_value& a_code, const t_value& a_callable, const t_transfer& a_x);
 		static void f_terminate();
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, t_slot* a_stack, size_t a_n);
+		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, t_slot* a_stack);
 		static void f_pop();
 		static void f_pop(t_slot* a_stack, size_t a_n);
 		static void f_backtrace();
@@ -198,7 +198,7 @@ inline void t_fiber::t_context::f_terminate()
 	v_instance = f_as<t_fiber&>(v_current).v_context = 0;
 }
 
-inline void t_fiber::t_context::f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, t_slot* a_stack, size_t a_n)
+inline void t_fiber::t_context::f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, t_slot* a_stack)
 {
 	t_stack* stack = f_stack();
 	t_code& code = f_as<t_code&>(a_code);

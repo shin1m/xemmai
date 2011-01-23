@@ -11,6 +11,7 @@ scripts = \
 	fiber3.xm \
 	thread.xm \
 	tuple.xm \
+	variadic.xm \
 	array.xm \
 	dictionary.xm \
 	bytes.xm \
@@ -23,7 +24,8 @@ scripts = \
 	prime2.xm \
 	prime3.xm \
 	psmtp.xm \
-	mandelbrot.xm
+	mandelbrot.xm \
+	fix.xm
 TESTS = $(scripts) \
 	container/test.xm \
 	callback/test.xm

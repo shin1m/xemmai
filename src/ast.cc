@@ -41,7 +41,7 @@ void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, co
 t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	size_t stack = v_privates.size();
-	t_transfer code = t_code::f_instantiate(a_generator.v_path, v_shared, stack, v_shareds, v_arguments);
+	t_transfer code = t_code::f_instantiate(a_generator.v_path, v_shared, v_variadic, stack, v_shareds, v_arguments);
 	t_scope* scope0 = a_generator.v_scope;
 	a_generator.v_scope = this;
 	t_code* code0 = a_generator.v_code;
@@ -525,7 +525,9 @@ t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_ta
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
 	for (size_t i = 0; i < v_arguments.f_size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 1 + i, false, false);
-	a_generator.f_emit(a_tail ? e_instruction__CALL_TAIL : e_instruction__CALL);
+	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
+	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
+	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(v_arguments.f_size());
 	a_generator.f_at(this);
@@ -560,7 +562,7 @@ t_transfer t_generator::f_generate(ast::t_module& a_module)
 	v_path = a_module.f_path();
 	v_scope = &a_module;
 	size_t stack = a_module.v_privates.size();
-	t_transfer code = t_code::f_instantiate(v_path, true, stack, a_module.v_shareds, 0);
+	t_transfer code = t_code::f_instantiate(v_path, true, false, stack, a_module.v_shareds, 0);
 	v_code = &f_as<t_code&>(code);
 	std::deque<t_code::t_label> labels;
 	v_labels = &labels;

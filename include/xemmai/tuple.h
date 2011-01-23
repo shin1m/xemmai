@@ -55,23 +55,23 @@ public:
 	{
 		return f_entries()[a_index];
 	}
+	std::wstring f_string() const;
+	int f_hash() const;
+	bool f_less(const t_tuple& a_other) const;
+	bool f_less_equal(const t_tuple& a_other) const;
+	bool f_greater(const t_tuple& a_other) const;
+	bool f_greater_equal(const t_tuple& a_other) const;
+	bool f_equals(const t_value& a_other) const;
+	bool f_not_equals(const t_value& a_other) const
+	{
+		return !f_equals(a_other);
+	}
+	void f_each(const t_value& a_callable) const;
 };
 
 template<>
 struct t_type_of<t_tuple> : t_type
 {
-	static std::wstring f_string(const t_value& a_self);
-	static int f_hash(const t_value& a_self);
-	static bool f_less(const t_value& a_self, const t_value& a_other);
-	static bool f_less_equal(const t_value& a_self, const t_value& a_other);
-	static bool f_greater(const t_value& a_self, const t_value& a_other);
-	static bool f_greater_equal(const t_value& a_self, const t_value& a_other);
-	static bool f_equals(const t_value& a_self, const t_value& a_other);
-	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
-	{
-		return !f_equals(a_self, a_other);
-	}
-	static void f_each(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

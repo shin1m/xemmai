@@ -145,6 +145,7 @@ enum t_instruction
 	e_instruction__INSTANCE,
 	e_instruction__RETURN,
 	e_instruction__CALL,
+	e_instruction__CALL_WITH_EXPANSION,
 	e_instruction__GET_AT,
 	e_instruction__SET_AT,
 #define XEMMAI__CODE__INSTRUCTION_UNARY(a_name)\
@@ -185,6 +186,7 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_BINARY(OR)
 	e_instruction__SEND,
 	e_instruction__CALL_TAIL,
+	e_instruction__CALL_WITH_EXPANSION_TAIL,
 	e_instruction__GET_AT_TAIL,
 	e_instruction__SET_AT_TAIL,
 	XEMMAI__CODE__INSTRUCTION_UNARY(PLUS_TAIL)
@@ -273,10 +275,11 @@ struct t_code
 #else
 	static void f_loop();
 #endif
-	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments);
+	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments);
 
 	std::wstring v_path;
 	bool v_shared;
+	bool v_variadic;
 	size_t v_size;
 	size_t v_privates;
 	size_t v_shareds;
@@ -285,7 +288,7 @@ struct t_code
 	t_pointers<t_slot> v_objects;
 	std::vector<t_address_at> v_ats;
 
-	t_code(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments) : v_path(a_path), v_shared(a_shared), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments)
+	t_code(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments) : v_path(a_path), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments)
 	{
 	}
 	void f_scan(t_scan a_scan);

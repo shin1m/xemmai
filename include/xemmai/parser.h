@@ -55,7 +55,7 @@ class t_parser
 	t_pointer<ast::t_node> f_send(bool a_assignable);
 	t_pointer<ast::t_node> f_conditional(bool a_assignable);
 	t_pointer<ast::t_node> f_expression();
-	void f_expressions(t_pointers<ast::t_node>& a_nodes);
+	bool f_expressions(t_pointers<ast::t_node>& a_nodes);
 	t_pointer<ast::t_node> f_statement();
 	void f_block(t_pointers<ast::t_node>& a_nodes);
 	void f_block_or_statement(t_pointers<ast::t_node>& a_nodes);

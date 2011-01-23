@@ -11,6 +11,30 @@
 namespace xemmai
 {
 
+namespace
+{
+
+size_t f_expand(t_slot* a_stack, size_t a_n)
+{
+	assert(a_n > 0);
+	t_native_context context;
+	a_stack += a_n;
+	t_transfer x = a_stack[0].f_transfer();
+	t_transfer size = x.f_get(f_global()->f_symbol_size())();
+	f_check<int>(size, L"size");
+	size_t n = f_as<int>(size);
+	t_stack* stack = f_stack();
+	t_slot* used = a_stack + n;
+	if (used > stack->v_used) {
+		stack->f_allocate(used);
+		stack->v_used = used;
+	}
+	for (int i = 0; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
+	return a_n - 1 + n;
+}
+
+}
+
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 const void** t_code::v_labels = t_code::f_labels();
 
@@ -56,6 +80,7 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__INSTANCE,
 			&&label__RETURN,
 			&&label__CALL,
+			&&label__CALL_WITH_EXPANSION,
 			&&label__GET_AT,
 			&&label__SET_AT,
 #define XEMMAI__CODE__LABEL_UNARY(a_name)\
@@ -96,6 +121,7 @@ void t_code::f_loop(const void*** a_labels)
 			XEMMAI__CODE__LABEL_BINARY(OR)
 			&&label__SEND,
 			&&label__CALL_TAIL,
+			&&label__CALL_WITH_EXPANSION_TAIL,
 			&&label__GET_AT_TAIL,
 			&&label__SET_AT_TAIL,
 			XEMMAI__CODE__LABEL_UNARY(PLUS_TAIL)
@@ -547,6 +573,24 @@ void t_code::f_loop()
 						}
 					}
 					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(CALL_WITH_EXPANSION)
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						size_t n = reinterpret_cast<size_t>(*++pc);
+						++pc;
+						n = f_expand(stack, n);
+						t_transfer x = stack[0].f_transfer();
+						t_fiber::t_context* p0 = f_context();
+						p0->v_pc = pc;
+						x.f_call(t_value(), stack, n);
+						t_fiber::t_context* p1 = f_context();
+						if (p1 != p0) {
+							if (p1->v_native > 0) return;
+							base = p1->v_base;
+							pc = p1->v_pc;
+						}
+					}
+					XEMMAI__CODE__BREAK
 #define XEMMAI__CODE__FETCH()
 #define XEMMAI__CODE__PRIMITIVE(a_x)\
 								stack[0].f_construct(a_x);
@@ -704,6 +748,20 @@ void t_code::f_loop()
 						pc = p->v_pc;
 					}
 					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(CALL_WITH_EXPANSION_TAIL)
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						size_t n = reinterpret_cast<size_t>(*++pc);
+						n = f_expand(stack, n);
+						t_transfer x = stack[0].f_transfer();
+						t_fiber::t_context::f_pop(stack, n);
+						x.f_call(t_value(), base - 1, n);
+						t_fiber::t_context* p = f_context();\
+						if (p->v_native > 0) return;
+						base = p->v_base;
+						pc = p->v_pc;
+					}
+					XEMMAI__CODE__BREAK
 #undef XEMMAI__CODE__PRIMITIVE
 #define XEMMAI__CODE__PRIMITIVE(a_x)
 #undef XEMMAI__CODE__PRIMITIVE_T
@@ -837,10 +895,10 @@ void t_code::f_loop()
 	}
 }
 
-t_transfer t_code::f_instantiate(const std::wstring& a_path, bool a_shared, size_t a_privates, size_t a_shareds, size_t a_arguments)
+t_transfer t_code::f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_code>());
-	object.f_pointer__(new t_code(a_path, a_shared, a_privates, a_shareds, a_arguments));
+	object.f_pointer__(new t_code(a_path, a_shared, a_variadic, a_privates, a_shareds, a_arguments));
 	return object;
 }
 

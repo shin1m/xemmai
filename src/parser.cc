@@ -104,7 +104,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 				v_lexer.f_next();
 				t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_tuple>()));
 				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) {
-					f_expressions(call->v_arguments);
+					call->v_expand = f_expressions(call->v_arguments);
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 				}
 				v_lexer.f_next();
@@ -127,13 +127,28 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 			t_pointer<ast::t_lambda> lambda = new ast::t_lambda(at, v_scope);
 			if (v_lexer.f_token() == t_lexer::e_token__LEFT_PARENTHESIS) {
 				v_lexer.f_next();
-				if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
+				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) {
 					while (true) {
-						lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable())).first->second);
-						v_lexer.f_next();
-						if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
-						v_lexer.f_next();
-						if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
+						switch (v_lexer.f_token()) {
+						case t_lexer::e_token__SYMBOL:
+							lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable())).first->second);
+							v_lexer.f_next();
+							if (v_lexer.f_token() == t_lexer::e_token__COMMA) {
+								v_lexer.f_next();
+								continue;
+							}
+							break;
+						case t_lexer::e_token__ASTERISK:
+							v_lexer.f_next();
+							if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
+							lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable())).first->second);
+							lambda->v_variadic = true;
+							v_lexer.f_next();
+							break;
+						default:
+							f_throw(L"expecting symbol or '*'.");
+						}
+						break;
 					}
 				}
 				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
@@ -176,7 +191,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 			v_lexer.f_next();
 			t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_array>()));
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) {
-				f_expressions(call->v_arguments);
+				call->v_expand = f_expressions(call->v_arguments);
 				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) f_throw(L"expecting ']'.");
 			}
 			v_lexer.f_next();
@@ -245,7 +260,7 @@ t_pointer<ast::t_node> t_parser::f_action(const t_pointer<ast::t_node>& a_target
 			t_pointer<ast::t_call> call = new ast::t_call(at, a_target);
 			v_lexer.f_next();
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) {
-				f_expressions(call->v_arguments);
+				call->v_expand = f_expressions(call->v_arguments);
 				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 			}
 			v_lexer.f_next();
@@ -668,13 +683,19 @@ t_pointer<ast::t_node> t_parser::f_expression()
 	}
 }
 
-void t_parser::f_expressions(t_pointers<ast::t_node>& a_nodes)
+bool t_parser::f_expressions(t_pointers<ast::t_node>& a_nodes)
 {
-	a_nodes.f_add(f_expression());
-	while (v_lexer.f_token() == t_lexer::e_token__COMMA) {
-		v_lexer.f_next();
+	while (true) {
+		if (v_lexer.f_token() == t_lexer::e_token__ASTERISK) {
+			v_lexer.f_next();
+			a_nodes.f_add(f_expression());
+			return true;
+		}
 		a_nodes.f_add(f_expression());
+		if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
+		v_lexer.f_next();
 	}
+	return false;
 }
 
 t_pointer<ast::t_node> t_parser::f_statement()

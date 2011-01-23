@@ -278,7 +278,7 @@ v_verbose(a_verbose)
 	v_module_system.f_put(t_symbol::f_instantiate(L"native_error"), t_value(error));
 	v_module_system.f_put(t_symbol::f_instantiate(L"error"), io::t_writer::f_instantiate(error, L""));
 	{
-		v_code_fiber = t_code::f_instantiate(std::wstring(), false, 2, 0, 0);
+		v_code_fiber = t_code::f_instantiate(std::wstring(), false, false, 2, 0, 0);
 		t_code& code = f_as<t_code&>(v_code_fiber);
 		t_code::t_label catch0;
 		t_code::t_label finally0;
