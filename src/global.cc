@@ -98,7 +98,7 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type&>(v_type_float).v_primitive = true;
 	t_type_of<std::wstring>::f_define();
 	xemmai::f_as<t_type&>(v_type_string).v_builtin = true;
-	t_define<t_tuple, t_object>(this, L"Tuple");
+	t_type_of<t_tuple>::f_define();
 	xemmai::f_as<t_type&>(v_type_tuple).v_builtin = true;
 	t_type_of<t_array>::f_define();
 	xemmai::f_as<t_type&>(v_type_array).v_builtin = true;

@@ -10,6 +10,7 @@ scripts = \
 	fiber2.xm \
 	fiber3.xm \
 	thread.xm \
+	tuple.xm \
 	array.xm \
 	dictionary.xm \
 	bytes.xm \

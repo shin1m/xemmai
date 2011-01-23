@@ -17,6 +17,7 @@ variable: ':'* symbol ;
 self: ':'* '$' (':' | '^')* ;
 
 target: '\'' symbol
+	| '\'' '(' expressions? ')'
 	| '(' expression ')'
 	| '@' ('(' arguments? ')')? '{' statement* '}'
 	| '@' '(' arguments? ')' expression

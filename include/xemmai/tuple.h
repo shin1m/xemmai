@@ -60,12 +60,35 @@ public:
 template<>
 struct t_type_of<t_tuple> : t_type
 {
+	static std::wstring f_string(const t_value& a_self);
+	static int f_hash(const t_value& a_self);
+	static bool f_less(const t_value& a_self, const t_value& a_other);
+	static bool f_less_equal(const t_value& a_self, const t_value& a_other);
+	static bool f_greater(const t_value& a_self, const t_value& a_other);
+	static bool f_greater_equal(const t_value& a_self, const t_value& a_other);
+	static bool f_equals(const t_value& a_self, const t_value& a_other);
+	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
+	{
+		return !f_equals(a_self, a_other);
+	}
+	static void f_each(const t_value& a_self, const t_value& a_callable);
+	static void f_define();
+
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
+	virtual void f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual void f_hash(t_object* a_this, t_slot* a_stack);
+	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
+	virtual void f_less(t_object* a_this, t_slot* a_stack);
+	virtual void f_less_equal(t_object* a_this, t_slot* a_stack);
+	virtual void f_greater(t_object* a_this, t_slot* a_stack);
+	virtual void f_greater_equal(t_object* a_this, t_slot* a_stack);
+	virtual void f_equals(t_object* a_this, t_slot* a_stack);
+	virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
 };
 
 }

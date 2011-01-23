@@ -52,10 +52,10 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 		y = i.f_entry()->v_value;
 	}
 	x = x.f_get(f_global()->f_symbol_string())();
-	if (!f_is<std::wstring>(x)) t_throwable::f_throw(L"argument must be string.");
+	f_check<const std::wstring&>(x, L"value");
 	y = y.f_get(f_global()->f_symbol_string())();
-	if (!f_is<std::wstring>(y)) t_throwable::f_throw(L"argument must be string.");
-	std::wstring s = f_as<std::wstring>(x) + L": " + f_as<std::wstring>(y);
+	f_check<const std::wstring&>(y, L"value");
+	std::wstring s = f_as<const std::wstring&>(x) + L": " + f_as<const std::wstring&>(y);
 	while (true) {
 		{
 			t_with_lock_for_read lock(a_self);
@@ -65,10 +65,10 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 			y = i.f_entry()->v_value;
 		}
 		x = x.f_get(f_global()->f_symbol_string())();
-		if (!f_is<std::wstring>(x)) t_throwable::f_throw(L"argument must be string.");
+		f_check<const std::wstring&>(x, L"value");
 		y = y.f_get(f_global()->f_symbol_string())();
-		if (!f_is<std::wstring>(y)) t_throwable::f_throw(L"argument must be string.");
-		s += L", " + f_as<std::wstring>(x) + L": " + f_as<std::wstring>(y);
+		f_check<const std::wstring&>(y, L"value");
+		s += L", " + f_as<const std::wstring&>(x) + L": " + f_as<const std::wstring&>(y);
 	}
 	return L'{' + s + L'}';
 }
@@ -90,10 +90,10 @@ int t_type_of<t_dictionary>::f_hash(const t_value& a_self)
 			i.f_next();
 		}
 		x = x.f_hash();
-		if (!f_is<int>(x)) t_throwable::f_throw(L"argument must be integer.");
+		f_check<int>(x, L"value");
 		n ^= f_as<int>(x);
 		y = y.f_hash();
-		if (!f_is<int>(y)) t_throwable::f_throw(L"argument must be integer.");
+		f_check<int>(y, L"value");
 		n ^= f_as<int>(y);
 	}
 	return n;
@@ -205,7 +205,7 @@ void t_type_of<t_dictionary>::f_get_at(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack[1].f_transfer();
-	portable::t_scoped_lock_for_read lock(a_this->v_lock);
+	t_with_lock_for_read lock(a_this);
 	a_stack[0].f_construct(f_as<const t_dictionary&>(a_this).f_get(a0));
 	context.f_done();
 }
@@ -215,7 +215,7 @@ void t_type_of<t_dictionary>::f_set_at(t_object* a_this, t_slot* a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack[1].f_transfer();
 	t_transfer a1 = a_stack[2].f_transfer();
-	portable::t_scoped_lock_for_write lock(a_this->v_lock);
+	t_with_lock_for_write lock(a_this);
 	a_stack[0].f_construct(f_as<t_dictionary&>(a_this).f_put(a0, a1));
 	context.f_done();
 }

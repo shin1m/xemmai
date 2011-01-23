@@ -352,7 +352,7 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						t_object* scope = f_context()->v_scope;
-						portable::t_scoped_lock_for_read lock(scope->v_lock);
+						t_with_lock_for_read lock(scope);
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
 					XEMMAI__CODE__BREAK
@@ -362,7 +362,7 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						t_object* scope = f_context()->v_outer;
-						portable::t_scoped_lock_for_read lock(scope->v_lock);
+						t_with_lock_for_read lock(scope);
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
 					XEMMAI__CODE__BREAK
@@ -372,7 +372,7 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						t_object* scope = f_as<const t_scope&>(f_context()->v_outer).v_outer;
-						portable::t_scoped_lock_for_read lock(scope->v_lock);
+						t_with_lock_for_read lock(scope);
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
 					XEMMAI__CODE__BREAK
@@ -385,7 +385,7 @@ void t_code::f_loop()
 						assert(outer >= 3);
 						t_object* scope = f_as<const t_scope&>(f_as<const t_scope&>(f_context()->v_outer).v_outer).v_outer;
 						for (size_t i = 3; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
-						portable::t_scoped_lock_for_read lock(scope->v_lock);
+						t_with_lock_for_read lock(scope);
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
 					XEMMAI__CODE__BREAK
@@ -438,7 +438,7 @@ void t_code::f_loop()
 						} else {
 							scope = f_context()->v_scope;
 						}
-						portable::t_scoped_lock_for_write lock(scope->v_lock);
+						t_with_lock_for_write lock(scope);
 						f_as<t_scope&>(scope)[index] = stack[0];
 					}
 					XEMMAI__CODE__BREAK

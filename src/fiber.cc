@@ -202,7 +202,7 @@ void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
 	{
 		t_slot* used = p.v_used;
 		{
-			portable::t_scoped_lock_for_read lock(a_this->v_lock);
+			t_with_lock_for_read lock(a_this);
 			if (p.v_active) return;
 		}
 		for (t_slot* q = p.v_stack.f_head(); q < used; ++q) a_scan(*q);
@@ -244,7 +244,7 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot*
 		if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || t_fiber::t_context::v_instance->v_native > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
 	}
 	{
-		portable::t_scoped_lock_for_write lock(a_this->v_lock);
+		t_with_lock_for_write lock(a_this);
 		if (p.v_active) t_throwable::f_throw(L"already active.");
 		p.v_active = true;
 		q.v_active = false;

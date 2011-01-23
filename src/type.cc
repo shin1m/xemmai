@@ -149,14 +149,14 @@ t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
 	t_transfer value;
 	if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
 		{
-			portable::t_scoped_lock_for_write lock(a_this->v_lock);
+			t_with_lock_for_write lock(a_this);
 			a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
 		}
 		cache.v_object = cache.v_key = 0;
 		value = cache.v_value.f_transfer();
 		cache.v_modified = false;
 	} else {
-		portable::t_scoped_lock_for_write lock(a_this->v_lock);
+		t_with_lock_for_write lock(a_this);
 		std::pair<bool, t_transfer> pair = a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
 		if (!pair.first) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
 		value = pair.second;

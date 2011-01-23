@@ -217,8 +217,8 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 		x = array[0];
 	}
 	x = x.f_get(f_global()->f_symbol_string())();
-	if (!f_is<std::wstring>(x)) t_throwable::f_throw(L"argument must be string.");
-	std::wstring s = f_as<std::wstring>(x);
+	f_check<const std::wstring&>(x, L"value");
+	std::wstring s = f_as<const std::wstring&>(x);
 	size_t i = 1;
 	while (true) {
 		{
@@ -227,8 +227,8 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 			x = array[i];
 		}
 		x = x.f_get(f_global()->f_symbol_string())();
-		if (!f_is<std::wstring>(x)) t_throwable::f_throw(L"argument must be string.");
-		s += L", " + f_as<std::wstring>(x);
+		f_check<const std::wstring&>(x, L"value");
+		s += L", " + f_as<const std::wstring&>(x);
 		++i;
 	}
 	return L'[' + s + L']';
@@ -248,7 +248,7 @@ int t_type_of<t_array>::f_hash(const t_value& a_self)
 			x = array[i];
 		}
 		x = x.f_hash();
-		if (!f_is<int>(x)) t_throwable::f_throw(L"argument must be integer.");
+		f_check<int>(x, L"value");
 		n ^= f_as<int>(x);
 		++i;
 	}
@@ -514,7 +514,7 @@ void t_type_of<t_array>::f_get_at(t_object* a_this, t_slot* a_stack)
 	t_native_context context;
 	t_transfer a0 = a_stack[1].f_transfer();
 	f_check<int>(a0, L"index");
-	portable::t_scoped_lock_for_read lock(a_this->v_lock);
+	t_with_lock_for_read lock(a_this);
 	a_stack[0].f_construct(f_as<const t_array&>(a_this).f_get_at(f_as<int>(a0)));
 	context.f_done();
 }
@@ -525,7 +525,7 @@ void t_type_of<t_array>::f_set_at(t_object* a_this, t_slot* a_stack)
 	t_transfer a0 = a_stack[1].f_transfer();
 	t_transfer a1 = a_stack[2].f_transfer();
 	f_check<int>(a0, L"index");
-	portable::t_scoped_lock_for_write lock(a_this->v_lock);
+	t_with_lock_for_write lock(a_this);
 	a_stack[0].f_construct(f_as<t_array&>(a_this).f_set_at(f_as<int>(a0), a1));
 	context.f_done();
 }

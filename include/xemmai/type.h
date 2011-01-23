@@ -47,6 +47,18 @@ struct t_fundamental<t_transfer>
 	typedef t_object t_type;
 };
 
+template<>
+struct t_fundamental<t_scoped>
+{
+	typedef t_object t_type;
+};
+
+template<>
+struct t_fundamental<t_slot>
+{
+	typedef t_object t_type;
+};
+
 template<typename T>
 struct t_type_of
 {

@@ -66,9 +66,6 @@ public:
 	t_with_lock_for_read(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)
 	{
 	}
-	~t_with_lock_for_read()
-	{
-	}
 };
 
 class t_with_lock_for_write
@@ -77,9 +74,6 @@ class t_with_lock_for_write
 
 public:
 	t_with_lock_for_write(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)
-	{
-	}
-	~t_with_lock_for_write()
 	{
 	}
 };

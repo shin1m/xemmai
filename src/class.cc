@@ -60,7 +60,7 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 	t_object* type = a_this;
 	while (true) {
 		{
-			portable::t_scoped_lock_for_read lock(type->v_lock);
+			t_with_lock_for_read lock(type);
 			t_hash::t_entry* field = type->v_fields.f_find<t_object::t_hash_traits>(a_key);
 			if (field) {
 				t_object* p = field->v_value;
@@ -90,7 +90,7 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 void t_class::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 {
 	{
-		portable::t_scoped_lock_for_write lock(a_this->v_lock);
+		t_with_lock_for_write lock(a_this);
 		a_this->v_fields.f_put<t_object::t_hash_traits>(a_key, a_value);
 	}
 	t_symbol::f_revise(a_key);
@@ -100,7 +100,7 @@ t_transfer t_class::f_remove(t_object* a_this, t_object* a_key)
 {
 	t_transfer value;
 	{
-		portable::t_scoped_lock_for_write lock(a_this->v_lock);
+		t_with_lock_for_write lock(a_this);
 		std::pair<bool, t_transfer> pair = a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
 		if (!pair.first) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
 		value = pair.second;

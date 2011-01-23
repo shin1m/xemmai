@@ -91,12 +91,27 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 			}
 		}
 	case t_lexer::e_token__APOSTROPHE:
-		{
-			v_lexer.f_next();
-			if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
-			t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
-			v_lexer.f_next();
-			return new ast::t_instance(at, symbol);
+		v_lexer.f_next();
+		switch (v_lexer.f_token()) {
+		case t_lexer::e_token__SYMBOL:
+			{
+				t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
+				v_lexer.f_next();
+				return new ast::t_instance(at, symbol);
+			}
+		case t_lexer::e_token__LEFT_PARENTHESIS:
+			{
+				v_lexer.f_next();
+				t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_tuple>()));
+				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) {
+					f_expressions(call->v_arguments);
+					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
+				}
+				v_lexer.f_next();
+				return call;
+			}
+		default:
+			f_throw(L"expecting symbol or '('.");
 		}
 	case t_lexer::e_token__LEFT_PARENTHESIS:
 		{
