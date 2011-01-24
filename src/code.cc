@@ -14,22 +14,43 @@ namespace xemmai
 namespace
 {
 
+void f_allocate(t_slot* a_stack, size_t a_n)
+{
+	t_stack* stack = f_stack();
+	t_slot* used = a_stack + a_n;
+	if (used > stack->v_used) {
+		stack->f_allocate(used);
+		stack->v_used = used;
+	}
+}
+
 size_t f_expand(t_slot* a_stack, size_t a_n)
 {
 	assert(a_n > 0);
 	t_native_context context;
 	a_stack += a_n;
 	t_transfer x = a_stack[0].f_transfer();
-	t_transfer size = x.f_get(f_global()->f_symbol_size())();
-	f_check<int>(size, L"size");
-	size_t n = f_as<int>(size);
-	t_stack* stack = f_stack();
-	t_slot* used = a_stack + n;
-	if (used > stack->v_used) {
-		stack->f_allocate(used);
-		stack->v_used = used;
+	size_t n;
+	if (f_is<t_tuple>(x)) {
+		const t_tuple& tuple = f_as<const t_tuple&>(x);
+		n = tuple.f_size();
+		f_allocate(a_stack, n);
+		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(tuple[i]);
+	} else if (f_is<t_array>(x)) {
+		const t_array& array = f_as<const t_array&>(x);
+		n = array.f_size();
+		f_allocate(a_stack, n);
+		for (size_t i = 0; i < n; ++i) {
+			t_with_lock_for_read lock(x);
+			a_stack[i].f_construct(array[i]);
+		}
+	} else {
+		t_transfer size = x.f_get(f_global()->f_symbol_size())();
+		f_check<int>(size, L"size");
+		n = f_as<int>(size);
+		f_allocate(a_stack, n);
+		for (int i = 0; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
 	}
-	for (int i = 0; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
 	return a_n - 1 + n;
 }
 

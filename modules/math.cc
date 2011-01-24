@@ -1,6 +1,6 @@
 #include <cmath>
+#include <xemmai/tuple.h>
 #include <xemmai/convert.h>
-#include <xemmai/array.h>
 
 namespace xemmai
 {
@@ -28,10 +28,10 @@ t_transfer f_frexp(double a_value)
 {
 	int e;
 	double m = std::frexp(a_value, &e);
-	t_transfer p = t_array::f_instantiate();
-	t_array& array = f_as<t_array&>(p);
-	array.f_push(f_global()->f_as(m));
-	array.f_push(f_global()->f_as(e));
+	t_transfer p = t_tuple::f_instantiate(2);
+	t_tuple& tuple = f_as<t_tuple&>(p);
+	tuple[0] = t_value(m);
+	tuple[1] = t_value(e);
 	return p;
 }
 
@@ -39,10 +39,10 @@ t_transfer f_modf(double a_value)
 {
 	double i;
 	double f = std::modf(a_value, &i);
-	t_transfer p = t_array::f_instantiate();
-	t_array& array = f_as<t_array&>(p);
-	array.f_push(f_global()->f_as(f));
-	array.f_push(f_global()->f_as(i));
+	t_transfer p = t_tuple::f_instantiate(2);
+	t_tuple& tuple = f_as<t_tuple&>(p);
+	tuple[0] = t_value(f);
+	tuple[1] = t_value(i);
 	return p;
 }
 
