@@ -10,7 +10,7 @@ float: digit+ '.' digit* ;
 
 string: '"' escaped-string '"' ;
 
-arguments: symbol | symbol ',' arguments ;
+arguments: '*' symbol | symbol (',' symbol)* (',' '*' symbol)?;
 
 variable: ':'* symbol ;
 
@@ -81,7 +81,7 @@ compound: 'if' '(' expression ')' block ('else' block)?
 
 expression: term | assignment | compound ;
 
-expressions: expression (',' expression)* ;
+expressions: '*' expression | expression (',' expression)* (',' '*' expression)? ;
 
 pair: expression ':' expression ;
 
