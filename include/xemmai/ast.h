@@ -84,6 +84,7 @@ struct t_lambda : t_node, t_scope
 {
 	bool v_variadic;
 	size_t v_arguments;
+	t_pointers<t_node> v_defaults;
 
 	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer), v_variadic(false), v_arguments(0)
 	{

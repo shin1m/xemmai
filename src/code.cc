@@ -92,6 +92,7 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__SCOPE_GET_WITHOUT_LOCK,
 			&&label__SCOPE_PUT,
 			&&label__LAMBDA,
+			&&label__ADVANCED_LAMBDA,
 			&&label__SELF,
 			&&label__CLASS,
 			&&label__SUPER,
@@ -495,6 +496,14 @@ void t_code::f_loop()
 						t_object* code = static_cast<t_object*>(*++pc);
 						++pc;
 						stack[0].f_construct(t_lambda::f_instantiate(f_context()->v_scope, code));
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(ADVANCED_LAMBDA)
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						t_object* code = static_cast<t_object*>(*++pc);
+						++pc;
+						stack[0].f_construct(t_advanced_lambda::f_instantiate(f_context()->v_scope, code, stack));
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SELF)
@@ -916,10 +925,10 @@ void t_code::f_loop()
 	}
 }
 
-t_transfer t_code::f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments)
+t_transfer t_code::f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum)
 {
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_code>());
-	object.f_pointer__(new t_code(a_path, a_shared, a_variadic, a_privates, a_shareds, a_arguments));
+	object.f_pointer__(new t_code(a_path, a_shared, a_variadic, a_privates, a_shareds, a_arguments, a_minimum));
 	return object;
 }
 

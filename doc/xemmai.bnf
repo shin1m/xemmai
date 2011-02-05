@@ -10,7 +10,9 @@ float: digit+ '.' digit* ;
 
 string: '"' escaped-string '"' ;
 
-arguments: '*' symbol | symbol (',' symbol)* (',' '*' symbol)?;
+arguments: '*' symbol
+	| symbol ((',' symbol)* | '=' expression) (',' symbol '=' expression)* (',' '*' symbol)?
+	;
 
 variable: ':'* symbol ;
 

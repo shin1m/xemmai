@@ -80,8 +80,8 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type&>(v_type_code).v_builtin = true;
 	t_define<t_lambda, t_object>(this, L"Lambda");
 	xemmai::f_as<t_type&>(v_type_lambda).v_builtin = true;
-	v_type_variadic_lambda = t_class::f_instantiate(new t_type_of_variadic_lambda(a_module, v_type_lambda));
-	xemmai::f_as<t_type&>(v_type_variadic_lambda).v_builtin = true;
+	v_type_advanced_lambda = t_class::f_instantiate(new t_type_of<t_advanced_lambda>(a_module, v_type_lambda));
+	xemmai::f_as<t_type&>(v_type_advanced_lambda).v_builtin = true;
 	a_module->f_put(t_symbol::f_instantiate(L"Native"), v_type_native);
 	xemmai::f_as<t_type&>(v_type_native).v_builtin = true;
 	t_type_of<t_throwable>::f_define();
@@ -126,7 +126,7 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_method);
 	a_scan(v_type_code);
 	a_scan(v_type_lambda);
-	a_scan(v_type_variadic_lambda);
+	a_scan(v_type_advanced_lambda);
 	a_scan(v_type_native);
 	a_scan(v_type_throwable);
 	a_scan(v_type_null);

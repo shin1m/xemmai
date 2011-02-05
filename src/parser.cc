@@ -133,6 +133,12 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 						case t_lexer::e_token__SYMBOL:
 							lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable())).first->second);
 							v_lexer.f_next();
+							if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
+								v_lexer.f_next();
+								lambda->v_defaults.f_add(f_expression());
+							} else {
+								if (lambda->v_defaults.f_size() > 0) f_throw(L"expecting '='.");
+							}
 							if (v_lexer.f_token() == t_lexer::e_token__COMMA) {
 								v_lexer.f_next();
 								continue;
@@ -150,8 +156,8 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 						}
 						break;
 					}
+					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 				}
-				if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 				v_lexer.f_next();
 			}
 			lambda->v_arguments = lambda->v_variables.size();

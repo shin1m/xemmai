@@ -3,6 +3,7 @@
 #include <xemmai/engine.h>
 #include <xemmai/symbol.h>
 #include <xemmai/method.h>
+#include <xemmai/lambda.h>
 #include <xemmai/throwable.h>
 #include <xemmai/convert.h>
 
@@ -64,7 +65,7 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 			t_hash::t_entry* field = type->v_fields.f_find<t_object::t_hash_traits>(a_key);
 			if (field) {
 				t_object* p = field->v_value;
-				if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && (p->f_type() == f_global()->f_type<t_lambda>() || p->f_type() == f_global()->f_type<t_native>()))
+				if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && (f_is<t_lambda>(p) || p->f_type() == f_global()->f_type<t_native>()))
 					value = t_method::f_instantiate(p, a_this);
 				else
 					value = field->v_value;

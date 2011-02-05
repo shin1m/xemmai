@@ -24,6 +24,8 @@
 //change object construction protocol to ensure v_pointer is initialized before accessed by multiple threads.
 //implement array.
 //implement dictionary.
+//implement variadic arguments.
+//implement default arguments.
 profile and improve smp performance.
 
 performance improvement ideas:

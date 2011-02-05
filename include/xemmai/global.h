@@ -16,6 +16,7 @@ namespace xemmai
 
 class t_method;
 class t_lambda;
+class t_advanced_lambda;
 class t_tuple;
 class t_array;
 class t_dictionary;
@@ -49,7 +50,7 @@ class t_global : public t_extension
 	t_slot v_type_method;
 	t_slot v_type_code;
 	t_slot v_type_lambda;
-	t_slot v_type_variadic_lambda;
+	t_slot v_type_advanced_lambda;
 	t_slot v_type_native;
 	t_slot v_type_throwable;
 	t_slot v_type_null;
@@ -106,10 +107,6 @@ public:
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_object* f_type() const;
-	t_object* f_type_of_variadic_lambda() const
-	{
-		return v_type_variadic_lambda;
-	}
 	t_object* f_symbol_construct() const
 	{
 		return v_symbol_construct;
@@ -315,6 +312,12 @@ inline void t_global::f_type__<t_lambda>(const t_transfer& a_type)
 }
 
 template<>
+inline void t_global::f_type__<t_advanced_lambda>(const t_transfer& a_type)
+{
+	v_type_advanced_lambda = a_type;
+}
+
+template<>
 inline void t_global::f_type__<t_native>(const t_transfer& a_type)
 {
 	v_type_native = a_type;
@@ -450,6 +453,12 @@ template<>
 inline t_object* t_global::f_type<t_lambda>() const
 {
 	return v_type_lambda;
+}
+
+template<>
+inline t_object* t_global::f_type<t_advanced_lambda>() const
+{
+	return v_type_advanced_lambda;
 }
 
 template<>

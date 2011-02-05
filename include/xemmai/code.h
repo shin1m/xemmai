@@ -136,6 +136,7 @@ enum t_instruction
 	e_instruction__SCOPE_GET_WITHOUT_LOCK,
 	e_instruction__SCOPE_PUT,
 	e_instruction__LAMBDA,
+	e_instruction__ADVANCED_LAMBDA,
 	e_instruction__SELF,
 	e_instruction__CLASS,
 	e_instruction__SUPER,
@@ -275,7 +276,7 @@ struct t_code
 #else
 	static void f_loop();
 #endif
-	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments);
+	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 
 	std::wstring v_path;
 	bool v_shared;
@@ -284,11 +285,12 @@ struct t_code
 	size_t v_privates;
 	size_t v_shareds;
 	size_t v_arguments;
+	size_t v_minimum;
 	std::vector<void*> v_instructions;
 	t_pointers<t_slot> v_objects;
 	std::vector<t_address_at> v_ats;
 
-	t_code(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments) : v_path(a_path), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments)
+	t_code(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_path(a_path), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
 	{
 	}
 	void f_scan(t_scan a_scan);
