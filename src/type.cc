@@ -80,12 +80,17 @@ t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 	t_thread::t_cache& cache = t_thread::v_cache[i];
 	t_symbol& symbol = f_as<t_symbol&>(a_key);
 	if (cache.v_object == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
-		if (cache.v_key_revision == symbol.v_revision) return cache.v_value;
+		if (cache.v_key_revision == symbol.v_revision) {
+			++t_thread::v_cache_hit;
+			return cache.v_value;
+		}
 		if (cache.v_modified) {
+			++t_thread::v_cache_hit;
 			cache.v_key_revision = symbol.v_revision;
 			return cache.v_value;
 		}
 	}
+	++t_thread::v_cache_missed;
 	cache.v_key_revision = symbol.v_revision;
 	t_hash::t_entry* field = 0;
 	t_transfer value;
@@ -115,7 +120,10 @@ void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 {
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	t_thread::t_cache& cache = t_thread::v_cache[i];
-	if (static_cast<t_object*>(cache.v_object) != a_this || static_cast<t_object*>(cache.v_key) != a_key) {
+	if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
+		++t_thread::v_cache_hit;
+	} else {
+		++t_thread::v_cache_missed;
 		if (cache.v_modified) {
 			{
 				t_with_lock_for_write lock(cache.v_object);

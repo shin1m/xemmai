@@ -151,6 +151,8 @@ void t_engine::f_collector()
 						p = q;
 					} else {
 						p->v_next = q->v_next;
+						v_thread__cache_hit += q->v_cache_hit;
+						v_thread__cache_missed += q->v_cache_missed;
 						if (q == v_thread__internals) {
 							if (p == q) p = 0;
 							v_thread__internals = p;
@@ -173,6 +175,8 @@ v_object__reviving(false),
 v_object__release(0),
 v_object__collect(0),
 v_thread__internals(0),
+v_thread__cache_hit(0),
+v_thread__cache_missed(0),
 v_synchronizers(0),
 v_synchronizer__wake(0),
 v_module__thread(0),
@@ -316,6 +320,8 @@ t_engine::~t_engine()
 		v_thread = 0;
 		portable::t_scoped_lock lock(v_thread__mutex);
 		++internal->v_done;
+		internal->v_cache_hit = t_thread::v_cache_hit;
+		internal->v_cache_missed = t_thread::v_cache_missed;
 	}
 	f_pools__return();
 	f_collect();
@@ -373,6 +379,10 @@ t_engine::~t_engine()
 			if (allocated > freed) b = true;
 		}
 		std::fprintf(stderr, "\tcollector: tick = %d, wait = %d, epoch = %d, collect = %d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
+		{
+			size_t base = v_thread__cache_hit + v_thread__cache_missed;
+			std::fprintf(stderr, "\tfield cache: hit = %d, missed = %d, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
+		}
 		if (b) throw std::exception();
 	}
 }

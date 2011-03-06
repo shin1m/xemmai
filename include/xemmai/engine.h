@@ -88,6 +88,8 @@ class t_engine : public t_value::t_collector
 	t_shared_pool<t_fixed_pool<t_fiber::t_context, 256> > v_fiber__context__pool;
 	t_shared_pool<t_fixed_pool<t_fiber::t_try, 256> > v_fiber__try__pool;
 	t_thread::t_internal* v_thread__internals;
+	size_t v_thread__cache_hit;
+	size_t v_thread__cache_missed;
 	portable::t_mutex v_thread__mutex;
 	portable::t_condition v_thread__condition;
 	t_synchronizer* v_synchronizers;

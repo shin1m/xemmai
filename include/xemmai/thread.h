@@ -41,8 +41,10 @@ struct t_thread
 		t_value::t_decrements v_decrements;
 		t_object* volatile* v_reviving;
 		t_cache v_cache[t_cache::V_SIZE];
+		size_t v_cache_hit;
+		size_t v_cache_missed;
 
-		t_internal() : v_next(0), v_done(0), v_collector(t_value::v_collector), v_reviving(0)
+		t_internal() : v_next(0), v_done(0), v_collector(t_value::v_collector), v_reviving(0), v_cache_hit(0), v_cache_missed(0)
 		{
 		}
 		void f_initialize()
@@ -59,6 +61,8 @@ struct t_thread
 
 	static XEMMAI__PORTABLE__THREAD t_object* v_current;
 	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
+	static XEMMAI__PORTABLE__THREAD size_t v_cache_hit;
+	static XEMMAI__PORTABLE__THREAD size_t v_cache_missed;
 
 	static void* f_main(void* a_p);
 	static t_object* f_current()

@@ -27,6 +27,8 @@ size_t t_thread::t_cache::f_revise(size_t a_i)
 
 XEMMAI__PORTABLE__THREAD t_object* t_thread::v_current;
 XEMMAI__PORTABLE__THREAD t_thread::t_cache* t_thread::v_cache;
+XEMMAI__PORTABLE__THREAD size_t t_thread::v_cache_hit;
+XEMMAI__PORTABLE__THREAD size_t t_thread::v_cache_missed;
 
 namespace
 {
@@ -57,6 +59,8 @@ void* t_thread::f_main(void* a_p)
 	{
 		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
 		++internal->v_done;
+		internal->v_cache_hit = v_cache_hit;
+		internal->v_cache_missed = v_cache_missed;
 		f_engine()->v_thread__condition.f_broadcast();
 	}
 	return 0;
