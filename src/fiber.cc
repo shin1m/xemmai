@@ -1,7 +1,6 @@
 #include <xemmai/fiber.h>
 
 #include <cctype>
-#include <xemmai/engine.h>
 #include <xemmai/convert.h>
 #include <xemmai/io/file.h>
 

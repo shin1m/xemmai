@@ -1,6 +1,5 @@
 #include <xemmai/thread.h>
 
-#include <xemmai/engine.h>
 #include <xemmai/module.h>
 #include <xemmai/convert.h>
 
@@ -73,7 +72,7 @@ void t_thread::f_cache_clear()
 		if (cache.v_modified) {
 			{
 				t_with_lock_for_write lock(cache.v_object);
-				static_cast<t_object*>(cache.v_object)->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
+				static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value.f_transfer());
 			}
 			cache.v_modified = false;
 			cache.v_revision = t_cache::f_revise(i);
@@ -103,7 +102,7 @@ void t_thread::f_cache_release()
 		if (!cache.v_modified) continue;
 		{
 			t_with_lock_for_write lock(cache.v_object);
-			static_cast<t_object*>(cache.v_object)->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value);
+			static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value);
 		}
 		cache.v_modified = false;
 		cache.v_revision = t_cache::f_revise(i);

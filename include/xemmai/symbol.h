@@ -1,8 +1,6 @@
 #ifndef XEMMAI__SYMBOL_H
 #define XEMMAI__SYMBOL_H
 
-#include <map>
-
 #include "object.h"
 
 namespace xemmai

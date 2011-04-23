@@ -20,9 +20,11 @@ xemmai_SOURCES = \
 	type.cc \
 	object.cc \
 	class.cc \
+	structure.cc \
 	module.cc \
 	fiber.cc \
 	thread.cc \
+	tuple.cc \
 	symbol.cc \
 	scope.cc \
 	code_operator.h \
@@ -36,7 +38,6 @@ xemmai_SOURCES = \
 	integer.cc \
 	float.cc \
 	string.cc \
-	tuple.cc \
 	array.cc \
 	dictionary.cc \
 	bytes.cc \

@@ -1,6 +1,5 @@
 #include <xemmai/global.h>
 
-#include <xemmai/thread.h>
 #include <xemmai/method.h>
 #include <xemmai/lambda.h>
 #include <xemmai/array.h>
@@ -13,15 +12,17 @@ namespace xemmai
 
 XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
 
-t_global::t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread) :
+t_global::t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_structure, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread) :
 t_extension(a_module),
 v_type_object(a_type_object),
 v_type_class(a_type_class),
+v_type_structure(a_type_structure),
 v_type_module(a_type_module),
 v_type_fiber(a_type_fiber),
 v_type_thread(a_type_thread)
 {
 	v_instance = this;
+	v_type_tuple = t_class::f_instantiate(new t_type_of<t_tuple>(a_module, v_type_object));
 	v_type_symbol = t_class::f_instantiate(new t_type_of<t_symbol>(a_module, v_type_object));
 	v_type_method = t_class::f_instantiate(new t_type_of<t_method>(a_module, v_type_object));
 	v_type_native = t_class::f_instantiate(new t_type_of<t_native>(a_module, v_type_object));
@@ -64,12 +65,15 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type&>(v_type_object).v_primitive = true;
 	a_module->f_put(t_symbol::f_instantiate(L"Class"), v_type_class);
 	xemmai::f_as<t_type&>(v_type_class).v_builtin = true;
+	xemmai::f_as<t_type&>(v_type_structure).v_builtin = true;
 	a_module->f_put(t_symbol::f_instantiate(L"Module"), v_type_module);
 	xemmai::f_as<t_type&>(v_type_module).v_builtin = true;
 	t_fiber::f_define(v_type_fiber);
 	xemmai::f_as<t_type&>(v_type_fiber).v_builtin = true;
 	t_thread::f_define(v_type_thread);
 	xemmai::f_as<t_type&>(v_type_thread).v_builtin = true;
+	t_type_of<t_tuple>::f_define(v_type_tuple);
+	xemmai::f_as<t_type&>(v_type_tuple).v_builtin = true;
 	t_symbol::f_define(v_type_symbol);
 	xemmai::f_as<t_type&>(v_type_symbol).v_builtin = true;
 	v_type_scope = t_class::f_instantiate(new t_type_of<t_scope>(a_module, v_type_object));
@@ -100,8 +104,6 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type&>(v_type_float).v_primitive = true;
 	t_type_of<std::wstring>::f_define();
 	xemmai::f_as<t_type&>(v_type_string).v_builtin = true;
-	t_type_of<t_tuple>::f_define();
-	xemmai::f_as<t_type&>(v_type_tuple).v_builtin = true;
 	t_type_of<t_array>::f_define();
 	xemmai::f_as<t_type&>(v_type_array).v_builtin = true;
 	t_type_of<t_dictionary>::f_define();
@@ -118,9 +120,11 @@ void t_global::f_scan(t_scan a_scan)
 {
 	a_scan(v_type_object);
 	a_scan(v_type_class);
+	a_scan(v_type_structure);
 	a_scan(v_type_module);
 	a_scan(v_type_fiber);
 	a_scan(v_type_thread);
+	a_scan(v_type_tuple);
 	a_scan(v_type_symbol);
 	a_scan(v_type_scope);
 	a_scan(v_type_method);
@@ -134,7 +138,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_integer);
 	a_scan(v_type_float);
 	a_scan(v_type_string);
-	a_scan(v_type_tuple);
 	a_scan(v_type_array);
 	a_scan(v_type_dictionary);
 	a_scan(v_type_bytes);

@@ -1,6 +1,5 @@
 #include <xemmai/symbol.h>
 
-#include <xemmai/engine.h>
 #include <xemmai/throwable.h>
 #include <xemmai/convert.h>
 
@@ -10,26 +9,21 @@ namespace xemmai
 t_transfer t_symbol::f_instantiate(const std::wstring& a_value)
 {
 	portable::t_scoped_lock lock(f_engine()->v_symbol__instantiate__mutex);
-	std::map<std::wstring, t_slot>& instances = f_engine()->v_symbol__instances;
 	f_engine()->v_object__reviving__mutex.f_acquire();
-	f_engine()->v_symbol__instances__mutex.f_acquire();
+	std::map<std::wstring, t_slot>& instances = f_engine()->v_symbol__instances;
 	std::map<std::wstring, t_slot>::iterator i = instances.lower_bound(a_value);
-	if (i != instances.end() && i->first == a_value) {
+	if (i == instances.end() || i->first != a_value) {
+		i = instances.insert(i, std::make_pair(a_value, t_slot()));
+	} else if (i->second.f_tag() != t_value::e_tag__NULL) {
 		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
-		f_engine()->v_symbol__instances__mutex.f_release();
 		f_engine()->v_object__reviving__mutex.f_release();
 		return i->second;
 	}
-	f_engine()->v_symbol__instances__mutex.f_release();
 	f_engine()->v_object__reviving__mutex.f_release();
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_symbol>());
-	t_transfer second = t_value(object);
-	{
-		portable::t_scoped_lock lock(f_engine()->v_symbol__instances__mutex);
-		object.f_pointer__(new t_symbol(instances.insert(i, std::make_pair(a_value, t_slot()))));
-		f_as<t_symbol&>(object).v_entry->second = second;
-	}
+	object.f_pointer__(new t_symbol(i));
+	i->second = static_cast<t_object*>(object);
 	return object;
 }
 
@@ -62,7 +56,6 @@ void t_type_of<t_symbol>::f_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_symbol>::f_finalize(t_object* a_this)
 {
-	portable::t_scoped_lock lock(f_engine()->v_symbol__instances__mutex);
 	t_symbol& p = f_as<t_symbol&>(a_this);
 	f_engine()->v_symbol__instances.erase(p.v_entry);
 	delete &p;

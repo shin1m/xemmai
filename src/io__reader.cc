@@ -1,7 +1,6 @@
 #include <xemmai/io/reader.h>
 
 #include <cerrno>
-#include <xemmai/engine.h>
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>

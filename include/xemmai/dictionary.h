@@ -1,6 +1,7 @@
 #ifndef XEMMAI__DICTIONARY_H
 #define XEMMAI__DICTIONARY_H
 
+#include "hash.h"
 #include "object.h"
 
 namespace xemmai

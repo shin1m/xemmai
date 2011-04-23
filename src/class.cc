@@ -1,6 +1,5 @@
 #include <xemmai/class.h>
 
-#include <xemmai/engine.h>
 #include <xemmai/symbol.h>
 #include <xemmai/method.h>
 #include <xemmai/lambda.h>
@@ -66,13 +65,14 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 	while (true) {
 		{
 			t_with_lock_for_read lock(type);
-			t_hash::t_entry* field = type->v_fields.f_find<t_object::t_hash_traits>(a_key);
-			if (field) {
-				t_object* p = field->v_value;
+			int index = type->f_field_index(a_key);
+			if (index >= 0) {
+				const t_slot& slot = type->f_field_get(index);
+				t_object* p = slot;
 				if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && (f_is<t_lambda>(p) || p->f_type() == f_global()->f_type<t_native>()))
 					value = t_method::f_instantiate(p, a_this);
 				else
-					value = field->v_value;
+					value = slot;
 				break;
 			}
 		}
@@ -82,7 +82,7 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 	if (cache.v_modified) {
 		{
 			t_with_lock_for_write lock(cache.v_object);
-			static_cast<t_object*>(cache.v_object)->v_fields.f_put<t_object::t_hash_traits>(cache.v_key, cache.v_value.f_transfer());
+			static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value.f_transfer());
 		}
 		cache.v_modified = false;
 		cache.v_revision = t_thread::t_cache::f_revise(i);
@@ -96,7 +96,7 @@ void t_class::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value
 {
 	{
 		t_with_lock_for_write lock(a_this);
-		a_this->v_fields.f_put<t_object::t_hash_traits>(a_key, a_value);
+		a_this->f_field_put(a_key, a_value);
 	}
 	t_symbol::f_revise(a_key);
 }
@@ -106,9 +106,10 @@ t_transfer t_class::f_remove(t_object* a_this, t_object* a_key)
 	t_transfer value;
 	{
 		t_with_lock_for_write lock(a_this);
-		std::pair<bool, t_transfer> pair = a_this->v_fields.f_remove<t_object::t_hash_traits>(a_key);
-		if (!pair.first) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
-		value = pair.second;
+		int index = a_this->f_field_index(a_key);
+		if (index < 0) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
+		value = a_this->f_field_get(index);
+		a_this->f_field_remove(index);
 	}
 	t_symbol::f_revise(a_key);
 	return value;

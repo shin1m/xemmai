@@ -1,6 +1,5 @@
 #include <xemmai/ast.h>
 
-#include <xemmai/engine.h>
 #include <xemmai/global.h>
 
 namespace xemmai

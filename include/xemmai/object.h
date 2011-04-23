@@ -1,14 +1,199 @@
 #ifndef XEMMAI__OBJECT_H
 #define XEMMAI__OBJECT_H
 
+#include <map>
+
 #include "portable/atomic.h"
-#include "hash.h"
+#include "pool.h"
 #include "type.h"
 
 namespace xemmai
 {
 
 class t_engine;
+
+class t_structure
+{
+	friend class t_engine;
+	friend class t_object;
+	friend struct t_type_of<t_structure>;
+
+	struct t_entry
+	{
+		t_object* v_key;
+		size_t v_index;
+
+		t_entry(t_object* a_key, size_t a_index) : v_key(a_key), v_index(a_index)
+		{
+		}
+	};
+
+	size_t v_size;
+	std::map<t_object*, t_object*>::iterator v_iterator;
+	t_slot v_this;
+	t_slot v_parent0;
+	t_structure* v_parent1;
+	portable::t_mutex v_mutex;
+	std::map<t_object*, t_object*> v_children;
+
+	void* operator new(size_t a_size, size_t a_n)
+	{
+		char* p = new char[a_size + (sizeof(t_slot) + sizeof(t_entry)) * a_n];
+		*reinterpret_cast<size_t*>(p) = a_n;
+		return p;
+	}
+	void operator delete(void* a_p)
+	{
+		delete[] static_cast<char*>(a_p);
+	}
+	void operator delete(void* a_p, size_t)
+	{
+		delete[] static_cast<char*>(a_p);
+	}
+
+	t_structure(const t_transfer& a_this) : v_this(a_this)
+	{
+	}
+	t_structure(std::map<t_object*, t_object*>::iterator a_iterator, const t_transfer& a_this, t_structure* a_parent) : v_iterator(a_iterator), v_this(a_this), v_parent0(a_parent->v_this), v_parent1(a_parent)
+	{
+		t_object* key = v_iterator->first;
+		size_t n = a_parent->v_size;
+		{
+			t_slot* p0 = a_parent->f_fields();
+			t_slot* p1 = f_fields();
+			for (size_t i = 0; i < n; ++i) new(p1++) t_slot(*p0++);
+			new(p1++) t_slot(key);
+		}
+		t_entry* p0 = a_parent->f_entries();
+		t_entry* p1 = f_entries();
+		size_t i = 0;
+		while (i < n && p0->v_key < key) {
+			new(p1) t_entry(p0->v_key, p0->v_index);
+			++p0;
+			++p1;
+			++i;
+		}
+		new(p1) t_entry(key, n);
+		++p1;
+		while (i < n) {
+			new(p1) t_entry(p0->v_key, p0->v_index);
+			++p0;
+			++p1;
+			++i;
+		}
+	}
+	~t_structure()
+	{
+	}
+	t_slot* f_fields() const
+	{
+		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
+	}
+	t_entry* f_entries() const
+	{
+		return const_cast<t_entry*>(reinterpret_cast<const t_entry*>(f_fields() + v_size));
+	}
+
+public:
+	void f_scan(t_scan a_scan)
+	{
+		a_scan(v_this);
+		a_scan(v_parent0);
+		t_slot* p = f_fields();
+		for (size_t i = 0; i < v_size; ++i) a_scan(p[i]);
+	}
+	size_t f_size() const
+	{
+		return v_size;
+	}
+	int f_index(t_object* a_key) const
+	{
+		const t_entry* p = f_entries();
+		size_t i = 0;
+		size_t j = v_size;
+		while (i < j) {
+			size_t k = (i + j) / 2;
+			const t_entry& entry = p[k];
+			if (entry.v_key == a_key) return entry.v_index;
+			if (entry.v_key < a_key)
+				i = k + 1;
+			else
+				j = k;
+		}
+		return -1;
+	}
+	t_transfer f_append(t_object* a_key);
+	t_transfer f_remove(size_t a_index);
+};
+
+class t_tuple
+{
+	friend class t_object;
+	friend struct t_type_of<t_tuple>;
+
+	size_t v_size;
+
+	void* operator new(size_t a_size, size_t a_n)
+	{
+		char* p = new char[a_size + sizeof(t_slot) * a_n];
+		*reinterpret_cast<size_t*>(p) = a_n;
+		return p;
+	}
+	void operator delete(void* a_p)
+	{
+		delete[] static_cast<char*>(a_p);
+	}
+	void operator delete(void* a_p, size_t)
+	{
+		delete[] static_cast<char*>(a_p);
+	}
+
+	t_tuple()
+	{
+		t_slot* p = f_entries();
+		for (size_t i = 0; i < v_size; ++i) new(p + i) t_slot();
+	}
+	~t_tuple()
+	{
+	}
+	t_slot* f_entries() const
+	{
+		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
+	}
+
+public:
+	static t_transfer f_instantiate(size_t a_size);
+
+	void f_scan(t_scan a_scan)
+	{
+		t_slot* p = f_entries();
+		for (size_t i = 0; i < v_size; ++i) a_scan(p[i]);
+	}
+	size_t f_size() const
+	{
+		return v_size;
+	}
+	const t_slot& operator[](size_t a_index) const
+	{
+		return f_entries()[a_index];
+	}
+	t_slot& operator[](size_t a_index)
+	{
+		return f_entries()[a_index];
+	}
+	std::wstring f_string() const;
+	int f_hash() const;
+	bool f_less(const t_tuple& a_other) const;
+	bool f_less_equal(const t_tuple& a_other) const;
+	bool f_greater(const t_tuple& a_other) const;
+	bool f_greater_equal(const t_tuple& a_other) const;
+	bool f_equals(const t_value& a_other) const;
+	bool f_not_equals(const t_value& a_other) const
+	{
+		return !f_equals(a_other);
+	}
+	void f_each(const t_value& a_callable) const;
+};
 
 class t_object
 {
@@ -58,6 +243,8 @@ class t_object
 	size_t v_count;
 	size_t v_cyclic;
 	t_slot v_type;
+	t_structure* v_structure;
+	t_tuple* v_fields;
 
 	t_type* f_type_as_type() const
 	{
@@ -71,6 +258,16 @@ class t_object
 #else
 		v_color = e_color__BLACK;
 #endif
+	}
+	void f_decrement_tree();
+	XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_decrement_member()
+	{
+		if (--v_count > 0) {
+			v_color = e_color__PURPLE;
+			if (!v_next) f_append(v_roots, this);
+		} else {
+			f_decrement_tree();
+		}
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_decrement()
 	{
@@ -87,35 +284,19 @@ class t_object
 			v_color = e_color__PURPLE;
 			if (!v_next) f_append(v_roots, this);
 		} else {
+			static_cast<t_object*>(v_structure->v_this)->f_decrement_member();
+			if (v_fields) {
+				v_fields->f_scan(f_decrement);
+				delete v_fields;
+				v_fields = 0;
+			}
 			t_type* type = f_type_as_type();
-			v_fields.f_scan(f_decrement);
 			if (!type->v_primitive) {
 				type->f_scan(this, f_decrement);
 				type->f_finalize(this);
 			}
-			v_fields.f_finalize();
-#ifdef XEMMAI__OBJECT__CALL_DECREMENT_TYPE
-			f_decrement(v_type);
-#else
-			t_object* p = f_type();
-			if (--p->v_count > 0) {
-				p->v_color = e_color__PURPLE;
-				if (!p->v_next) f_append(v_roots, p);
-			} else {
-				t_type* type = p->f_type_as_type();
-				p->v_fields.f_scan(f_decrement);
-				type->f_scan(p, f_decrement);
-				p->v_fields.f_finalize();
-				type->f_finalize(p);
-				f_decrement(p->v_type);
-				p->v_color = e_color__BLACK;
-				if (!p->v_next) {
-					++v_release;
-					t_local_pool<t_object>::f_free(p);
-				}
-			}
+			f_type()->f_decrement_member();
 			v_type.v_p = 0;
-#endif
 			v_color = e_color__BLACK;
 			if (!v_next) {
 				++v_release;
@@ -129,51 +310,33 @@ class t_object
 	{
 		if (v_color == e_color__BLACK) return;
 		v_color = e_color__BLACK;
-		v_fields.f_scan(f_scan_black);
+		static_cast<t_object*>(v_structure->v_this)->f_scan_black();
+		if (v_fields) v_fields->f_scan(f_scan_black);
 		f_type_as_type()->f_scan(this, f_scan_black);
 		f_scan_black(v_type);
 	}
 	void f_collect_white();
+	void f_scan_red()
+	{
+		if (v_color == e_color__RED && v_cyclic > 0) --v_cyclic;
+	}
 	void f_cyclic_decrement();
 
 public:
-	struct t_hash_traits
-	{
-		static size_t f_hash(const t_value& a_key)
-		{
-			return a_key.f_tag();
-		}
-		static bool f_equals(const t_value& a_x, const t_value& a_y)
-		{
-			return a_x.f_tag() == a_y.f_tag();
-		}
-	};
+	static t_transfer f_allocate_on_boot(t_object* a_type);
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	static t_transfer f_allocate_uninitialized(t_object* a_type)
-	{
-		t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-		p->v_next = 0;
-		p->v_count = 1;
-		p->v_type.f_construct(a_type);
-		return t_transfer(p, t_transfer::t_pass());
-	}
-	static t_transfer f_allocate(t_object* a_type)
-	{
-		t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-		p->v_next = 0;
-		p->v_count = 1;
-		p->v_type.f_construct(a_type);
-		p->v_type.v_pointer = 0;
-		return t_transfer(p, t_transfer::t_pass());
-	}
+	static t_transfer f_allocate_uninitialized(t_object* a_type);
+	static t_transfer f_allocate(t_object* a_type);
 #else
 	static XEMMAI__PORTABLE__EXPORT t_transfer f_allocate_uninitialized(t_object* a_type);
 	static XEMMAI__PORTABLE__EXPORT t_transfer f_allocate(t_object* a_type);
 #endif
 
 	portable::t_lock v_lock;
-	t_hash v_fields;
 
+	t_object() : v_fields(0)
+	{
+	}
 	t_object* f_type() const
 	{
 		return v_type;
@@ -198,6 +361,16 @@ public:
 	{
 		return t_type::f_derives(f_type(), a_class);
 	}
+	int f_field_index(t_object* a_key) const
+	{
+		return v_structure->f_index(a_key);
+	}
+	const t_slot& f_field_get(size_t a_index) const
+	{
+		return (*v_fields)[a_index];
+	}
+	void f_field_put(t_object* a_key, const t_transfer& a_value);
+	void f_field_remove(size_t a_index);
 	t_transfer f_get(t_object* a_key)
 	{
 		return f_type_as_type()->f_get(this, a_key);

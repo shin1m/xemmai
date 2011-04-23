@@ -1,7 +1,8 @@
 #include <xemmai/object.h>
 
-#include <xemmai/engine.h>
-#include <xemmai/class.h>
+#include <xemmai/structure.h>
+#include <xemmai/tuple.h>
+#include <xemmai/global.h>
 
 namespace xemmai
 {
@@ -51,7 +52,7 @@ void t_object::f_scan_red(t_slot& a_slot)
 {
 	t_object* p = a_slot.v_p;
 	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	if (p->v_color == e_color__RED && p->v_cyclic > 0) --p->v_cyclic;
+	p->f_scan_red();
 }
 
 void t_object::f_cyclic_decrement(t_slot& a_slot)
@@ -99,6 +100,12 @@ void t_object::f_collect()
 				++v_collect;
 				t_local_pool<t_object>::f_free(p);
 			} while (p != cycle);
+			t_structure*& q = f_engine()->v_structure__finalizing;
+			while (q) {
+				t_structure* p = q;
+				q = p->v_parent1;
+				delete p;
+			}
 		} else {
 			p = cycle->v_next;
 			t_object* q = p->v_next;
@@ -195,7 +202,8 @@ void t_object::f_collect()
 		} while (p != cycle);
 		do {
 			p = p->v_next;
-			p->v_fields.f_scan(f_scan_red);
+			static_cast<t_object*>(p->v_structure->v_this)->f_scan_red();
+			if (p->v_fields) p->v_fields->f_scan(f_scan_red);
 			f_as<t_type&>(p->v_type).f_scan(p, f_scan_red);
 			f_scan_red(p->v_type);
 		} while (p != cycle);
@@ -211,12 +219,36 @@ t_object* t_object::f_pool__allocate()
 	return f_engine()->f_object__pool__allocate();
 }
 
+void t_object::f_decrement_tree()
+{
+	static_cast<t_object*>(v_structure->v_this)->f_decrement();
+	if (v_fields) {
+		v_fields->f_scan(f_decrement);
+		delete v_fields;
+		v_fields = 0;
+	}
+	t_type* type = f_type_as_type();
+	type->f_scan(this, f_decrement);
+	type->f_finalize(this);
+	f_decrement(v_type);
+	v_color = e_color__BLACK;
+	if (!v_next) {
+		++v_release;
+		t_local_pool<t_object>::f_free(this);
+	}
+}
+
 void t_object::f_mark_gray()
 {
 	if (v_color == e_color__GRAY) return;
 	v_color = e_color__GRAY;
 	v_cyclic = v_count;
-	v_fields.f_scan(f_mark_gray);
+	{
+		t_object* p = v_structure->v_this;
+		p->f_mark_gray();
+		--p->v_cyclic;
+	}
+	if (v_fields) v_fields->f_scan(f_mark_gray);
 	f_as<t_type&>(v_type).f_scan(this, f_mark_gray);
 	f_mark_gray(v_type);
 }
@@ -225,7 +257,8 @@ void t_object::f_scan_gray()
 {
 	if (v_color == e_color__GRAY && v_cyclic <= 0) {
 		v_color = e_color__WHITE;
-		v_fields.f_scan(f_scan_gray);
+		static_cast<t_object*>(v_structure->v_this)->f_scan_gray();
+		if (v_fields) v_fields->f_scan(f_scan_gray);
 		f_as<t_type&>(v_type).f_scan(this, f_scan_gray);
 		f_scan_gray(v_type);
 	} else if (v_color != e_color__WHITE) {
@@ -238,21 +271,46 @@ void t_object::f_collect_white()
 	if (v_color != e_color__WHITE) return;
 	v_color = e_color__ORANGE;
 	f_append(f_engine()->v_object__cycle, this);
-	v_fields.f_scan(f_collect_white);
+	static_cast<t_object*>(v_structure->v_this)->f_collect_white();
+	if (v_fields) v_fields->f_scan(f_collect_white);
 	f_as<t_type&>(v_type).f_scan(this, f_collect_white);
 	f_collect_white(v_type);
 }
 
 void t_object::f_cyclic_decrement()
 {
-	v_fields.f_scan(f_cyclic_decrement);
+	{
+		t_object* p = v_structure->v_this;
+		if (p && p->v_color != e_color__RED) {
+			if (p->v_color == e_color__ORANGE) {
+				--p->v_count;
+				--p->v_cyclic;
+			} else {
+				p->f_decrement();
+			}
+		}
+	}
+	if (v_fields) {
+		v_fields->f_scan(f_cyclic_decrement);
+		delete v_fields;
+		v_fields = 0;
+	}
 	f_as<t_type&>(v_type).f_scan(this, f_cyclic_decrement);
-	v_fields.f_finalize();
 	if (static_cast<t_object*>(v_type) != f_engine()->v_type_class) {
 		f_as<t_type&>(v_type).f_finalize(this);
 		v_type.v_pointer = 0;
 	}
 	f_cyclic_decrement(v_type);
+}
+
+t_transfer t_object::f_allocate_on_boot(t_object* a_type)
+{
+	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
+	p->v_next = 0;
+	p->v_count = 1;
+	p->v_type.f_construct(a_type);
+	p->v_type.v_pointer = 0;
+	return t_transfer(p, t_transfer::t_pass());
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
@@ -262,6 +320,8 @@ t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 	p->v_next = 0;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
+	t_value::v_increments->f_push(f_engine()->v_structure_root);
+	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
 	return t_transfer(p, t_transfer::t_pass());
 }
 
@@ -272,9 +332,56 @@ t_transfer t_object::f_allocate(t_object* a_type)
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
 	p->v_type.v_pointer = 0;
+	t_value::v_increments->f_push(f_engine()->v_structure_root);
+	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
 	return t_transfer(p, t_transfer::t_pass());
 }
 #endif
+
+void t_object::f_field_put(t_object* a_key, const t_transfer& a_value)
+{
+	int index = v_structure->f_index(a_key);
+	if (index < 0) {
+		index = v_structure->f_size();
+		if (!v_fields || index >= v_fields->f_size()) {
+			t_transfer tuple = t_tuple::f_instantiate(index + 1);
+			t_tuple& fields = f_as<t_tuple&>(tuple);
+			for (size_t i = 0; i < index; ++i) fields[i] = (*v_fields)[i].f_transfer();
+			tuple.f_pointer__(v_fields);
+			v_fields = &fields;
+		}
+		t_object* structure0 = v_structure->v_this;
+		t_slot structure1 = v_structure->f_append(a_key);
+		v_structure = &f_as<t_structure&>(structure1);
+		t_value::v_decrements->f_push(structure0);
+	}
+	(*v_fields)[index] = a_value;
+}
+
+void t_object::f_field_remove(size_t a_index)
+{
+	t_object* structure0 = v_structure->v_this;
+	t_slot structure1 = v_structure->f_remove(a_index);
+	v_structure = &f_as<t_structure&>(structure1);
+	t_value::v_decrements->f_push(structure0);
+	size_t size = v_structure->f_size();
+	if (size + 4 < v_fields->f_size()) {
+		t_transfer tuple = t_tuple::f_instantiate(size);
+		t_tuple& fields = f_as<t_tuple&>(tuple);
+		for (size_t i = 0; i < a_index; ++i) fields[i] = (*v_fields)[i].f_transfer();
+		while (a_index < size) {
+			fields[a_index] = (*v_fields)[a_index + 1].f_transfer();
+			++a_index;
+		}
+		tuple.f_pointer__(v_fields);
+		v_fields = &fields;
+	} else {
+		while (a_index < size) {
+			(*v_fields)[a_index] = (*v_fields)[a_index + 1].f_transfer();
+			++a_index;
+		}
+	}
+}
 
 void t_object::f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n)
 {

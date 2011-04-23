@@ -1,8 +1,6 @@
 #ifndef XEMMAI__MODULE_H
 #define XEMMAI__MODULE_H
 
-#include <map>
-
 #include "portable/library.h"
 #include "native.h"
 

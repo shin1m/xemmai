@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <xemmai/portable/path.h>
-#include <xemmai/class.h>
+#include <xemmai/structure.h>
 #include <xemmai/array.h>
 #include <xemmai/io.h>
 
@@ -174,6 +174,7 @@ v_object__cycle(0),
 v_object__reviving(false),
 v_object__release(0),
 v_object__collect(0),
+v_structure__finalizing(0),
 v_thread__internals(0),
 v_thread__cache_hit(0),
 v_thread__cache_missed(0),
@@ -192,12 +193,25 @@ v_verbose(a_verbose)
 	t_thread* thread = new t_thread(0);
 	thread->v_internal->f_initialize();
 	v_thread__internals = thread->v_internal->v_next = thread->v_internal;
-	t_scoped type_class = t_object::f_allocate(0);
+	t_scoped type_class = t_object::f_allocate_on_boot(0);
 	static_cast<t_object*>(type_class)->v_type = type_class;
-	type_class.f_pointer__(new t_class(0, 0));
 	v_type_class = type_class;
-	t_scoped type_object = t_class::f_instantiate(new t_type(0, 0));
-	f_as<t_type&>(type_class).v_super = type_object;
+	t_scoped type_object = t_object::f_allocate_on_boot(type_class);
+	type_object.f_pointer__(new t_type(0, 0));
+	type_class.f_pointer__(new t_class(0, type_object));
+	t_scoped type_structure = t_object::f_allocate_on_boot(type_class);
+	type_structure.f_pointer__(new t_type_of<t_structure>(0, type_object));
+	v_structure_root = t_object::f_allocate_on_boot(type_structure);
+	t_structure* root = new(0) t_structure(v_structure_root);
+	v_structure_root.f_pointer__(root);
+	t_value::v_increments->f_push(v_structure_root);
+	static_cast<t_object*>(type_object)->v_structure = root;
+	t_value::v_increments->f_push(v_structure_root);
+	static_cast<t_object*>(type_class)->v_structure = root;
+	t_value::v_increments->f_push(v_structure_root);
+	static_cast<t_object*>(type_structure)->v_structure = root;
+	t_value::v_increments->f_push(v_structure_root);
+	static_cast<t_object*>(v_structure_root)->v_structure = root;
 	t_scoped type_module = t_class::f_instantiate(new t_type_of<t_module>(0, type_object));
 	v_module_global = t_object::f_allocate(type_module);
 	t_library* library = new t_library(std::wstring(), 0);
@@ -207,6 +221,7 @@ v_verbose(a_verbose)
 	library->v_iterator->second = v_module_global;
 	f_as<t_type&>(type_object).v_module = v_module_global;
 	f_as<t_type&>(type_class).v_module = v_module_global;
+	f_as<t_type&>(type_structure).v_module = v_module_global;
 	f_as<t_type&>(type_module).v_module = v_module_global;
 	t_scoped type_fiber = t_class::f_instantiate(new t_type_of<t_fiber>(v_module_global, type_object));
 	t_scoped type_thread = t_class::f_instantiate(new t_type_of<t_thread>(v_module_global, type_object));
@@ -236,7 +251,7 @@ v_verbose(a_verbose)
 		portable::f_thread(f_collector, this);
 		while (v_collector__running) v_collector__done.f_wait(v_collector__mutex);
 	}
-	library->v_extension = new t_global(v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
+	library->v_extension = new t_global(v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_structure.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
 	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
 	t_transfer path = t_array::f_instantiate();
 	{
@@ -307,11 +322,12 @@ v_verbose(a_verbose)
 
 t_engine::~t_engine()
 {
+	t_thread::f_cache_clear();
+	v_structure_root = 0;
 	v_module_global = 0;
 	v_module_system = 0;
 	v_module_io = 0;
 	v_code_fiber = 0;
-	t_thread::f_cache_clear();
 	{
 		t_thread& thread = f_as<t_thread&>(v_thread);
 		thread.v_active = 0;

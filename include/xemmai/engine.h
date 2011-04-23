@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "hash.h"
 #include "module.h"
 #include "fiber.h"
 #include "thread.h"
@@ -20,6 +21,8 @@ class t_engine : public t_value::t_collector
 	friend struct t_hash::t_table;
 	friend class t_object;
 	friend struct t_type_of<t_type>;
+	friend class t_structure;
+	friend struct t_type_of<t_structure>;
 	friend struct t_module;
 	friend class t_module::t_scoped_lock;
 	friend struct t_library;
@@ -85,6 +88,7 @@ class t_engine : public t_value::t_collector
 	portable::t_mutex v_object__reviving__mutex;
 	size_t v_object__release;
 	size_t v_object__collect;
+	t_structure* v_structure__finalizing;
 	t_shared_pool<t_fixed_pool<t_fiber::t_context, 256> > v_fiber__context__pool;
 	t_shared_pool<t_fixed_pool<t_fiber::t_try, 256> > v_fiber__try__pool;
 	t_thread::t_internal* v_thread__internals;
@@ -104,8 +108,8 @@ class t_engine : public t_value::t_collector
 	t_object* v_module__thread;
 	t_library::t_handle* v_library__handle__finalizing;
 	std::map<std::wstring, t_slot> v_symbol__instances;
-	portable::t_mutex v_symbol__instances__mutex;
 	portable::t_mutex v_symbol__instantiate__mutex;
+	t_slot v_structure_root;
 	t_slot v_module_global;
 	t_slot v_module_system;
 	t_slot v_module_io;
@@ -155,6 +159,31 @@ inline t_engine* f_engine()
 {
 	return static_cast<t_engine*>(t_value::v_collector);
 }
+
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+inline t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
+{
+	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
+	p->v_next = 0;
+	p->v_count = 1;
+	p->v_type.f_construct(a_type);
+	t_value::v_increments->f_push(f_engine()->v_structure_root);
+	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
+	return t_transfer(p, t_transfer::t_pass());
+}
+
+inline t_transfer t_object::f_allocate(t_object* a_type)
+{
+	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
+	p->v_next = 0;
+	p->v_count = 1;
+	p->v_type.f_construct(a_type);
+	p->v_type.v_pointer = 0;
+	t_value::v_increments->f_push(f_engine()->v_structure_root);
+	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
+	return t_transfer(p, t_transfer::t_pass());
+}
+#endif
 
 }
 

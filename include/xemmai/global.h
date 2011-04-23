@@ -1,8 +1,8 @@
 #ifndef XEMMAI__GLOBAL_H
 #define XEMMAI__GLOBAL_H
 
+#include "engine.h"
 #include "class.h"
-#include "module.h"
 #include "symbol.h"
 #include "null.h"
 #include "boolean.h"
@@ -14,10 +14,10 @@
 namespace xemmai
 {
 
+class t_tuple;
 class t_method;
 class t_lambda;
 class t_advanced_lambda;
-class t_tuple;
 class t_array;
 class t_dictionary;
 class t_bytes;
@@ -42,9 +42,11 @@ class t_global : public t_extension
 
 	t_slot v_type_object;
 	t_slot v_type_class;
+	t_slot v_type_structure;
 	t_slot v_type_module;
 	t_slot v_type_fiber;
 	t_slot v_type_thread;
+	t_slot v_type_tuple;
 	t_slot v_type_symbol;
 	t_slot v_type_scope;
 	t_slot v_type_method;
@@ -58,7 +60,6 @@ class t_global : public t_extension
 	t_slot v_type_integer;
 	t_slot v_type_float;
 	t_slot v_type_string;
-	t_slot v_type_tuple;
 	t_slot v_type_array;
 	t_slot v_type_dictionary;
 	t_slot v_type_bytes;
@@ -103,7 +104,7 @@ class t_global : public t_extension
 	void f_type__(const t_transfer& a_type);
 
 public:
-	t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread);
+	t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_structure, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_object* f_type() const;
@@ -252,51 +253,9 @@ public:
 };
 
 template<>
-inline void t_global::f_type__<t_object>(const t_transfer& a_type)
-{
-	v_type_object = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_class>(const t_transfer& a_type)
-{
-	v_type_class = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_module>(const t_transfer& a_type)
-{
-	v_type_module = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_fiber>(const t_transfer& a_type)
-{
-	v_type_fiber = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_thread>(const t_transfer& a_type)
-{
-	v_type_thread = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_symbol>(const t_transfer& a_type)
-{
-	v_type_symbol = a_type;
-}
-
-template<>
 inline void t_global::f_type__<t_scope>(const t_transfer& a_type)
 {
 	v_type_scope = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_method>(const t_transfer& a_type)
-{
-	v_type_method = a_type;
 }
 
 template<>
@@ -315,12 +274,6 @@ template<>
 inline void t_global::f_type__<t_advanced_lambda>(const t_transfer& a_type)
 {
 	v_type_advanced_lambda = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_native>(const t_transfer& a_type)
-{
-	v_type_native = a_type;
 }
 
 template<>
@@ -357,12 +310,6 @@ template<>
 inline void t_global::f_type__<std::wstring>(const t_transfer& a_type)
 {
 	v_type_string = a_type;
-}
-
-template<>
-inline void t_global::f_type__<t_tuple>(const t_transfer& a_type)
-{
-	v_type_tuple = a_type;
 }
 
 template<>
@@ -408,6 +355,12 @@ inline t_object* t_global::f_type<t_class>() const
 }
 
 template<>
+inline t_object* t_global::f_type<t_structure>() const
+{
+	return v_type_structure;
+}
+
+template<>
 inline t_object* t_global::f_type<t_module>() const
 {
 	return v_type_module;
@@ -423,6 +376,12 @@ template<>
 inline t_object* t_global::f_type<t_thread>() const
 {
 	return v_type_thread;
+}
+
+template<>
+inline t_object* t_global::f_type<t_tuple>() const
+{
+	return v_type_tuple;
 }
 
 template<>
@@ -501,12 +460,6 @@ template<>
 inline t_object* t_global::f_type<std::wstring>() const
 {
 	return v_type_string;
-}
-
-template<>
-inline t_object* t_global::f_type<t_tuple>() const
-{
-	return v_type_tuple;
 }
 
 template<>

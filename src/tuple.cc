@@ -103,9 +103,9 @@ void t_tuple::f_each(const t_value& a_callable) const
 	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
 }
 
-void t_type_of<t_tuple>::f_define()
+void t_type_of<t_tuple>::f_define(t_object* a_class)
 {
-	t_define<t_tuple, t_object>(f_global(), L"Tuple")
+	t_define<t_tuple, t_object>(f_global(), L"Tuple", a_class)
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (t_tuple::*)() const, &t_tuple::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_slot& (t_tuple::*)(size_t) const, &t_tuple::operator[]>())
@@ -127,8 +127,8 @@ t_type* t_type_of<t_tuple>::f_derive(t_object* a_this)
 
 void t_type_of<t_tuple>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_tuple& p = f_as<t_tuple&>(a_this);
-	for (size_t i = 0; i < p.f_size(); ++i) a_scan(p[i]);
+	t_tuple* p = &f_as<t_tuple&>(a_this);
+	if (p) p->f_scan(a_scan);
 }
 
 void t_type_of<t_tuple>::f_finalize(t_object* a_this)

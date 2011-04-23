@@ -37,6 +37,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/pool.h \
 	xemmai/scope.h \
 	xemmai/string.h \
+	xemmai/structure.h \
 	xemmai/symbol.h \
 	xemmai/thread.h \
 	xemmai/throwable.h \
