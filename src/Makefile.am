@@ -16,7 +16,6 @@ endif
 xemmai_SOURCES = \
 	portable.cc \
 	value.cc \
-	hash.cc \
 	type.cc \
 	object.cc \
 	class.cc \

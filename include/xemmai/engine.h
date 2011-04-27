@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#include "hash.h"
 #include "module.h"
 #include "fiber.h"
 #include "thread.h"
+#include "dictionary.h"
 
 namespace xemmai
 {
@@ -16,9 +16,6 @@ class t_global;
 
 class t_engine : public t_value::t_collector
 {
-	friend class t_hash;
-	friend class t_hash::t_entry;
-	friend struct t_hash::t_table;
 	friend class t_object;
 	friend struct t_type_of<t_type>;
 	friend class t_structure;
@@ -34,6 +31,9 @@ class t_engine : public t_value::t_collector
 	friend struct t_type_of<t_thread>;
 	friend class t_symbol;
 	friend struct t_type_of<t_symbol>;
+	friend class t_dictionary;
+	friend class t_dictionary::t_entry;
+	friend struct t_dictionary::t_table;
 	friend class t_global;
 
 	struct t_synchronizer
@@ -62,10 +62,6 @@ class t_engine : public t_value::t_collector
 
 	static void* f_synchronizer(void* a_p);
 	static void* f_collector(void* a_p);
-	static void f_instance__hash__entry__pool__return(t_hash::t_entry* a_p)
-	{
-		static_cast<t_engine*>(t_value::v_collector)->v_hash__entry__pool.f_free(a_p);
-	}
 	static void f_instance__object__pool__return(t_object* a_p)
 	{
 		static_cast<t_engine*>(t_value::v_collector)->v_object__pool.f_free(a_p);
@@ -78,9 +74,11 @@ class t_engine : public t_value::t_collector
 	{
 		static_cast<t_engine*>(t_value::v_collector)->v_fiber__try__pool.f_free(a_p);
 	}
+	static void f_instance__dictionary__entry__pool__return(t_dictionary::t_entry* a_p)
+	{
+		static_cast<t_engine*>(t_value::v_collector)->v_dictionary__entry__pool.f_free(a_p);
+	}
 
-	t_shared_pool<t_fixed_pool<t_hash::t_entry, 4096> > v_hash__entry__pool;
-	t_shared_pool<t_variable_pool<t_hash::t_table> > v_hash__table__pools[t_hash::t_table::V_POOLS__SIZE];
 	t_shared_pool<t_fixed_pool<t_object, 65536> > v_object__pool;
 	t_object* v_object__cycle;
 	std::vector<t_object*> v_object__cycles;
@@ -109,6 +107,8 @@ class t_engine : public t_value::t_collector
 	t_library::t_handle* v_library__handle__finalizing;
 	std::map<std::wstring, t_slot> v_symbol__instances;
 	portable::t_mutex v_symbol__instantiate__mutex;
+	t_shared_pool<t_fixed_pool<t_dictionary::t_entry, 4096> > v_dictionary__entry__pool;
+	t_shared_pool<t_variable_pool<t_dictionary::t_table> > v_dictionary__table__pools[t_dictionary::t_table::V_POOLS__SIZE];
 	t_slot v_structure_root;
 	t_slot v_module_global;
 	t_slot v_module_system;
@@ -119,8 +119,6 @@ class t_engine : public t_value::t_collector
 	bool v_verbose;
 
 	void f_pools__return();
-	t_hash::t_table* f_hash__table__allocate(size_t a_rank);
-	void f_hash__table__free(t_hash::t_table* a_p);
 	t_object* f_object__pool__allocate()
 	{
 		t_object* p = v_object__pool.f_allocate(V_POOL__ALLOCATION__UNIT, false);
@@ -130,6 +128,8 @@ class t_engine : public t_value::t_collector
 		}
 		return p;
 	}
+	t_dictionary::t_table* f_dictionary__table__allocate(size_t a_rank);
+	void f_dictionary__table__free(t_dictionary::t_table* a_p);
 	void f_collector();
 
 public:

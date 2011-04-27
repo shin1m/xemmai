@@ -3,7 +3,6 @@
 #include <xemmai/method.h>
 #include <xemmai/lambda.h>
 #include <xemmai/array.h>
-#include <xemmai/dictionary.h>
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>
 

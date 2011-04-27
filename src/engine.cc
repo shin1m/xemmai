@@ -50,24 +50,24 @@ void* t_engine::f_collector(void* a_p)
 
 void t_engine::f_pools__return()
 {
-	t_local_pool<t_hash::t_entry>::f_return(f_instance__hash__entry__pool__return);
 	t_local_pool<t_object>::f_return(f_instance__object__pool__return);
 	t_local_pool<t_fiber::t_context>::f_return(f_instance__fiber__context__pool__return);
 	t_local_pool<t_fiber::t_try>::f_return(f_instance__fiber__try__pool__return);
+	t_local_pool<t_dictionary::t_entry>::f_return(f_instance__dictionary__entry__pool__return);
 }
 
-t_hash::t_table* t_engine::f_hash__table__allocate(size_t a_rank)
+t_dictionary::t_table* t_engine::f_dictionary__table__allocate(size_t a_rank)
 {
-	t_hash::t_table* p = v_hash__table__pools[a_rank].f_allocate();
+	t_dictionary::t_table* p = v_dictionary__table__pools[a_rank].f_allocate();
 	size_t n = p->v_capacity;
 	for (size_t i = 0; i < n; ++i) p->v_entries[i] = 0;
 	return p;
 }
 
-void t_engine::f_hash__table__free(t_hash::t_table* a_p)
+void t_engine::f_dictionary__table__free(t_dictionary::t_table* a_p)
 {
 	a_p->v_next = 0;
-	v_hash__table__pools[a_p->v_rank].f_free(a_p);
+	v_dictionary__table__pools[a_p->v_rank].f_free(a_p);
 }
 
 void t_engine::f_collector()
@@ -185,11 +185,11 @@ v_library__handle__finalizing(0),
 v_stack_size(a_stack),
 v_verbose(a_verbose)
 {
-	v_hash__table__pools[0].f_initialize(0, 11);
-	v_hash__table__pools[1].f_initialize(1, 31);
-	v_hash__table__pools[2].f_initialize(2, 67);
-	v_hash__table__pools[3].f_initialize(3, 127);
 	v_object__pool.f_grow();
+	v_dictionary__table__pools[0].f_initialize(0, 11);
+	v_dictionary__table__pools[1].f_initialize(1, 31);
+	v_dictionary__table__pools[2].f_initialize(2, 67);
+	v_dictionary__table__pools[3].f_initialize(3, 127);
 	t_thread* thread = new t_thread(0);
 	thread->v_internal->f_initialize();
 	v_thread__internals = thread->v_internal->v_next = thread->v_internal;
@@ -368,30 +368,30 @@ t_engine::~t_engine()
 		} while (v_synchronizers);
 	}
 	assert(!v_thread__internals);
+	for (size_t i = 0; i < t_dictionary::t_table::V_POOLS__SIZE; ++i) v_dictionary__table__pools[i].f_clear();
+	v_dictionary__entry__pool.f_clear();
 	v_fiber__try__pool.f_clear();
 	v_fiber__context__pool.f_clear();
 	v_object__pool.f_clear();
-	for (size_t i = 0; i < t_hash::t_table::V_POOLS__SIZE; ++i) v_hash__table__pools[i].f_clear();
-	v_hash__entry__pool.f_clear();
 	if (v_verbose) {
 		bool b = false;
-		std::fprintf(stderr, "statistics:\n\thash:\n");
-		{
-			size_t allocated = v_hash__entry__pool.f_allocated();
-			size_t freed = v_hash__entry__pool.f_freed();
-			std::fprintf(stderr, "\t\tentry: %d - %d = %d\n", allocated, freed, allocated - freed);
-			if (allocated > freed) b = true;
-		}
-		for (size_t i = 0; i < t_hash::t_table::V_POOLS__SIZE; ++i) {
-			size_t allocated = v_hash__table__pools[i].f_allocated();
-			size_t freed = v_hash__table__pools[i].f_freed();
-			std::fprintf(stderr, "\t\ttable[%d]: %d - %d = %d\n", i, allocated, freed, allocated - freed);
-			if (allocated > freed) b = true;
-		}
 		{
 			size_t allocated = v_object__pool.f_allocated();
 			size_t freed = v_object__pool.f_freed();
 			std::fprintf(stderr, "\tobject: %d - %d = %d, release = %d, collect = %d\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
+			if (allocated > freed) b = true;
+		}
+		std::fprintf(stderr, "statistics:\n\tdictionary:\n");
+		{
+			size_t allocated = v_dictionary__entry__pool.f_allocated();
+			size_t freed = v_dictionary__entry__pool.f_freed();
+			std::fprintf(stderr, "\t\tentry: %d - %d = %d\n", allocated, freed, allocated - freed);
+			if (allocated > freed) b = true;
+		}
+		for (size_t i = 0; i < t_dictionary::t_table::V_POOLS__SIZE; ++i) {
+			size_t allocated = v_dictionary__table__pools[i].f_allocated();
+			size_t freed = v_dictionary__table__pools[i].f_freed();
+			std::fprintf(stderr, "\t\ttable[%d]: %d - %d = %d\n", i, allocated, freed, allocated - freed);
 			if (allocated > freed) b = true;
 		}
 		std::fprintf(stderr, "\tcollector: tick = %d, wait = %d, epoch = %d, collect = %d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);

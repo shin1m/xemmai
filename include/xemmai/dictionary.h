@@ -1,7 +1,6 @@
 #ifndef XEMMAI__DICTIONARY_H
 #define XEMMAI__DICTIONARY_H
 
-#include "hash.h"
 #include "object.h"
 
 namespace xemmai
@@ -9,46 +8,132 @@ namespace xemmai
 
 class t_dictionary
 {
+	friend class t_engine;
 	friend struct t_type_of<t_dictionary>;
-	struct t_hash_traits
+
+public:
+	class t_iterator;
+	class t_entry
 	{
-		static size_t f_hash(const t_value& a_key);
-		static bool f_equals(const t_value& a_x, const t_value& a_y);
+		friend class t_dictionary;
+		friend class t_iterator;
+		template<typename T_base> friend class t_shared_pool;
+		template<typename T, size_t A_size> friend class t_fixed_pool;
+		friend class t_local_pool<t_entry>;
+		friend class t_engine;
+
+		static t_entry* f_allocate();
+
+		t_entry* v_next;
+		t_slot v_key;
+
+	public:
+		t_slot v_value;
+
+		const t_slot& f_key() const
+		{
+			return v_key;
+		}
 	};
 
-	t_hash v_hash;
-	size_t v_size;
-
-	t_dictionary() : v_size(0)
+private:
+	struct t_table
 	{
+		typedef t_entry* t_variable;
+
+		static const size_t V_POOLS__SIZE = 4;
+
+		size_t v_rank;
+		size_t v_capacity;
+		union
+		{
+			t_table* v_next;
+			size_t v_size;
+		};
+		t_entry* v_entries[1];
+
+		static t_table* f_allocate(size_t a_rank);
+		static void f_free(t_table* a_p);
+
+		t_table()
+		{
+		}
+		void f_scan(t_scan a_scan);
+		void f_finalize();
+		void f_clear();
+		t_entry** f_bucket(size_t a_key)
+		{
+			return &v_entries[a_key % v_capacity];
+		}
+	};
+
+	t_table* v_table;
+
+	t_dictionary() : v_table(t_table::f_allocate(0))
+	{
+		v_table->v_size = 0;
 	}
 	~t_dictionary()
 	{
-		v_hash.f_finalize();
+		v_table->f_finalize();
 	}
+	void f_rehash(size_t a_rank);
+	t_entry* f_find(const t_value& a_key) const;
 
 public:
+	class t_iterator
+	{
+		t_table* v_table;
+		size_t v_i;
+		t_entry* v_entry;
+
+	public:
+		t_iterator(const t_dictionary& a_dictionary) : v_table(a_dictionary.v_table), v_i(0), v_entry(0)
+		{
+			size_t n = v_table->v_capacity;
+			do {
+				v_entry = v_table->v_entries[v_i];
+				if (v_entry) break;
+			} while (++v_i < n);
+		}
+		t_entry* f_entry() const
+		{
+			return v_entry;
+		}
+		void f_next()
+		{
+			v_entry = v_entry->v_next;
+			if (v_entry) return;
+			size_t n = v_table->v_capacity;
+			while (++v_i < n) {
+				v_entry = v_table->v_entries[v_i];
+				if (v_entry) break;
+			}
+		}
+	};
+	friend class t_iterator;
+
 	static t_transfer f_instantiate();
 
+	void f_scan(t_scan a_scan)
+	{
+		v_table->f_scan(a_scan);
+	}
 	void f_clear()
 	{
-		v_hash.f_clear();
-		v_size = 0;
+		v_table->f_clear();
+		v_table = t_table::f_allocate(0);
+		v_table->v_size = 0;
 	}
 	size_t f_size() const
 	{
-		return v_size;
+		return v_table->v_size;
 	}
 	const t_value& f_get(const t_value& a_key) const;
-	t_transfer f_put(const t_value& a_key, const t_transfer& a_value)
-	{
-		t_value p = a_value;
-		if (v_hash.f_put<t_hash_traits>(a_key, a_value).first) ++v_size;
-		return p;
-	}
+	t_transfer f_put(const t_value& a_key, const t_transfer& a_value);
 	bool f_has(const t_value& a_key) const
 	{
-		return v_hash.f_find<t_hash_traits>(a_key) != 0;
+		return f_find(a_key) != 0;
 	}
 	t_transfer f_remove(const t_value& a_key);
 };

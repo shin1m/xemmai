@@ -6,14 +6,89 @@
 namespace xemmai
 {
 
-size_t t_dictionary::t_hash_traits::f_hash(const t_value& a_key)
+t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
 {
-	return f_as<size_t>(a_key.f_hash());
+	return f_engine()->v_dictionary__entry__pool.f_allocate(t_engine::V_POOL__ALLOCATION__UNIT);
 }
 
-bool t_dictionary::t_hash_traits::f_equals(const t_value& a_x, const t_value& a_y)
+t_dictionary::t_table* t_dictionary::t_table::f_allocate(size_t a_rank)
 {
-	return f_as<bool>(a_x.f_equals(a_y));
+	return f_engine()->f_dictionary__table__allocate(a_rank);
+}
+
+void t_dictionary::t_table::f_free(t_dictionary::t_table* a_p)
+{
+	f_engine()->f_dictionary__table__free(a_p);
+}
+
+void t_dictionary::t_table::f_scan(t_scan a_scan)
+{
+	for (size_t i = 0; i < v_capacity; ++i) {
+		for (t_entry* p = v_entries[i]; p; p = p->v_next) {
+			if (!p->v_key) return;
+			a_scan(p->v_key);
+			a_scan(p->v_value);
+		}
+	}
+}
+
+void t_dictionary::t_table::f_finalize()
+{
+	for (size_t i = 0; i < v_capacity; ++i) {
+		t_entry* p = v_entries[i];
+		while (p) {
+			t_entry* q = p->v_next;
+			t_local_pool<t_entry>::f_free(p);
+			p = q;
+		}
+	}
+	f_engine()->f_dictionary__table__free(this);
+}
+
+void t_dictionary::t_table::f_clear()
+{
+	for (size_t i = 0; i < v_capacity; ++i) {
+		t_entry* p = v_entries[i];
+		while (p) {
+			t_entry* q = p->v_next;
+			p->v_key = 0;
+			p->v_value = 0;
+			t_local_pool<t_entry>::f_free(p);
+			p = q;
+		}
+	}
+	f_engine()->f_dictionary__table__free(this);
+}
+
+void t_dictionary::f_rehash(size_t a_rank)
+{
+	t_table* table = v_table;
+	v_table = t_table::f_allocate(a_rank);
+	v_table->v_size = table->v_size;
+	size_t n = table->v_capacity;
+	for (size_t i = 0; i < n; ++i) {
+		t_entry* p = table->v_entries[i];
+		while (p) {
+			t_entry* q = p->v_next;
+			t_entry** bucket = v_table->f_bucket(f_as<size_t>(p->v_key.f_hash()));
+			p->v_next = *bucket;
+			t_scoped(p->v_key);
+			t_scoped(p->v_value);
+			*bucket = p;
+			p = q;
+		}
+	}
+	t_table::f_free(table);
+}
+
+t_dictionary::t_entry* t_dictionary::f_find(const t_value& a_key) const
+{
+	t_entry* p = *v_table->f_bucket(f_as<size_t>(a_key.f_hash()));
+	while (p) {
+		if (f_as<bool>(p->v_key.f_equals(a_key))) return p;
+		p = p->v_next;
+	}
+	return 0;
 }
 
 t_transfer t_dictionary::f_instantiate()
@@ -25,24 +100,52 @@ t_transfer t_dictionary::f_instantiate()
 
 const t_value& t_dictionary::f_get(const t_value& a_key) const
 {
-	t_hash::t_entry* field = v_hash.f_find<t_hash_traits>(a_key);
+	t_entry* field = f_find(a_key);
 	if (!field) t_throwable::f_throw(L"key not found.");
 	return field->v_value;
 }
 
+t_transfer t_dictionary::f_put(const t_value& a_key, const t_transfer& a_value)
+{
+	t_entry* p = f_find(a_key);
+	if (p) return p->v_value = a_value;
+	if (v_table->v_rank < t_table::V_POOLS__SIZE - 1 && v_table->v_size >= v_table->v_capacity) {
+		f_rehash(v_table->v_rank + 1);
+	}
+	t_entry** bucket = v_table->f_bucket(f_as<size_t>(a_key.f_hash()));
+	p = t_local_pool<t_entry>::f_allocate(t_entry::f_allocate);
+	p->v_next = *bucket;
+	p->v_key.f_construct(a_key);
+	p->v_value.f_construct(a_value);
+	*bucket = p;
+	++v_table->v_size;
+	return p->v_value;
+}
+
 t_transfer t_dictionary::f_remove(const t_value& a_key)
 {
-	std::pair<bool, t_transfer> pair = v_hash.f_remove<t_hash_traits>(a_key);
-	if (!pair.first) t_throwable::f_throw(L"key not found.");
-	--v_size;
-	return pair.second;
+	t_entry** bucket = v_table->f_bucket(f_as<size_t>(a_key.f_hash()));
+	while (true) {
+		t_entry* p = *bucket;
+		if (!p) t_throwable::f_throw(L"key not found.");
+		if (f_as<bool>(p->v_key.f_equals(a_key))) break;
+		bucket = &p->v_next;
+	}
+	t_entry* p = *bucket;
+	*bucket = p->v_next;
+	p->v_key = 0;
+	t_transfer value = p->v_value.f_transfer();
+	t_local_pool<t_entry>::f_free(p);
+	--v_table->v_size;
+	if (v_table->v_rank > 0 && v_table->v_size < v_table->v_capacity / 2) f_rehash(v_table->v_rank - 1);
+	return value;
 }
 
 std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	const t_dictionary& dictionary = f_as<const t_dictionary&>(a_self);
-	t_hash::t_iterator i(dictionary.v_hash);
+	t_dictionary::t_iterator i(dictionary);
 	t_transfer x;
 	t_transfer y;
 	{
@@ -78,7 +181,7 @@ int t_type_of<t_dictionary>::f_hash(const t_value& a_self)
 	f_check<t_dictionary>(a_self, L"this");
 	const t_dictionary& dictionary = f_as<const t_dictionary&>(a_self);
 	int n = 0;
-	t_hash::t_iterator i(dictionary.v_hash);
+	t_dictionary::t_iterator i(dictionary);
 	while (true) {
 		t_transfer x;
 		t_transfer y;
@@ -107,7 +210,7 @@ bool t_type_of<t_dictionary>::f_equals(const t_value& a_self, const t_value& a_o
 	const t_dictionary& d0 = f_as<const t_dictionary&>(a_self);
 	const t_dictionary& d1 = f_as<const t_dictionary&>(a_other);
 	if (d0.f_size() != d1.f_size()) return false;
-	t_hash::t_iterator i(d0.v_hash);
+	t_dictionary::t_iterator i(d0);
 	while (true) {
 		t_transfer x;
 		t_transfer y;
@@ -115,7 +218,7 @@ bool t_type_of<t_dictionary>::f_equals(const t_value& a_self, const t_value& a_o
 			t_with_lock_for_read lock0(a_self);
 			t_with_lock_for_read lock1(a_other);
 			if (!i.f_entry()) break;
-			t_hash::t_entry* field = d1.v_hash.f_find<t_dictionary::t_hash_traits>(i.f_entry()->f_key());
+			t_dictionary::t_entry* field = d1.f_find(i.f_entry()->f_key());
 			if (!field) return false;
 			x = i.f_entry()->v_value;
 			y = field->v_value;
@@ -130,7 +233,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 {
 	f_check<t_dictionary>(a_self, L"this");
 	const t_dictionary& d0 = f_as<const t_dictionary&>(a_self);
-	t_hash::t_iterator i(d0.v_hash);
+	t_dictionary::t_iterator i(d0);
 	while (true) {
 		t_transfer key;
 		t_transfer value;
@@ -169,8 +272,7 @@ t_type* t_type_of<t_dictionary>::f_derive(t_object* a_this)
 
 void t_type_of<t_dictionary>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_dictionary& p = f_as<t_dictionary&>(a_this);
-	p.v_hash.f_scan(a_scan);
+	f_as<t_dictionary&>(a_this).f_scan(a_scan);
 }
 
 void t_type_of<t_dictionary>::f_finalize(t_object* a_this)
