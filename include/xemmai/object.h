@@ -198,8 +198,7 @@ public:
 class t_object
 {
 	friend class t_value;
-	template<typename T_base> friend class t_shared_pool;
-	template<typename T, size_t A_size> friend class t_fixed_pool;
+	template<typename T, size_t A_size> friend class t_shared_pool;
 	friend class t_local_pool<t_object>;
 	friend struct t_type_of<t_object>;
 	friend class t_engine;

@@ -106,6 +106,7 @@ v_type_thread(a_type_thread)
 	t_type_of<t_array>::f_define();
 	xemmai::f_as<t_type&>(v_type_array).v_builtin = true;
 	t_type_of<t_dictionary>::f_define();
+	xemmai::f_as<t_type&>(v_type_dictionary__table).v_builtin = true;
 	xemmai::f_as<t_type&>(v_type_dictionary).v_builtin = true;
 	t_type_of<t_bytes>::f_define();
 	xemmai::f_as<t_type&>(v_type_bytes).v_builtin = true;
@@ -138,6 +139,7 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_float);
 	a_scan(v_type_string);
 	a_scan(v_type_array);
+	a_scan(v_type_dictionary__table);
 	a_scan(v_type_dictionary);
 	a_scan(v_type_bytes);
 	a_scan(v_type_lexer__error);

@@ -485,8 +485,7 @@ t_type* t_type_of<t_array>::f_derive(t_object* a_this)
 
 void t_type_of<t_array>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_array& p = f_as<t_array&>(a_this);
-	a_scan(p.v_tuple);
+	a_scan(f_as<t_array&>(a_this).v_tuple);
 }
 
 void t_type_of<t_array>::f_finalize(t_object* a_this)

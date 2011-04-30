@@ -19,7 +19,6 @@ class t_method;
 class t_lambda;
 class t_advanced_lambda;
 class t_array;
-class t_dictionary;
 class t_bytes;
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
@@ -31,6 +30,7 @@ XEMMAI__PORTABLE__EXPORT t_global* f_global();
 class t_global : public t_extension
 {
 	friend struct t_thread;
+	friend struct t_type_of<t_dictionary>;
 	template<typename T, typename T_super> friend class t_define;
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	friend t_global* f_global();
@@ -61,6 +61,7 @@ class t_global : public t_extension
 	t_slot v_type_float;
 	t_slot v_type_string;
 	t_slot v_type_array;
+	t_slot v_type_dictionary__table;
 	t_slot v_type_dictionary;
 	t_slot v_type_bytes;
 	t_slot v_type_lexer__error;
@@ -466,6 +467,12 @@ template<>
 inline t_object* t_global::f_type<t_array>() const
 {
 	return v_type_array;
+}
+
+template<>
+inline t_object* t_global::f_type<t_dictionary::t_table>() const
+{
+	return v_type_dictionary__table;
 }
 
 template<>

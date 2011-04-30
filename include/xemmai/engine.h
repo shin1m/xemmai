@@ -33,7 +33,6 @@ class t_engine : public t_value::t_collector
 	friend struct t_type_of<t_symbol>;
 	friend class t_dictionary;
 	friend class t_dictionary::t_entry;
-	friend struct t_dictionary::t_table;
 	friend class t_global;
 
 	struct t_synchronizer
@@ -79,7 +78,7 @@ class t_engine : public t_value::t_collector
 		static_cast<t_engine*>(t_value::v_collector)->v_dictionary__entry__pool.f_free(a_p);
 	}
 
-	t_shared_pool<t_fixed_pool<t_object, 65536> > v_object__pool;
+	t_shared_pool<t_object, 65536> v_object__pool;
 	t_object* v_object__cycle;
 	std::vector<t_object*> v_object__cycles;
 	bool v_object__reviving;
@@ -87,8 +86,8 @@ class t_engine : public t_value::t_collector
 	size_t v_object__release;
 	size_t v_object__collect;
 	t_structure* v_structure__finalizing;
-	t_shared_pool<t_fixed_pool<t_fiber::t_context, 256> > v_fiber__context__pool;
-	t_shared_pool<t_fixed_pool<t_fiber::t_try, 256> > v_fiber__try__pool;
+	t_shared_pool<t_fiber::t_context, 256> v_fiber__context__pool;
+	t_shared_pool<t_fiber::t_try, 256> v_fiber__try__pool;
 	t_thread::t_internal* v_thread__internals;
 	size_t v_thread__cache_hit;
 	size_t v_thread__cache_missed;
@@ -107,8 +106,7 @@ class t_engine : public t_value::t_collector
 	t_library::t_handle* v_library__handle__finalizing;
 	std::map<std::wstring, t_slot> v_symbol__instances;
 	portable::t_mutex v_symbol__instantiate__mutex;
-	t_shared_pool<t_fixed_pool<t_dictionary::t_entry, 4096> > v_dictionary__entry__pool;
-	t_shared_pool<t_variable_pool<t_dictionary::t_table> > v_dictionary__table__pools[t_dictionary::t_table::V_POOLS__SIZE];
+	t_shared_pool<t_dictionary::t_entry, 4096> v_dictionary__entry__pool;
 	t_slot v_structure_root;
 	t_slot v_module_global;
 	t_slot v_module_system;
@@ -128,8 +126,6 @@ class t_engine : public t_value::t_collector
 		}
 		return p;
 	}
-	t_dictionary::t_table* f_dictionary__table__allocate(size_t a_rank);
-	void f_dictionary__table__free(t_dictionary::t_table* a_p);
 	void f_collector();
 
 public:

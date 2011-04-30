@@ -11,20 +11,25 @@ t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
 	return f_engine()->v_dictionary__entry__pool.f_allocate(t_engine::V_POOL__ALLOCATION__UNIT);
 }
 
-t_dictionary::t_table* t_dictionary::t_table::f_allocate(size_t a_rank)
-{
-	return f_engine()->f_dictionary__table__allocate(a_rank);
-}
+const size_t t_dictionary::t_table::v_capacities[] = {
+	11, 23, 53, 97, 193, 389, 769,
+	1543, 3079, 6151, 12289, 24593, 49157, 98317,
+	196613, 393241, 786433, 1572869, 3145739, 6291469, 12582917,
+	25165843, 50331653, 100663319, 201326611, 402653189, 805306457, 1610612741
+};
 
-void t_dictionary::t_table::f_free(t_dictionary::t_table* a_p)
+t_transfer t_dictionary::t_table::f_instantiate(size_t a_rank)
 {
-	f_engine()->f_dictionary__table__free(a_p);
+	t_transfer object = t_object::f_allocate(f_global()->f_type<t_table>());
+	object.f_pointer__(new(a_rank) t_table());
+	return object;
 }
 
 void t_dictionary::t_table::f_scan(t_scan a_scan)
 {
+	t_entry** entries = f_entries();
 	for (size_t i = 0; i < v_capacity; ++i) {
-		for (t_entry* p = v_entries[i]; p; p = p->v_next) {
+		for (t_entry* p = entries[i]; p; p = p->v_next) {
 			if (!p->v_key) return;
 			a_scan(p->v_key);
 			a_scan(p->v_value);
@@ -32,23 +37,12 @@ void t_dictionary::t_table::f_scan(t_scan a_scan)
 	}
 }
 
-void t_dictionary::t_table::f_finalize()
-{
-	for (size_t i = 0; i < v_capacity; ++i) {
-		t_entry* p = v_entries[i];
-		while (p) {
-			t_entry* q = p->v_next;
-			t_local_pool<t_entry>::f_free(p);
-			p = q;
-		}
-	}
-	f_engine()->f_dictionary__table__free(this);
-}
-
 void t_dictionary::t_table::f_clear()
 {
+	t_entry** entries = f_entries();
 	for (size_t i = 0; i < v_capacity; ++i) {
-		t_entry* p = v_entries[i];
+		t_entry* p = entries[i];
+		entries[i] = 0;
 		while (p) {
 			t_entry* q = p->v_next;
 			p->v_key = 0;
@@ -57,20 +51,21 @@ void t_dictionary::t_table::f_clear()
 			p = q;
 		}
 	}
-	f_engine()->f_dictionary__table__free(this);
 }
 
 void t_dictionary::f_rehash(size_t a_rank)
 {
-	t_table* table = v_table;
-	v_table = t_table::f_allocate(a_rank);
-	v_table->v_size = table->v_size;
-	size_t n = table->v_capacity;
-	for (size_t i = 0; i < n; ++i) {
-		t_entry* p = table->v_entries[i];
+	t_table& table0 = f_as<t_table&>(v_table);
+	t_transfer table = t_table::f_instantiate(a_rank);
+	t_table& table1 = f_as<t_table&>(table);
+	table1.v_size = table0.v_size;
+	t_entry** entries = table0.f_entries();
+	for (size_t i = 0; i < table0.v_capacity; ++i) {
+		t_entry* p = entries[i];
+		entries[i] = 0;
 		while (p) {
 			t_entry* q = p->v_next;
-			t_entry** bucket = v_table->f_bucket(f_as<size_t>(p->v_key.f_hash()));
+			t_entry** bucket = table1.f_bucket(f_as<size_t>(p->v_key.f_hash()));
 			p->v_next = *bucket;
 			t_scoped(p->v_key);
 			t_scoped(p->v_value);
@@ -78,12 +73,12 @@ void t_dictionary::f_rehash(size_t a_rank)
 			p = q;
 		}
 	}
-	t_table::f_free(table);
+	v_table = table;
 }
 
 t_dictionary::t_entry* t_dictionary::f_find(const t_value& a_key) const
 {
-	t_entry* p = *v_table->f_bucket(f_as<size_t>(a_key.f_hash()));
+	t_entry* p = *f_as<const t_table&>(v_table).f_bucket(f_as<size_t>(a_key.f_hash()));
 	while (p) {
 		if (f_as<bool>(p->v_key.f_equals(a_key))) return p;
 		p = p->v_next;
@@ -109,22 +104,25 @@ t_transfer t_dictionary::f_put(const t_value& a_key, const t_transfer& a_value)
 {
 	t_entry* p = f_find(a_key);
 	if (p) return p->v_value = a_value;
-	if (v_table->v_rank < t_table::V_POOLS__SIZE - 1 && v_table->v_size >= v_table->v_capacity) {
-		f_rehash(v_table->v_rank + 1);
+	{
+		t_table& table = f_as<t_table&>(v_table);
+		if (table.v_rank < sizeof(t_table::v_capacities) / sizeof(size_t) - 1 && table.v_size >= table.v_capacity) f_rehash(table.v_rank + 1);
 	}
-	t_entry** bucket = v_table->f_bucket(f_as<size_t>(a_key.f_hash()));
+	t_table& table = f_as<t_table&>(v_table);
+	t_entry** bucket = table.f_bucket(f_as<size_t>(a_key.f_hash()));
 	p = t_local_pool<t_entry>::f_allocate(t_entry::f_allocate);
 	p->v_next = *bucket;
 	p->v_key.f_construct(a_key);
 	p->v_value.f_construct(a_value);
 	*bucket = p;
-	++v_table->v_size;
+	++table.v_size;
 	return p->v_value;
 }
 
 t_transfer t_dictionary::f_remove(const t_value& a_key)
 {
-	t_entry** bucket = v_table->f_bucket(f_as<size_t>(a_key.f_hash()));
+	t_table& table = f_as<t_table&>(v_table);
+	t_entry** bucket = table.f_bucket(f_as<size_t>(a_key.f_hash()));
 	while (true) {
 		t_entry* p = *bucket;
 		if (!p) t_throwable::f_throw(L"key not found.");
@@ -136,9 +134,29 @@ t_transfer t_dictionary::f_remove(const t_value& a_key)
 	p->v_key = 0;
 	t_transfer value = p->v_value.f_transfer();
 	t_local_pool<t_entry>::f_free(p);
-	--v_table->v_size;
-	if (v_table->v_rank > 0 && v_table->v_size < v_table->v_capacity / 2) f_rehash(v_table->v_rank - 1);
+	--table.v_size;
+	if (table.v_rank > 0 && table.v_size < table.v_capacity / 2) f_rehash(table.v_rank - 1);
 	return value;
+}
+
+t_type* t_type_of<t_dictionary::t_table>::f_derive(t_object* a_this)
+{
+	return 0;
+}
+
+void t_type_of<t_dictionary::t_table>::f_scan(t_object* a_this, t_scan a_scan)
+{
+	f_as<t_dictionary::t_table&>(a_this).f_scan(a_scan);
+}
+
+void t_type_of<t_dictionary::t_table>::f_finalize(t_object* a_this)
+{
+	delete &f_as<t_dictionary::t_table&>(a_this);
+}
+
+void t_type_of<t_dictionary::t_table>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
+{
+	t_throwable::f_throw(L"uninstantiatable.");
 }
 
 std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
@@ -250,6 +268,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 
 void t_type_of<t_dictionary>::f_define()
 {
+	f_global()->v_type_dictionary__table = t_class::f_instantiate(new t_type_of<t_dictionary::t_table>(f_global()->f_module(), f_global()->f_type<t_object>()));
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(const t_value&), f_hash>())
@@ -272,7 +291,7 @@ t_type* t_type_of<t_dictionary>::f_derive(t_object* a_this)
 
 void t_type_of<t_dictionary>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	f_as<t_dictionary&>(a_this).f_scan(a_scan);
+	a_scan(f_as<t_dictionary&>(a_this).v_table);
 }
 
 void t_type_of<t_dictionary>::f_finalize(t_object* a_this)

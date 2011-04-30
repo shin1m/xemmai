@@ -1,27 +1,41 @@
 system = Module("system");
 print = system.out.write_line;
-
-print("dictionary: " + {"one": 1, 2: "two"});
+assert = @(x) if (!x) throw Throwable("Assertion failed.");;
 
 d = {"one": 1, 2: "two"};
-if (!d.has("one")) throw Throwable("one");
-if (!d.has(2)) throw Throwable(2);
 print(d);
+assert(d.size() == 2);
+assert(d.has("one") && d["one"] == 1);
+assert(d.has(2) && d[2] == "two");
 
 d["three"] = 3.0;
-if (!d.has("three")) throw Throwable("three");
 print(d);
+assert(d.size() == 3);
+assert(d.has("three") && d["three"] == 3.0);
 
 d[4.0] = "four";
-if (!d.has(4.0)) throw Throwable(4.0);
 print(d);
-
-print("" + d["one"] + ", " + d[2] + ", " + d["three"] + ", " + d[4.0]);
+assert(d.size() == 4);
+assert(d.has(4.0) && d[4.0] == "four");
 
 d.remove("one");
-if (d.has("one")) throw Throwable("one");
 print(d);
+assert(d.size() == 3);
+assert(!d.has("one"));
 
 d.remove(2);
-if (d.has(2)) throw Throwable(2);
 print(d);
+assert(d.size() == 2);
+assert(!d.has(2));
+
+d.clear();
+print(d);
+assert(d.size() == 0);
+
+d = {};
+i = 0;
+while (i < 1000) {
+	d[i] = i;
+	i = i + 1;
+}
+assert(d.size() == 1000);

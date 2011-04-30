@@ -9,6 +9,7 @@ namespace xemmai
 class t_dictionary
 {
 	friend class t_engine;
+	friend class t_global;
 	friend struct t_type_of<t_dictionary>;
 
 public:
@@ -17,8 +18,7 @@ public:
 	{
 		friend class t_dictionary;
 		friend class t_iterator;
-		template<typename T_base> friend class t_shared_pool;
-		template<typename T, size_t A_size> friend class t_fixed_pool;
+		template<typename T, size_t A_size> friend class t_shared_pool;
 		friend class t_local_pool<t_entry>;
 		friend class t_engine;
 
@@ -39,43 +39,67 @@ public:
 private:
 	struct t_table
 	{
-		typedef t_entry* t_variable;
+		friend struct t_type_of<t_table>;
 
-		static const size_t V_POOLS__SIZE = 4;
+		static const size_t v_capacities[];
 
 		size_t v_rank;
 		size_t v_capacity;
-		union
-		{
-			t_table* v_next;
-			size_t v_size;
-		};
-		t_entry* v_entries[1];
+		size_t v_size;
 
-		static t_table* f_allocate(size_t a_rank);
-		static void f_free(t_table* a_p);
-
-		t_table()
+		void* operator new(size_t a_size, size_t a_rank)
 		{
+			size_t n = v_capacities[a_rank];
+			char* p = new char[a_size + sizeof(t_entry*) * n];
+			reinterpret_cast<size_t*>(p)[0] = a_rank;
+			reinterpret_cast<size_t*>(p)[1] = n;
+			return p;
+		}
+		void operator delete(void* a_p)
+		{
+			delete[] static_cast<char*>(a_p);
+		}
+		void operator delete(void* a_p, size_t)
+		{
+			delete[] static_cast<char*>(a_p);
+		}
+
+		static t_transfer f_instantiate(size_t a_rank);
+
+		t_table() : v_size(0)
+		{
+			t_entry** entries = f_entries();
+			for (size_t i = 0; i < v_capacity; ++i) entries[i] = 0;
+		}
+		~t_table()
+		{
+			t_entry** entries = f_entries();
+			for (size_t i = 0; i < v_capacity; ++i) {
+				t_entry* p = entries[i];
+				while (p) {
+					t_entry* q = p->v_next;
+					t_local_pool<t_entry>::f_free(p);
+					p = q;
+				}
+			}
+		}
+		t_entry** f_entries() const
+		{
+			return const_cast<t_entry**>(reinterpret_cast<t_entry* const*>(this + 1));
 		}
 		void f_scan(t_scan a_scan);
-		void f_finalize();
 		void f_clear();
-		t_entry** f_bucket(size_t a_key)
+		t_entry** f_bucket(size_t a_key) const
 		{
-			return &v_entries[a_key % v_capacity];
+			return &f_entries()[a_key % v_capacity];
 		}
 	};
+	friend struct t_type_of<t_table>;
 
-	t_table* v_table;
+	t_slot v_table;
 
-	t_dictionary() : v_table(t_table::f_allocate(0))
+	t_dictionary() : v_table(t_table::f_instantiate(0))
 	{
-		v_table->v_size = 0;
-	}
-	~t_dictionary()
-	{
-		v_table->f_finalize();
 	}
 	void f_rehash(size_t a_rank);
 	t_entry* f_find(const t_value& a_key) const;
@@ -83,19 +107,12 @@ private:
 public:
 	class t_iterator
 	{
-		t_table* v_table;
+		const t_table& v_table;
 		size_t v_i;
 		t_entry* v_entry;
 
 	public:
-		t_iterator(const t_dictionary& a_dictionary) : v_table(a_dictionary.v_table), v_i(0), v_entry(0)
-		{
-			size_t n = v_table->v_capacity;
-			do {
-				v_entry = v_table->v_entries[v_i];
-				if (v_entry) break;
-			} while (++v_i < n);
-		}
+		t_iterator(const t_dictionary& a_dictionary);
 		t_entry* f_entry() const
 		{
 			return v_entry;
@@ -104,9 +121,9 @@ public:
 		{
 			v_entry = v_entry->v_next;
 			if (v_entry) return;
-			size_t n = v_table->v_capacity;
-			while (++v_i < n) {
-				v_entry = v_table->v_entries[v_i];
+			t_entry** entries = v_table.f_entries();
+			while (++v_i < v_table.v_capacity) {
+				v_entry = entries[v_i];
 				if (v_entry) break;
 			}
 		}
@@ -115,20 +132,8 @@ public:
 
 	static t_transfer f_instantiate();
 
-	void f_scan(t_scan a_scan)
-	{
-		v_table->f_scan(a_scan);
-	}
-	void f_clear()
-	{
-		v_table->f_clear();
-		v_table = t_table::f_allocate(0);
-		v_table->v_size = 0;
-	}
-	size_t f_size() const
-	{
-		return v_table->v_size;
-	}
+	void f_clear();
+	size_t f_size() const;
 	const t_value& f_get(const t_value& a_key) const;
 	t_transfer f_put(const t_value& a_key, const t_transfer& a_value);
 	bool f_has(const t_value& a_key) const
@@ -136,6 +141,18 @@ public:
 		return f_find(a_key) != 0;
 	}
 	t_transfer f_remove(const t_value& a_key);
+};
+
+template<>
+struct t_type_of<t_dictionary::t_table> : t_type
+{
+	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	{
+	}
+	virtual t_type* f_derive(t_object* a_this);
+	virtual void f_scan(t_object* a_this, t_scan a_scan);
+	virtual void f_finalize(t_object* a_this);
+	virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 template<>
@@ -164,6 +181,26 @@ struct t_type_of<t_dictionary> : t_type
 	virtual void f_equals(t_object* a_this, t_slot* a_stack);
 	virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
 };
+
+inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(f_as<const t_table&>(a_dictionary.v_table)), v_i(0), v_entry(0)
+{
+	t_entry** entries = v_table.f_entries();
+	do {
+		v_entry = entries[v_i];
+		if (v_entry) break;
+	} while (++v_i < v_table.v_capacity);
+}
+
+inline void t_dictionary::f_clear()
+{
+	f_as<t_table&>(v_table).f_clear();
+	v_table = t_table::f_instantiate(0);
+}
+
+inline size_t t_dictionary::f_size() const
+{
+	return f_as<t_table&>(v_table).v_size;
+}
 
 }
 
