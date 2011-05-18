@@ -10,7 +10,8 @@
 namespace xemmai
 {
 
-class t_engine;
+class t_with_lock_for_read;
+class t_with_lock_for_write;
 
 class t_structure
 {
@@ -202,6 +203,8 @@ class t_object
 	friend class t_local_pool<t_object>;
 	friend struct t_type_of<t_object>;
 	friend class t_engine;
+	friend class t_with_lock_for_read;
+	friend class t_with_lock_for_write;
 
 	enum t_color
 	{
@@ -244,6 +247,7 @@ class t_object
 	t_slot v_type;
 	t_structure* v_structure;
 	t_tuple* v_fields;
+	portable::t_lock v_lock;
 
 	t_type* f_type_as_type() const
 	{
@@ -330,8 +334,6 @@ public:
 	static XEMMAI__PORTABLE__EXPORT t_transfer f_allocate_uninitialized(t_object* a_type);
 	static XEMMAI__PORTABLE__EXPORT t_transfer f_allocate(t_object* a_type);
 #endif
-
-	portable::t_lock v_lock;
 
 	t_object() : v_fields(0)
 	{
