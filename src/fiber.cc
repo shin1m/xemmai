@@ -86,7 +86,9 @@ void t_fiber::t_context::f_dump() const
 		std::fputs("<native code>\n", stderr);
 		std::fputs("from ", stderr);
 	}
-	if (v_code) {
+	if (!v_code || v_code == f_engine()->v_code_fiber) {
+		std::fputs("<fiber>\n", stderr);
+	} else {
 		t_code& code = f_as<t_code&>(v_code);
 		std::fprintf(stderr, "%ls", code.v_path.c_str());
 		const t_at* at = code.f_at(v_pc);
@@ -96,8 +98,6 @@ void t_fiber::t_context::f_dump() const
 		} else {
 			std::fputc('\n', stderr);
 		}
-	} else {
-		std::fputs("<fiber>\n", stderr);
 	}
 }
 

@@ -459,22 +459,22 @@ t_operand t_unary::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 	size_t instruction = v_instruction;
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	switch (operand.v_tag) {
-	case t_operand::e_tag__VARIABLE:
-		instruction += e_instruction__PLUS_V - e_instruction__PLUS_T;
-		break;
 	case t_operand::e_tag__LITERAL:
 		instruction += e_instruction__PLUS_L - e_instruction__PLUS_T;
+		break;
+	case t_operand::e_tag__VARIABLE:
+		instruction += e_instruction__PLUS_V - e_instruction__PLUS_T;
 		break;
 	}
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	switch (operand.v_tag) {
-	case t_operand::e_tag__VARIABLE:
-		a_generator.f_operand(operand.v_value.f_integer());
-		break;
 	case t_operand::e_tag__LITERAL:
 		a_generator.f_operand(operand.v_value);
+		break;
+	case t_operand::e_tag__VARIABLE:
+		a_generator.f_operand(operand.v_value.f_integer());
 		break;
 	}
 	a_generator.f_at(this);
@@ -489,38 +489,38 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	t_operand right = v_right->f_generate(a_generator, left.v_tag == t_operand::e_tag__TEMPORARY ? a_stack + 1 : a_stack, false, operand);
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	switch (left.v_tag) {
-	case t_operand::e_tag__VARIABLE:
-		instruction += e_instruction__MULTIPLY_VT - e_instruction__MULTIPLY_TT;
-		break;
 	case t_operand::e_tag__LITERAL:
 		instruction += e_instruction__MULTIPLY_LT - e_instruction__MULTIPLY_TT;
 		break;
+	case t_operand::e_tag__VARIABLE:
+		instruction += e_instruction__MULTIPLY_VT - e_instruction__MULTIPLY_TT;
+		break;
 	}
 	switch (right.v_tag) {
-	case t_operand::e_tag__VARIABLE:
-		instruction += e_instruction__MULTIPLY_TV - e_instruction__MULTIPLY_TT;
-		break;
 	case t_operand::e_tag__LITERAL:
 		instruction += e_instruction__MULTIPLY_TL - e_instruction__MULTIPLY_TT;
+		break;
+	case t_operand::e_tag__VARIABLE:
+		instruction += e_instruction__MULTIPLY_TV - e_instruction__MULTIPLY_TT;
 		break;
 	}
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	switch (left.v_tag) {
-	case t_operand::e_tag__VARIABLE:
-		a_generator.f_operand(left.v_value.f_integer());
-		break;
 	case t_operand::e_tag__LITERAL:
 		a_generator.f_operand(left.v_value);
 		break;
+	case t_operand::e_tag__VARIABLE:
+		a_generator.f_operand(left.v_value.f_integer());
+		break;
 	}
 	switch (right.v_tag) {
-	case t_operand::e_tag__VARIABLE:
-		a_generator.f_operand(right.v_value.f_integer());
-		break;
 	case t_operand::e_tag__LITERAL:
 		a_generator.f_operand(right.v_value);
+		break;
+	case t_operand::e_tag__VARIABLE:
+		a_generator.f_operand(right.v_value.f_integer());
 		break;
 	}
 	a_generator.f_at(this);

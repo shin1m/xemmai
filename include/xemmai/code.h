@@ -150,22 +150,22 @@ enum t_instruction
 	e_instruction__GET_AT,
 	e_instruction__SET_AT,
 #define XEMMAI__CODE__INSTRUCTION_UNARY(a_name)\
-	e_instruction__##a_name##_V,\
 	e_instruction__##a_name##_L,\
+	e_instruction__##a_name##_V,\
 	e_instruction__##a_name##_T,
 	XEMMAI__CODE__INSTRUCTION_UNARY(PLUS)
 	XEMMAI__CODE__INSTRUCTION_UNARY(MINUS)
 	XEMMAI__CODE__INSTRUCTION_UNARY(NOT)
 	XEMMAI__CODE__INSTRUCTION_UNARY(COMPLEMENT)
 #define XEMMAI__CODE__INSTRUCTION_BINARY(a_name)\
-	e_instruction__##a_name##_VV,\
-	e_instruction__##a_name##_LV,\
-	e_instruction__##a_name##_TV,\
-	e_instruction__##a_name##_VL,\
 	e_instruction__##a_name##_LL,\
+	e_instruction__##a_name##_VL,\
 	e_instruction__##a_name##_TL,\
-	e_instruction__##a_name##_VT,\
+	e_instruction__##a_name##_LV,\
+	e_instruction__##a_name##_VV,\
+	e_instruction__##a_name##_TV,\
 	e_instruction__##a_name##_LT,\
+	e_instruction__##a_name##_VT,\
 	e_instruction__##a_name##_TT,
 	XEMMAI__CODE__INSTRUCTION_BINARY(MULTIPLY)
 	XEMMAI__CODE__INSTRUCTION_BINARY(DIVIDE)

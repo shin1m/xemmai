@@ -18,8 +18,8 @@ struct t_operand
 {
 	enum t_tag
 	{
-		e_tag__VARIABLE,
 		e_tag__LITERAL,
+		e_tag__VARIABLE,
 		e_tag__TEMPORARY
 	};
 

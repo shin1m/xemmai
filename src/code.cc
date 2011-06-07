@@ -105,22 +105,22 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__GET_AT,
 			&&label__SET_AT,
 #define XEMMAI__CODE__LABEL_UNARY(a_name)\
-			&&label__##a_name##_V,\
 			&&label__##a_name##_L,\
+			&&label__##a_name##_V,\
 			&&label__##a_name##_T,
 			XEMMAI__CODE__LABEL_UNARY(PLUS)
 			XEMMAI__CODE__LABEL_UNARY(MINUS)
 			XEMMAI__CODE__LABEL_UNARY(NOT)
 			XEMMAI__CODE__LABEL_UNARY(COMPLEMENT)
 #define XEMMAI__CODE__LABEL_BINARY(a_name)\
-			&&label__##a_name##_VV,\
-			&&label__##a_name##_LV,\
-			&&label__##a_name##_TV,\
-			&&label__##a_name##_VL,\
 			&&label__##a_name##_LL,\
+			&&label__##a_name##_VL,\
 			&&label__##a_name##_TL,\
-			&&label__##a_name##_VT,\
+			&&label__##a_name##_LV,\
+			&&label__##a_name##_VV,\
+			&&label__##a_name##_TV,\
 			&&label__##a_name##_LT,\
+			&&label__##a_name##_VT,\
 			&&label__##a_name##_TT,
 			XEMMAI__CODE__LABEL_BINARY(MULTIPLY)
 			XEMMAI__CODE__LABEL_BINARY(DIVIDE)
@@ -625,66 +625,66 @@ void t_code::f_loop()
 								stack[0].f_construct(a_x);
 #define XEMMAI__CODE__PREPARE()\
 								t_transfer x = stack[0].f_transfer();
-#define XEMMAI__CODE__FETCH_V()\
-						t_slot& a0 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PRIMITIVE_V(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
-#define XEMMAI__CODE__PREPARE_V()\
-								t_slot& x = a0;
 #define XEMMAI__CODE__FETCH_L()\
 						t_slot& a0 = *static_cast<t_slot*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_L(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
-#define XEMMAI__CODE__PREPARE_L() XEMMAI__CODE__PREPARE_V()
+#define XEMMAI__CODE__PREPARE_L()\
+								t_slot& x = a0;
+#define XEMMAI__CODE__FETCH_V()\
+						t_slot& a0 = base[reinterpret_cast<size_t>(*++pc)];
+#define XEMMAI__CODE__PRIMITIVE_V(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PREPARE_V() XEMMAI__CODE__PREPARE_L()
 #define XEMMAI__CODE__FETCH_T()\
 						t_slot& a0 = stack[0];
 #define XEMMAI__CODE__PRIMITIVE_T(a_x)\
 								stack[0] = t_value(a_x);
 #define XEMMAI__CODE__PREPARE_T() XEMMAI__CODE__PREPARE()
-#define XEMMAI__CODE__FETCH_VV()\
-						t_slot& a0 = base[reinterpret_cast<size_t>(*++pc)];\
-						t_slot& a1 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PRIMITIVE_VV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
-#define XEMMAI__CODE__PREPARE_VV()\
-								t_slot& x = a0;\
-								stack[1].f_construct(a1);
-#define XEMMAI__CODE__FETCH_LV()\
+#define XEMMAI__CODE__FETCH_LL()\
 						t_slot& a0 = *static_cast<t_slot*>(*++pc);\
-						t_slot& a1 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PRIMITIVE_LV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
-#define XEMMAI__CODE__PREPARE_LV() XEMMAI__CODE__PREPARE_VV()
-#define XEMMAI__CODE__FETCH_TV()\
-						t_slot& a0 = stack[0];\
-						t_slot& a1 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PRIMITIVE_TV(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
-#define XEMMAI__CODE__PREPARE_TV()\
-								t_transfer x = stack[0].f_transfer();\
+						t_slot& a1 = *static_cast<t_slot*>(*++pc);
+#define XEMMAI__CODE__PRIMITIVE_LL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PREPARE_LL()\
+								t_slot& x = a0;\
 								stack[1].f_construct(a1);
 #define XEMMAI__CODE__FETCH_VL()\
 						t_slot& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 						t_slot& a1 = *static_cast<t_slot*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_VL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
-#define XEMMAI__CODE__PREPARE_VL() XEMMAI__CODE__PREPARE_VV()
-#define XEMMAI__CODE__FETCH_LL()\
-						t_slot& a0 = *static_cast<t_slot*>(*++pc);\
-						t_slot& a1 = *static_cast<t_slot*>(*++pc);
-#define XEMMAI__CODE__PRIMITIVE_LL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
-#define XEMMAI__CODE__PREPARE_LL() XEMMAI__CODE__PREPARE_VV()
+#define XEMMAI__CODE__PREPARE_VL() XEMMAI__CODE__PREPARE_LL()
 #define XEMMAI__CODE__FETCH_TL()\
 						t_slot& a0 = stack[0];\
 						t_slot& a1 = *static_cast<t_slot*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_TL(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
-#define XEMMAI__CODE__PREPARE_TL() XEMMAI__CODE__PREPARE_TV()
-#define XEMMAI__CODE__FETCH_VT()\
+#define XEMMAI__CODE__PREPARE_TL()\
+								t_transfer x = stack[0].f_transfer();\
+								stack[1].f_construct(a1);
+#define XEMMAI__CODE__FETCH_LV()\
+						t_slot& a0 = *static_cast<t_slot*>(*++pc);\
+						t_slot& a1 = base[reinterpret_cast<size_t>(*++pc)];
+#define XEMMAI__CODE__PRIMITIVE_LV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PREPARE_LV() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__FETCH_VV()\
 						t_slot& a0 = base[reinterpret_cast<size_t>(*++pc)];\
-						t_slot& a1 = stack[0];
-#define XEMMAI__CODE__PRIMITIVE_VT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
-#define XEMMAI__CODE__PREPARE_VT()\
-								t_slot& x = a0;\
-								stack[1].f_construct(stack[0].f_transfer());
+						t_slot& a1 = base[reinterpret_cast<size_t>(*++pc)];
+#define XEMMAI__CODE__PRIMITIVE_VV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PREPARE_VV() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__FETCH_TV()\
+						t_slot& a0 = stack[0];\
+						t_slot& a1 = base[reinterpret_cast<size_t>(*++pc)];
+#define XEMMAI__CODE__PRIMITIVE_TV(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
+#define XEMMAI__CODE__PREPARE_TV() XEMMAI__CODE__PREPARE_TL()
 #define XEMMAI__CODE__FETCH_LT()\
 						t_slot& a0 = *static_cast<t_slot*>(*++pc);\
 						t_slot& a1 = stack[0];
 #define XEMMAI__CODE__PRIMITIVE_LT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
-#define XEMMAI__CODE__PREPARE_LT() XEMMAI__CODE__PREPARE_VT()
+#define XEMMAI__CODE__PREPARE_LT()\
+								t_slot& x = a0;\
+								stack[1].f_construct(stack[0].f_transfer());
+#define XEMMAI__CODE__FETCH_VT()\
+						t_slot& a0 = base[reinterpret_cast<size_t>(*++pc)];\
+						t_slot& a1 = stack[0];
+#define XEMMAI__CODE__PRIMITIVE_VT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
+#define XEMMAI__CODE__PREPARE_VT() XEMMAI__CODE__PREPARE_LT()
 #define XEMMAI__CODE__FETCH_TT()\
 						t_slot& a0 = stack[0];\
 						t_slot& a1 = stack[1];
@@ -721,10 +721,10 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__OTHERS
 #define XEMMAI__CODE__UNARY
-#define XEMMAI__CODE__OPERANDS _V
+#define XEMMAI__CODE__OPERANDS _L
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _L
+#define XEMMAI__CODE__OPERANDS _V
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _T
@@ -732,28 +732,28 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__UNARY
 #define XEMMAI__CODE__BINARY
-#define XEMMAI__CODE__OPERANDS _VV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _TV
+#define XEMMAI__CODE__OPERANDS _LL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _VL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LL
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _VT
+#define XEMMAI__CODE__OPERANDS _LV
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _VV
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _TV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _LT
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _VT
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TT
@@ -771,7 +771,7 @@ void t_code::f_loop()
 						t_transfer x = stack[0].f_transfer();
 						t_fiber::t_context::f_pop(stack, n);
 						x.f_call(t_value(), base - 1, n);
-						t_fiber::t_context* p = f_context();\
+						t_fiber::t_context* p = f_context();
 						if (p->v_native > 0) return;
 						base = p->v_base;
 						pc = p->v_pc;
@@ -785,7 +785,7 @@ void t_code::f_loop()
 						t_transfer x = stack[0].f_transfer();
 						t_fiber::t_context::f_pop(stack, n);
 						x.f_call(t_value(), base - 1, n);
-						t_fiber::t_context* p = f_context();\
+						t_fiber::t_context* p = f_context();
 						if (p->v_native > 0) return;
 						base = p->v_base;
 						pc = p->v_pc;
@@ -793,9 +793,22 @@ void t_code::f_loop()
 					XEMMAI__CODE__BREAK
 #undef XEMMAI__CODE__PRIMITIVE
 #define XEMMAI__CODE__PRIMITIVE(a_x)
+#undef XEMMAI__CODE__PREPARE_V
+#define XEMMAI__CODE__PREPARE_V()\
+								t_transfer x = a0.f_transfer();
 #undef XEMMAI__CODE__PRIMITIVE_T
 #define XEMMAI__CODE__PRIMITIVE_T(a_x)\
 								stack[0] = 0;
+#undef XEMMAI__CODE__PREPARE_VL
+#define XEMMAI__CODE__PREPARE_VL()\
+								t_transfer x = a0.f_transfer();\
+								stack[1].f_construct(a1);
+#undef XEMMAI__CODE__PREPARE_VV
+#define XEMMAI__CODE__PREPARE_VV() XEMMAI__CODE__PREPARE_VL()
+#undef XEMMAI__CODE__PREPARE_VT
+#define XEMMAI__CODE__PREPARE_VT()\
+								t_transfer x = a0.f_transfer();\
+								stack[1].f_construct(stack[0].f_transfer());
 #undef XEMMAI__CODE__PRIMITIVE_TT
 #define XEMMAI__CODE__PRIMITIVE_TT(a_x)\
 								stack[0] = 0;\
@@ -830,10 +843,10 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__OTHERS
 #define XEMMAI__CODE__UNARY
-#define XEMMAI__CODE__OPERANDS _V
+#define XEMMAI__CODE__OPERANDS _L
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _L
+#define XEMMAI__CODE__OPERANDS _V
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _T
@@ -841,28 +854,28 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__UNARY
 #define XEMMAI__CODE__BINARY
-#define XEMMAI__CODE__OPERANDS _VV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _TV
+#define XEMMAI__CODE__OPERANDS _LL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _VL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LL
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _VT
+#define XEMMAI__CODE__OPERANDS _LV
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _VV
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _TV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _LT
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _VT
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TT
@@ -900,7 +913,10 @@ void t_code::f_loop()
 						t_stack::v_instance = &q.v_stack;
 						t_fiber::t_context::v_instance = q.v_context;
 						p.v_active = false;
-						if (state == t_fiber::t_try::e_state__THROW) throw t_scoped(x);
+						if (state == t_fiber::t_try::e_state__THROW) {
+							pc = f_context()->v_pc;
+							throw t_scoped(x);
+						}
 						q.v_return->f_construct(x);
 						if (f_context()->v_native > 0) return;
 						base = f_context()->v_base;
