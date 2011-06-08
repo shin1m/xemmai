@@ -1,6 +1,7 @@
 #include <xemmai/io/path.h>
 
 #include <xemmai/convert.h>
+#include <xemmai/derived.h>
 #include <xemmai/io.h>
 
 namespace xemmai
@@ -16,7 +17,7 @@ void t_type_of<portable::t_path>::f_define(t_io* a_extension)
 
 t_type* t_type_of<portable::t_path>::f_derive(t_object* a_this)
 {
-	return 0;
+	return new t_derived<t_type_of>(v_module, a_this);
 }
 
 void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
