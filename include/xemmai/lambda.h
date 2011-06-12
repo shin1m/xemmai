@@ -58,6 +58,7 @@ struct t_type_of<t_advanced_lambda> : t_type_of<t_lambda>
 {
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<t_lambda>(a_module, a_super)
 	{
+		v_shared = true;
 	}
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

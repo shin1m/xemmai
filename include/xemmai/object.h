@@ -248,6 +248,7 @@ class t_object
 	t_structure* v_structure;
 	t_tuple* v_fields;
 	portable::t_lock v_lock;
+	t_value::t_increments* v_owner;
 
 	t_type* f_type_as_type() const
 	{
@@ -362,6 +363,16 @@ public:
 	{
 		return t_type::f_derives(f_type(), a_class);
 	}
+	bool f_owned() const
+	{
+		return v_owner == t_value::v_increments;
+	}
+	bool f_shared() const
+	{
+		return !v_owner;
+	}
+	void f_own();
+	void f_share();
 	int f_field_index(t_object* a_key) const
 	{
 		return v_structure->f_index(a_key);

@@ -65,6 +65,7 @@ t_writer::t_writer(const t_transfer& a_stream, const std::wstring& a_encoding) :
 	if (v_cd == iconv_t(-1)) t_throwable::f_throw(L"failed to iconv_open.");
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(1024);
+	static_cast<t_object*>(v_buffer)->f_share();
 	t_bytes& buffer = f_as<t_bytes&>(v_buffer);
 	v_p = reinterpret_cast<char*>(&buffer[0]);
 	v_n = buffer.f_size();

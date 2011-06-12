@@ -69,17 +69,7 @@ void t_thread::f_cache_clear()
 {
 	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
 		t_cache& cache = v_cache[i];
-		if (cache.v_modified) {
-			{
-				t_with_lock_for_write lock(cache.v_object);
-				static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value.f_transfer());
-			}
-			cache.v_modified = false;
-			cache.v_revision = t_cache::f_revise(i);
-		} else {
-			cache.v_value = 0;
-		}
-		cache.v_object = cache.v_key = 0;
+		cache.v_object = cache.v_key = cache.v_value = 0;
 	}
 }
 
@@ -87,25 +77,10 @@ void t_thread::f_cache_acquire()
 {
 	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
 		t_cache& cache = v_cache[i];
-		if (cache.v_modified) continue;
 		size_t revision = t_cache::v_revisions[i];
 		if (cache.v_revision == revision) continue;
 		cache.v_revision = revision;
 		cache.v_object = cache.v_key = cache.v_value = 0;
-	}
-}
-
-void t_thread::f_cache_release()
-{
-	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
-		t_cache& cache = v_cache[i];
-		if (!cache.v_modified) continue;
-		{
-			t_with_lock_for_write lock(cache.v_object);
-			static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value);
-		}
-		cache.v_modified = false;
-		cache.v_revision = t_cache::f_revise(i);
 	}
 }
 

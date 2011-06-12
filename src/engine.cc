@@ -236,6 +236,7 @@ v_verbose(a_verbose)
 	library->v_extension = new t_global(v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_structure.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
 	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
 	t_transfer path = t_array::f_instantiate();
+	static_cast<t_object*>(path)->v_owner = 0;
 	{
 		char* p = std::getenv("XEMMAI_MODULE_PATH");
 		if (p != NULL) {
@@ -269,15 +270,30 @@ v_verbose(a_verbose)
 		v_module_io = t_module::f_instantiate(L"io", library);
 		library->v_extension = new t_io(v_module_io);
 	}
-	t_transfer in = io::t_file::f_instantiate(stdin);
-	v_module_system.f_put(t_symbol::f_instantiate(L"native_in"), t_value(in));
-	v_module_system.f_put(t_symbol::f_instantiate(L"in"), io::t_reader::f_instantiate(in, L""));
-	t_transfer out = io::t_file::f_instantiate(stdout);
-	v_module_system.f_put(t_symbol::f_instantiate(L"native_out"), t_value(out));
-	v_module_system.f_put(t_symbol::f_instantiate(L"out"), io::t_writer::f_instantiate(out, L""));
-	t_transfer error = io::t_file::f_instantiate(stderr);
-	v_module_system.f_put(t_symbol::f_instantiate(L"native_error"), t_value(error));
-	v_module_system.f_put(t_symbol::f_instantiate(L"error"), io::t_writer::f_instantiate(error, L""));
+	{
+		t_transfer file = io::t_file::f_instantiate(stdin);
+		static_cast<t_object*>(file)->v_owner = 0;
+		v_module_system.f_put(t_symbol::f_instantiate(L"native_in"), t_value(file));
+		t_transfer reader = io::t_reader::f_instantiate(file, L"");
+		static_cast<t_object*>(reader)->v_owner = 0;
+		v_module_system.f_put(t_symbol::f_instantiate(L"in"), reader);
+	}
+	{
+		t_transfer file = io::t_file::f_instantiate(stdout);
+		static_cast<t_object*>(file)->v_owner = 0;
+		v_module_system.f_put(t_symbol::f_instantiate(L"native_out"), t_value(file));
+		t_transfer writer = io::t_writer::f_instantiate(file, L"");
+		static_cast<t_object*>(writer)->v_owner = 0;
+		v_module_system.f_put(t_symbol::f_instantiate(L"out"), writer);
+	}
+	{
+		t_transfer file = io::t_file::f_instantiate(stderr);
+		static_cast<t_object*>(file)->v_owner = 0;
+		v_module_system.f_put(t_symbol::f_instantiate(L"native_error"), t_value(file));
+		t_transfer writer = io::t_writer::f_instantiate(file, L"");
+		static_cast<t_object*>(writer)->v_owner = 0;
+		v_module_system.f_put(t_symbol::f_instantiate(L"error"), writer);
+	}
 	{
 		v_code_fiber = t_code::f_instantiate(std::wstring(), false, false, 2, 0, 0, 0);
 		t_code& code = f_as<t_code&>(v_code_fiber);

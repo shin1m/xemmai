@@ -30,6 +30,16 @@ void t_type::f_initialize(t_object* a_module, const t_value& a_self, t_slot* a_s
 	for (size_t i = 1; i <= a_n; ++i) a_stack[i] = 0;
 }
 
+void t_type::f_own(const t_value& a_self)
+{
+	if (a_self.f_tag() >= t_value::e_tag__OBJECT) static_cast<t_object*>(a_self)->f_own();
+}
+
+void t_type::f_share(const t_value& a_self)
+{
+	if (a_self.f_tag() >= t_value::e_tag__OBJECT) static_cast<t_object*>(a_self)->f_share();
+}
+
 void t_type::f_define(t_object* a_class)
 {
 	t_define<t_object, t_object>(f_global(), L"Object", a_class)
@@ -39,6 +49,8 @@ void t_type::f_define(t_object* a_class)
 		(f_global()->f_symbol_hash(), t_member<int (*)(const t_value&), f_hash>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const t_value&, const t_value&), f_not_equals>())
+		(L"own", t_member<void (*)(const t_value&), f_own>())
+		(L"share", t_member<void (*)(const t_value&), f_share>())
 	;
 }
 
@@ -76,40 +88,35 @@ void t_type::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 
 t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 {
+	t_object* p = static_cast<t_object*>(a_this);
+	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
+		if (p->f_owned()) {
+			int index = p->f_field_index(a_key);
+			if (index >= 0) return p->f_field_get(index);
+		} else if (!p->f_shared()) {
+			t_throwable::f_throw(L"owned by another thread.");
+		}
+	}
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	t_thread::t_cache& cache = t_thread::v_cache[i];
 	t_symbol& symbol = f_as<t_symbol&>(a_key);
-	if (cache.v_object == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
-		if (cache.v_key_revision == symbol.v_revision) {
-			++t_thread::v_cache_hit;
-			return cache.v_value;
-		}
-		if (cache.v_modified) {
-			++t_thread::v_cache_hit;
-			cache.v_key_revision = symbol.v_revision;
-			return cache.v_value;
-		}
+	if (cache.v_object == a_this && static_cast<t_object*>(cache.v_key) == a_key && cache.v_key_revision == symbol.v_revision) {
+		++t_thread::v_cache_hit;
+		return cache.v_value;
 	}
 	++t_thread::v_cache_missed;
 	cache.v_key_revision = symbol.v_revision;
 	int index = -1;
 	t_transfer value;
-	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
+	if (a_this.f_tag() >= t_value::e_tag__OBJECT && !p->f_owned()) {
 		t_with_lock_for_read lock(a_this);
-		index = static_cast<t_object*>(a_this)->f_field_index(a_key);
-		if (index >= 0) value = static_cast<t_object*>(a_this)->f_field_get(index);
+		if (!p->f_shared()) t_throwable::f_throw(L"owned by another thread.");
+		index = p->f_field_index(a_key);
+		if (index >= 0) value = p->f_field_get(index);
 	}
 	if (index < 0) {
 		value = a_this.f_type()->f_get(a_key);
 		if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(a_this);
-	}
-	if (cache.v_modified) {
-		{
-			t_with_lock_for_write lock(cache.v_object);
-			static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value.f_transfer());
-		}
-		cache.v_modified = false;
-		cache.v_revision = t_thread::t_cache::f_revise(i);
 	}
 	cache.v_object = a_this;
 	cache.v_key = a_key;
@@ -118,25 +125,21 @@ t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 
 void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 {
-	size_t i = t_thread::t_cache::f_index(a_this, a_key);
-	t_thread::t_cache& cache = t_thread::v_cache[i];
-	if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
-		++t_thread::v_cache_hit;
+	if (a_this->f_owned()) {
+		a_this->f_field_put(a_key, a_value);
 	} else {
-		++t_thread::v_cache_missed;
-		if (cache.v_modified) {
-			{
-				t_with_lock_for_write lock(cache.v_object);
-				static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value.f_transfer());
-			}
-			cache.v_revision = t_thread::t_cache::f_revise(i);
+		if (f_as<t_type&>(a_this->f_type()).v_immutable) t_throwable::f_throw(L"immutable.");
+		{
+			t_with_lock_for_write lock(a_this);
+			if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
+			a_this->f_field_put(a_key, a_value);
 		}
-		cache.v_object = a_this;
-		cache.v_key = a_key;
+		size_t i = t_thread::t_cache::f_index(a_this, a_key);
+		t_thread::t_cache& cache = t_thread::v_cache[i];
+		if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) cache.v_object = cache.v_key = cache.v_value = 0;
+		cache.v_revision = t_thread::t_cache::f_revise(i);
+		cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
 	}
-	cache.v_value = a_value;
-	cache.v_modified = true;
-	cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
 }
 
 bool t_type::f_has(const t_value& a_this, t_object* a_key)
@@ -152,28 +155,30 @@ bool t_type::f_has(const t_value& a_this, t_object* a_key)
 
 t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
 {
-	size_t i = t_thread::t_cache::f_index(a_this, a_key);
-	t_thread::t_cache& cache = t_thread::v_cache[i];
-	t_transfer value;
-	if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) {
-		{
-			t_with_lock_for_write lock(a_this);
-			int index = a_this->f_field_index(a_key);
-			if (index >= 0) a_this->f_field_remove(index);
-		}
-		cache.v_object = cache.v_key = 0;
-		value = cache.v_value.f_transfer();
-		cache.v_modified = false;
-	} else {
-		t_with_lock_for_write lock(a_this);
+	if (a_this->f_owned()) {
 		int index = a_this->f_field_index(a_key);
 		if (index < 0) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
-		value = a_this->f_field_get(index);
+		t_transfer value = a_this->f_field_get(index);
 		a_this->f_field_remove(index);
+		return value;
+	} else {
+		if (f_as<t_type&>(a_this->f_type()).v_immutable) t_throwable::f_throw(L"immutable.");
+		t_transfer value;
+		{
+			t_with_lock_for_write lock(a_this);
+			if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
+			int index = a_this->f_field_index(a_key);
+			if (index < 0) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
+			value = a_this->f_field_get(index);
+			a_this->f_field_remove(index);
+		}
+		size_t i = t_thread::t_cache::f_index(a_this, a_key);
+		t_thread::t_cache& cache = t_thread::v_cache[i];
+		if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) cache.v_object = cache.v_key = cache.v_value = 0;
+		cache.v_revision = t_thread::t_cache::f_revise(i);
+		cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
+		return value;
 	}
-	cache.v_revision = t_thread::t_cache::f_revise(i);
-	cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
-	return value;
 }
 
 void t_type::f_hash(t_object* a_this, t_slot* a_stack)

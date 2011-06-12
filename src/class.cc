@@ -79,14 +79,6 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 		type = f_as<t_type&>(type).v_super;
 		if (!type) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
 	}
-	if (cache.v_modified) {
-		{
-			t_with_lock_for_write lock(cache.v_object);
-			static_cast<t_object*>(cache.v_object)->f_field_put(cache.v_key, cache.v_value.f_transfer());
-		}
-		cache.v_modified = false;
-		cache.v_revision = t_thread::t_cache::f_revise(i);
-	}
 	cache.v_object = a_this;
 	cache.v_key = a_key;
 	return cache.v_value = value;

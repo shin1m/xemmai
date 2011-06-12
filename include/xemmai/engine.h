@@ -165,6 +165,7 @@ inline t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 	p->v_type.f_construct(a_type);
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 
@@ -177,6 +178,7 @@ inline t_transfer t_object::f_allocate(t_object* a_type)
 	p->v_type.v_pointer = 0;
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 #endif

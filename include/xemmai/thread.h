@@ -24,11 +24,10 @@ struct t_thread
 		t_slot v_object;
 		t_slot v_key;
 		t_slot v_value;
-		bool v_modified;
 		volatile size_t v_revision;
 		volatile size_t v_key_revision;
 
-		t_cache() : v_modified(false), v_revision(0), v_key_revision(0)
+		t_cache() : v_revision(0), v_key_revision(0)
 		{
 		}
 	};
@@ -71,7 +70,9 @@ struct t_thread
 	}
 	static void f_cache_clear();
 	static void f_cache_acquire();
-	static void f_cache_release();
+	static void f_cache_release()
+	{
+	}
 	static t_transfer f_instantiate(const t_transfer& a_callable, size_t a_stack);
 	static void f_define(t_object* a_class);
 
@@ -90,6 +91,7 @@ struct t_type_of<t_thread> : t_type
 {
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
+		v_fixed = v_shared = true;
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);

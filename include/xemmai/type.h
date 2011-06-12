@@ -218,6 +218,9 @@ struct t_type_of<t_object>
 	bool v_builtin;
 	bool v_primitive;
 	bool v_revive;
+	bool v_fixed;
+	bool v_shared;
+	bool v_immutable;
 
 	static t_transfer f_transfer(const t_global* a_extension, t_object* a_value)
 	{
@@ -252,9 +255,14 @@ struct t_type_of<t_object>
 	{
 		return a_self != a_other;
 	}
+	XEMMAI__PORTABLE__EXPORT static void f_own(const t_value& a_self);
+	XEMMAI__PORTABLE__EXPORT static void f_share(const t_value& a_self);
 	XEMMAI__PORTABLE__EXPORT static void f_define(t_object* a_class);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : v_module(a_module), v_super(a_super), v_builtin(false), v_primitive(false), v_revive(false)
+	t_type_of(const t_transfer& a_module, const t_transfer& a_super) :
+	v_module(a_module), v_super(a_super),
+	v_builtin(false), v_primitive(false), v_revive(false),
+	v_fixed(false), v_shared(false), v_immutable(false)
 	{
 	}
 	XEMMAI__PORTABLE__EXPORT virtual ~t_type_of();

@@ -64,6 +64,7 @@ t_reader::t_reader(const t_transfer& a_stream, const std::wstring& a_encoding) :
 	if (v_cd == iconv_t(-1)) t_throwable::f_throw(L"failed to iconv_open.");
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(1024);
+	static_cast<t_object*>(v_buffer)->f_share();
 }
 
 void t_reader::f_close(t_io* a_extension)

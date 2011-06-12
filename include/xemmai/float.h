@@ -159,6 +159,7 @@ struct t_type_of<double> : t_type
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
+		v_shared = v_immutable = true;
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);

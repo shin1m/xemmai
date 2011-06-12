@@ -310,6 +310,7 @@ t_transfer t_object::f_allocate_on_boot(t_object* a_type)
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
 	p->v_type.v_pointer = 0;
+	p->v_owner = 0;
 	return t_transfer(p, t_transfer::t_pass());
 }
 
@@ -322,6 +323,7 @@ t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 	p->v_type.f_construct(a_type);
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 
@@ -334,9 +336,37 @@ t_transfer t_object::f_allocate(t_object* a_type)
 	p->v_type.v_pointer = 0;
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 #endif
+
+void t_object::f_own()
+{
+	if (f_as<t_type&>(v_type).v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
+	{
+		portable::t_scoped_lock_for_write lock(v_lock);
+		if (v_owner) t_throwable::f_throw(L"already owned.");
+		v_owner = t_value::v_increments;
+	}
+	t_slot* p = v_structure->f_fields();
+	for (size_t i = 0; i < v_structure->f_size(); ++i) {
+		t_object* key = p[i];
+		size_t j = t_thread::t_cache::f_index(this, key);
+		t_thread::t_cache& cache = t_thread::v_cache[j];
+		if (static_cast<t_object*>(cache.v_object) == this && static_cast<t_object*>(cache.v_key) == key) cache.v_object = cache.v_key = cache.v_value = 0;
+		cache.v_revision = t_thread::t_cache::f_revise(j);
+		cache.v_key_revision = f_as<t_symbol&>(key).v_revision;
+	}
+}
+
+void t_object::f_share()
+{
+	if (f_as<t_type&>(v_type).v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
+	if (v_owner != t_value::v_increments) t_throwable::f_throw(L"not owned.");
+	portable::t_scoped_lock_for_write lock(v_lock);
+	v_owner = 0;
+}
 
 void t_object::f_field_put(t_object* a_key, const t_transfer& a_value)
 {

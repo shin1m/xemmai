@@ -3,6 +3,7 @@ scripts = \
 	field.xm \
 	flow.xm \
 	flow2.xm \
+	primitives.xm \
 	race.xm \
 	ring.xm \
 	symbol.xm \
@@ -10,6 +11,7 @@ scripts = \
 	fiber2.xm \
 	fiber3.xm \
 	thread.xm \
+	threading.xm \
 	tuple.xm \
 	variadic.xm \
 	array.xm \
