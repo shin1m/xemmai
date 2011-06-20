@@ -17,6 +17,7 @@ class t_structure
 {
 	friend class t_engine;
 	friend class t_object;
+	friend struct t_thread;
 	friend struct t_type_of<t_structure>;
 
 	struct t_entry
@@ -28,6 +29,22 @@ class t_structure
 		{
 		}
 	};
+	struct t_cache
+	{
+		static const size_t V_SIZE = 1 << 11;
+		static const size_t V_MASK = V_SIZE - 1;
+
+		static size_t f_index(t_object* a_structure, t_object* a_key)
+		{
+			return (reinterpret_cast<size_t>(a_structure) ^ reinterpret_cast<size_t>(a_key)) / sizeof(t_object*) & V_MASK;
+		}
+
+		t_slot v_structure;
+		t_slot v_key;
+		int v_index;
+	};
+
+	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
 
 	size_t v_size;
 	std::map<t_object*, t_object*>::iterator v_iterator;
@@ -109,19 +126,23 @@ public:
 	}
 	int f_index(t_object* a_key) const
 	{
+		t_cache& cache = v_cache[t_cache::f_index(v_this, a_key)];
+		if (static_cast<t_object*>(cache.v_structure) == v_this && static_cast<t_object*>(cache.v_key) == a_key) return cache.v_index;
+		cache.v_structure = v_this;
+		cache.v_key = a_key;
 		const t_entry* p = f_entries();
 		size_t i = 0;
 		size_t j = v_size;
 		while (i < j) {
 			size_t k = (i + j) / 2;
 			const t_entry& entry = p[k];
-			if (entry.v_key == a_key) return entry.v_index;
+			if (entry.v_key == a_key) return cache.v_index = entry.v_index;
 			if (entry.v_key < a_key)
 				i = k + 1;
 			else
 				j = k;
 		}
-		return -1;
+		return cache.v_index = -1;
 	}
 	t_transfer f_append(t_object* a_key);
 	t_transfer f_remove(size_t a_index);

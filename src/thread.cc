@@ -67,6 +67,10 @@ void* t_thread::f_main(void* a_p)
 
 void t_thread::f_cache_clear()
 {
+	for (size_t i = 0; i < t_structure::t_cache::V_SIZE; ++i) {
+		t_structure::t_cache& cache = t_structure::v_cache[i];
+		cache.v_structure = cache.v_key = 0;
+	}
 	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
 		t_cache& cache = v_cache[i];
 		cache.v_object = cache.v_key = cache.v_value = 0;

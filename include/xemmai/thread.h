@@ -39,6 +39,7 @@ struct t_thread
 		t_value::t_increments v_increments;
 		t_value::t_decrements v_decrements;
 		t_object* volatile* v_reviving;
+		t_structure::t_cache v_index_cache[t_structure::t_cache::V_SIZE];
 		t_cache v_cache[t_cache::V_SIZE];
 		size_t v_cache_hit;
 		size_t v_cache_missed;
@@ -50,6 +51,7 @@ struct t_thread
 		{
 			t_value::v_increments = &v_increments;
 			t_value::v_decrements = &v_decrements;
+			t_structure::v_cache = v_index_cache;
 			t_thread::v_cache = v_cache;
 		}
 		void f_revive()
