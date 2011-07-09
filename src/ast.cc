@@ -504,7 +504,7 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 		instruction += e_instruction__MULTIPLY_TV - e_instruction__MULTIPLY_TT;
 		break;
 	}
-	a_generator.f_reserve(a_stack + 1);
+	a_generator.f_reserve(a_stack + 2);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	switch (left.v_tag) {

@@ -854,7 +854,7 @@ inline t_transfer t_value::f_less(const t_value& a_value) const
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 		t_throwable::f_throw(L"not supported");
-		break;
+		return t_transfer();
 	case e_tag__INTEGER:
 		return t_value(t_type_of<int>::f_less(v_integer, a_value));
 	case e_tag__FLOAT:
@@ -888,7 +888,7 @@ inline t_transfer t_value::f_greater(const t_value& a_value) const
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 		t_throwable::f_throw(L"not supported");
-		break;
+		return t_transfer();
 	case e_tag__INTEGER:
 		return t_value(t_type_of<int>::f_greater(v_integer, a_value));
 	case e_tag__FLOAT:

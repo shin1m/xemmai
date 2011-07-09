@@ -69,7 +69,7 @@ class t_structure
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_structure(const t_transfer& a_this) : v_this(a_this)
+	t_structure(const t_transfer& a_this) : v_this(a_this), v_parent1(0)
 	{
 	}
 	t_structure(std::map<t_object*, t_object*>::iterator a_iterator, const t_transfer& a_this, t_structure* a_parent) : v_iterator(a_iterator), v_this(a_this), v_parent0(a_parent->v_this), v_parent1(a_parent)
@@ -184,7 +184,7 @@ class t_tuple
 	}
 
 public:
-	static t_transfer f_instantiate(size_t a_size);
+	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate(size_t a_size);
 
 	void f_scan(t_scan a_scan)
 	{

@@ -45,10 +45,10 @@ size_t f_expand(t_slot* a_stack, size_t a_n)
 		}
 	} else {
 		t_transfer size = x.f_get(f_global()->f_symbol_size())();
-		f_check<int>(size, L"size");
-		n = f_as<int>(size);
+		f_check<size_t>(size, L"size");
+		n = f_as<size_t>(size);
 		f_allocate(a_stack, n);
-		for (int i = 0; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
+		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(static_cast<int>(i))));
 	}
 	return a_n - 1 + n;
 }
@@ -540,7 +540,7 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(BOOLEAN)
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						bool value = static_cast<bool>(reinterpret_cast<int>(*++pc));
+						bool value = reinterpret_cast<int>(*++pc) != 0;
 						++pc;
 						stack[0].f_construct(value);
 					}

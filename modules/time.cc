@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <cwctype>
+#ifdef __unix__
 #include <sys/time.h>
+#endif
 #include <xemmai/tuple.h>
 #include <xemmai/convert.h>
 
@@ -41,7 +43,7 @@ double f_now()
 #endif
 #ifdef _WIN32
 	FILETIME utc;
-	GetSystemAsFileTime(&utc);
+	GetSystemTimeAsFileTime(&utc);
 	FILETIME local;
 	FileTimeToLocalFileTime(&utc, &local);
 	ULARGE_INTEGER ui;

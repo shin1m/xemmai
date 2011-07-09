@@ -23,6 +23,7 @@ t_transfer t_type_of<int>::f_multiply(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return t_transfer();
 }
 
 t_transfer t_type_of<int>::f_divide(int a_self, const t_value& a_value)
@@ -42,6 +43,7 @@ t_transfer t_type_of<int>::f_divide(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return t_transfer();
 }
 
 t_transfer t_type_of<int>::f_add(int a_self, const t_value& a_value)
@@ -61,6 +63,7 @@ t_transfer t_type_of<int>::f_add(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return t_transfer();
 }
 
 t_transfer t_type_of<int>::f_subtract(int a_self, const t_value& a_value)
@@ -80,6 +83,7 @@ t_transfer t_type_of<int>::f_subtract(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return t_transfer();
 }
 
 bool t_type_of<int>::f_less(int a_self, const t_value& a_value)
@@ -99,6 +103,7 @@ bool t_type_of<int>::f_less(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return false;
 }
 
 bool t_type_of<int>::f_less_equal(int a_self, const t_value& a_value)
@@ -118,6 +123,7 @@ bool t_type_of<int>::f_less_equal(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return false;
 }
 
 bool t_type_of<int>::f_greater(int a_self, const t_value& a_value)
@@ -137,6 +143,7 @@ bool t_type_of<int>::f_greater(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return false;
 }
 
 bool t_type_of<int>::f_greater_equal(int a_self, const t_value& a_value)
@@ -156,6 +163,7 @@ bool t_type_of<int>::f_greater_equal(int a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
+	return false;
 }
 
 bool t_type_of<int>::f_equals(int a_self, const t_value& a_value)

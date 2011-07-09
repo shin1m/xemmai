@@ -184,4 +184,11 @@ void t_stack::f_expand(t_slot* a_p)
 	while (v_tail < a_p) new(v_tail++) t_slot();
 }
 
+#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+t_stack* f_stack()
+{
+	return t_stack::v_instance;
+}
+#endif
+
 }

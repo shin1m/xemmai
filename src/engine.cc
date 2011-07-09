@@ -1,8 +1,10 @@
 #include <xemmai/engine.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <xemmai/portable/path.h>
+#include <xemmai/portable/convert.h>
 #include <xemmai/structure.h>
 #include <xemmai/array.h>
 #include <xemmai/io.h>
@@ -241,9 +243,17 @@ v_verbose(a_verbose)
 		char* p = std::getenv("XEMMAI_MODULE_PATH");
 		if (p != NULL) {
 			std::wstring s = portable::f_convert(p);
+#ifdef _WIN32
+			s.erase(std::remove(s.begin(), s.end(), L'"'), s.end());
+#endif
 			size_t i = 0;
 			while (true) {
+#ifdef __unix__
 				size_t j = s.find(L':', i);
+#endif
+#ifdef _WIN32
+				size_t j = s.find(L';', i);
+#endif
 				if (j == std::wstring::npos) break;
 				if (i < j) f_as<t_array&>(path).f_push(f_global()->f_as(s.substr(i, j - i)));
 				i = j + 1;
@@ -251,7 +261,9 @@ v_verbose(a_verbose)
 			if (i < s.size()) f_as<t_array&>(path).f_push(f_global()->f_as(s.substr(i)));
 		}
 	}
+#ifdef XEMMAI_MODULE_PATH
 	f_as<t_array&>(path).f_push(f_global()->f_as(std::wstring(XEMMAI__MACRO__L(XEMMAI_MODULE_PATH))));
+#endif
 	if (a_count > 0) {
 		v_module_system.f_put(f_global()->f_symbol_executable(), f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_convert(a_arguments[0])))));
 		if (a_count > 1) {
@@ -260,7 +272,7 @@ v_verbose(a_verbose)
 			f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L"..")));
 			t_transfer arguments = t_array::f_instantiate();
 			t_array& p = f_as<t_array&>(arguments);
-			for (int i = 2; i < a_count; ++i) p.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
+			for (size_t i = 2; i < a_count; ++i) p.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
 			v_module_system.f_put(f_global()->f_symbol_arguments(), arguments);
 		}
 	}

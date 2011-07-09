@@ -258,7 +258,7 @@ struct t_code
 	};
 	class t_label : std::vector<size_t>
 	{
-		friend class t_code;
+		friend struct t_code;
 
 		size_t v_target;
 	};
@@ -317,7 +317,7 @@ struct t_code
 	}
 	void f_operand(bool a_operand)
 	{
-		v_instructions.push_back(reinterpret_cast<void*>(static_cast<int>(a_operand)));
+		v_instructions.push_back(reinterpret_cast<void*>(a_operand ? 1 : 0));
 	}
 	void f_operand(int a_operand)
 	{

@@ -9,7 +9,7 @@
 namespace xemmai
 {
 
-class t_generator;
+struct t_generator;
 
 namespace ast
 {
@@ -39,7 +39,7 @@ struct t_operand
 
 class t_node
 {
-	friend class xemmai::t_generator;
+	friend struct xemmai::t_generator;
 
 	t_at v_at;
 

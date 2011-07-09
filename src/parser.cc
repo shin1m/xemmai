@@ -252,6 +252,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 		}
 	default:
 		f_throw(L"unexpected token.");
+		return 0;
 	}
 }
 

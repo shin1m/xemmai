@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4AEE7006-0B21-4A64-9302-91A3DC9BD8F4}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>xemmai</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;XEMMAI__PORTABLE__EXPORT=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;win-iconv</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;XEMMAI__PORTABLE__EXPORT=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;win-iconv</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\xemmai\array.h" />
+    <ClInclude Include="include\xemmai\ast.h" />
+    <ClInclude Include="include\xemmai\boolean.h" />
+    <ClInclude Include="include\xemmai\bytes.h" />
+    <ClInclude Include="include\xemmai\class.h" />
+    <ClInclude Include="include\xemmai\code.h" />
+    <ClInclude Include="include\xemmai\convert.h" />
+    <ClInclude Include="include\xemmai\convert_call.h" />
+    <ClInclude Include="include\xemmai\convert_override.h" />
+    <ClInclude Include="include\xemmai\derived.h" />
+    <ClInclude Include="include\xemmai\dictionary.h" />
+    <ClInclude Include="include\xemmai\engine.h" />
+    <ClInclude Include="include\xemmai\fiber.h" />
+    <ClInclude Include="include\xemmai\float.h" />
+    <ClInclude Include="include\xemmai\global.h" />
+    <ClInclude Include="include\xemmai\integer.h" />
+    <ClInclude Include="include\xemmai\io.h" />
+    <ClInclude Include="include\xemmai\io\file.h" />
+    <ClInclude Include="include\xemmai\io\path.h" />
+    <ClInclude Include="include\xemmai\io\reader.h" />
+    <ClInclude Include="include\xemmai\io\writer.h" />
+    <ClInclude Include="include\xemmai\lambda.h" />
+    <ClInclude Include="include\xemmai\lexer.h" />
+    <ClInclude Include="include\xemmai\macro.h" />
+    <ClInclude Include="include\xemmai\method.h" />
+    <ClInclude Include="include\xemmai\module.h" />
+    <ClInclude Include="include\xemmai\native.h" />
+    <ClInclude Include="include\xemmai\null.h" />
+    <ClInclude Include="include\xemmai\object.h" />
+    <ClInclude Include="include\xemmai\object_call.h" />
+    <ClInclude Include="include\xemmai\parser.h" />
+    <ClInclude Include="include\xemmai\pool.h" />
+    <ClInclude Include="include\xemmai\portable\atomic.h" />
+    <ClInclude Include="include\xemmai\portable\convert.h" />
+    <ClInclude Include="include\xemmai\portable\define.h" />
+    <ClInclude Include="include\xemmai\portable\library.h" />
+    <ClInclude Include="include\xemmai\portable\path.h" />
+    <ClInclude Include="include\xemmai\portable\thread.h" />
+    <ClInclude Include="include\xemmai\scope.h" />
+    <ClInclude Include="include\xemmai\string.h" />
+    <ClInclude Include="include\xemmai\structure.h" />
+    <ClInclude Include="include\xemmai\symbol.h" />
+    <ClInclude Include="include\xemmai\thread.h" />
+    <ClInclude Include="include\xemmai\throwable.h" />
+    <ClInclude Include="include\xemmai\tuple.h" />
+    <ClInclude Include="include\xemmai\type.h" />
+    <ClInclude Include="include\xemmai\value.h" />
+    <ClInclude Include="include\xemmai\value_call.h" />
+    <ClInclude Include="src\code_operator.h" />
+    <ClInclude Include="win-iconv\iconv.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\array.cc" />
+    <ClCompile Include="src\ast.cc" />
+    <ClCompile Include="src\boolean.cc" />
+    <ClCompile Include="src\bytes.cc" />
+    <ClCompile Include="src\class.cc" />
+    <ClCompile Include="src\code.cc" />
+    <ClCompile Include="src\dictionary.cc" />
+    <ClCompile Include="src\engine.cc" />
+    <ClCompile Include="src\fiber.cc" />
+    <ClCompile Include="src\float.cc" />
+    <ClCompile Include="src\global.cc" />
+    <ClCompile Include="src\integer.cc" />
+    <ClCompile Include="src\io.cc" />
+    <ClCompile Include="src\io__file.cc" />
+    <ClCompile Include="src\io__path.cc" />
+    <ClCompile Include="src\io__reader.cc" />
+    <ClCompile Include="src\io__writer.cc" />
+    <ClCompile Include="src\lambda.cc" />
+    <ClCompile Include="src\lexer.cc" />
+    <ClCompile Include="src\main.cc" />
+    <ClCompile Include="src\method.cc" />
+    <ClCompile Include="src\module.cc" />
+    <ClCompile Include="src\native.cc" />
+    <ClCompile Include="src\null.cc" />
+    <ClCompile Include="src\object.cc" />
+    <ClCompile Include="src\parser.cc" />
+    <ClCompile Include="src\portable.cc" />
+    <ClCompile Include="src\scope.cc" />
+    <ClCompile Include="src\string.cc" />
+    <ClCompile Include="src\structure.cc" />
+    <ClCompile Include="src\symbol.cc" />
+    <ClCompile Include="src\thread.cc" />
+    <ClCompile Include="src\throwable.cc" />
+    <ClCompile Include="src\tuple.cc" />
+    <ClCompile Include="src\type.cc" />
+    <ClCompile Include="src\value.cc" />
+    <ClCompile Include="win-iconv\win_iconv.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

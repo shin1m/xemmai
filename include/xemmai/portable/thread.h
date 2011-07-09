@@ -203,7 +203,7 @@ public:
 		a_mutex.f_release();
 		DWORD n;
 		while (true) {
-			DWORD n = WaitForSingleObject(v_handle, a_milliseconds);
+			n = WaitForSingleObject(v_handle, a_milliseconds);
 			if (n == WAIT_TIMEOUT || n == WAIT_FAILED) break;
 			if (wait - v_signal <= 0) break;
 			SwitchToThread();

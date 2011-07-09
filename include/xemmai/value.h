@@ -22,7 +22,7 @@ class t_transfer;
 class t_shared;
 struct t_slot;
 struct t_thread;
-class t_code;
+struct t_code;
 class t_parser;
 t_engine* f_engine();
 
@@ -34,7 +34,7 @@ class t_value
 	friend class t_object;
 	friend struct t_slot;
 	friend struct t_thread;
-	friend class t_code;
+	friend struct t_code;
 	friend class t_parser;
 	friend t_engine* f_engine();
 
@@ -653,7 +653,7 @@ struct t_stack
 	{
 		return reinterpret_cast<t_slot*>(v_head);
 	}
-	void f_expand(t_slot* a_p);
+	XEMMAI__PORTABLE__EXPORT void f_expand(t_slot* a_p);
 	void f_allocate(t_slot* a_p)
 	{
 		if (a_p > v_tail) f_expand(a_p);
@@ -664,10 +664,14 @@ struct t_stack
 	}
 };
 
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 inline t_stack* f_stack()
 {
 	return t_stack::v_instance;
 }
+#else
+XEMMAI__PORTABLE__EXPORT t_stack* f_stack();
+#endif
 
 class t_scoped_stack
 {

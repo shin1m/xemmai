@@ -71,7 +71,7 @@ struct t_thread
 		return v_current;
 	}
 	static void f_cache_clear();
-	static void f_cache_acquire();
+	static XEMMAI__PORTABLE__EXPORT void f_cache_acquire();
 	static void f_cache_release()
 	{
 	}
