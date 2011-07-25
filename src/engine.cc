@@ -58,6 +58,30 @@ void t_engine::f_pools__return()
 	t_local_pool<t_dictionary::t_entry>::f_return(f_instance__dictionary__entry__pool__return);
 }
 
+void t_engine::f_signal_synchronizers()
+{
+	if (!v_synchronizers) return;
+	size_t cpu = portable::f_cpu();
+	for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) if (p->v_cpu != cpu) ++v_synchronizer__wake;
+	for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) {
+		if (p->v_cpu == cpu) continue;
+		{
+			portable::t_scoped_lock lock(p->v_mutex);
+			p->v_wake = true;
+		}
+		p->v_condition.f_signal();
+	}
+}
+
+void t_engine::f_wait_synchronizers()
+{
+/*	if (v_synchronizers) {
+		portable::t_scoped_lock lock(v_synchronizer__mutex);
+		while (v_synchronizer__wake > 0) v_synchronizer__condition.f_wait(v_synchronizer__mutex);
+	}*/
+	while (v_synchronizer__wake > 0) portable::f_yield();
+}
+
 void t_engine::f_collector()
 {
 	t_value::v_collector = this;
@@ -97,18 +121,7 @@ void t_engine::f_collector()
 					p->v_increments.f_epoch();
 					p->v_decrements.f_epoch();
 				} while (p != v_thread__internals);
-				if (v_synchronizers) {
-					size_t cpu = portable::f_cpu();
-					for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) if (p->v_cpu != cpu) ++v_synchronizer__wake;
-					for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) {
-						if (p->v_cpu == cpu) continue;
-						{
-							portable::t_scoped_lock lock(p->v_mutex);
-							p->v_wake = true;
-						}
-						p->v_condition.f_signal();
-					}
-				}
+				f_signal_synchronizers();
 				{
 					portable::t_scoped_lock lock(v_object__reviving__mutex);
 					do {
@@ -125,11 +138,7 @@ void t_engine::f_collector()
 						}
 					} while (p != v_thread__internals);
 				}
-/*				if (v_synchronizers) {
-					portable::t_scoped_lock lock(v_synchronizer__mutex);
-					while (v_synchronizer__wake > 0) v_synchronizer__condition.f_wait(v_synchronizer__mutex);
-				}*/
-				while (v_synchronizer__wake > 0) portable::f_yield();
+				f_wait_synchronizers();
 				while (true) {
 					t_thread::t_internal* q = p->v_next;
 					q->v_increments.f_flush();

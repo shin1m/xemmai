@@ -303,6 +303,23 @@ void t_object::f_cyclic_decrement()
 	f_cyclic_decrement(v_type);
 }
 
+void t_object::f_field_add(const t_transfer& a_structure, const t_transfer& a_value)
+{
+	size_t index = v_structure->f_size();
+	if (!v_fields || static_cast<size_t>(index) >= v_fields->f_size()) {
+		t_transfer tuple = t_tuple::f_instantiate(index + 1);
+		t_tuple& fields = f_as<t_tuple&>(tuple);
+		for (size_t i = 0; i < static_cast<size_t>(index); ++i) fields[i] = (*v_fields)[i].f_transfer();
+		tuple.f_pointer__(v_fields);
+		v_fields = &fields;
+	}
+	t_object* structure0 = v_structure->v_this;
+	t_slot structure1 = a_structure;
+	v_structure = &f_as<t_structure&>(structure1);
+	t_value::v_decrements->f_push(structure0);
+	(*v_fields)[index] = a_value;
+}
+
 t_transfer t_object::f_allocate_on_boot(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
@@ -371,21 +388,10 @@ void t_object::f_share()
 void t_object::f_field_put(t_object* a_key, const t_transfer& a_value)
 {
 	int index = v_structure->f_index(a_key);
-	if (index < 0) {
-		index = v_structure->f_size();
-		if (!v_fields || static_cast<size_t>(index) >= v_fields->f_size()) {
-			t_transfer tuple = t_tuple::f_instantiate(index + 1);
-			t_tuple& fields = f_as<t_tuple&>(tuple);
-			for (size_t i = 0; i < static_cast<size_t>(index); ++i) fields[i] = (*v_fields)[i].f_transfer();
-			tuple.f_pointer__(v_fields);
-			v_fields = &fields;
-		}
-		t_object* structure0 = v_structure->v_this;
-		t_slot structure1 = v_structure->f_append(a_key);
-		v_structure = &f_as<t_structure&>(structure1);
-		t_value::v_decrements->f_push(structure0);
-	}
-	(*v_fields)[index] = a_value;
+	if (index < 0)
+		f_field_add(v_structure->f_append(a_key), a_value);
+	else
+		(*v_fields)[index] = a_value;
 }
 
 void t_object::f_field_remove(size_t a_index)

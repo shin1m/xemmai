@@ -575,7 +575,7 @@ inline bool t_value::f_is(t_object* a_class) const
 
 inline t_transfer t_value::f_get(t_object* a_key) const
 {
-	return static_cast<t_type*>(f_type()->f_pointer())->f_get(*this, a_key);
+	return f_as<t_type&>(f_type()).f_get(*this, a_key);
 }
 
 inline void t_value::f_put(t_object* a_key, const t_transfer& a_value) const

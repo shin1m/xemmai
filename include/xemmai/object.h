@@ -17,8 +17,9 @@ class t_structure
 {
 	friend class t_engine;
 	friend class t_object;
-	friend struct t_thread;
 	friend struct t_type_of<t_structure>;
+	friend struct t_thread;
+	friend struct t_code;
 
 	struct t_entry
 	{
@@ -223,6 +224,7 @@ class t_object
 	template<typename T, size_t A_size> friend class t_shared_pool;
 	friend class t_local_pool<t_object>;
 	friend struct t_type_of<t_object>;
+	friend struct t_code;
 	friend class t_engine;
 	friend class t_with_lock_for_read;
 	friend class t_with_lock_for_write;
@@ -346,6 +348,7 @@ class t_object
 		if (v_color == e_color__RED && v_cyclic > 0) --v_cyclic;
 	}
 	void f_cyclic_decrement();
+	void f_field_add(const t_transfer& a_structure, const t_transfer& a_value);
 
 public:
 	static t_transfer f_allocate_on_boot(t_object* a_type);
@@ -398,7 +401,7 @@ public:
 	{
 		return v_structure->f_index(a_key);
 	}
-	const t_slot& f_field_get(size_t a_index) const
+	t_slot& f_field_get(size_t a_index) const
 	{
 		return (*v_fields)[a_index];
 	}

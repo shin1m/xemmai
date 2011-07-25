@@ -253,6 +253,9 @@ t_operand t_object_get::f_generate(t_generator& a_generator, size_t a_stack, boo
 	a_generator.f_emit(e_instruction__OBJECT_GET);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
+	a_generator.f_operand(0);
+	a_generator.f_operand(0);
+	a_generator.f_operand(t_transfer());
 	a_generator.f_at(this);
 	return a_stack;
 }
@@ -274,6 +277,9 @@ t_operand t_object_put::f_generate(t_generator& a_generator, size_t a_stack, boo
 	a_generator.f_emit(e_instruction__OBJECT_PUT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
+	a_generator.f_operand(0);
+	a_generator.f_operand(0);
+	a_generator.f_operand(t_transfer());
 	a_generator.f_at(this);
 	return a_stack;
 }

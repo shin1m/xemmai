@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <xemmai/class.h>
+#include <xemmai/structure.h>
 #include <xemmai/lambda.h>
 #include <xemmai/throwable.h>
 #include <xemmai/array.h>
@@ -71,8 +72,13 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__THROW,
 			&&label__CLEAR,
 			&&label__OBJECT_GET,
+			&&label__OBJECT_GET_MONOMORPHIC,
+			&&label__OBJECT_GET_MEGAMORPHIC,
 			&&label__OBJECT_GET_INDIRECT,
 			&&label__OBJECT_PUT,
+			&&label__OBJECT_PUT_MONOMORPHIC_ADD,
+			&&label__OBJECT_PUT_MONOMORPHIC_SET,
+			&&label__OBJECT_PUT_MEGAMORPHIC,
 			&&label__OBJECT_PUT_INDIRECT,
 			&&label__OBJECT_HAS,
 			&&label__OBJECT_HAS_INDIRECT,
@@ -289,11 +295,78 @@ void t_code::f_loop()
 						stack[0] = 0;
 					}
 					XEMMAI__CODE__BREAK
+#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
+#define XEMMAI__CODE__REWRITE(a_name) pc0[0] = &&XEMMAI__MACRO__CONCATENATE(label__, a_name);
+#else
+#define XEMMAI__CODE__REWRITE(a_name) pc0[0] = XEMMAI__MACRO__CONCATENATE(e_instruction__, a_name);
+#endif
 				XEMMAI__CODE__CASE(OBJECT_GET)
 					{
-						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						t_object* key = static_cast<t_object*>(*++pc);
-						++pc;
+						void** pc0 = pc;
+						pc += 6;
+						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
+						t_object* key = static_cast<t_object*>(pc0[2]);
+						t_slot& top = stack[0];
+						size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
+						if (portable::f_atomic_increment(count) == 2) {
+							t_object* p = static_cast<t_object*>(top);
+							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
+								int index = p->f_field_index(key);
+								if (index < 0) {
+									XEMMAI__CODE__REWRITE(OBJECT_GET_MEGAMORPHIC);
+									top = f_as<t_type&>(p->f_type()).f_get(top, key);
+								} else {
+									*reinterpret_cast<size_t*>(pc0 + 4) = index;
+									*static_cast<t_slot*>(pc0[5]) = p->v_structure->v_this;
+									pc0[5] = p->v_structure;
+									f_engine()->f_synchronize();
+									XEMMAI__CODE__REWRITE(OBJECT_GET_MONOMORPHIC);
+									top = p->f_field_get(index);
+								}
+							} else {
+								XEMMAI__CODE__REWRITE(OBJECT_GET_MEGAMORPHIC);
+								top = top.f_get(key);
+							}
+						} else {
+							top = top.f_get(key);
+						}
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_GET_MONOMORPHIC)
+					{
+						void** pc0 = pc;
+						pc += 6;
+						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
+						t_slot& top = stack[0];
+						t_object* p = static_cast<t_object*>(top);
+						if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
+							size_t index = reinterpret_cast<size_t>(pc0[4]);
+							t_structure* structure0 = static_cast<t_structure*>(pc0[5]);
+							t_structure* structure1 = p->v_structure;
+							if (structure1 == structure0) {
+								top = p->f_field_get(index);
+							} else {
+								t_object* key = static_cast<t_object*>(pc0[2]);
+								if (index < structure1->f_size() && static_cast<t_object*>(structure1->f_fields()[index]) == key) {
+									top = p->f_field_get(index);
+								} else {
+									XEMMAI__CODE__REWRITE(OBJECT_GET_MEGAMORPHIC);
+									top = top.f_get(key);
+								}
+							}
+						} else {
+							t_object* key = static_cast<t_object*>(pc0[2]);
+							XEMMAI__CODE__REWRITE(OBJECT_GET_MEGAMORPHIC);
+							top = top.f_get(key);
+						}
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_GET_MEGAMORPHIC)
+					{
+						void** pc0 = pc;
+						pc += 6;
+						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
+						t_object* key = static_cast<t_object*>(pc0[2]);
 						t_slot& top = stack[0];
 						top = top.f_get(key);
 					}
@@ -310,9 +383,106 @@ void t_code::f_loop()
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_PUT)
 					{
-						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						t_object* key = static_cast<t_object*>(*++pc);
-						++pc;
+						void** pc0 = pc;
+						pc += 6;
+						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
+						t_object* key = static_cast<t_object*>(pc0[2]);
+						t_slot& top = stack[0];
+						t_slot& value = stack[1];
+						size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
+						if (portable::f_atomic_increment(count) == 2) {
+							t_object* p = static_cast<t_object*>(top);
+							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
+								int index = p->f_field_index(key);
+								if (index < 0) {
+									t_transfer structure = p->v_structure->f_append(key);
+									*static_cast<t_slot*>(pc0[5]) = static_cast<t_object*>(structure);
+									pc0[5] = &f_as<t_structure&>(structure);
+									f_engine()->f_synchronize();
+									XEMMAI__CODE__REWRITE(OBJECT_PUT_MONOMORPHIC_ADD);
+									p->f_field_add(structure, value);
+								} else {
+									*reinterpret_cast<size_t*>(pc0 + 4) = index;
+									*static_cast<t_slot*>(pc0[5]) = p->v_structure->v_this;
+									pc0[5] = p->v_structure;
+									f_engine()->f_synchronize();
+									XEMMAI__CODE__REWRITE(OBJECT_PUT_MONOMORPHIC_SET);
+									p->f_field_get(index) = value;
+								}
+							} else {
+								XEMMAI__CODE__REWRITE(OBJECT_PUT_MEGAMORPHIC);
+								top.f_put(key, value);
+							}
+						} else {
+							top.f_put(key, value);
+						}
+						top = value.f_transfer();
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_PUT_MONOMORPHIC_ADD)
+					{
+						void** pc0 = pc;
+						pc += 6;
+						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
+						t_object* key = static_cast<t_object*>(pc0[2]);
+						t_slot& top = stack[0];
+						t_slot& value = stack[1];
+						t_object* p = static_cast<t_object*>(top);
+						if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
+							t_structure* structure = static_cast<t_structure*>(pc0[5]);
+							if (p->v_structure == structure->v_parent1) {
+								p->f_field_add(structure->v_this, value);
+							} else {
+								t_object* key = static_cast<t_object*>(pc0[2]);
+								XEMMAI__CODE__REWRITE(OBJECT_PUT_MEGAMORPHIC);
+								p->f_field_put(key, value);
+							}
+						} else {
+							t_object* key = static_cast<t_object*>(pc0[2]);
+							XEMMAI__CODE__REWRITE(OBJECT_PUT_MEGAMORPHIC);
+							top.f_put(key, value);
+						}
+						top = value.f_transfer();
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_PUT_MONOMORPHIC_SET)
+					{
+						void** pc0 = pc;
+						pc += 6;
+						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
+						t_object* key = static_cast<t_object*>(pc0[2]);
+						t_slot& top = stack[0];
+						t_slot& value = stack[1];
+						t_object* p = static_cast<t_object*>(top);
+						if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
+							size_t index = reinterpret_cast<size_t>(pc0[4]);
+							t_structure* structure0 = static_cast<t_structure*>(pc0[5]);
+							t_structure* structure1 = p->v_structure;
+							if (structure1 == structure0) {
+								p->f_field_get(index) = value;
+							} else {
+								t_object* key = static_cast<t_object*>(pc0[2]);
+								if (index < structure1->f_size() && static_cast<t_object*>(structure1->f_fields()[index]) == key) {
+									p->f_field_get(index) = value;
+								} else {
+									XEMMAI__CODE__REWRITE(OBJECT_PUT_MEGAMORPHIC);
+									p->f_field_put(key, value);
+								}
+							}
+						} else {
+							t_object* key = static_cast<t_object*>(pc0[2]);
+							XEMMAI__CODE__REWRITE(OBJECT_PUT_MEGAMORPHIC);
+							top.f_put(key, value);
+						}
+						top = value.f_transfer();
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(OBJECT_PUT_MEGAMORPHIC)
+					{
+						void** pc0 = pc;
+						pc += 6;
+						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
+						t_object* key = static_cast<t_object*>(pc0[2]);
 						t_slot& top = stack[0];
 						t_slot& value = stack[1];
 						top.f_put(key, value);

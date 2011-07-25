@@ -126,6 +126,8 @@ class t_engine : public t_value::t_collector
 		}
 		return p;
 	}
+	void f_signal_synchronizers();
+	void f_wait_synchronizers();
 	void f_collector();
 
 public:
@@ -149,6 +151,12 @@ public:
 		return v_module_io;
 	}
 	int f_run();
+	void f_synchronize()
+	{
+		portable::t_scoped_lock lock(v_thread__mutex);
+		f_signal_synchronizers();
+		f_wait_synchronizers();
+	}
 };
 
 inline t_engine* f_engine()
