@@ -493,12 +493,13 @@ void t_type_of<t_array>::f_finalize(t_object* a_this)
 	delete &f_as<t_array&>(a_this);
 }
 
-void t_type_of<t_array>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<t_array>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_transfer p = t_array::f_instantiate();
-	t_array& array = f_as<t_array&>(p);
-	for (size_t i = 1; i <= a_n; ++i) array.f_push(a_stack[i].f_transfer());
-	a_stack[0].f_construct(p);
+	t_transfer p = t_object::f_allocate(a_class);
+	t_array* array = new t_array();
+	p.f_pointer__(array);
+	for (size_t i = 1; i <= a_n; ++i) array->f_push(a_stack[i]);
+	return p;
 }
 
 void t_type_of<t_array>::f_hash(t_object* a_this, t_slot* a_stack)

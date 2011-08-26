@@ -60,10 +60,11 @@ void t_type_of<t_queue>::f_finalize(t_object* a_this)
 	delete &f_as<t_queue&>(a_this);
 }
 
-void t_type_of<t_queue>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<t_queue>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_overload<t_construct<t_queue>,
-	t_overload<t_construct<t_queue, const std::wstring&>
+	return
+		t_overload<t_construct<t_queue>,
+		t_overload<t_construct<t_queue, const std::wstring&>
 	> >::f_call(a_class, a_stack, a_n);
 }
 

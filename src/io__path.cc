@@ -25,9 +25,9 @@ void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
 	delete &f_as<portable::t_path&>(a_this);
 }
 
-void t_type_of<portable::t_path>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<portable::t_path>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_construct<portable::t_path, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<portable::t_path, const std::wstring&>::f_call(a_class, a_stack, a_n);
 }
 
 void t_type_of<portable::t_path>::f_divide(t_object* a_this, t_slot* a_stack)

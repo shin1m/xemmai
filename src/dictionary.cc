@@ -299,20 +299,20 @@ void t_type_of<t_dictionary>::f_finalize(t_object* a_this)
 	delete &f_as<t_dictionary&>(a_this);
 }
 
-void t_type_of<t_dictionary>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<t_dictionary>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_transfer p = t_dictionary::f_instantiate();
-	t_dictionary& dictionary = f_as<t_dictionary&>(p);
+	t_transfer p = t_object::f_allocate(a_class);
+	t_dictionary* dictionary = new t_dictionary();
+	p.f_pointer__(dictionary);
 	for (size_t i = 1; i <= a_n; ++i) {
-		t_transfer x = a_stack[i].f_transfer();
+		const t_slot& x = a_stack[i];
 		if (++i > a_n) {
-			dictionary.f_put(x, t_transfer());
+			dictionary->f_put(x, t_transfer());
 			break;
 		}
-		t_transfer y = a_stack[i].f_transfer();
-		dictionary.f_put(x, y);
+		dictionary->f_put(x, a_stack[i]);
 	}
-	a_stack[0].f_construct(p);
+	return p;
 }
 
 void t_type_of<t_dictionary>::f_hash(t_object* a_this, t_slot* a_stack)

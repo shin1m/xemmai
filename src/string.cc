@@ -54,9 +54,9 @@ void t_type_of<std::wstring>::f_finalize(t_object* a_this)
 	delete &f_as<std::wstring&>(a_this);
 }
 
-void t_type_of<std::wstring>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<std::wstring>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_construct<std::wstring, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<std::wstring, const std::wstring&>::f_call(a_class, a_stack, a_n);
 }
 
 void t_type_of<std::wstring>::f_hash(t_object* a_this, t_slot* a_stack)

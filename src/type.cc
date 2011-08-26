@@ -19,12 +19,6 @@ bool t_type::f_derives(t_object* a_this, t_object* a_type)
 	return false;
 }
 
-void t_type::f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
-{
-	if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-	f_as<t_type&>(a_self).f_construct(a_self, a_stack, a_n);
-}
-
 void t_type::f_initialize(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 {
 	for (size_t i = 1; i <= a_n; ++i) a_stack[i] = 0;
@@ -43,7 +37,6 @@ void t_type::f_share(const t_value& a_self)
 void t_type::f_define(t_object* a_class)
 {
 	t_define<t_object, t_object>(f_global(), L"Object", a_class)
-		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(const t_value&), f_hash>())
@@ -73,15 +66,14 @@ void t_type::f_finalize(t_object* a_this)
 {
 }
 
-void t_type::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	for (size_t i = 1; i <= a_n; ++i) a_stack[i] = 0;
-	a_stack[0].f_construct(t_object::f_allocate(a_class));
+	return t_object::f_allocate(a_class);
 }
 
 void t_type::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_transfer object = a_class->f_get(f_global()->f_symbol_construct()).f_call_with_same(a_stack, a_n);
+	t_transfer object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
 	object.f_get(f_global()->f_symbol_initialize()).f_call_and_return(t_value(), a_stack, a_n);
 	a_stack[0] = object;
 }

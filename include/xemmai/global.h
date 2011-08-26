@@ -66,7 +66,6 @@ class t_global : public t_extension
 	t_slot v_type_bytes;
 	t_slot v_type_lexer__error;
 	t_slot v_type_parser__error;
-	t_slot v_symbol_construct;
 	t_slot v_symbol_initialize;
 	t_slot v_symbol_string;
 	t_slot v_symbol_hash;
@@ -109,10 +108,6 @@ public:
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_object* f_type() const;
-	t_object* f_symbol_construct() const
-	{
-		return v_symbol_construct;
-	}
 	t_object* f_symbol_initialize() const
 	{
 		return v_symbol_initialize;
@@ -605,12 +600,6 @@ inline void t_value::f_call_and_return(const t_value& a_self, t_slot* a_stack, s
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	v_p->f_call_and_return(a_self, a_stack, a_n);
-}
-
-inline t_transfer t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
-{
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	return v_p->f_call_with_same(a_stack, a_n);
 }
 
 #define XEMMAI__VALUE__UNARY(a_method)\

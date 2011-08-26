@@ -25,7 +25,6 @@ v_type_thread(a_type_thread)
 	v_type_symbol = t_class::f_instantiate(new t_type_of<t_symbol>(a_module, v_type_object));
 	v_type_method = t_class::f_instantiate(new t_type_of<t_method>(a_module, v_type_object));
 	v_type_native = t_class::f_instantiate(new t_type_of<t_native>(a_module, v_type_object));
-	v_symbol_construct = t_symbol::f_instantiate(L"__construct");
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize");
 	v_symbol_string = t_symbol::f_instantiate(L"__string");
 	v_symbol_hash = t_symbol::f_instantiate(L"__hash");
@@ -144,7 +143,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_bytes);
 	a_scan(v_type_lexer__error);
 	a_scan(v_type_parser__error);
-	a_scan(v_symbol_construct);
 	a_scan(v_symbol_initialize);
 	a_scan(v_symbol_string);
 	a_scan(v_symbol_hash);

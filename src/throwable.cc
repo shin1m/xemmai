@@ -51,9 +51,9 @@ void t_type_of<t_throwable>::f_finalize(t_object* a_this)
 	delete &f_as<t_throwable&>(a_this);
 }
 
-void t_type_of<t_throwable>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<t_throwable>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_construct<t_throwable, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<t_throwable, const std::wstring&>::f_call(a_class, a_stack, a_n);
 }
 
 }

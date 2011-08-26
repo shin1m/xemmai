@@ -101,12 +101,14 @@ void t_type_of<t_bytes>::f_finalize(t_object* a_this)
 	delete &f_as<t_bytes&>(a_this);
 }
 
-void t_type_of<t_bytes>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<t_bytes>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_transfer a0 = a_stack[1].f_transfer();
+	const t_slot& a0 = a_stack[1];
 	f_check<size_t>(a0, L"argument0");
-	a_stack[0].f_construct(t_bytes::f_instantiate(f_as<size_t>(a0)));
+	t_transfer p = t_object::f_allocate(a_class);
+	p.f_pointer__(new(f_as<size_t>(a0)) t_bytes());
+	return p;
 }
 
 void t_type_of<t_bytes>::f_hash(t_object* a_this, t_slot* a_stack)

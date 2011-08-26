@@ -51,9 +51,9 @@ struct t_derived_of : t_type_of<double>
 	t_derived_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<double>(a_module, a_super)
 	{
 	}
-	virtual void f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 	{
-		t_construct_with<t_transfer (*)(t_object*, double), f_construct>::f_call(a_class, a_stack, a_n);
+		return t_construct_with<t_transfer (*)(t_object*, double), f_construct>::f_call(a_class, a_stack, a_n);
 	}
 };
 
@@ -64,11 +64,12 @@ t_type* t_type_of<double>::f_derive(t_object* a_this)
 	return new t_derived<t_derived_of>(v_module, a_this);
 }
 
-void t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_overload<t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
-	t_overload<t_construct_with<t_transfer (*)(t_object*, int), f_construct>,
-	t_overload<t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
+	return
+		t_overload<t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
+		t_overload<t_construct_with<t_transfer (*)(t_object*, int), f_construct>,
+		t_overload<t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
 	> > >::f_call(a_class, a_stack, a_n);
 }
 

@@ -136,12 +136,13 @@ void t_type_of<t_tuple>::f_finalize(t_object* a_this)
 	delete &f_as<t_tuple&>(a_this);
 }
 
-void t_type_of<t_tuple>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_transfer t_type_of<t_tuple>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_transfer p = t_tuple::f_instantiate(a_n);
-	t_tuple& tuple = f_as<t_tuple&>(p);
-	for (size_t i = 0; i < a_n; ++i) tuple[i].f_construct(a_stack[i + 1].f_transfer());
-	a_stack[0].f_construct(p);
+	t_transfer p = t_object::f_allocate(a_class);
+	t_tuple* tuple = new(a_n) t_tuple();
+	p.f_pointer__(tuple);
+	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 1]);
+	return p;
 }
 
 void t_type_of<t_tuple>::f_hash(t_object* a_this, t_slot* a_stack)
