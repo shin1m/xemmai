@@ -82,7 +82,7 @@ struct t_type_of<t_object>
 
 		static T0 f_call(T1 a_object)
 		{
-			return *static_cast<T0*>(f_object(a_object)->f_pointer());
+			return t_as<T0&, T1>::f_call(f_object(a_object));
 		}
 	};
 	template<typename T0, typename T1>
@@ -102,7 +102,7 @@ struct t_type_of<t_object>
 
 		static const T0* f_call(T1 a_object)
 		{
-			return reinterpret_cast<size_t>(f_object(a_object)) == t_value::e_tag__NULL ? 0 : static_cast<T0*>(f_object(a_object)->f_pointer());
+			return t_as<T0*, T1>::f_call(f_object(a_object));
 		}
 	};
 	template<typename T0, typename T1>
@@ -122,7 +122,7 @@ struct t_type_of<t_object>
 
 		static const T0& f_call(T1 a_object)
 		{
-			return *static_cast<T0*>(f_object(a_object)->f_pointer());
+			return t_as<T0&, T1>::f_call(f_object(a_object));
 		}
 	};
 	template<typename T>
@@ -154,7 +154,7 @@ struct t_type_of<t_object>
 	{
 		static bool f_call(T1 a_object)
 		{
-			return reinterpret_cast<size_t>(f_object(a_object)) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(f_object(a_object)->f_type()->f_pointer())) != 0;
+			return reinterpret_cast<size_t>(f_object(a_object)) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(f_object(a_object)->f_type_as_type()) != 0;
 		}
 	};
 	template<typename T0, typename T1>
@@ -170,7 +170,7 @@ struct t_type_of<t_object>
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(f_object(a_object)->f_type()->f_pointer())) != 0;
+				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(f_object(a_object)->f_type_as_type()) != 0;
 			}
 		}
 	};
@@ -179,16 +179,7 @@ struct t_type_of<t_object>
 	{
 		static bool f_call(T1 a_object)
 		{
-			switch (reinterpret_cast<size_t>(f_object(a_object))) {
-			case t_value::e_tag__NULL:
-				return true;
-			case t_value::e_tag__BOOLEAN:
-			case t_value::e_tag__INTEGER:
-			case t_value::e_tag__FLOAT:
-				return false;
-			default:
-				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(static_cast<t_type_of<t_object>*>(f_object(a_object)->f_type()->f_pointer())) != 0;
-			}
+			return t_is<T0*, T1>::f_call(f_object(a_object));
 		}
 	};
 	template<typename T>

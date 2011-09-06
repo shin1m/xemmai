@@ -79,7 +79,7 @@ void t_object::f_collect()
 		t_object* p = cycle;
 		do {
 			p = p->v_next;
-			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && f_as<t_type&>(p->v_type).v_revive) {
+			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && p->f_type_as_type()->v_revive) {
 				p = 0;
 				break;
 			}
@@ -204,7 +204,7 @@ void t_object::f_collect()
 			p = p->v_next;
 			static_cast<t_object*>(p->v_structure->v_this)->f_scan_red();
 			if (p->v_fields) p->v_fields->f_scan(f_scan_red);
-			f_as<t_type&>(p->v_type).f_scan(p, f_scan_red);
+			p->f_type_as_type()->f_scan(p, f_scan_red);
 			f_scan_red(p->v_type);
 		} while (p != cycle);
 		do {
@@ -249,7 +249,7 @@ void t_object::f_mark_gray()
 		--p->v_cyclic;
 	}
 	if (v_fields) v_fields->f_scan(f_mark_gray);
-	f_as<t_type&>(v_type).f_scan(this, f_mark_gray);
+	f_type_as_type()->f_scan(this, f_mark_gray);
 	f_mark_gray(v_type);
 }
 
@@ -259,7 +259,7 @@ void t_object::f_scan_gray()
 		v_color = e_color__WHITE;
 		static_cast<t_object*>(v_structure->v_this)->f_scan_gray();
 		if (v_fields) v_fields->f_scan(f_scan_gray);
-		f_as<t_type&>(v_type).f_scan(this, f_scan_gray);
+		f_type_as_type()->f_scan(this, f_scan_gray);
 		f_scan_gray(v_type);
 	} else if (v_color != e_color__WHITE) {
 		f_scan_black();
@@ -273,7 +273,7 @@ void t_object::f_collect_white()
 	f_append(f_engine()->v_object__cycle, this);
 	static_cast<t_object*>(v_structure->v_this)->f_collect_white();
 	if (v_fields) v_fields->f_scan(f_collect_white);
-	f_as<t_type&>(v_type).f_scan(this, f_collect_white);
+	f_type_as_type()->f_scan(this, f_collect_white);
 	f_collect_white(v_type);
 }
 
@@ -295,9 +295,9 @@ void t_object::f_cyclic_decrement()
 		delete v_fields;
 		v_fields = 0;
 	}
-	f_as<t_type&>(v_type).f_scan(this, f_cyclic_decrement);
+	f_type_as_type()->f_scan(this, f_cyclic_decrement);
 	if (static_cast<t_object*>(v_type) != f_engine()->v_type_class) {
-		f_as<t_type&>(v_type).f_finalize(this);
+		f_type_as_type()->f_finalize(this);
 		v_type.v_pointer = 0;
 	}
 	f_cyclic_decrement(v_type);
@@ -360,7 +360,7 @@ t_transfer t_object::f_allocate(t_object* a_type)
 
 void t_object::f_own()
 {
-	if (f_as<t_type&>(v_type).v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
+	if (f_type_as_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
 	{
 		portable::t_scoped_lock_for_write lock(v_lock);
 		if (v_owner) t_throwable::f_throw(L"already owned.");
@@ -379,7 +379,7 @@ void t_object::f_own()
 
 void t_object::f_share()
 {
-	if (f_as<t_type&>(v_type).v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
+	if (f_type_as_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
 	if (v_owner != t_value::v_increments) t_throwable::f_throw(L"not owned.");
 	portable::t_scoped_lock_for_write lock(v_lock);
 	v_owner = 0;

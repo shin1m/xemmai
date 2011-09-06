@@ -71,8 +71,7 @@ t_transfer t_advanced_lambda::f_instantiate(const t_transfer& a_scope, const t_t
 void t_type_of<t_advanced_lambda>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	t_type_of<t_lambda>::f_scan(a_this, a_scan);
-	t_advanced_lambda& p = f_as<t_advanced_lambda&>(a_this);
-	a_scan(p.v_defaults);
+	a_scan(f_as<t_advanced_lambda&>(a_this).v_defaults);
 }
 
 void t_type_of<t_advanced_lambda>::f_finalize(t_object* a_this)

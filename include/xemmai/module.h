@@ -96,4 +96,6 @@ inline T* f_extension(t_object* a_module)
 
 }
 
+#define XEMMAI__MODULE__FACTORY extern "C" XEMMAI__PORTABLE__DEFINE_EXPORT xemmai::t_extension* f_factory
+
 #endif
