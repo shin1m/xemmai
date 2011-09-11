@@ -31,6 +31,7 @@ void t_throwable::f_dump() const
 void t_type_of<t_throwable>::f_define()
 {
 	t_define<t_throwable, t_object>(f_global(), L"Throwable")
+		(t_construct<const std::wstring&>())
 		(f_global()->f_symbol_string(), t_member<const std::wstring& (t_throwable::*)() const, &t_throwable::f_string>())
 		(L"dump", t_member<void (t_throwable::*)() const, &t_throwable::f_dump>())
 	;
@@ -53,7 +54,7 @@ void t_type_of<t_throwable>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<t_throwable>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<t_throwable, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<const std::wstring&>::t_bind<t_throwable>::f_do(a_class, a_stack, a_n);
 }
 
 }

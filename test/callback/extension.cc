@@ -150,7 +150,7 @@ void t_type_of<t_client>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<t_client>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct_with<t_transfer (*)(t_object*), t_client_wrapper::f_construct>::f_call(a_class, a_stack, a_n);
+	return t_construct_with<t_transfer (*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(a_class, a_stack, a_n);
 }
 
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
@@ -174,7 +174,7 @@ void t_type_of<t_server>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<t_server>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<t_server>::f_call(a_class, a_stack, a_n);
+	return t_construct<>::t_bind<t_server>::f_do(a_class, a_stack, a_n);
 }
 
 }

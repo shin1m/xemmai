@@ -39,3 +39,18 @@ while (i < 1000) {
 	i = i + 1;
 }
 assert(d.size() == 1000);
+
+Foo = Class(Dictionary) :: @{
+	$__construct = @(*xs) :$^__construct[$]("zero", 0, *xs);
+	$__initialize = @(*xs) {
+		$[3] = "three";
+	};
+};
+
+foo = Foo(1, "one", "two", 2);
+print(foo);
+assert(foo.size() == 4);
+assert(foo["zero"] == 0);
+assert(foo[1] == "one");
+assert(foo["two"] == 2);
+assert(foo[3] == "three");

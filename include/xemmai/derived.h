@@ -13,6 +13,7 @@ struct t_derived : T
 	{
 	}
 	virtual t_type* f_derive(t_object* a_this);
+	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_slot* a_stack);
 	virtual void f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n);
 	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
@@ -44,6 +45,12 @@ template<typename T>
 t_type* t_derived<T>::f_derive(t_object* a_this)
 {
 	return new t_derived(T::v_module, a_this);
+}
+
+template<typename T>
+t_transfer t_derived<T>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+{
+	return a_class->f_get(f_global()->f_symbol_construct()).f_call_with_same(a_stack, a_n);
 }
 
 template<typename T>

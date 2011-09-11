@@ -117,6 +117,7 @@ void t_file::f_flush()
 void t_type_of<io::t_file>::f_define(t_io* a_extension)
 {
 	t_define<io::t_file, t_object>(a_extension, L"File")
+		(t_construct<const std::wstring&, const std::wstring&>())
 		(L"reopen", t_member<void (io::t_file::*)(const std::wstring&, const std::wstring&), &io::t_file::f_reopen, t_with_lock_for_write>())
 		(a_extension->f_symbol_close(), t_member<void (io::t_file::*)(), &io::t_file::f_close, t_with_lock_for_write>())
 		(L"seek", t_member<void (io::t_file::*)(int, int), &io::t_file::f_seek, t_with_lock_for_write>())
@@ -139,7 +140,7 @@ void t_type_of<io::t_file>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<io::t_file>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<io::t_file, const std::wstring&, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<const std::wstring&, const std::wstring&>::t_bind<io::t_file>::f_do(a_class, a_stack, a_n);
 }
 
 }

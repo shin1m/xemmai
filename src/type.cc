@@ -53,7 +53,7 @@ t_type::~t_type_of()
 
 t_type* t_type::f_derive(t_object* a_this)
 {
-	t_type* p = new t_derived<t_type>(v_module, a_this);
+	t_type* p = new t_type(v_module, a_this);
 	p->v_primitive = true;
 	return p;
 }

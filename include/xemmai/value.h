@@ -304,6 +304,7 @@ public:
 	t_transfer f_remove(t_object* a_key) const;
 	void f_call(const t_value& a_self, t_slot* a_stack, size_t a_n) const;
 	void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n) const;
+	t_transfer f_call_with_same(t_slot* a_stack, size_t a_n) const;
 	t_transfer f_hash() const;
 #define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
 #define XEMMAI__MACRO__CALL(n) t_transfer operator()(XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TRANSFER_A_N, n)) const;

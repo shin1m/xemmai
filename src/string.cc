@@ -28,6 +28,7 @@ void t_type_of<std::wstring>::f_define()
 {
 	t_define<std::wstring, t_object>(f_global(), L"String")
 		(L"from_code", t_static<std::wstring (*)(int), f_from_code>())
+		(t_construct<const std::wstring&>())
 		(f_global()->f_symbol_string(), t_member<t_transfer (*)(const t_transfer&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(const std::wstring&), f_hash>())
 		(f_global()->f_symbol_add(), t_member<std::wstring (*)(const std::wstring&, const t_value&), f_add>())
@@ -56,7 +57,7 @@ void t_type_of<std::wstring>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<std::wstring>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<std::wstring, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<const std::wstring&>::t_bind<std::wstring>::f_do(a_class, a_stack, a_n);
 }
 
 void t_type_of<std::wstring>::f_hash(t_object* a_this, t_slot* a_stack)

@@ -99,6 +99,12 @@ struct t_type_of<int> : t_type
 		wchar_t* p;
 		return f_construct(a_class, static_cast<int>(std::wcstol(a_value.c_str(), &p, 10)));
 	}
+	static t_transfer f_construct_derived(t_object* a_class, int a_value)
+	{
+		t_transfer object = t_object::f_allocate_uninitialized(a_class);
+		object.f_integer__(a_value);
+		return object;
+	}
 	static std::wstring f_string(int a_self)
 	{
 		wchar_t cs[16];

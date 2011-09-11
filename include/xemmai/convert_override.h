@@ -7,6 +7,26 @@
 #define XEMMAI__MACRO__T_OVERLOADN_OPEN__ XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__T_OVERLOADN_OPEN, XEMMAI__MACRO__N)
 #define XEMMAI__MACRO__T_OVERLOADN_CLOSE__ XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__T_OVERLOADN_CLOSE, XEMMAI__MACRO__N)
 
+	template<XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TYPENAME_T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), typename T_an, XEMMAI__MACRO__TYPENAME_T_OVERLOADN__>
+	t_define& operator()(const t_construct<XEMMAI__MACRO__JOIN(XEMMAI__MACRO__T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), T_an>&, XEMMAI__MACRO__CONST_T_OVERLOADN__)
+	{
+		v_type.f_put(f_global()->f_symbol_construct(), v_extension->f_function(
+			t_overload<t_construct<XEMMAI__MACRO__JOIN(XEMMAI__MACRO__T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), T_an>
+			XEMMAI__MACRO__T_OVERLOADN_OPEN__
+			XEMMAI__MACRO__T_OVERLOADN_CLOSE__
+		>::template t_bind<T>::f_call));
+		return *this;
+	}
+	template<typename T_function, T_function A_function, XEMMAI__MACRO__TYPENAME_T_OVERLOADN__>
+	t_define& operator()(const t_construct_with<T_function, A_function>&, XEMMAI__MACRO__CONST_T_OVERLOADN__)
+	{
+		v_type.f_put(f_global()->f_symbol_construct(), v_extension->f_function(
+			t_overload<t_construct_with<T_function, A_function>
+			XEMMAI__MACRO__T_OVERLOADN_OPEN__
+			XEMMAI__MACRO__T_OVERLOADN_CLOSE__
+		>::template t_bind<T>::f_call));
+		return *this;
+	}
 	template<typename T_function, T_function A_function, typename T_with, XEMMAI__MACRO__TYPENAME_T_OVERLOADN__>
 	t_define& operator()(t_object* a_name, const t_member<T_function, A_function, T_with>&, XEMMAI__MACRO__CONST_T_OVERLOADN__)
 	{

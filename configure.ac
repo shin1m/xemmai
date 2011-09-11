@@ -1,4 +1,4 @@
-AC_INIT([xemmai], [201108])
+AC_INIT([xemmai], [201109])
 AM_INIT_AUTOMAKE([foreign nostdinc dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR([src/main.cc])
 

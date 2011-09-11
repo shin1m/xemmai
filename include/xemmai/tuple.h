@@ -9,6 +9,7 @@ namespace xemmai
 template<>
 struct t_type_of<t_tuple> : t_type
 {
+	static void f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n);
 	static void f_define(t_object* a_class);
 
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)

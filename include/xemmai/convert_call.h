@@ -8,6 +8,7 @@
 #define XEMMAI__MACRO__A_N__ XEMMAI__MACRO__JOIN(XEMMAI__MACRO__A_N, XEMMAI__MACRO__N)
 #define XEMMAI__MACRO__TRANSFER_A_N__ XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TRANSFER_A_N, XEMMAI__MACRO__N)
 #define XEMMAI__MACRO__AS_A_N__ XEMMAI__MACRO__JOIN(XEMMAI__MACRO__AS_A_N, XEMMAI__MACRO__N)
+#define XEMMAI__MACRO__AS_AN__ XEMMAI__MACRO__JOIN(XEMMAI__MACRO__AS_AN, XEMMAI__MACRO__N)
 #define XEMMAI__MACRO__CALL_MEMBERN_WITH XEMMAI__MACRO__CONCATENATE(XEMMAI__MACRO__CONCATENATE(t_call_member, XEMMAI__MACRO__N), _with)
 #define XEMMAI__MACRO__CALL_MEMBERN XEMMAI__MACRO__CONCATENATE(t_call_member, XEMMAI__MACRO__N)
 #define XEMMAI__MACRO__AN__ XEMMAI__MACRO__JOIN(XEMMAI__MACRO__AN, XEMMAI__MACRO__N)
@@ -17,13 +18,27 @@
 template<XEMMAI__MACRO__TYPENAME_T_AN__>
 struct t_call_construct<t_transfer (*)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__)>
 {
-	static t_transfer f_call(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), t_object* a_class, t_slot* a_stack, size_t a_n)
+	static void f_call(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), const t_value& a_self, t_slot* a_stack, size_t a_n)
+	{
+		if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+		if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
+		XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__STACK_TRANSFER, XEMMAI__MACRO__N)
+		XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK_AN, XEMMAI__MACRO__N)
+		a_stack[0].f_construct(a_function(a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_AN__));
+	}
+	static void f_call(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), const t_value& a_self, t_slot* a_stack)
+	{
+		if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+		XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__STACK_TRANSFER, XEMMAI__MACRO__N)
+		a_stack[0].f_construct(a_function(a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_AN__));
+	}
+	static t_transfer f_do(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), t_object* a_class, t_slot* a_stack, size_t a_n)
 	{
 		if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
 		XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK_STACK, XEMMAI__MACRO__N)
 		return a_function(a_class XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_STACK__);
 	}
-	static t_transfer f_call(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), t_object* a_class, t_slot* a_stack)
+	static t_transfer f_do(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), t_object* a_class, t_slot* a_stack)
 	{
 		return a_function(a_class XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_STACK__);
 	}
@@ -36,7 +51,7 @@ struct t_call_construct<t_transfer (*)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMA
 };
 
 template<typename T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
-struct t_construct<T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__ XEMMAI__MACRO__COMMA_UNSPECIFIED__, t_unspecified>
+struct t_construct_default<T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__ XEMMAI__MACRO__COMMA_UNSPECIFIED__, t_unspecified>
 {
 	typedef t_call_construct<t_transfer (*)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__)> t_type;
 
@@ -46,13 +61,21 @@ struct t_construct<T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__ XEMMAI
 		object.f_pointer__(new T_self(XEMMAI__MACRO__A_N__));
 		return object;
 	}
-	static t_transfer f_call(t_object* a_class, t_slot* a_stack, size_t a_n)
+	static void f_call(const t_value& a_self, t_slot* a_stack, size_t a_n)
 	{
-		return t_type::f_call(f_default, a_class, a_stack, a_n);
+		t_type::f_call(f_default, a_self, a_stack, a_n);
 	}
-	static t_transfer f_call(t_object* a_class, t_slot* a_stack)
+	static void f_call(const t_value& a_self, t_slot* a_stack)
 	{
-		return t_type::f_call(f_default, a_class, a_stack);
+		t_type::f_call(f_default, a_self, a_stack);
+	}
+	static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
+	{
+		return t_type::f_do(f_default, a_class, a_stack, a_n);
+	}
+	static t_transfer f_do(t_object* a_class, t_slot* a_stack)
+	{
+		return t_type::f_do(f_default, a_class, a_stack);
 	}
 };
 

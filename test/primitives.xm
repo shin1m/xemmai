@@ -78,3 +78,17 @@ print("Bar(1.0).__equals(1.0) = " + Bar(1.0).__equals(1.0));
 assert(Bar(1.0).__equals(1.0));
 print("Bar(1.0).__equals(2.0) = " + Bar(1.0).__equals(2.0));
 assert(!Bar(1.0).__equals(2.0));
+
+Foo = Class(String) :: @{
+	$__construct = @(*xs) {
+		s = "";
+		xs.each(@(x) :s = s + x);
+		:$^__construct[$](s);
+	};
+	$__initialize = @(*xs) {
+	};
+};
+
+foo = Foo(0, "a", 1, "b");
+print(foo);
+assert(foo == "0a1b");

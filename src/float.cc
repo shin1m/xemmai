@@ -19,6 +19,7 @@ bool t_type_of<double>::f_not_equals(double a_self, const t_value& a_value)
 void t_type_of<double>::f_define()
 {
 	t_define<double, t_object>(f_global(), L"Float")
+		(t_construct_with<t_transfer (*)(t_object*, double), f_construct_derived>())
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(double), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(double), f_hash>())
 		(f_global()->f_symbol_plus(), t_member<double (*)(double), f_plus>())
@@ -36,32 +37,9 @@ void t_type_of<double>::f_define()
 	;
 }
 
-namespace
-{
-
-struct t_derived_of : t_type_of<double>
-{
-	static t_transfer f_construct(t_object* a_class, double a_value)
-	{
-		t_transfer object = t_object::f_allocate_uninitialized(a_class);
-		object.f_float__(a_value);
-		return object;
-	}
-
-	t_derived_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<double>(a_module, a_super)
-	{
-	}
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
-	{
-		return t_construct_with<t_transfer (*)(t_object*, double), f_construct>::f_call(a_class, a_stack, a_n);
-	}
-};
-
-}
-
 t_type* t_type_of<double>::f_derive(t_object* a_this)
 {
-	return new t_derived<t_derived_of>(v_module, a_this);
+	return new t_derived<t_type_of>(v_module, a_this);
 }
 
 t_transfer t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
@@ -70,7 +48,7 @@ t_transfer t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, si
 		t_overload<t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
 		t_overload<t_construct_with<t_transfer (*)(t_object*, int), f_construct>,
 		t_overload<t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
-	> > >::f_call(a_class, a_stack, a_n);
+	> > >::t_bind<double>::f_do(a_class, a_stack, a_n);
 }
 
 }

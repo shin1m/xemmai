@@ -425,4 +425,12 @@ void t_object::f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t 
 	if (f_context()->v_native <= 0) t_code::f_loop();
 }
 
+t_transfer t_object::f_call_with_same(t_slot* a_stack, size_t a_n)
+{
+	t_scoped_stack stack(a_n + 1);
+	for (size_t i = 1; i <= a_n; ++i) stack[i].f_construct(a_stack[i]);
+	f_call_and_return(t_value(), stack, a_n);
+	return stack.f_return();
+}
+
 }

@@ -10,6 +10,7 @@ namespace xemmai
 void t_type_of<portable::t_path>::f_define(t_io* a_extension)
 {
 	t_define<portable::t_path, t_object>(a_extension, L"Path")
+		(t_construct<const std::wstring&>())
 		(f_global()->f_symbol_string(), t_member<const std::wstring& (portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
 		(f_global()->f_symbol_divide(), t_member<portable::t_path (portable::t_path::*)(const std::wstring&) const, &portable::t_path::operator/>())
 	;
@@ -27,7 +28,7 @@ void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<portable::t_path>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<portable::t_path, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<const std::wstring&>::t_bind<portable::t_path>::f_do(a_class, a_stack, a_n);
 }
 
 void t_type_of<portable::t_path>::f_divide(t_object* a_this, t_slot* a_stack)

@@ -125,7 +125,7 @@ void t_type_of<portable::t_mutex>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<portable::t_mutex>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<portable::t_mutex>::f_call(a_class, a_stack, a_n);
+	return t_construct<>::t_bind<portable::t_mutex>::f_do(a_class, a_stack, a_n);
 }
 
 void t_type_of<portable::t_condition>::f_wait(portable::t_condition& a_self, portable::t_mutex& a_mutex)
@@ -178,7 +178,7 @@ void t_type_of<portable::t_condition>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<portable::t_condition>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<portable::t_condition>::f_call(a_class, a_stack, a_n);
+	return t_construct<>::t_bind<portable::t_condition>::f_do(a_class, a_stack, a_n);
 }
 
 t_threading::t_threading(t_object* a_module) : t_extension(a_module)

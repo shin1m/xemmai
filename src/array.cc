@@ -206,6 +206,16 @@ t_transfer t_array::f_remove(int a_index)
 	return q;
 }
 
+void t_type_of<t_array>::f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
+{
+	if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+	t_transfer p = t_object::f_allocate(a_self);
+	t_array* array = new t_array();
+	p.f_pointer__(array);
+	for (size_t i = 1; i <= a_n; ++i) array->f_push(a_stack[i].f_transfer());
+	a_stack[0].f_construct(p);
+}
+
 std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 {
 	f_check<t_array>(a_self, L"this");
@@ -455,6 +465,7 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 void t_type_of<t_array>::f_define()
 {
 	t_define<t_array, t_object>(f_global(), L"Array")
+		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (*)(const t_value&), f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_value& (t_array::*)(int) const, &t_array::f_get_at, t_with_lock_for_read>())

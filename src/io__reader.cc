@@ -104,6 +104,7 @@ std::wstring t_reader::f_read_line(t_io* a_extension)
 void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader")
+		(t_construct<const t_transfer&, const std::wstring&>())
 		(a_extension->f_symbol_close(), t_member<void (io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
 		(a_extension->f_symbol_read(), t_member<std::wstring (io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
 		(a_extension->f_symbol_read_line(), t_member<std::wstring (io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
@@ -130,7 +131,7 @@ void t_type_of<io::t_reader>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<io::t_reader>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<io::t_reader, const t_transfer&, const std::wstring&>::f_call(a_class, a_stack, a_n);
+	return t_construct<const t_transfer&, const std::wstring&>::t_bind<io::t_reader>::f_do(a_class, a_stack, a_n);
 }
 
 }

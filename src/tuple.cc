@@ -103,9 +103,20 @@ void t_tuple::f_each(const t_value& a_callable) const
 	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
 }
 
+void t_type_of<t_tuple>::f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
+{
+	if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+	t_transfer p = t_object::f_allocate(a_self);
+	t_tuple* tuple = new(a_n) t_tuple();
+	p.f_pointer__(tuple);
+	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 1].f_transfer());
+	a_stack[0].f_construct(p);
+}
+
 void t_type_of<t_tuple>::f_define(t_object* a_class)
 {
 	t_define<t_tuple, t_object>(f_global(), L"Tuple", a_class)
+		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<int (t_tuple::*)() const, &t_tuple::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_slot& (t_tuple::*)(size_t) const, &t_tuple::operator[]>())

@@ -168,3 +168,14 @@ assert(b == [2, "one", 3, 4]);
 print(b.remove(1));
 print(b);
 assert(b == [2, 3, 4]);
+
+Foo = Class(Array) :: @{
+	$__construct = @(*xs) :$^__construct[$](0, *xs);
+	$__initialize = @(*xs) {
+		$push(4);
+	};
+};
+
+foo = Foo(1, 2, 3);
+print(foo);
+assert(foo == [0, 1, 2, 3, 4]);
