@@ -559,18 +559,7 @@ inline t_object* t_value::f_type() const
 
 inline bool t_value::f_is(t_object* a_class) const
 {
-	switch (f_tag()) {
-	case e_tag__NULL:
-		return a_class == f_global()->f_type<t_null>();
-	case e_tag__BOOLEAN:
-		return a_class == f_global()->f_type<bool>();
-	case e_tag__INTEGER:
-		return a_class == f_global()->f_type<int>();
-	case e_tag__FLOAT:
-		return a_class == f_global()->f_type<double>();
-	default:
-		return v_p->f_is(a_class);
-	}
+	return t_type::f_derives(f_type(), a_class);
 }
 
 inline t_transfer t_value::f_get(t_object* a_key) const

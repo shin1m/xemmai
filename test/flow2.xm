@@ -13,8 +13,9 @@ while (true) {
 		print("try");
 	} catch (Float e) {
 		throw Throwable("never reach here.");
-	} catch (Integer e) {
+	} catch (Object e) {
 		print("catch");
+		if (e.: !== Integer) throw Throwable("must be of Integer.");
 		i = e;
 	} finally {
 		print("finally");
