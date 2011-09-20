@@ -13,6 +13,18 @@ struct t_fundamental<size_t>
 };
 
 template<>
+struct t_fundamental<short>
+{
+	typedef int t_type;
+};
+
+template<>
+struct t_fundamental<unsigned short>
+{
+	typedef int t_type;
+};
+
+template<>
 struct t_fundamental<long>
 {
 	typedef int t_type;
