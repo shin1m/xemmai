@@ -171,7 +171,7 @@ protected:
 	union
 	{
 		bool v_boolean;
-		int v_integer;
+		ptrdiff_t v_integer;
 		double v_float;
 		void* v_pointer;
 	};
@@ -243,7 +243,22 @@ public:
 	explicit t_value(bool a_value) : v_p(reinterpret_cast<t_object*>(e_tag__BOOLEAN)), v_boolean(a_value)
 	{
 	}
+	explicit t_value(short a_value) : v_p(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
+	{
+	}
+	explicit t_value(unsigned short a_value) : v_p(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
+	{
+	}
 	explicit t_value(int a_value) : v_p(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
+	{
+	}
+	explicit t_value(unsigned a_value) : v_p(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
+	{
+	}
+	explicit t_value(long a_value) : v_p(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
+	{
+	}
+	explicit t_value(unsigned long a_value) : v_p(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
 	{
 	}
 	explicit t_value(double a_value) : v_p(reinterpret_cast<t_object*>(e_tag__FLOAT)), v_float(a_value)
@@ -291,8 +306,8 @@ public:
 	}
 	bool f_boolean() const;
 	void f_boolean__(bool a_value);
-	int f_integer() const;
-	void f_integer__(int a_value);
+	ptrdiff_t f_integer() const;
+	void f_integer__(ptrdiff_t a_value);
 	double f_float() const;
 	void f_float__(double a_value);
 	void f_pointer__(void* a_value);
@@ -354,7 +369,22 @@ public:
 	explicit t_transfer(bool a_value) : t_value(a_value)
 	{
 	}
+	explicit t_transfer(short a_value) : t_value(a_value)
+	{
+	}
+	explicit t_transfer(unsigned short a_value) : t_value(a_value)
+	{
+	}
 	explicit t_transfer(int a_value) : t_value(a_value)
+	{
+	}
+	explicit t_transfer(unsigned a_value) : t_value(a_value)
+	{
+	}
+	explicit t_transfer(long a_value) : t_value(a_value)
+	{
+	}
+	explicit t_transfer(unsigned long a_value) : t_value(a_value)
 	{
 	}
 	explicit t_transfer(double a_value) : t_value(a_value)
@@ -401,7 +431,22 @@ protected:
 	t_shared(bool a_value) : t_value(a_value)
 	{
 	}
+	t_shared(short a_value) : t_value(a_value)
+	{
+	}
+	t_shared(unsigned short a_value) : t_value(a_value)
+	{
+	}
 	t_shared(int a_value) : t_value(a_value)
+	{
+	}
+	t_shared(unsigned a_value) : t_value(a_value)
+	{
+	}
+	t_shared(long a_value) : t_value(a_value)
+	{
+	}
+	t_shared(unsigned long a_value) : t_value(a_value)
 	{
 	}
 	t_shared(double a_value) : t_value(a_value)
@@ -435,7 +480,22 @@ struct t_scoped : t_shared
 	explicit t_scoped(bool a_value) : t_shared(a_value)
 	{
 	}
+	explicit t_scoped(short a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_scoped(unsigned short a_value) : t_shared(a_value)
+	{
+	}
 	explicit t_scoped(int a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_scoped(unsigned a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_scoped(long a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_scoped(unsigned long a_value) : t_shared(a_value)
 	{
 	}
 	explicit t_scoped(double a_value) : t_shared(a_value)
@@ -490,7 +550,22 @@ struct t_slot : t_shared
 	explicit t_slot(bool a_value) : t_shared(a_value)
 	{
 	}
+	explicit t_slot(short a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_slot(unsigned short a_value) : t_shared(a_value)
+	{
+	}
 	explicit t_slot(int a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_slot(unsigned a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_slot(long a_value) : t_shared(a_value)
+	{
+	}
+	explicit t_slot(unsigned long a_value) : t_shared(a_value)
 	{
 	}
 	explicit t_slot(double a_value) : t_shared(a_value)
@@ -562,7 +637,37 @@ struct t_slot : t_shared
 		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
 		v_boolean = a_value;
 	}
+	void f_construct(short a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
+	void f_construct(unsigned short a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
 	void f_construct(int a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
+	void f_construct(unsigned a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
+	void f_construct(long a_value)
+	{
+		assert(!v_p);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
+	void f_construct(unsigned long a_value)
 	{
 		assert(!v_p);
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);

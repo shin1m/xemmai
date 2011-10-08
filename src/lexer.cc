@@ -578,7 +578,7 @@ t_transfer t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 
 void t_lexer::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%d:%d\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
+	std::fprintf(stderr, "at %ls:%zd:%zd\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
 	f_print_with_caret(v_path.c_str(), v_at.f_position(), v_at.f_column());
 	t_throwable::f_dump();
 }

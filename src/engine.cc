@@ -20,7 +20,7 @@ void t_engine::t_synchronizer::f_run()
 		affinity.f_add(v_cpu);
 		affinity.f_to_thread();
 	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%d) starting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%zd) starting...\n", v_cpu);
 	{
 		portable::t_scoped_lock lock(v_mutex);
 		while (true) {
@@ -34,7 +34,7 @@ void t_engine::t_synchronizer::f_run()
 //			v_engine->v_synchronizer__condition.f_signal();
 		}
 	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%d) quitting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%zd) quitting...\n", v_cpu);
 	v_condition.f_signal();
 }
 
@@ -397,27 +397,27 @@ t_engine::~t_engine()
 		{
 			size_t allocated = v_object__pool.f_allocated();
 			size_t freed = v_object__pool.f_freed();
-			std::fprintf(stderr, "\tobject: %d - %d = %d, release = %d, collect = %d\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
+			std::fprintf(stderr, "\tobject: %zd - %zd = %zd, release = %zd, collect = %zd\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
 			if (allocated > freed) b = true;
 		}
 		{
 			size_t allocated = v_dictionary__entry__pool.f_allocated();
 			size_t freed = v_dictionary__entry__pool.f_freed();
-			std::fprintf(stderr, "\tdictionary entry: %d - %d = %d\n", allocated, freed, allocated - freed);
+			std::fprintf(stderr, "\tdictionary entry: %zd - %zd = %zd\n", allocated, freed, allocated - freed);
 			if (allocated > freed) b = true;
 		}
-		std::fprintf(stderr, "\tcollector: tick = %d, wait = %d, epoch = %d, collect = %d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
+		std::fprintf(stderr, "\tcollector: tick = %zd, wait = %zd, epoch = %zd, collect = %zd\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
-			std::fprintf(stderr, "\tfield cache: hit = %d, missed = %d, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
+			std::fprintf(stderr, "\tfield cache: hit = %zd, missed = %zd, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
 		}
 		if (b) throw std::exception();
 	}
 }
 
-int t_engine::f_run()
+ptrdiff_t t_engine::f_run()
 {
-	int n = t_module::f_main(t_module::f_main, 0);
+	ptrdiff_t n = t_module::f_main(t_module::f_main, 0);
 	portable::t_scoped_lock lock(v_thread__mutex);
 	t_thread::t_internal*& internals = v_thread__internals;
 	t_thread::t_internal* internal = f_as<t_thread&>(t_thread::f_current()).v_internal;

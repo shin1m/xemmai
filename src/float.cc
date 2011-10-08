@@ -21,7 +21,7 @@ void t_type_of<double>::f_define()
 	t_define<double, t_object>(f_global(), L"Float")
 		(t_construct_with<t_transfer (*)(t_object*, double), f_construct_derived>())
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(double), f_string>())
-		(f_global()->f_symbol_hash(), t_member<int (*)(double), f_hash>())
+		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (*)(double), f_hash>())
 		(f_global()->f_symbol_plus(), t_member<double (*)(double), f_plus>())
 		(f_global()->f_symbol_minus(), t_member<double (*)(double), f_minus>())
 		(f_global()->f_symbol_multiply(), t_member<double (*)(double, double), f_multiply>())
@@ -46,7 +46,7 @@ t_transfer t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, si
 {
 	return
 		t_overload<t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
-		t_overload<t_construct_with<t_transfer (*)(t_object*, int), f_construct>,
+		t_overload<t_construct_with<t_transfer (*)(t_object*, ptrdiff_t), f_construct>,
 		t_overload<t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
 	> > >::t_bind<double>::f_do(a_class, a_stack, a_n);
 }

@@ -233,7 +233,7 @@ struct t_type_of<t_object>
 		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
 		return cs;
 	}
-	XEMMAI__PORTABLE__EXPORT static int f_hash(const t_value& a_self)
+	XEMMAI__PORTABLE__EXPORT static ptrdiff_t f_hash(const t_value& a_self)
 	{
 		return a_self.f_tag();
 	}

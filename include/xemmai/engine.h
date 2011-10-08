@@ -150,7 +150,7 @@ public:
 	{
 		return v_module_io;
 	}
-	int f_run();
+	ptrdiff_t f_run();
 	void f_synchronize()
 	{
 		portable::t_scoped_lock lock(v_thread__mutex);

@@ -31,7 +31,7 @@ wint_t t_reader::f_get(t_io* a_extension)
 	char* p = reinterpret_cast<char*>(&c);
 	size_t n = sizeof(c);
 	while (true) {
-		if (iconv(v_cd, &v_p, &v_n, &p, &n) == -1) {
+		if (iconv(v_cd, &v_p, &v_n, &p, &n) == size_t(-1)) {
 			switch (errno) {
 			case EILSEQ:
 				t_throwable::f_throw(L"invalid sequence.");

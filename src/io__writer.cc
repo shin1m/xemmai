@@ -25,7 +25,7 @@ void t_writer::f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n)
 {
 	char* p = const_cast<char*>(reinterpret_cast<const char*>(a_p));
 	size_t n = a_n * sizeof(wchar_t);
-	while (iconv(v_cd, &p, &n, &v_p, &v_n) == -1) {
+	while (iconv(v_cd, &p, &n, &v_p, &v_n) == size_t(-1)) {
 		switch (errno) {
 		case EILSEQ:
 			t_throwable::f_throw(L"invalid character.");
@@ -40,7 +40,7 @@ void t_writer::f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n)
 
 void t_writer::f_unshift(t_io* a_extension)
 {
-	while (iconv(v_cd, NULL, NULL, &v_p, &v_n) == -1) {
+	while (iconv(v_cd, NULL, NULL, &v_p, &v_n) == size_t(-1)) {
 		switch (errno) {
 		case E2BIG:
 			f_write(a_extension);

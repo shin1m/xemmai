@@ -26,7 +26,7 @@ class t_array
 	void f_resize();
 	void f_grow();
 	void f_shrink();
-	void f_validate(int& a_index) const;
+	void f_validate(ptrdiff_t& a_index) const;
 
 public:
 	static t_transfer f_instantiate();
@@ -41,13 +41,13 @@ public:
 		return v_size;
 	}
 	void f_swap(t_transfer& a_tuple, size_t& a_head, size_t& a_size);
-	const t_slot& operator[](int a_index) const;
-	t_slot& operator[](int a_index);
-	const t_value& f_get_at(int a_index) const
+	const t_slot& operator[](ptrdiff_t a_index) const;
+	t_slot& operator[](ptrdiff_t a_index);
+	const t_value& f_get_at(ptrdiff_t a_index) const
 	{
 		return (*this)[a_index];
 	}
-	const t_value& f_set_at(int a_index, const t_transfer& a_value)
+	const t_value& f_set_at(ptrdiff_t a_index, const t_transfer& a_value)
 	{
 		return (*this)[a_index] = a_value;
 	}
@@ -55,8 +55,8 @@ public:
 	t_transfer f_pop();
 	void f_unshift(const t_transfer& a_value);
 	t_transfer f_shift();
-	void f_insert(int a_index, const t_transfer& a_value);
-	t_transfer f_remove(int a_index);
+	void f_insert(ptrdiff_t a_index, const t_transfer& a_value);
+	t_transfer f_remove(ptrdiff_t a_index);
 };
 
 template<>
@@ -64,7 +64,7 @@ struct t_type_of<t_array> : t_type
 {
 	static void f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
-	static int f_hash(const t_value& a_self);
+	static ptrdiff_t f_hash(const t_value& a_self);
 	static bool f_less(const t_value& a_self, const t_value& a_other);
 	static bool f_less_equal(const t_value& a_self, const t_value& a_other);
 	static bool f_greater(const t_value& a_self, const t_value& a_other);

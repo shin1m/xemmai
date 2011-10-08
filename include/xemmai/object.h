@@ -42,7 +42,7 @@ class t_structure
 
 		t_slot v_structure;
 		t_slot v_key;
-		int v_index;
+		ptrdiff_t v_index;
 	};
 
 	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
@@ -125,7 +125,7 @@ public:
 	{
 		return v_size;
 	}
-	int f_index(t_object* a_key) const
+	ptrdiff_t f_index(t_object* a_key) const
 	{
 		t_cache& cache = v_cache[t_cache::f_index(v_this, a_key)];
 		if (static_cast<t_object*>(cache.v_structure) == v_this && static_cast<t_object*>(cache.v_key) == a_key) return cache.v_index;
@@ -205,7 +205,7 @@ public:
 		return f_entries()[a_index];
 	}
 	std::wstring f_string() const;
-	int f_hash() const;
+	ptrdiff_t f_hash() const;
 	bool f_less(const t_tuple& a_other) const;
 	bool f_less_equal(const t_tuple& a_other) const;
 	bool f_greater(const t_tuple& a_other) const;
@@ -371,7 +371,7 @@ public:
 	{
 		return v_type.v_boolean;
 	}
-	int f_integer() const
+	ptrdiff_t f_integer() const
 	{
 		return v_type.v_integer;
 	}
@@ -397,7 +397,7 @@ public:
 	}
 	void f_own();
 	void f_share();
-	int f_field_index(t_object* a_key) const
+	ptrdiff_t f_field_index(t_object* a_key) const
 	{
 		return v_structure->f_index(a_key);
 	}

@@ -36,21 +36,21 @@ class t_bytes
 	{
 		return const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(this + 1));
 	}
-	void f_validate(int& a_index) const;
-	void f_validate(int& a_index, size_t a_size) const;
+	void f_validate(ptrdiff_t& a_index) const;
+	void f_validate(ptrdiff_t& a_index, size_t a_size) const;
 
 public:
 	static t_transfer f_instantiate(size_t a_size);
 
 	std::wstring f_string() const;
-	int f_hash() const
+	ptrdiff_t f_hash() const
 	{
-		int n = 0;
+		ptrdiff_t n = 0;
 		for (size_t i = 1; i < v_size; ++i) n += (*this)[i];
 		return n;
 	}
-	int f_get_at(int a_index) const;
-	int f_set_at(int a_index, int a_value);
+	ptrdiff_t f_get_at(ptrdiff_t a_index) const;
+	ptrdiff_t f_set_at(ptrdiff_t a_index, ptrdiff_t a_value);
 	size_t f_size() const
 	{
 		return v_size;
@@ -63,7 +63,7 @@ public:
 	{
 		return f_entries()[a_index];
 	}
-	void f_copy(int a_index0, size_t a_size, t_bytes& a_other, int a_index1) const;
+	void f_copy(ptrdiff_t a_index0, size_t a_size, t_bytes& a_other, ptrdiff_t a_index1) const;
 };
 
 template<>

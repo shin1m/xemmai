@@ -29,10 +29,11 @@ class t_parser
 	}
 	void f_throw(const std::wstring& a_message);
 	ast::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop);
-	int f_integer()
+	ptrdiff_t f_integer()
 	{
-		wchar_t *p;
-		return std::wcstol(&v_lexer.f_value()[0], &p, 10);
+		ptrdiff_t value;
+		std::swscanf(&v_lexer.f_value()[0], L"%td", &value);
+		return value;
 	}
 	double f_float()
 	{

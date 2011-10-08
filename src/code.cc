@@ -49,7 +49,7 @@ size_t f_expand(t_slot* a_stack, size_t a_n)
 		f_check<size_t>(size, L"size");
 		n = f_as<size_t>(size);
 		f_allocate(a_stack, n);
-		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(static_cast<int>(i))));
+		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
 	}
 	return a_n - 1 + n;
 }
@@ -198,7 +198,7 @@ void t_code::f_loop()
 #define XEMMAI__CODE__CASE(a_name) case XEMMAI__MACRO__CONCATENATE(e_instruction__, a_name):
 #define XEMMAI__CODE__BREAK break;
 			while (true) {
-				switch (static_cast<t_instruction>(reinterpret_cast<int>(*pc))) {
+				switch (static_cast<t_instruction>(reinterpret_cast<ptrdiff_t>(*pc))) {
 #endif
 				XEMMAI__CODE__CASE(JUMP)
 					pc = static_cast<void**>(*++pc);
@@ -249,7 +249,7 @@ void t_code::f_loop()
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(FINALLY)
 					{
-						t_fiber::t_try::t_state state = static_cast<t_fiber::t_try::t_state>(reinterpret_cast<int>(*++pc));
+						t_fiber::t_try::t_state state = static_cast<t_fiber::t_try::t_state>(reinterpret_cast<ptrdiff_t>(*++pc));
 						t_fiber& p = f_as<t_fiber&>(t_fiber::f_current());
 						p.v_try->v_state = state;
 						pc = p.v_try->v_finally;
@@ -311,7 +311,7 @@ void t_code::f_loop()
 						if (portable::f_atomic_increment(count) == 2) {
 							t_object* p = static_cast<t_object*>(top);
 							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-								int index = p->f_field_index(key);
+								ptrdiff_t index = p->f_field_index(key);
 								if (index < 0) {
 									XEMMAI__CODE__REWRITE(OBJECT_GET_MEGAMORPHIC);
 									top = f_as<t_type&>(p->f_type()).f_get(top, key);
@@ -393,7 +393,7 @@ void t_code::f_loop()
 						if (portable::f_atomic_increment(count) == 2) {
 							t_object* p = static_cast<t_object*>(top);
 							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-								int index = p->f_field_index(key);
+								ptrdiff_t index = p->f_field_index(key);
 								if (index < 0) {
 									t_transfer structure = p->v_structure->f_append(key);
 									*static_cast<t_slot*>(pc0[5]) = static_cast<t_object*>(structure);
@@ -424,7 +424,6 @@ void t_code::f_loop()
 						void** pc0 = pc;
 						pc += 6;
 						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
-						t_object* key = static_cast<t_object*>(pc0[2]);
 						t_slot& top = stack[0];
 						t_slot& value = stack[1];
 						t_object* p = static_cast<t_object*>(top);
@@ -450,7 +449,6 @@ void t_code::f_loop()
 						void** pc0 = pc;
 						pc += 6;
 						t_slot* stack = base + reinterpret_cast<size_t>(pc0[1]);
-						t_object* key = static_cast<t_object*>(pc0[2]);
 						t_slot& top = stack[0];
 						t_slot& value = stack[1];
 						t_object* p = static_cast<t_object*>(top);
@@ -710,7 +708,7 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(BOOLEAN)
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						bool value = reinterpret_cast<int>(*++pc) != 0;
+						bool value = reinterpret_cast<ptrdiff_t>(*++pc) != 0;
 						++pc;
 						stack[0].f_construct(value);
 					}
@@ -718,7 +716,7 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(INTEGER)
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						int value = reinterpret_cast<int>(*++pc);
+						ptrdiff_t value = reinterpret_cast<ptrdiff_t>(*++pc);
 						++pc;
 						stack[0].f_construct(value);
 					}

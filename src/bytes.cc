@@ -6,23 +6,23 @@
 namespace xemmai
 {
 
-void t_bytes::f_validate(int& a_index) const
+void t_bytes::f_validate(ptrdiff_t& a_index) const
 {
 	if (a_index < 0) {
 		a_index += v_size;
 		if (a_index < 0) t_throwable::f_throw(L"out of range.");
 	} else {
-		if (a_index >= static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
+		if (a_index >= static_cast<ptrdiff_t>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
 }
 
-void t_bytes::f_validate(int& a_index, size_t a_size) const
+void t_bytes::f_validate(ptrdiff_t& a_index, size_t a_size) const
 {
 	if (a_index < 0) {
 		a_index += v_size;
 		if (a_index < 0) t_throwable::f_throw(L"out of range.");
 	}
-	if (a_index + a_size > static_cast<int>(v_size)) t_throwable::f_throw(L"out of range.");
+	if (a_index + a_size > v_size) t_throwable::f_throw(L"out of range.");
 }
 
 t_transfer t_bytes::f_instantiate(size_t a_size)
@@ -45,19 +45,19 @@ std::wstring t_bytes::f_string() const
 	return L'[' + s + L']';
 }
 
-int t_bytes::f_get_at(int a_index) const
+ptrdiff_t t_bytes::f_get_at(ptrdiff_t a_index) const
 {
 	f_validate(a_index);
 	return (*this)[a_index];
 }
 
-int t_bytes::f_set_at(int a_index, int a_value)
+ptrdiff_t t_bytes::f_set_at(ptrdiff_t a_index, ptrdiff_t a_value)
 {
 	f_validate(a_index);
 	return (*this)[a_index] = a_value;
 }
 
-void t_bytes::f_copy(int a_index0, size_t a_size, t_bytes& a_other, int a_index1) const
+void t_bytes::f_copy(ptrdiff_t a_index0, size_t a_size, t_bytes& a_other, ptrdiff_t a_index1) const
 {
 	f_validate(a_index0, a_size);
 	a_other.f_validate(a_index1, a_size);
@@ -93,13 +93,13 @@ void t_type_of<t_bytes>::f_define()
 	t_define<t_bytes, t_object>(f_global(), L"Bytes")
 		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_bytes::*)() const, &t_bytes::f_string>())
-		(f_global()->f_symbol_hash(), t_member<int (t_bytes::*)() const, &t_bytes::f_hash>())
-		(f_global()->f_symbol_get_at(), t_member<int (t_bytes::*)(int) const, &t_bytes::f_get_at>())
-		(f_global()->f_symbol_set_at(), t_member<int (t_bytes::*)(int, int), &t_bytes::f_set_at>())
+		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (t_bytes::*)() const, &t_bytes::f_hash>())
+		(f_global()->f_symbol_get_at(), t_member<ptrdiff_t (t_bytes::*)(ptrdiff_t) const, &t_bytes::f_get_at>())
+		(f_global()->f_symbol_set_at(), t_member<ptrdiff_t (t_bytes::*)(ptrdiff_t, ptrdiff_t), &t_bytes::f_set_at>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const t_value&, const t_value&), f_not_equals>())
 		(L"size", t_member<size_t (t_bytes::*)() const, &t_bytes::f_size>())
-		(L"copy", t_member<void (t_bytes::*)(int, size_t, t_bytes&, int) const, &t_bytes::f_copy>())
+		(L"copy", t_member<void (t_bytes::*)(ptrdiff_t, size_t, t_bytes&, ptrdiff_t) const, &t_bytes::f_copy>())
 	;
 }
 
@@ -136,8 +136,8 @@ void t_type_of<t_bytes>::f_get_at(t_object* a_this, t_slot* a_stack)
 	t_native_context context;
 	f_check<t_bytes>(a_this, L"this");
 	t_transfer a0 = a_stack[1].f_transfer();
-	f_check<int>(a0, L"index");
-	a_stack[0].f_construct(f_as<const t_bytes&>(a_this).f_get_at(f_as<int>(a0)));
+	f_check<ptrdiff_t>(a0, L"index");
+	a_stack[0].f_construct(f_as<const t_bytes&>(a_this).f_get_at(f_as<ptrdiff_t>(a0)));
 	context.f_done();
 }
 
@@ -147,9 +147,9 @@ void t_type_of<t_bytes>::f_set_at(t_object* a_this, t_slot* a_stack)
 	f_check<t_bytes>(a_this, L"this");
 	t_transfer a0 = a_stack[1].f_transfer();
 	t_transfer a1 = a_stack[2].f_transfer();
-	f_check<int>(a0, L"index");
-	f_check<int>(a1, L"value");
-	a_stack[0].f_construct(f_as<t_bytes&>(a_this).f_set_at(f_as<int>(a0), f_as<int>(a1)));
+	f_check<ptrdiff_t>(a0, L"index");
+	f_check<ptrdiff_t>(a1, L"value");
+	a_stack[0].f_construct(f_as<t_bytes&>(a_this).f_set_at(f_as<ptrdiff_t>(a0), f_as<ptrdiff_t>(a1)));
 	context.f_done();
 }
 

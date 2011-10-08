@@ -26,10 +26,10 @@ struct t_operand
 	t_tag v_tag;
 	t_transfer v_value;
 
-	t_operand(size_t a_value) : v_tag(e_tag__TEMPORARY), v_value(static_cast<int>(a_value))
+	t_operand(size_t a_value) : v_tag(e_tag__TEMPORARY), v_value(a_value)
 	{
 	}
-	t_operand(t_tag a_tag, size_t a_value) : v_tag(a_tag), v_value(static_cast<int>(a_value))
+	t_operand(t_tag a_tag, size_t a_value) : v_tag(a_tag), v_value(a_value)
 	{
 	}
 	t_operand(const t_transfer& a_value) : v_tag(e_tag__LITERAL), v_value(a_value)
@@ -349,9 +349,9 @@ struct t_boolean : t_node
 
 struct t_integer : t_node
 {
-	int v_value;
+	ptrdiff_t v_value;
 
-	t_integer(const t_at& a_at, int a_value) : t_node(a_at), v_value(a_value)
+	t_integer(const t_at& a_at, ptrdiff_t a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -491,7 +491,15 @@ struct t_generator
 	{
 		v_code->f_operand(a_operand);
 	}
+	void f_operand(short a_operand)
+	{
+		v_code->f_operand(a_operand);
+	}
 	void f_operand(int a_operand)
+	{
+		v_code->f_operand(a_operand);
+	}
+	void f_operand(long a_operand)
 	{
 		v_code->f_operand(a_operand);
 	}

@@ -205,7 +205,6 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			v_lexer.f_next();
 			t_pointer<ast::t_call> call = new ast::t_call(at, new ast::t_instance(at, f_global()->f_type<t_dictionary>()));
-			size_t n = 0;
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
 				call->v_arguments.f_add(f_expression());
 				if (!f_single_colon()) f_throw(L"expecting ':'.");
@@ -234,7 +233,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 		return new ast::t_boolean(at, false);
 	case t_lexer::e_token__INTEGER:
 		{
-			int value = f_integer();
+			ptrdiff_t value = f_integer();
 			v_lexer.f_next();
 			return new ast::t_integer(at, value);
 		}
@@ -376,7 +375,7 @@ t_pointer<ast::t_node> t_parser::f_unary(bool a_assignable)
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__INTEGER:
 			{
-				int value = f_integer();
+				ptrdiff_t value = f_integer();
 				v_lexer.f_next();
 				return f_action(new ast::t_integer(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
@@ -390,7 +389,7 @@ t_pointer<ast::t_node> t_parser::f_unary(bool a_assignable)
 		break;
 	case e_instruction__COMPLEMENT_T:
 		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
-			int value = f_integer();
+			ptrdiff_t value = f_integer();
 			v_lexer.f_next();
 			return f_action(new ast::t_integer(at, ~value), a_assignable);
 		}
@@ -808,7 +807,7 @@ t_transfer t_parser::t_error::f_instantiate(const std::wstring& a_message, t_lex
 
 void t_parser::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%d:%d\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
+	std::fprintf(stderr, "at %ls:%zd:%zd\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
 	f_print_with_caret(v_path.c_str(), v_at.f_position(), v_at.f_column());
 	t_throwable::f_dump();
 }

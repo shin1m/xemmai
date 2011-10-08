@@ -211,11 +211,11 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 	return L'{' + s + L'}';
 }
 
-int t_type_of<t_dictionary>::f_hash(const t_value& a_self)
+ptrdiff_t t_type_of<t_dictionary>::f_hash(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	const t_dictionary& dictionary = f_as<const t_dictionary&>(a_self);
-	int n = 0;
+	ptrdiff_t n = 0;
 	t_dictionary::t_iterator i(dictionary);
 	while (true) {
 		t_transfer x;
@@ -228,11 +228,11 @@ int t_type_of<t_dictionary>::f_hash(const t_value& a_self)
 			i.f_next();
 		}
 		x = x.f_hash();
-		f_check<int>(x, L"value");
-		n ^= f_as<int>(x);
+		f_check<ptrdiff_t>(x, L"value");
+		n ^= f_as<ptrdiff_t>(x);
 		y = y.f_hash();
-		f_check<int>(y, L"value");
-		n ^= f_as<int>(y);
+		f_check<ptrdiff_t>(y, L"value");
+		n ^= f_as<ptrdiff_t>(y);
 	}
 	return n;
 }
@@ -289,7 +289,7 @@ void t_type_of<t_dictionary>::f_define()
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<int (*)(const t_value&), f_hash>())
+		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (*)(const t_value&), f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_value& (t_dictionary::*)(const t_value&) const, &t_dictionary::f_get, t_with_lock_for_read>())
 		(f_global()->f_symbol_set_at(), t_member<t_transfer (t_dictionary::*)(const t_value&, const t_transfer&), &t_dictionary::f_put, t_with_lock_for_write>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())

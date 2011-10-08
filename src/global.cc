@@ -95,7 +95,7 @@ v_type_thread(a_type_thread)
 	t_type_of<bool>::f_define();
 	xemmai::f_as<t_type&>(v_type_boolean).v_builtin = true;
 	xemmai::f_as<t_type&>(v_type_boolean).v_primitive = true;
-	t_type_of<int>::f_define();
+	t_type_of<ptrdiff_t>::f_define();
 	xemmai::f_as<t_type&>(v_type_integer).v_builtin = true;
 	xemmai::f_as<t_type&>(v_type_integer).v_primitive = true;
 	t_type_of<double>::f_define();

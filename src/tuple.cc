@@ -27,13 +27,13 @@ std::wstring t_tuple::f_string() const
 	return L"'(" + s + L')';
 }
 
-int t_tuple::f_hash() const
+ptrdiff_t t_tuple::f_hash() const
 {
-	int n = 0;
+	ptrdiff_t n = 0;
 	for (size_t i = 0; i < v_size; ++i) {
 		t_transfer x = (*this)[i].f_hash();
-		f_check<int>(x, L"value");
-		n ^= f_as<int>(x);
+		f_check<ptrdiff_t>(x, L"value");
+		n ^= f_as<ptrdiff_t>(x);
 	}
 	return n;
 }
@@ -118,7 +118,7 @@ void t_type_of<t_tuple>::f_define(t_object* a_class)
 	t_define<t_tuple, t_object>(f_global(), L"Tuple", a_class)
 		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_tuple::*)() const, &t_tuple::f_string>())
-		(f_global()->f_symbol_hash(), t_member<int (t_tuple::*)() const, &t_tuple::f_hash>())
+		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (t_tuple::*)() const, &t_tuple::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_slot& (t_tuple::*)(size_t) const, &t_tuple::operator[]>())
 		(f_global()->f_symbol_less(), t_member<bool (t_tuple::*)(const t_tuple&) const, &t_tuple::f_less>())
 		(f_global()->f_symbol_less_equal(), t_member<bool (t_tuple::*)(const t_tuple&) const, &t_tuple::f_less_equal>())
@@ -167,8 +167,8 @@ void t_type_of<t_tuple>::f_get_at(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack[1].f_transfer();
-	f_check<int>(a0, L"index");
-	a_stack[0].f_construct(f_as<const t_tuple&>(a_this)[f_as<int>(a0)]);
+	f_check<ptrdiff_t>(a0, L"index");
+	a_stack[0].f_construct(f_as<const t_tuple&>(a_this)[f_as<ptrdiff_t>(a0)]);
 	context.f_done();
 }
 

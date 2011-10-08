@@ -16,7 +16,7 @@ struct t_type_of<bool> : t_type
 
 		static T0 f_call(T1 a_object)
 		{
-			return static_cast<T0>(a_object.f_boolean());
+			return a_object.f_boolean();
 		}
 	};
 	template<typename T>
@@ -26,7 +26,7 @@ struct t_type_of<bool> : t_type
 
 		static T f_call(t_object* a_object)
 		{
-			return static_cast<T>(a_object->f_boolean());
+			return a_object->f_boolean();
 		}
 	};
 	template<typename T0, typename T1>
@@ -72,7 +72,7 @@ struct t_type_of<bool> : t_type
 	{
 		return a_self ? L"true" : L"false";
 	}
-	static int f_hash(bool a_self)
+	static ptrdiff_t f_hash(bool a_self)
 	{
 		return a_self ? 1 : 0;
 	}

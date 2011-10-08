@@ -24,11 +24,11 @@ struct t_type_of<double> : t_type
 		{
 			switch (reinterpret_cast<size_t>(f_object(a_object))) {
 			case t_value::e_tag__INTEGER:
-				return static_cast<T0>(a_object.f_integer());
+				return a_object.f_integer();
 			case t_value::e_tag__FLOAT:
-				return static_cast<T0>(a_object.f_float());
+				return a_object.f_float();
 			default:
-				return static_cast<T0>(f_object(a_object)->f_float());
+				return f_object(a_object)->f_float();
 			}
 		}
 	};
@@ -39,7 +39,7 @@ struct t_type_of<double> : t_type
 
 		static T f_call(t_object* a_object)
 		{
-			return static_cast<T>(a_object->f_float());
+			return a_object->f_float();
 		}
 	};
 	template<typename T0, typename T1>
@@ -85,7 +85,7 @@ struct t_type_of<double> : t_type
 	{
 		return t_transfer(a_value);
 	}
-	static t_transfer f_construct(t_object* a_class, int a_value)
+	static t_transfer f_construct(t_object* a_class, ptrdiff_t a_value)
 	{
 		return f_construct(a_class, static_cast<double>(a_value));
 	}
@@ -106,16 +106,16 @@ struct t_type_of<double> : t_type
 		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%g", a_self);
 		return cs;
 	}
-	static int f_hash(double a_self)
+	static ptrdiff_t f_hash(double a_self)
 	{
 		union
 		{
 			double v_d;
-			int v_is[sizeof(double) / sizeof(int)];
+			ptrdiff_t v_is[sizeof(double) / sizeof(ptrdiff_t)];
 		} u;
 		u.v_d = a_self;
-		int n = 0;
-		int i = sizeof(double) / sizeof(int);
+		ptrdiff_t n = 0;
+		ptrdiff_t i = sizeof(double) / sizeof(ptrdiff_t);
 		while (i > 0) n ^= u.v_is[--i];
 		return n;
 	}

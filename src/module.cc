@@ -113,7 +113,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 	return 0;
 }
 
-int t_module::f_main(void (*a_main)(void*), void* a_p)
+ptrdiff_t t_module::f_main(void (*a_main)(void*), void* a_p)
 {
 	t_fiber::t_context::f_initiate(0);
 	try {

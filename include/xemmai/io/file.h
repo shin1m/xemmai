@@ -39,8 +39,8 @@ public:
 	}
 	void f_reopen(const std::wstring& a_path, const std::wstring& a_mode);
 	void f_close();
-	void f_seek(int a_offset, int a_whence);
-	int f_tell();
+	void f_seek(ptrdiff_t a_offset, int a_whence);
+	ptrdiff_t f_tell();
 	size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	void f_flush();

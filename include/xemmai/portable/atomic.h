@@ -28,7 +28,7 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 
 class t_lock
 {
-	volatile long v_lock;
+	volatile size_t v_lock;
 
 public:
 	t_lock() : v_lock(0)
@@ -46,11 +46,11 @@ public:
 	void f_acquire_for_write()
 	{
 		while (v_lock != 0);
-		v_lock += 0x80000000;
+		v_lock += ~(~size_t(0) >> 1);
 	}
 	void f_release_for_write()
 	{
-		v_lock -= 0x80000000;
+		v_lock -= ~(~size_t(0) >> 1);
 	}
 };
 #endif
@@ -60,7 +60,7 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 {
 	size_t value;
 	asm volatile (
-		"lock; xaddl %0, %1"
+		"lock; xadd %0, %1"
 		: "=r" (value)
 		: "m" (a_n), "0" (1)
 		: "memory", "cc"
@@ -70,7 +70,7 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 
 class t_lock
 {
-	volatile long v_lock;
+	volatile size_t v_lock;
 
 public:
 	t_lock() : v_lock(0)
@@ -78,9 +78,9 @@ public:
 	}
 	void f_acquire_for_read()
 	{
-		long value;
+		size_t value;
 		asm volatile (
-			"lock; xaddl %0, %1"
+			"lock; xadd %0, %1"
 			: "=r" (value)
 			: "m" (v_lock), "0" (1)
 			: "memory", "cc"
@@ -91,7 +91,11 @@ public:
 	void f_release_for_read()
 	{
 		asm volatile (
+#ifdef __x86_64__
+			"lock; decq %0"
+#else
 			"lock; decl %0"
+#endif
 			:
 			: "m" (v_lock)
 			: "memory", "cc"
@@ -100,11 +104,11 @@ public:
 	void f_acquire_for_write()
 	{
 		while (true) {
-			long value;
+			size_t value;
 			asm volatile (
-				"lock; cmpxchgl %1, %2"
+				"lock; cmpxchg %1, %2"
 				: "=a" (value)
-				: "r" (0x80000000), "m" (v_lock), "0" (0)
+				: "r" (~(~size_t(0) >> 1)), "m" (v_lock), "0" (0)
 				: "memory", "cc"
 			);
 			if (value == 0) break;
@@ -114,9 +118,9 @@ public:
 	void f_release_for_write()
 	{
 		asm volatile (
-			"lock; addl $0x80000000, %0"
+			"lock; add %0, %1"
 			:
-			: "m" (v_lock)
+			: "r" (~(~size_t(0) >> 1)), "m" (v_lock)
 			: "memory", "cc"
 		);
 	}
@@ -126,12 +130,12 @@ public:
 #ifdef _MSC_VER
 inline size_t f_atomic_increment(volatile size_t& a_n)
 {
-	return _InterlockedIncrement(reinterpret_cast<volatile long*>(&a_n));
+	return _InterlockedIncrement(reinterpret_cast<volatile ptrdiff_t*>(&a_n));
 }
 
 class t_lock
 {
-	volatile long v_lock;
+	volatile size_t v_lock;
 
 public:
 	t_lock() : v_lock(0)
@@ -148,11 +152,11 @@ public:
 	}
 	XEMMAI__PORTABLE__FORCE_INLINE void f_acquire_for_write()
 	{
-		while (_InterlockedCompareExchange(&v_lock, 0x80000000, 0) != 0) SwitchToThread();
+		while (_InterlockedCompareExchange(&v_lock, ~(~size_t(0) >> 1), 0) != 0) SwitchToThread();
 	}
 	XEMMAI__PORTABLE__FORCE_INLINE void f_release_for_write()
 	{
-		_InterlockedExchangeAdd(&v_lock, 0x80000000);
+		_InterlockedExchangeAdd(&v_lock, ~(~size_t(0) >> 1));
 	}
 };
 #endif

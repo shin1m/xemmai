@@ -324,7 +324,15 @@ struct t_code
 	{
 		v_instructions.push_back(reinterpret_cast<void*>(a_operand ? 1 : 0));
 	}
+	void f_operand(short a_operand)
+	{
+		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
+	}
 	void f_operand(int a_operand)
+	{
+		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
+	}
+	void f_operand(long a_operand)
 	{
 		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
 	}

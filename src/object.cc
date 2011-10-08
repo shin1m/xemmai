@@ -306,10 +306,10 @@ void t_object::f_cyclic_decrement()
 void t_object::f_field_add(const t_transfer& a_structure, const t_transfer& a_value)
 {
 	size_t index = v_structure->f_size();
-	if (!v_fields || static_cast<size_t>(index) >= v_fields->f_size()) {
+	if (!v_fields || index >= v_fields->f_size()) {
 		t_transfer tuple = t_tuple::f_instantiate(index + 1);
 		t_tuple& fields = f_as<t_tuple&>(tuple);
-		for (size_t i = 0; i < static_cast<size_t>(index); ++i) fields[i] = (*v_fields)[i].f_transfer();
+		for (size_t i = 0; i < index; ++i) fields[i] = (*v_fields)[i].f_transfer();
 		tuple.f_pointer__(v_fields);
 		v_fields = &fields;
 	}
@@ -387,7 +387,7 @@ void t_object::f_share()
 
 void t_object::f_field_put(t_object* a_key, const t_transfer& a_value)
 {
-	int index = v_structure->f_index(a_key);
+	ptrdiff_t index = v_structure->f_index(a_key);
 	if (index < 0)
 		f_field_add(v_structure->f_append(a_key), a_value);
 	else

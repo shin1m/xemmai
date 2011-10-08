@@ -25,5 +25,5 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
-	return engine.f_run();
+	return static_cast<int>(engine.f_run());
 }

@@ -296,7 +296,7 @@ inline void t_global::f_type__<bool>(const t_transfer& a_type)
 }
 
 template<>
-inline void t_global::f_type__<int>(const t_transfer& a_type)
+inline void t_global::f_type__<ptrdiff_t>(const t_transfer& a_type)
 {
 	v_type_integer = a_type;
 }
@@ -446,7 +446,7 @@ inline t_object* t_global::f_type<bool>() const
 }
 
 template<>
-inline t_object* t_global::f_type<int>() const
+inline t_object* t_global::f_type<ptrdiff_t>() const
 {
 	return v_type_integer;
 }
@@ -516,12 +516,12 @@ inline void t_value::f_boolean__(bool a_value)
 	v_p->v_type.v_boolean = a_value;
 }
 
-inline int t_value::f_integer() const
+inline ptrdiff_t t_value::f_integer() const
 {
 	return f_tag() < e_tag__OBJECT ? v_integer : v_p->f_integer();
 }
 
-inline void t_value::f_integer__(int a_value)
+inline void t_value::f_integer__(ptrdiff_t a_value)
 {
 	v_p->v_type.v_integer = a_value;
 }
@@ -549,7 +549,7 @@ inline t_object* t_value::f_type() const
 	case e_tag__BOOLEAN:
 		return f_global()->f_type<bool>();
 	case e_tag__INTEGER:
-		return f_global()->f_type<int>();
+		return f_global()->f_type<ptrdiff_t>();
 	case e_tag__FLOAT:
 		return f_global()->f_type<double>();
 	default:
@@ -626,7 +626,7 @@ inline t_transfer t_value::f_hash() const
 	case e_tag__BOOLEAN:
 		return t_value(t_type_of<bool>::f_hash(v_boolean));
 	case e_tag__INTEGER:
-		return t_value(t_type_of<int>::f_hash(v_integer));
+		return t_value(t_type_of<ptrdiff_t>::f_hash(v_integer));
 	case e_tag__FLOAT:
 		return t_value(t_type_of<double>::f_hash(v_float));
 	default:
@@ -729,7 +729,7 @@ inline t_transfer t_value::f_multiply(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		return t_type_of<int>::f_multiply(v_integer, a_value);
+		return t_type_of<ptrdiff_t>::f_multiply(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float * f_as<double>(a_value));
@@ -746,7 +746,7 @@ inline t_transfer t_value::f_divide(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		return t_type_of<int>::f_divide(v_integer, a_value);
+		return t_type_of<ptrdiff_t>::f_divide(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float / f_as<double>(a_value));
@@ -759,8 +759,8 @@ inline t_transfer t_value::f_modulus(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer % f_as<int>(a_value));
+		f_check<ptrdiff_t>(a_value, L"argument0");
+		return t_value(v_integer % f_as<ptrdiff_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:
@@ -779,7 +779,7 @@ inline t_transfer t_value::f_add(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		return t_type_of<int>::f_add(v_integer, a_value);
+		return t_type_of<ptrdiff_t>::f_add(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float + f_as<double>(a_value));
@@ -796,7 +796,7 @@ inline t_transfer t_value::f_subtract(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		return t_type_of<int>::f_subtract(v_integer, a_value);
+		return t_type_of<ptrdiff_t>::f_subtract(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float - f_as<double>(a_value));
@@ -809,8 +809,8 @@ inline t_transfer t_value::f_left_shift(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer << f_as<int>(a_value));
+		f_check<ptrdiff_t>(a_value, L"argument0");
+		return t_value(v_integer << f_as<ptrdiff_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:
@@ -825,8 +825,8 @@ inline t_transfer t_value::f_right_shift(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer >> f_as<int>(a_value));
+		f_check<ptrdiff_t>(a_value, L"argument0");
+		return t_value(v_integer >> f_as<ptrdiff_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:
@@ -845,7 +845,7 @@ inline t_transfer t_value::f_less(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		return t_transfer();
 	case e_tag__INTEGER:
-		return t_value(t_type_of<int>::f_less(v_integer, a_value));
+		return t_value(t_type_of<ptrdiff_t>::f_less(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float < f_as<double>(a_value));
@@ -862,7 +862,7 @@ inline t_transfer t_value::f_less_equal(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		return t_value(t_type_of<int>::f_less_equal(v_integer, a_value));
+		return t_value(t_type_of<ptrdiff_t>::f_less_equal(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float <= f_as<double>(a_value));
@@ -879,7 +879,7 @@ inline t_transfer t_value::f_greater(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		return t_transfer();
 	case e_tag__INTEGER:
-		return t_value(t_type_of<int>::f_greater(v_integer, a_value));
+		return t_value(t_type_of<ptrdiff_t>::f_greater(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float > f_as<double>(a_value));
@@ -896,7 +896,7 @@ inline t_transfer t_value::f_greater_equal(const t_value& a_value) const
 		t_throwable::f_throw(L"not supported");
 		break;
 	case e_tag__INTEGER:
-		return t_value(t_type_of<int>::f_greater_equal(v_integer, a_value));
+		return t_value(t_type_of<ptrdiff_t>::f_greater_equal(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_value(v_float >= f_as<double>(a_value));
@@ -913,7 +913,7 @@ inline t_transfer t_value::f_equals(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		return t_value(v_p == a_value.v_p && v_boolean == a_value.v_boolean);
 	case e_tag__INTEGER:
-		return t_value(t_type_of<int>::f_equals(v_integer, a_value));
+		return t_value(t_type_of<ptrdiff_t>::f_equals(v_integer, a_value));
 	case e_tag__FLOAT:
 		return t_value(t_type_of<double>::f_equals(v_float, a_value));
 	default:
@@ -929,7 +929,7 @@ inline t_transfer t_value::f_not_equals(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		return t_value(v_p != a_value.v_p || v_boolean != a_value.v_boolean);
 	case e_tag__INTEGER:
-		return t_value(t_type_of<int>::f_not_equals(v_integer, a_value));
+		return t_value(t_type_of<ptrdiff_t>::f_not_equals(v_integer, a_value));
 	case e_tag__FLOAT:
 		return t_value(t_type_of<double>::f_not_equals(v_float, a_value));
 	default:
@@ -944,8 +944,8 @@ inline t_transfer t_value::f_and(const t_value& a_value) const
 		f_check<bool>(a_value, L"argument0");
 		return t_value(static_cast<bool>(v_boolean & f_as<bool>(a_value)));
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer & f_as<int>(a_value));
+		f_check<ptrdiff_t>(a_value, L"argument0");
+		return t_value(v_integer & f_as<ptrdiff_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__FLOAT:
 		t_throwable::f_throw(L"not supported");
@@ -962,8 +962,8 @@ inline t_transfer t_value::f_xor(const t_value& a_value) const
 		f_check<bool>(a_value, L"argument0");
 		return t_value(static_cast<bool>(v_boolean ^ f_as<bool>(a_value)));
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer ^ f_as<int>(a_value));
+		f_check<ptrdiff_t>(a_value, L"argument0");
+		return t_value(v_integer ^ f_as<ptrdiff_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__FLOAT:
 		t_throwable::f_throw(L"not supported");
@@ -980,8 +980,8 @@ inline t_transfer t_value::f_or(const t_value& a_value) const
 		f_check<bool>(a_value, L"argument0");
 		return t_value(static_cast<bool>(v_boolean | f_as<bool>(a_value)));
 	case e_tag__INTEGER:
-		f_check<int>(a_value, L"argument0");
-		return t_value(v_integer | f_as<int>(a_value));
+		f_check<ptrdiff_t>(a_value, L"argument0");
+		return t_value(v_integer | f_as<ptrdiff_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__FLOAT:
 		t_throwable::f_throw(L"not supported");
