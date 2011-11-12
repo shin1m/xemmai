@@ -58,6 +58,7 @@ class t_parser
 	t_pointer<ast::t_node> f_expression();
 	bool f_expressions(t_pointers<ast::t_node>& a_nodes);
 	t_pointer<ast::t_node> f_statement();
+	void f_statements(t_pointers<ast::t_node>& a_nodes, t_lexer::t_token a_token);
 	void f_block(t_pointers<ast::t_node>& a_nodes);
 	void f_block_or_statement(t_pointers<ast::t_node>& a_nodes);
 

@@ -64,6 +64,7 @@ public:
 		e_token__IF,
 		e_token__ELSE,
 		e_token__WHILE,
+		e_token__FOR,
 		e_token__BREAK,
 		e_token__CONTINUE,
 		e_token__RETURN,

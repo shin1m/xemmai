@@ -47,6 +47,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
+						if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 						if (!scope) t_throwable::f_throw(L"no more outer scope.");
 						v_lexer.f_next();
 						ast::t_variable& variable = f_variable(scope, symbol, outer > 0 || v_targets->v_loop);
@@ -77,6 +78,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 						t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
+							if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 							v_lexer.f_next();
 							return new ast::t_object_put(at, target, symbol, f_expression());
 						}
@@ -283,6 +285,7 @@ t_pointer<ast::t_node> t_parser::f_action(const t_pointer<ast::t_node>& a_target
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
+						if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 						v_lexer.f_next();
 						return new ast::t_object_put_indirect(at, a_target, key, f_expression());
 					}
@@ -293,6 +296,7 @@ t_pointer<ast::t_node> t_parser::f_action(const t_pointer<ast::t_node>& a_target
 					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
+						if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 						v_lexer.f_next();
 						return new ast::t_object_put(at, a_target, symbol, f_expression());
 					}
@@ -338,6 +342,7 @@ t_pointer<ast::t_node> t_parser::f_action(const t_pointer<ast::t_node>& a_target
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) f_throw(L"expecting ']'.");
 			v_lexer.f_next();
 			if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
+				if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 				v_lexer.f_next();
 				return new ast::t_set_at(at, a_target, index, f_expression());
 			}
@@ -639,6 +644,41 @@ t_pointer<ast::t_node> t_parser::f_expression()
 			v_targets = targets0;
 			return node;
 		}
+	case t_lexer::e_token__FOR:
+		{
+			t_at at = v_lexer.f_at();
+			v_lexer.f_next();
+			if (v_lexer.f_token() != t_lexer::e_token__LEFT_PARENTHESIS) f_throw(L"expecting '('.");
+			v_lexer.f_next();
+			t_pointer<ast::t_for> node = new ast::t_for(at);
+			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) {
+				while (true) {
+					node->v_initialization.f_add(f_expression());
+					if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
+					v_lexer.f_next();
+				}
+			}
+			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
+			v_lexer.f_next();
+			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) node->v_condition = f_expression();
+			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
+			v_lexer.f_next();
+			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) {
+				while (true) {
+					node->v_next.f_add(f_expression());
+					if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
+					v_lexer.f_next();
+				}
+			}
+			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
+			v_lexer.f_next();
+			t_targets* targets0 = v_targets;
+			t_targets targets1(true, targets0->v_return);
+			v_targets = &targets1;
+			f_block_or_statement(node->v_block);
+			v_targets = targets0;
+			return node;
+		}
 	case t_lexer::e_token__TRY:
 		{
 			t_at at = v_lexer.f_at();
@@ -671,11 +711,9 @@ t_pointer<ast::t_node> t_parser::f_expression()
 			if (v_lexer.f_token() == t_lexer::e_token__FINALLY) {
 				v_lexer.f_next();
 				if (v_lexer.f_token() != t_lexer::e_token__LEFT_BRACE) f_throw(L"expecting '{'.");
-				v_lexer.f_next();
 				t_targets targets2(false, false);
 				v_targets = &targets2;
-				while (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) node->v_finally.f_add(f_statement());
-				v_lexer.f_next();
+				f_block(node->v_finally);
 			} else {
 				if (!catching) f_throw(L"expecting 'finally'.");
 			}
@@ -707,6 +745,7 @@ t_pointer<ast::t_node> t_parser::f_statement()
 	switch (v_lexer.f_token()) {
 	case t_lexer::e_token__IF:
 	case t_lexer::e_token__WHILE:
+	case t_lexer::e_token__FOR:
 	case t_lexer::e_token__TRY:
 		return f_expression();
 	case t_lexer::e_token__BREAK:
@@ -763,16 +802,28 @@ t_pointer<ast::t_node> t_parser::f_statement()
 	}
 }
 
+void t_parser::f_statements(t_pointers<ast::t_node>& a_nodes, t_lexer::t_token a_token)
+{
+	while (v_lexer.f_token() != a_token) {
+		if (v_lexer.f_token() == t_lexer::e_token__SEMICOLON)
+			v_lexer.f_next();
+		else
+			a_nodes.f_add(f_statement());
+	}
+}
+
 void t_parser::f_block(t_pointers<ast::t_node>& a_nodes)
 {
 	v_lexer.f_next();
-	while (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) a_nodes.f_add(f_statement());
+	f_statements(a_nodes, t_lexer::e_token__RIGHT_BRACE);
 	v_lexer.f_next();
 }
 
 void t_parser::f_block_or_statement(t_pointers<ast::t_node>& a_nodes)
 {
-	if (v_lexer.f_token() == t_lexer::e_token__LEFT_BRACE)
+	if (v_lexer.f_token() == t_lexer::e_token__SEMICOLON)
+		v_lexer.f_next();
+	else if (v_lexer.f_token() == t_lexer::e_token__LEFT_BRACE)
 		f_block(a_nodes);
 	else
 		a_nodes.f_add(f_statement());
@@ -783,7 +834,7 @@ void t_parser::f_parse(ast::t_module& a_module)
 	v_scope = &a_module;
 	t_targets targets(false, false);
 	v_targets = &targets;
-	while (v_lexer.f_token() != t_lexer::e_token__EOF) a_module.v_block.f_add(f_statement());
+	f_statements(a_module.v_block, t_lexer::e_token__EOF);
 	std::vector<ast::t_variable*> variables;
 	variables.swap(a_module.v_privates);
 	if (a_module.v_self_shared) ++a_module.v_shareds;

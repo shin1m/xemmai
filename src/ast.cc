@@ -140,6 +140,37 @@ t_operand t_while::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 	return a_stack;
 }
 
+t_operand t_for::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
+{
+	f_generate_block_without_value(a_generator, a_stack, v_initialization);
+	t_code::t_label& continue0 = a_generator.f_label();
+	t_code::t_label& continue1 = v_next.f_size() > 0 ? a_generator.f_label() : continue0;
+	a_generator.f_target(continue0);
+	t_code::t_label& label0 = a_generator.f_label();
+	if (v_condition) {
+		v_condition->f_generate(a_generator, a_stack, false, false);
+		a_generator.f_emit(e_instruction__BRANCH);
+		a_generator.f_operand(a_stack);
+		a_generator.f_operand(label0);
+	}
+	t_generator::t_targets* targets0 = a_generator.v_targets;
+	t_code::t_label& break0 = a_generator.f_label();
+	t_generator::t_targets targets1(&break0, a_tail, &continue1, targets0->v_return, targets0->v_return_is_tail);
+	a_generator.v_targets = &targets1;
+	f_generate_block_without_value(a_generator, a_stack, v_block);
+	if (v_next.f_size() > 0) {
+		a_generator.f_target(continue1);
+		f_generate_block_without_value(a_generator, a_stack, v_next);
+	}
+	a_generator.f_emit(e_instruction__JUMP);
+	a_generator.f_operand(continue0);
+	a_generator.f_target(label0);
+	a_generator.f_reserve(a_stack + 1);
+	a_generator.f_target(break0);
+	a_generator.v_targets = targets0;
+	return a_stack;
+}
+
 t_operand t_break::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	if (v_expression)

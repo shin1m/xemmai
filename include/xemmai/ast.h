@@ -115,6 +115,19 @@ struct t_while : t_node
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
 };
 
+struct t_for : t_node
+{
+	t_pointers<t_node> v_initialization;
+	t_pointer<t_node> v_condition;
+	t_pointers<t_node> v_next;
+	t_pointers<t_node> v_block;
+
+	t_for(const t_at& a_at) : t_node(a_at)
+	{
+	}
+	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
+};
+
 struct t_break : t_node
 {
 	t_pointer<t_node> v_expression;

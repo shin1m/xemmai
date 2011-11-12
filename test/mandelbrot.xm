@@ -6,30 +6,24 @@ sqrt = math.sqrt;
 
 mandelbrot = @(cr, ci) {
 	limit = 95;
-	n = 0;
 	r = i = 0.0;
-	while (n < limit && sqrt(r * r + i * i) < 10.0) {
+	for (n = 0; n < limit && sqrt(r * r + i * i) < 10.0; n = n + 1) {
 		wr = r * r - i * i + cr;
 		wi = r * i + i * r + ci;
 		r = wr;
 		i = wi;
-		n = n + 1;
 	}
 	n;
 };
 
 draw_mandelbrot = @(r0, i0, r1, i1, delta) {
-	i = i0;
-	while (i > i1) {
+	for (i = i0; i > i1; i = i - delta) {
 		write("|");
-		r = r0;
-		while (r < r1) {
+		for (r = r0; r < r1; r = r + delta) {
 			c = 127 - mandelbrot(r, i);
 			write(String.from_code(c));
-			r = r + delta;
 		}
 		print("|");
-		i = i - delta;
 	}
 };
 

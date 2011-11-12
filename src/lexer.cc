@@ -277,6 +277,7 @@ void t_lexer::f_next()
 							v_value.push_back(v_c);
 							f_get();
 							if (v_c == L'k') {
+								v_value.push_back(v_c);
 								f_get();
 								if (!f_is_symbol(v_c)) {
 									v_token = e_token__BREAK;
@@ -301,6 +302,7 @@ void t_lexer::f_next()
 							v_value.push_back(v_c);
 							f_get();
 							if (v_c == L'h') {
+								v_value.push_back(v_c);
 								f_get();
 								if (!f_is_symbol(v_c)) {
 									v_token = e_token__CATCH;
@@ -329,6 +331,7 @@ void t_lexer::f_next()
 										v_value.push_back(v_c);
 										f_get();
 										if (v_c == L'e') {
+											v_value.push_back(v_c);
 											f_get();
 											if (!f_is_symbol(v_c)) {
 												v_token = e_token__CONTINUE;
@@ -353,6 +356,7 @@ void t_lexer::f_next()
 						v_value.push_back(v_c);
 						f_get();
 						if (v_c == L'e') {
+							v_value.push_back(v_c);
 							f_get();
 							if (!f_is_symbol(v_c)) {
 								v_token = e_token__ELSE;
@@ -376,6 +380,7 @@ void t_lexer::f_next()
 							v_value.push_back(v_c);
 							f_get();
 							if (v_c == L'e') {
+								v_value.push_back(v_c);
 								f_get();
 								if (!f_is_symbol(v_c)) {
 									v_token = e_token__FALSE;
@@ -401,6 +406,7 @@ void t_lexer::f_next()
 									v_value.push_back(v_c);
 									f_get();
 									if (v_c == L'y') {
+										v_value.push_back(v_c);
 										f_get();
 										if (!f_is_symbol(v_c)) {
 											v_token = e_token__FINALLY;
@@ -412,12 +418,25 @@ void t_lexer::f_next()
 						}
 					}
 					break;
+				case L'o':
+					v_value.push_back(v_c);
+					f_get();
+					if (v_c == L'r') {
+						v_value.push_back(v_c);
+						f_get();
+						if (!f_is_symbol(v_c)) {
+							v_token = e_token__FOR;
+							return;
+						}
+					}
+					break;
 				}
 				break;
 			case L'i':
 				v_value.push_back(v_c);
 				f_get();
 				if (v_c == L'f') {
+					v_value.push_back(v_c);
 					f_get();
 					if (!f_is_symbol(v_c)) {
 						v_token = e_token__IF;
@@ -435,6 +454,7 @@ void t_lexer::f_next()
 						v_value.push_back(v_c);
 						f_get();
 						if (v_c == L'l') {
+							v_value.push_back(v_c);
 							f_get();
 							if (!f_is_symbol(v_c)) {
 								v_token = e_token__NULL;
@@ -460,6 +480,7 @@ void t_lexer::f_next()
 								v_value.push_back(v_c);
 								f_get();
 								if (v_c == L'n') {
+									v_value.push_back(v_c);
 									f_get();
 									if (!f_is_symbol(v_c)) {
 										v_token = e_token__RETURN;
@@ -485,6 +506,7 @@ void t_lexer::f_next()
 							v_value.push_back(v_c);
 							f_get();
 							if (v_c == L'w') {
+								v_value.push_back(v_c);
 								f_get();
 								if (!f_is_symbol(v_c)) {
 									v_token = e_token__THROW;
@@ -502,6 +524,7 @@ void t_lexer::f_next()
 						v_value.push_back(v_c);
 						f_get();
 						if (v_c == L'e') {
+							v_value.push_back(v_c);
 							f_get();
 							if (!f_is_symbol(v_c)) {
 								v_token = e_token__TRUE;
@@ -510,6 +533,7 @@ void t_lexer::f_next()
 						}
 						break;
 					case L'y':
+						v_value.push_back(v_c);
 						f_get();
 						if (!f_is_symbol(v_c)) {
 							v_token = e_token__TRY;
@@ -532,6 +556,7 @@ void t_lexer::f_next()
 							v_value.push_back(v_c);
 							f_get();
 							if (v_c == L'e') {
+								v_value.push_back(v_c);
 								f_get();
 								if (!f_is_symbol(v_c)) {
 									v_token = e_token__WHILE;

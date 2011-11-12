@@ -3,11 +3,7 @@ io = Module("io");
 print = system.out.write_line;
 
 bytes = Bytes(26);
-i = 0;
-while (i < bytes.size()) {
-	bytes[i] = 65 + i;
-	i = i + 1;
-}
+for (i = 0; i < bytes.size(); i = i + 1) bytes[i] = 65 + i;
 
 file = io.File("file.xm.test", "w");
 try {

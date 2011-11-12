@@ -39,8 +39,4 @@ primes = generator(@(yield) {
 	}
 });
 
-i = 0;
-while (i < 30) {
-	print(primes());
-	i = i + 1;
-}
+for (i = 0; i < 30; i = i + 1) print(primes());

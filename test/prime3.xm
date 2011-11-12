@@ -35,9 +35,7 @@ primes = @(ns) {
 };
 
 ns = primes(sequence(2));
-i = 0;
-while (i < 30) {
+for (i = 0; i < 30; i = i + 1) {
 	print(ns().first);
 	ns = ns().second;
-	i = i + 1;
 }

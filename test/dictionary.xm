@@ -33,11 +33,7 @@ print(d);
 assert(d.size() == 0);
 
 d = {};
-i = 0;
-while (i < 1000) {
-	d[i] = i;
-	i = i + 1;
-}
+for (i = 0; i < 1000; i = i + 1) d[i] = i;
 assert(d.size() == 1000);
 
 Foo = Class(Dictionary) :: @{
