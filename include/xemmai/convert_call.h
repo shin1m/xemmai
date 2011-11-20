@@ -21,7 +21,7 @@ struct t_call_construct<t_transfer (*)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMA
 	static void f_call(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), const t_value& a_self, t_slot* a_stack, size_t a_n)
 	{
 		if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-		if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
+		if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__LQ(XEMMAI__MACRO__N) L" argument(s).");
 		XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__STACK_TRANSFER, XEMMAI__MACRO__N)
 		XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK_AN, XEMMAI__MACRO__N)
 		a_stack[0].f_construct(a_function(a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_AN__));
@@ -34,7 +34,7 @@ struct t_call_construct<t_transfer (*)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMA
 	}
 	static t_transfer f_do(t_transfer (*a_function)(t_object* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), t_object* a_class, t_slot* a_stack, size_t a_n)
 	{
-		if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
+		if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__LQ(XEMMAI__MACRO__N) L" argument(s).");
 		XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK_STACK, XEMMAI__MACRO__N)
 		return a_function(a_class XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AS_STACK__);
 	}
@@ -181,7 +181,7 @@ struct XEMMAI__MACRO__CALL_MEMBERN
 		static void f_call(T_function a_function, t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 		{
 			f_check<T_self>(a_self, L"this");
-			if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
+			if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__LQ(XEMMAI__MACRO__N) L" argument(s).");
 			XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__STACK_TRANSFER, XEMMAI__MACRO__N)
 			XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK_AN, XEMMAI__MACRO__N)
 			a_stack[0].f_construct(XEMMAI__MACRO__CALL_MEMBERN_WITH<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_function, A_void, A_extension, T_with>::f_call(a_function, a_module, a_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));
@@ -296,7 +296,7 @@ struct XEMMAI__MACRO__CALL_STATICN
 		template<typename T_function>
 		static void f_call(T_function a_function, t_object* a_module, t_slot* a_stack, size_t a_n)
 		{
-			if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__L(XEMMAI__MACRO__N) L" argument(s).");
+			if (a_n != XEMMAI__MACRO__N) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__LQ(XEMMAI__MACRO__N) L" argument(s).");
 			XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__STACK_TRANSFER, XEMMAI__MACRO__N)
 			XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CHECK_AN, XEMMAI__MACRO__N)
 			a_stack[0].f_construct(XEMMAI__MACRO__CALL_STATICN_WITH<T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__, A_void, A_extension>::f_call(a_function, f_extension<T_extension>(a_module) XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__AN__));

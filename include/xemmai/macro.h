@@ -4,9 +4,12 @@
 #define XEMMAI__MACRO__CONCATENATE_(x, y) x##y
 #define XEMMAI__MACRO__CONCATENATE(x, y) XEMMAI__MACRO__CONCATENATE_(x, y)
 
-#define XEMMAI__MACRO__L__(n) L##n
-#define XEMMAI__MACRO__L_(n) XEMMAI__MACRO__L__(#n)
+#define XEMMAI__MACRO__L_(n) L##n
 #define XEMMAI__MACRO__L(n) XEMMAI__MACRO__L_(n)
+
+#define XEMMAI__MACRO__LQ__(n) L##n
+#define XEMMAI__MACRO__LQ_(n) XEMMAI__MACRO__LQ__(#n)
+#define XEMMAI__MACRO__LQ(n) XEMMAI__MACRO__LQ_(n)
 
 #define XEMMAI__MACRO__SUBTRACT_0_0 0
 #define XEMMAI__MACRO__SUBTRACT_1_0 1

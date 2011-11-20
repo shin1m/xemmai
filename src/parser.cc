@@ -858,7 +858,7 @@ t_transfer t_parser::t_error::f_instantiate(const std::wstring& a_message, t_lex
 
 void t_parser::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%zd:%zd\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
+	std::fprintf(stderr, "at %ls:%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d:%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
 	f_print_with_caret(v_path.c_str(), v_at.f_position(), v_at.f_column());
 	t_throwable::f_dump();
 }

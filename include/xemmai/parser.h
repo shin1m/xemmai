@@ -32,7 +32,7 @@ class t_parser
 	ptrdiff_t f_integer()
 	{
 		ptrdiff_t value;
-		std::swscanf(&v_lexer.f_value()[0], L"%td", &value);
+		std::swscanf(&v_lexer.f_value()[0], L"%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_SIZE_T) L"d", &value);
 		return value;
 	}
 	double f_float()

@@ -298,7 +298,7 @@ void t_code::f_loop()
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 #define XEMMAI__CODE__REWRITE(a_name) pc0[0] = &&XEMMAI__MACRO__CONCATENATE(label__, a_name);
 #else
-#define XEMMAI__CODE__REWRITE(a_name) pc0[0] = XEMMAI__MACRO__CONCATENATE(e_instruction__, a_name);
+#define XEMMAI__CODE__REWRITE(a_name) pc0[0] = reinterpret_cast<void*>(XEMMAI__MACRO__CONCATENATE(e_instruction__, a_name));
 #endif
 				XEMMAI__CODE__CASE(OBJECT_GET)
 					{

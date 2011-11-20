@@ -130,12 +130,12 @@ public:
 #ifdef _MSC_VER
 inline size_t f_atomic_increment(volatile size_t& a_n)
 {
-	return _InterlockedIncrement(reinterpret_cast<volatile ptrdiff_t*>(&a_n));
+	return _InterlockedIncrement(reinterpret_cast<volatile long*>(&a_n));
 }
 
 class t_lock
 {
-	volatile size_t v_lock;
+	volatile long v_lock;
 
 public:
 	t_lock() : v_lock(0)

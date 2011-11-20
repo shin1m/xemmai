@@ -115,7 +115,7 @@ struct t_type_of<ptrdiff_t> : t_type
 	static t_transfer f_construct(t_object* a_class, const std::wstring& a_value)
 	{
 		ptrdiff_t value;
-		std::swscanf(a_value.c_str(), L"%td", &value);
+		std::swscanf(a_value.c_str(), L"%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_SIZE_T) L"d", &value);
 		return f_construct(a_class, value);
 	}
 	static t_transfer f_construct_derived(t_object* a_class, ptrdiff_t a_value)
@@ -127,7 +127,7 @@ struct t_type_of<ptrdiff_t> : t_type
 	static std::wstring f_string(ptrdiff_t a_self)
 	{
 		wchar_t cs[32];
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%td", a_self);
+		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_SIZE_T) L"d", a_self);
 		return cs;
 	}
 	static ptrdiff_t f_hash(ptrdiff_t a_self)

@@ -112,7 +112,7 @@ double f_compose(const t_tuple& a_value)
 
 t_transfer f_decompose(double a_value)
 {
-	std::time_t t0 = std::floor(a_value);
+	std::time_t t0 = static_cast<std::time_t>(std::floor(a_value));
 	double fraction = a_value - t0;
 	std::tm* t1 = std::gmtime(&t0);
 	t_transfer p = t_tuple::f_instantiate(8);
@@ -419,14 +419,14 @@ t_transfer f_parse_rfc2822(const std::wstring& a_value)
 	ptrdiff_t hour;
 	ptrdiff_t minute;
 	ptrdiff_t i;
-	int n = std::swscanf(s, L"%*3ls, %2td %3ls %4td %2td:%2td%tn", &day, month, &year, &hour, &minute, &i);
+	int n = std::swscanf(s, L"%*3ls, %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %3ls %4" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"n", &day, month, &year, &hour, &minute, &i);
 	if (n < 5) t_throwable::f_throw(L"invalid format.");
 	ptrdiff_t m = f_month_name_to_number(month);
 	if (m <= 0) t_throwable::f_throw(L"invalid format.");
 	ptrdiff_t second;
 	wchar_t zone[6];
 	if (s[i] == L':') {
-		n = std::swscanf(s + ++i, L"%2td %5ls", &second, zone);
+		n = std::swscanf(s + ++i, L"%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %5ls", &second, zone);
 		if (n < 2) t_throwable::f_throw(L"invalid format.");
 	} else {
 		second = 0;
@@ -458,12 +458,12 @@ std::wstring f_format_rfc2822(const t_tuple& a_value, ptrdiff_t a_offset)
 	ptrdiff_t day = f_item(a_value, 2);
 	ptrdiff_t hour = f_item(a_value, 3);
 	ptrdiff_t minute = f_item(a_value, 4);
-	ptrdiff_t second = std::floor(f_item_with_fraction(a_value, 5));
+	ptrdiff_t second = static_cast<ptrdiff_t>(std::floor(f_item_with_fraction(a_value, 5)));
 	ptrdiff_t week = f_item(a_value, 6);
 	wchar_t sign = a_offset > 0 ? L'+' : L'-';
 	a_offset = std::abs(a_offset) / 60;
 	wchar_t cs[32];
-	std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%ls, %d %ls %04d %02d:%02d:%02d %lc%02d%02d", v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
+	std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%ls, %" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %ls %04" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %lc%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d", v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
 	return cs;
 }
 
@@ -475,11 +475,11 @@ t_transfer f_parse_http(const std::wstring& a_value)
 	ptrdiff_t hour;
 	ptrdiff_t minute;
 	ptrdiff_t second;
-	int n = std::swscanf(a_value.c_str(), L"%*3ls, %2td %3ls %4td %2td:%2td:%2td GMT", &day, month, &year, &hour, &minute, &second);
+	int n = std::swscanf(a_value.c_str(), L"%*3ls, %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %3ls %4" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d GMT", &day, month, &year, &hour, &minute, &second);
 	if (n < 6) {
-		n = std::swscanf(a_value.c_str(), L"%*l[A-Za-z], %2td-%3ls-%2td %2td:%2td:%2td GMT", &day, month, &year, &hour, &minute, &second);
+		n = std::swscanf(a_value.c_str(), L"%*l[A-Za-z], %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%3ls-%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d GMT", &day, month, &year, &hour, &minute, &second);
 		if (n < 6) {
-			n = std::swscanf(a_value.c_str(), L"%*3ls %3ls %2td %2td:%2td:%2td %4td", month, &day, &hour, &minute, &second, &year);
+			n = std::swscanf(a_value.c_str(), L"%*3ls %3ls %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %4" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d", month, &day, &hour, &minute, &second, &year);
 			if (n < 6) t_throwable::f_throw(L"invalid format.");
 		}
 	}
@@ -508,10 +508,10 @@ std::wstring f_format_http(const t_tuple& a_value)
 	ptrdiff_t day = f_item(a_value, 2);
 	ptrdiff_t hour = f_item(a_value, 3);
 	ptrdiff_t minute = f_item(a_value, 4);
-	ptrdiff_t second = std::floor(f_item_with_fraction(a_value, 5));
+	ptrdiff_t second = static_cast<ptrdiff_t>(std::floor(f_item_with_fraction(a_value, 5)));
 	ptrdiff_t week = f_item(a_value, 6);
 	wchar_t cs[30];
-	std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%ls, %02d %ls %04d %02d:%02d:%02d GMT", v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
+	std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%ls, %02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %ls %04" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d GMT", v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
 	return cs;
 }
 
@@ -524,7 +524,7 @@ t_transfer f_parse_xsd(const std::wstring& a_value)
 	ptrdiff_t minute;
 	double second;
 	wchar_t zone[7];
-	int n = std::swscanf(a_value.c_str(), L"%5td-%2td-%2tdT%2td:%2td:%lf%6ls", &year, &month, &day, &hour, &minute, &second, zone);
+	int n = std::swscanf(a_value.c_str(), L"%5" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"dT%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%lf%6ls", &year, &month, &day, &hour, &minute, &second, zone);
 	if (n < 6) t_throwable::f_throw(L"invalid format.");
 	t_transfer p = t_tuple::f_instantiate(n < 7 ? 6 : 7);
 	t_tuple& tuple = f_as<t_tuple&>(p);
@@ -549,11 +549,11 @@ std::wstring f_format_xsd(const t_tuple& a_value, ptrdiff_t a_offset, ptrdiff_t 
 	double second = f_item_with_fraction(a_value, 5);
 	wchar_t cs[30];
 	if (a_offset == 0) {
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%04d-%02d-%02dT%02d:%02d:%02.*fZ", year, month, day, hour, minute, a_precision, second);
+		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%04" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"dT%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02.*fZ", year, month, day, hour, minute, a_precision, second);
 	} else {
 		wchar_t sign = a_offset > 0 ? L'+' : L'-';
 		a_offset = std::abs(a_offset) / 60;
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%04d-%02d-%02dT%02d:%02d:%02.*f%lc%02d:%02d", year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
+		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%04" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"dT%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02.*f%lc%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%02" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d", year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
 	}
 	return cs;
 }

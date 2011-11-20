@@ -93,7 +93,7 @@ void t_fiber::t_context::f_dump() const
 		std::fprintf(stderr, "%ls", code.v_path.c_str());
 		const t_at* at = code.f_at(v_pc);
 		if (at) {
-			std::fprintf(stderr, ":%zd:%zd\n", at->f_line(), at->f_column());
+			std::fprintf(stderr, ":%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d:%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", at->f_line(), at->f_column());
 			f_print_with_caret(code.v_path.c_str(), at->f_position(), at->f_column());
 		} else {
 			std::fputc('\n', stderr);

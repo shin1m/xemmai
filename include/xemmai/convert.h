@@ -92,11 +92,11 @@ struct t_construct_default
 #define XEMMAI__MACRO__AS_A_N(n) f_as<T_a##n>(a_##n)
 #define XEMMAI__MACRO__AN(n) a##n
 #define XEMMAI__MACRO__AS_AN(n) f_as<T_a##n>(a##n)
-#define XEMMAI__MACRO__CHECK_STACK(n) f_check<T_a##n>(a_stack[n + 1], L"argument" XEMMAI__MACRO__L(n));
+#define XEMMAI__MACRO__CHECK_STACK(n) f_check<T_a##n>(a_stack[n + 1], L"argument" XEMMAI__MACRO__LQ(n));
 #define XEMMAI__MACRO__AS_STACK(n) f_as<T_a##n>(a_stack[n + 1])
 #define XEMMAI__MACRO__IS_STACK(n) if (!f_is<T_a##n>(a_stack[n + 1])) return false;
 #define XEMMAI__MACRO__STACK_TRANSFER(n) t_transfer a##n = a_stack[n + 1].f_transfer();
-#define XEMMAI__MACRO__CHECK_AN(n) f_check<T_a##n>(a##n, L"argument" XEMMAI__MACRO__L(n));
+#define XEMMAI__MACRO__CHECK_AN(n) f_check<T_a##n>(a##n, L"argument" XEMMAI__MACRO__LQ(n));
 #define XEMMAI__MACRO__UNSPECIFIED(n) t_unspecified
 #define XEMMAI__MACRO__ITERATE "convert_call.h"
 #define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT

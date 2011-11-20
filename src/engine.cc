@@ -20,7 +20,7 @@ void t_engine::t_synchronizer::f_run()
 		affinity.f_add(v_cpu);
 		affinity.f_to_thread();
 	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%zd) starting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d) starting...\n", v_cpu);
 	{
 		portable::t_scoped_lock lock(v_mutex);
 		while (true) {
@@ -34,7 +34,7 @@ void t_engine::t_synchronizer::f_run()
 //			v_engine->v_synchronizer__condition.f_signal();
 		}
 	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%zd) quitting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d) quitting...\n", v_cpu);
 	v_condition.f_signal();
 }
 
@@ -271,7 +271,7 @@ v_verbose(a_verbose)
 		}
 	}
 #ifdef XEMMAI_MODULE_PATH
-	f_as<t_array&>(path).f_push(f_global()->f_as(std::wstring(XEMMAI__MACRO__L(XEMMAI_MODULE_PATH))));
+	f_as<t_array&>(path).f_push(f_global()->f_as(std::wstring(XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH))));
 #endif
 	if (a_count > 0) {
 		v_module_system.f_put(f_global()->f_symbol_executable(), f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_convert(a_arguments[0])))));
@@ -397,19 +397,19 @@ t_engine::~t_engine()
 		{
 			size_t allocated = v_object__pool.f_allocated();
 			size_t freed = v_object__pool.f_freed();
-			std::fprintf(stderr, "\tobject: %zd - %zd = %zd, release = %zd, collect = %zd\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
+			std::fprintf(stderr, "\tobject: %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d - %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, release = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, collect = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
 			if (allocated > freed) b = true;
 		}
 		{
 			size_t allocated = v_dictionary__entry__pool.f_allocated();
 			size_t freed = v_dictionary__entry__pool.f_freed();
-			std::fprintf(stderr, "\tdictionary entry: %zd - %zd = %zd\n", allocated, freed, allocated - freed);
+			std::fprintf(stderr, "\tdictionary entry: %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d - %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", allocated, freed, allocated - freed);
 			if (allocated > freed) b = true;
 		}
-		std::fprintf(stderr, "\tcollector: tick = %zd, wait = %zd, epoch = %zd, collect = %zd\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
+		std::fprintf(stderr, "\tcollector: tick = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, wait = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, epoch = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, collect = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
-			std::fprintf(stderr, "\tfield cache: hit = %zd, missed = %zd, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
+			std::fprintf(stderr, "\tfield cache: hit = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, missed = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
 		}
 		if (b) throw std::exception();
 	}
