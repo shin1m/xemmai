@@ -574,16 +574,58 @@ void t_lexer::f_next()
 			}
 			v_token = e_token__SYMBOL;
 		} else if (std::iswdigit(v_c)) {
-			do {
+			if (v_c == L'0') {
 				v_value.push_back(v_c);
 				f_get();
-			} while (std::iswdigit(v_c));
+				switch (v_c) {
+				case L'.':
+					break;
+				case L'X':
+				case L'x':
+					v_token = e_token__INTEGER;
+					v_value.push_back(v_c);
+					f_get();
+					if (!std::iswxdigit(v_c)) f_throw();
+					do {
+						v_value.push_back(v_c);
+						f_get();
+					} while (std::iswxdigit(v_c));
+					v_value.push_back(L'\0');
+					return;
+				default:
+					v_token = e_token__INTEGER;
+					while (std::iswdigit(v_c)) {
+						if (v_c >= L'8') f_throw();
+						v_value.push_back(v_c);
+						f_get();
+					}
+					v_value.push_back(L'\0');
+					return;
+				}
+			}
+			while (std::iswdigit(v_c)) {
+				v_value.push_back(v_c);
+				f_get();
+			}
 			if (v_c == L'.') {
 				v_token = e_token__FLOAT;
 				do {
 					v_value.push_back(v_c);
 					f_get();
 				} while (std::iswdigit(v_c));
+				if (v_c == L'E' || v_c == L'e') {
+					v_value.push_back(v_c);
+					f_get();
+					if (v_c == L'+' || v_c == L'-') {
+						v_value.push_back(v_c);
+						f_get();
+					}
+					if (!std::iswdigit(v_c)) f_throw();
+					do {
+						v_value.push_back(v_c);
+						f_get();
+					} while (std::iswdigit(v_c));
+				}
 			} else {
 				v_token = e_token__INTEGER;
 			}

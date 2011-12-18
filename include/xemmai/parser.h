@@ -1,6 +1,8 @@
 #ifndef XEMMAI__PARSER_H
 #define XEMMAI__PARSER_H
 
+#include "integer.h"
+#include "float.h"
 #include "lexer.h"
 #include "ast.h"
 
@@ -31,14 +33,11 @@ class t_parser
 	ast::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop);
 	ptrdiff_t f_integer()
 	{
-		ptrdiff_t value;
-		std::swscanf(&v_lexer.f_value()[0], L"%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_SIZE_T) L"d", &value);
-		return value;
+		return t_type_of<ptrdiff_t>::f_parse(&v_lexer.f_value()[0]);
 	}
 	double f_float()
 	{
-		wchar_t *p;
-		return std::wcstod(&v_lexer.f_value()[0], &p);
+		return t_type_of<double>::f_parse(&v_lexer.f_value()[0]);
 	}
 	t_pointer<ast::t_node> f_target(bool a_assignable);
 	t_pointer<ast::t_node> f_action(const t_pointer<ast::t_node>& a_target, bool a_assignable);

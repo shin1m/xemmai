@@ -2,11 +2,6 @@ system = Module("system");
 print = system.out.write_line;
 assert = @(x) if (!x) throw Throwable("Assertion failed.");;
 
-print("-10 / 9 = " + (-10 / 9));
-assert(-10 / 9 == -1);
-print("-10 % 9 = " + (-10 % 9));
-assert(-10 % 9 == -1);
-
 print("!true = " + (!true));
 assert(!true == false);
 print("true & true = " + (true & true));
@@ -16,10 +11,25 @@ assert(true | true == true);
 print("true ^ true = " + (true ^ true));
 assert(true ^ true == false);
 
+print("-10 / 9 = " + (-10 / 9));
+assert(-10 / 9 == -1);
+print("-10 % 9 = " + (-10 % 9));
+assert(-10 % 9 == -1);
+print("0x1f = " + 0x1f);
+assert(0x1f == 31);
+print("0x000a = " + 0x000a);
+assert(0x000a == 10);
+
 print("1 + 2.5 = " + (1 + 2.5));
 assert(1 + 2.5 == 3.5);
 print("1.5 + 2 = " + (1.5 + 2));
 assert(1.5 + 2 == 3.5);
+print("1.0e-1 = " + 1.0e-1);
+assert(1.0e-1 == 0.1);
+print("10.e-1 = " + 10.e-1);
+assert(10.e-1 == 1.0);
+print("0.1e1 = " + 0.1e1);
+assert(0.1e1 == 1.0);
 
 math = Module("math");
 print("sqrt(2) = " + math.sqrt(2));

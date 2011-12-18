@@ -128,8 +128,8 @@ protected:
 		{
 		}
 		void f_next(t_object* a_object);
-//		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
-		XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
+		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
+//		XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
 		{
 			t_object* volatile* head = v_head;
 			if (head == v_next) {

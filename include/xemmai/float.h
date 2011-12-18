@@ -91,14 +91,18 @@ struct t_type_of<double> : t_type
 	}
 	static t_transfer f_construct(t_object* a_class, const std::wstring& a_value)
 	{
-		wchar_t* p;
-		return f_construct(a_class, std::wcstod(a_value.c_str(), &p));
+		return f_construct(a_class, f_parse(a_value.c_str()));
 	}
 	static t_transfer f_construct_derived(t_object* a_class, double a_value)
 	{
 		t_transfer object = t_object::f_allocate_uninitialized(a_class);
 		object.f_float__(a_value);
 		return object;
+	}
+	static double f_parse(const wchar_t* a_value)
+	{
+		wchar_t* p;
+		return std::wcstod(a_value, &p);
 	}
 	static std::wstring f_string(double a_self)
 	{

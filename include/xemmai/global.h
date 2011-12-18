@@ -6,8 +6,6 @@
 #include "symbol.h"
 #include "null.h"
 #include "boolean.h"
-#include "integer.h"
-#include "float.h"
 #include "string.h"
 #include "parser.h"
 
