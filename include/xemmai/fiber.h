@@ -22,6 +22,7 @@ struct t_fiber
 			t_context* p = t_local_pool<t_context>::f_allocate(f_allocate);
 			p->v_next = a_next;
 			p->v_base = a_base;
+			p->v_native = 0;
 			return p;
 		}
 		static void f_finalize(t_context* a_p);
@@ -51,9 +52,6 @@ struct t_fiber
 		void** v_pc;
 		size_t v_native;
 
-		t_context() : v_native(0)
-		{
-		}
 		void f_scan(t_scan a_scan)
 		{
 			a_scan(v_outer);
@@ -67,7 +65,6 @@ struct t_fiber
 			v_self = 0;
 			v_scope = 0;
 			v_code = 0;
-			v_native = 0;
 			t_local_pool<t_context>::f_free(this);
 		}
 		void f_dump() const;
