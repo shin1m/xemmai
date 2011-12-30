@@ -240,8 +240,6 @@ class t_object
 	};
 
 	static XEMMAI__PORTABLE__THREAD t_object* v_roots;
-	static XEMMAI__PORTABLE__THREAD size_t v_release;
-	static XEMMAI__PORTABLE__THREAD size_t v_collect;
 
 	XEMMAI__PORTABLE__FORCE_INLINE static void f_append(t_object*& a_list, t_object* a_p)
 	{
@@ -261,7 +259,7 @@ class t_object
 	static void f_scan_red(t_slot& a_slot);
 	static void f_cyclic_decrement(t_slot& a_slot);
 	static void f_collect();
-	static XEMMAI__PORTABLE__EXPORT t_object* f_pool__allocate();
+	static t_object* f_pool__allocate();
 
 	t_object* v_next;
 	t_color v_color;
@@ -290,47 +288,16 @@ class t_object
 	XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_decrement_member()
 	{
 		if (--v_count > 0) {
-			v_color = e_color__PURPLE;
-			if (!v_next) f_append(v_roots, this);
-		} else {
-			f_decrement_tree();
-		}
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_decrement()
-	{
-#ifdef _DEBUG
-		if (v_count <= 0) {
-			std::fprintf(stderr, "%p: dangling\n", this);
-			assert(false);
-		}
-#endif
-		if (--v_count > 0) {
 #ifdef XEMMAI__OBJECT__CALL_SCAN_BLACK
 			f_scan_black();
 #endif
 			v_color = e_color__PURPLE;
 			if (!v_next) f_append(v_roots, this);
 		} else {
-			static_cast<t_object*>(v_structure->v_this)->f_decrement_member();
-			if (v_fields) {
-				v_fields->f_scan(f_decrement);
-				delete v_fields;
-				v_fields = 0;
-			}
-			t_type* type = f_type_as_type();
-			if (!type->v_primitive) {
-				type->f_scan(this, f_decrement);
-				type->f_finalize(this);
-			}
-			f_type()->f_decrement_member();
-			v_type.v_p = 0;
-			v_color = e_color__BLACK;
-			if (!v_next) {
-				++v_release;
-				t_local_pool<t_object>::f_free(this);
-			}
+			f_decrement_tree();
 		}
 	}
+	void f_decrement();
 	void f_mark_gray();
 	void f_scan_gray();
 	XEMMAI__PORTABLE__FORCE_INLINE void f_scan_black()

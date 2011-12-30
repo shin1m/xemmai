@@ -52,10 +52,10 @@ void* t_engine::f_collector(void* a_p)
 
 void t_engine::f_pools__return()
 {
-	t_local_pool<t_object>::f_return(f_instance__object__pool__return);
-	t_local_pool<t_fiber::t_context>::f_return(f_instance__fiber__context__pool__return);
-	t_local_pool<t_fiber::t_try>::f_return(f_instance__fiber__try__pool__return);
-	t_local_pool<t_dictionary::t_entry>::f_return(f_instance__dictionary__entry__pool__return);
+	f_return(v_object__pool);
+	f_return(v_fiber__context__pool);
+	f_return(v_fiber__try__pool);
+	f_return(v_dictionary__entry__pool);
 }
 
 void t_engine::f_signal_synchronizers()
@@ -97,8 +97,6 @@ void t_engine::f_collector()
 			while (!v_collector__running) v_collector__wake.f_wait(v_collector__mutex);
 		}
 		if (v_collector__quitting) {
-			v_object__release = t_object::v_release;
-			v_object__collect = t_object::v_collect;
 			if (v_verbose) std::fprintf(stderr, "collector quitting...\n");
 			{
 				portable::t_scoped_lock lock(v_collector__mutex);
@@ -162,16 +160,22 @@ void t_engine::f_collector()
 			}
 		}
 		t_object::f_collect();
-		f_pools__return();
+		if (v_object__freed > 0) f_return(v_object__pool, v_object__freed);
+		if (v_fiber__context__freed > 0) f_return(v_fiber__context__pool, v_fiber__context__freed);
+		if (v_fiber__try__freed > 0) f_return(v_fiber__try__pool, v_fiber__try__freed);
+		if (v_dictionary__entry__freed > 0) f_return(v_dictionary__entry__pool, v_dictionary__entry__freed);
 	}
 }
 
 t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) :
+v_object__freed(0),
 v_object__cycle(0),
 v_object__reviving(false),
 v_object__release(0),
 v_object__collect(0),
 v_structure__finalizing(0),
+v_fiber__context__freed(0),
+v_fiber__try__freed(0),
 v_thread__internals(0),
 v_thread__cache_hit(0),
 v_thread__cache_missed(0),
@@ -179,6 +183,7 @@ v_synchronizers(0),
 v_synchronizer__wake(0),
 v_module__thread(0),
 v_library__handle__finalizing(0),
+v_dictionary__entry__freed(0),
 v_stack_size(a_stack),
 v_verbose(a_verbose)
 {

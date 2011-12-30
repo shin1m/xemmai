@@ -71,18 +71,7 @@ private:
 			t_entry** entries = f_entries();
 			for (size_t i = 0; i < v_capacity; ++i) entries[i] = 0;
 		}
-		~t_table()
-		{
-			t_entry** entries = f_entries();
-			for (size_t i = 0; i < v_capacity; ++i) {
-				t_entry* p = entries[i];
-				while (p) {
-					t_entry* q = p->v_next;
-					t_local_pool<t_entry>::f_free(p);
-					p = q;
-				}
-			}
-		}
+		~t_table();
 		t_entry** f_entries() const
 		{
 			return const_cast<t_entry**>(reinterpret_cast<t_entry* const*>(this + 1));

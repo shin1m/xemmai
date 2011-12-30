@@ -24,12 +24,13 @@ struct t_fiber
 			p->v_base = a_base;
 			return p;
 		}
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_finalize(t_context* a_p)
+		static void f_finalize(t_context* a_p);
+		XEMMAI__PORTABLE__FORCE_INLINE static void f_free(t_context* a_p)
 		{
 			while (a_p) {
 				t_context* p = a_p;
 				a_p = p->v_next;
-				p->f_finalize();
+				p->f_free();
 			}
 		}
 		static void f_initiate(void** a_pc);
@@ -60,7 +61,7 @@ struct t_fiber
 			a_scan(v_scope);
 			a_scan(v_code);
 		}
-		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_finalize()
+		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_free()
 		{
 			v_outer = 0;
 			v_self = 0;
@@ -194,7 +195,7 @@ inline void t_fiber::t_context::f_terminate()
 	assert(!v_instance->v_next);
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
 	assert(fiber.v_stack.v_used == fiber.v_stack.f_head());
-	v_instance->f_finalize();
+	v_instance->f_free();
 	v_instance = f_as<t_fiber&>(v_current).v_context = 0;
 }
 

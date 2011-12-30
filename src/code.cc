@@ -1064,7 +1064,7 @@ void t_code::f_loop()
 						t_fiber::t_try::t_state state = p.v_try->v_state;
 						t_fiber::t_try::f_pop();
 						if (state == t_fiber::t_try::e_state__THROW) {
-							t_fiber::t_context::f_finalize(q.v_backtrace);
+							t_fiber::t_context::f_free(q.v_backtrace);
 							t_fiber::t_context::v_instance->v_next = p.v_backtrace;
 							p.v_backtrace = 0;
 							q.v_backtrace = t_fiber::t_context::v_instance;

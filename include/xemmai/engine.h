@@ -1,8 +1,6 @@
 #ifndef XEMMAI__ENGINE_H
 #define XEMMAI__ENGINE_H
 
-#include <vector>
-
 #include "module.h"
 #include "fiber.h"
 #include "thread.h"
@@ -56,38 +54,51 @@ class t_engine : public t_value::t_collector
 		void f_run();
 	};
 
-	static const size_t V_POOL__ALLOCATION__UNIT = 4096;
 	static const size_t V_COLLECTOR__SKIP = 1024;
 
 	static void* f_synchronizer(void* a_p);
 	static void* f_collector(void* a_p);
-	static void f_instance__object__pool__return(t_object* a_p)
+	template<typename T, size_t A_size>
+	static void f_return(t_shared_pool<T, A_size>& a_pool)
 	{
-		static_cast<t_engine*>(t_value::v_collector)->v_object__pool.f_free(a_p);
+		T* p = t_local_pool<T>::f_detach();
+		while (p) {
+			T* q = p;
+			size_t n = 0;
+			while (++n < A_size && q->v_next) q = q->v_next;
+			T* p0 = p;
+			p = q->v_next;
+			q->v_next = 0;
+			a_pool.f_free(p0, n);
+		}
 	}
-	static void f_instance__fiber__context__pool__return(t_fiber::t_context* a_p)
+	template<typename T, size_t A_size>
+	static void f_return(t_shared_pool<T, A_size>& a_pool, size_t& a_freed)
 	{
-		static_cast<t_engine*>(t_value::v_collector)->v_fiber__context__pool.f_free(a_p);
+		a_pool.f_free(t_local_pool<T>::f_detach(), a_freed);
+		a_freed = 0;
 	}
-	static void f_instance__fiber__try__pool__return(t_fiber::t_try* a_p)
+	template<typename T, size_t A_size>
+	static void f_free(t_shared_pool<T, A_size>& a_pool, size_t& a_freed, T* a_p)
 	{
-		static_cast<t_engine*>(t_value::v_collector)->v_fiber__try__pool.f_free(a_p);
-	}
-	static void f_instance__dictionary__entry__pool__return(t_dictionary::t_entry* a_p)
-	{
-		static_cast<t_engine*>(t_value::v_collector)->v_dictionary__entry__pool.f_free(a_p);
+		assert(t_thread::v_current == 0);
+		t_local_pool<T>::f_free(a_p);
+		if (++a_freed >= A_size) f_return(a_pool, a_freed);
 	}
 
-	t_shared_pool<t_object, 65536> v_object__pool;
+	t_shared_pool<t_object, 4096> v_object__pool;
+	size_t v_object__freed;
 	t_object* v_object__cycle;
-	std::vector<t_object*> v_object__cycles;
+	std::list<t_object*> v_object__cycles;
 	bool v_object__reviving;
 	portable::t_mutex v_object__reviving__mutex;
 	size_t v_object__release;
 	size_t v_object__collect;
 	t_structure* v_structure__finalizing;
 	t_shared_pool<t_fiber::t_context, 256> v_fiber__context__pool;
-	t_shared_pool<t_fiber::t_try, 256> v_fiber__try__pool;
+	size_t v_fiber__context__freed;
+	t_shared_pool<t_fiber::t_try, 64> v_fiber__try__pool;
+	size_t v_fiber__try__freed;
 	t_thread::t_internal* v_thread__internals;
 	size_t v_thread__cache_hit;
 	size_t v_thread__cache_missed;
@@ -106,7 +117,8 @@ class t_engine : public t_value::t_collector
 	t_library::t_handle* v_library__handle__finalizing;
 	std::map<std::wstring, t_slot> v_symbol__instances;
 	portable::t_mutex v_symbol__instantiate__mutex;
-	t_shared_pool<t_dictionary::t_entry, 4096> v_dictionary__entry__pool;
+	t_shared_pool<t_dictionary::t_entry, 1024> v_dictionary__entry__pool;
+	size_t v_dictionary__entry__freed;
 	t_slot v_structure_root;
 	t_slot v_module_global;
 	t_slot v_module_system;
@@ -119,12 +131,34 @@ class t_engine : public t_value::t_collector
 	void f_pools__return();
 	t_object* f_object__pool__allocate()
 	{
-		t_object* p = v_object__pool.f_allocate(V_POOL__ALLOCATION__UNIT, false);
+		t_object* p = v_object__pool.f_allocate(false);
 		if (!p) {
 			f_wait();
-			p = v_object__pool.f_allocate(V_POOL__ALLOCATION__UNIT);
+			p = v_object__pool.f_allocate();
 		}
 		return p;
+	}
+	void f_free_as_release(t_object* a_p)
+	{
+		++v_object__release;
+		f_free(v_object__pool, v_object__freed, a_p);
+	}
+	void f_free_as_collect(t_object* a_p)
+	{
+		++v_object__collect;
+		f_free(v_object__pool, v_object__freed, a_p);
+	}
+	void f_free(t_fiber::t_context* a_p)
+	{
+		f_free(v_fiber__context__pool, v_fiber__context__freed, a_p);
+	}
+	void f_free(t_fiber::t_try* a_p)
+	{
+		f_free(v_fiber__try__pool, v_fiber__try__freed, a_p);
+	}
+	void f_free(t_dictionary::t_entry* a_p)
+	{
+		f_free(v_dictionary__entry__pool, v_dictionary__entry__freed, a_p);
 	}
 	void f_signal_synchronizers();
 	void f_wait_synchronizers();
@@ -164,6 +198,39 @@ inline t_engine* f_engine()
 	return static_cast<t_engine*>(t_value::v_collector);
 }
 
+inline t_object* t_object::f_pool__allocate()
+{
+	return f_engine()->f_object__pool__allocate();
+}
+
+XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE inline void t_object::f_decrement()
+{
+	assert(v_count > 0);
+	if (--v_count > 0) {
+#ifdef XEMMAI__OBJECT__CALL_SCAN_BLACK
+		f_scan_black();
+#endif
+		v_color = e_color__PURPLE;
+		if (!v_next) f_append(v_roots, this);
+	} else {
+		static_cast<t_object*>(v_structure->v_this)->f_decrement_member();
+		if (v_fields) {
+			v_fields->f_scan(f_decrement);
+			delete v_fields;
+			v_fields = 0;
+		}
+		t_type* type = f_type_as_type();
+		if (!type->v_primitive) {
+			type->f_scan(this, f_decrement);
+			type->f_finalize(this);
+		}
+		f_type()->f_decrement_member();
+		v_type.v_p = 0;
+		v_color = e_color__BLACK;
+		if (!v_next) f_engine()->f_free_as_release(this);
+	}
+}
+
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 inline t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 {
@@ -190,6 +257,43 @@ inline t_transfer t_object::f_allocate(t_object* a_type)
 	return t_transfer(p, t_transfer::t_pass());
 }
 #endif
+
+inline t_fiber::t_context* t_fiber::t_context::f_allocate()
+{
+	return f_engine()->v_fiber__context__pool.f_allocate();
+}
+
+inline void t_fiber::t_context::f_finalize(t_context* a_p)
+{
+	while (a_p) {
+		t_context* p = a_p;
+		a_p = p->v_next;
+		f_engine()->f_free(p);
+	}
+}
+
+inline t_fiber::t_try* t_fiber::t_try::f_allocate()
+{
+	return f_engine()->v_fiber__try__pool.f_allocate();
+}
+
+inline t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
+{
+	return f_engine()->v_dictionary__entry__pool.f_allocate();
+}
+
+inline t_dictionary::t_table::~t_table()
+{
+	t_entry** entries = f_entries();
+	for (size_t i = 0; i < v_capacity; ++i) {
+		t_entry* p = entries[i];
+		while (p) {
+			t_entry* q = p->v_next;
+			f_engine()->f_free(p);
+			p = q;
+		}
+	}
+}
 
 }
 

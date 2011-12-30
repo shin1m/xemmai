@@ -8,8 +8,6 @@ namespace xemmai
 {
 
 XEMMAI__PORTABLE__THREAD t_object* t_object::v_roots;
-XEMMAI__PORTABLE__THREAD size_t t_object::v_release;
-XEMMAI__PORTABLE__THREAD size_t t_object::v_collect;
 
 void t_object::f_decrement(t_slot& a_slot)
 {
@@ -72,8 +70,8 @@ void t_object::f_cyclic_decrement(t_slot& a_slot)
 
 void t_object::f_collect()
 {
-	std::vector<t_object*>& cycles = f_engine()->v_object__cycles;
-	for (std::vector<t_object*>::reverse_iterator i = cycles.rbegin(); i != cycles.rend(); ++i) {
+	std::list<t_object*>& cycles = f_engine()->v_object__cycles;
+	for (std::list<t_object*>::reverse_iterator i = cycles.rbegin(); i != cycles.rend(); ++i) {
 		portable::t_scoped_lock lock(f_engine()->v_object__reviving__mutex);
 		t_object* cycle = *i;
 		t_object* p = cycle;
@@ -97,8 +95,7 @@ void t_object::f_collect()
 				p = cycle->v_next;
 				cycle->v_next = p->v_next;
 				delete &f_as<t_type&>(p);
-				++v_collect;
-				t_local_pool<t_object>::f_free(p);
+				f_engine()->f_free_as_collect(p);
 			} while (p != cycle);
 			t_structure*& q = f_engine()->v_structure__finalizing;
 			while (q) {
@@ -155,12 +152,10 @@ void t_object::f_collect()
 				p = q;
 			} else {
 				p->v_next = q->v_next;
-				if (q->v_count <= 0) {
-					++v_release;
-					t_local_pool<t_object>::f_free(q);
-				} else {
+				if (q->v_count <= 0)
+					f_engine()->f_free_as_release(q);
+				else
 					q->v_next = 0;
-				}
 				if (q == v_roots) {
 					if (p == q) p = 0;
 					v_roots = p;
@@ -192,7 +187,7 @@ void t_object::f_collect()
 		if (p == v_roots) break;
 	}
 	v_roots = 0;
-	for (std::vector<t_object*>::const_iterator i = cycles.begin(); i != cycles.end(); ++i) {
+	for (std::list<t_object*>::const_iterator i = cycles.begin(); i != cycles.end(); ++i) {
 		t_object* cycle = *i;
 		t_object* p = cycle;
 		do {
@@ -214,11 +209,6 @@ void t_object::f_collect()
 	}
 }
 
-t_object* t_object::f_pool__allocate()
-{
-	return f_engine()->f_object__pool__allocate();
-}
-
 void t_object::f_decrement_tree()
 {
 	static_cast<t_object*>(v_structure->v_this)->f_decrement();
@@ -232,10 +222,7 @@ void t_object::f_decrement_tree()
 	type->f_finalize(this);
 	f_decrement(v_type);
 	v_color = e_color__BLACK;
-	if (!v_next) {
-		++v_release;
-		t_local_pool<t_object>::f_free(this);
-	}
+	if (!v_next) f_engine()->f_free_as_release(this);
 }
 
 void t_object::f_mark_gray()

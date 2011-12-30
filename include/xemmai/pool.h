@@ -2,6 +2,7 @@
 #define XEMMAI__POOL_H
 
 #include <cstddef>
+#include <list>
 #include <new>
 
 #include "portable/define.h"
@@ -18,15 +19,24 @@ class t_shared_pool
 		t_block* v_next;
 		T v_cells[A_size];
 	};
+	struct t_chunk
+	{
+		T* v_head;
+		size_t v_size;
+
+		t_chunk(T* a_head, size_t a_size) : v_head(a_head), v_size(a_size)
+		{
+		}
+	};
 
 	t_block* v_blocks;
-	T* v_head;
+	std::list<t_chunk> v_chunks;
 	portable::t_mutex v_mutex;
 	size_t v_allocated;
 	size_t v_freed;
 
 public:
-	t_shared_pool() : v_blocks(0), v_head(0), v_allocated(0), v_freed(0)
+	t_shared_pool() : v_blocks(0), v_allocated(0), v_freed(0)
 	{
 	}
 	void f_clear()
@@ -46,44 +56,24 @@ public:
 	{
 		return v_freed;
 	}
-	T* f_allocate()
+	T* f_allocate(bool a_grow = true)
 	{
 		portable::t_scoped_lock lock(v_mutex);
-		if (!v_head) f_grow();
-		T* p = v_head;
-		if (p) {
-			++v_allocated;
-			v_head = p->v_next;
+		if (v_chunks.empty()) {
+			if (!a_grow) return 0;
+			f_grow();
+			if (v_chunks.empty()) return 0;
 		}
+		T* p = v_chunks.front().v_head;
+		v_allocated += v_chunks.front().v_size;
+		v_chunks.pop_front();
 		return p;
 	}
-	T* f_allocate(size_t a_n, bool a_grow = true)
+	void f_free(T* a_p, size_t a_n)
 	{
 		portable::t_scoped_lock lock(v_mutex);
-		if (!v_head && a_grow) f_grow();
-		T* p = v_head;
-		if (!p) return 0;
-		T* q = p;
-		while (true) {
-			++v_allocated;
-			if (--a_n <= 0 || !q->v_next) break;
-			q = q->v_next;
-		}
-		v_head = q->v_next;
-		q->v_next = 0;
-		return p;
-	}
-	void f_free(T* a_p)
-	{
-		portable::t_scoped_lock lock(v_mutex);
-		T* p = a_p;
-		while (true) {
-			++v_freed;
-			if (!p->v_next) break;
-			p = p->v_next;
-		}
-		p->v_next = v_head;
-		v_head = a_p;
+		v_chunks.push_back(t_chunk(a_p, a_n));
+		v_freed += a_n;
 	}
 };
 
@@ -93,12 +83,13 @@ void t_shared_pool<T, A_size>::f_grow()
 	t_block* block = new t_block();
 	block->v_next = v_blocks;
 	v_blocks = block;
-	T* p = block->v_cells + A_size;
-	while (p > block->v_cells) {
-		--p;
-		p->v_next = v_head;
-		v_head = p;
+	T* p = block->v_cells;
+	for (size_t i = 1; i < A_size; ++i) {
+		p->v_next = p + 1;
+		++p;
 	}
+	p->v_next = 0;
+	v_chunks.push_back(t_chunk(block->v_cells, A_size));
 }
 
 template<typename T>
@@ -120,13 +111,11 @@ public:
 		a_p->v_next = v_head;
 		v_head = a_p;
 	}
-	template<typename T_free>
-	static void f_return(T_free a_free)
+	static T* f_detach()
 	{
 		T* p = v_head;
-		if (!p) return;
-		a_free(p);
 		v_head = 0;
+		return p;
 	}
 };
 

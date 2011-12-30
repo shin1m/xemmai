@@ -30,11 +30,6 @@ void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_co
 
 XEMMAI__PORTABLE__THREAD t_fiber::t_context* t_fiber::t_context::v_instance;
 
-t_fiber::t_context* t_fiber::t_context::f_allocate()
-{
-	return f_engine()->v_fiber__context__pool.f_allocate(t_engine::V_POOL__ALLOCATION__UNIT);
-}
-
 void t_fiber::t_context::f_pop()
 {
 	t_stack* stack = f_stack();
@@ -43,7 +38,7 @@ void t_fiber::t_context::f_pop()
 	for (size_t i = 0; i < code.v_privates; ++i) p->v_base[i] = 0;
 	stack->v_used = p->v_previous;
 	v_instance = p->v_next;
-	p->f_finalize();
+	p->f_free();
 	if (v_instance->v_native > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 
@@ -58,7 +53,7 @@ void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	for (; i < code.v_privates; ++i) p->v_base[i] = 0;
 	stack->v_used = std::max(p->v_previous, p->v_base + a_n);
 	v_instance = p->v_next;
-	p->f_finalize();
+	p->f_free();
 	if (v_instance->v_native > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 
@@ -99,11 +94,6 @@ void t_fiber::t_context::f_dump() const
 			std::fputc('\n', stderr);
 		}
 	}
-}
-
-t_fiber::t_try* t_fiber::t_try::f_allocate()
-{
-	return f_engine()->v_fiber__try__pool.f_allocate(t_engine::V_POOL__ALLOCATION__UNIT);
 }
 
 XEMMAI__PORTABLE__THREAD t_object* t_fiber::v_current;
@@ -166,7 +156,7 @@ t_fiber::~t_fiber()
 	while (v_try) {
 		t_try* p = v_try;
 		v_try = p->v_next;
-		t_local_pool<t_try>::f_free(p);
+		f_engine()->f_free(p);
 	}
 	t_context::f_finalize(v_context);
 }
@@ -176,13 +166,13 @@ void t_fiber::f_caught(const t_value& a_object)
 	if (f_is<t_throwable>(a_object)) {
 		t_with_lock_for_write lock(a_object);
 		t_throwable& p = f_as<t_throwable&>(a_object);
-		t_context::f_finalize(p.v_context);
+		t_context::f_free(p.v_context);
 		p.v_context = t_context::f_instantiate(v_backtrace, 0);
 		p.v_context->v_code.f_construct(t_context::v_instance->v_code);
 		p.v_context->v_pc = v_caught;
 		p.v_context->v_native = v_undone;
 	} else {
-		t_context::f_finalize(v_backtrace);
+		t_context::f_free(v_backtrace);
 	}
 	v_backtrace = 0;
 	v_undone = 0;

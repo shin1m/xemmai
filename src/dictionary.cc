@@ -6,11 +6,6 @@
 namespace xemmai
 {
 
-t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
-{
-	return f_engine()->v_dictionary__entry__pool.f_allocate(t_engine::V_POOL__ALLOCATION__UNIT);
-}
-
 const size_t t_dictionary::t_table::v_capacities[] = {
 	11, 23, 53, 97, 193, 389, 769,
 	1543, 3079, 6151, 12289, 24593, 49157, 98317,
