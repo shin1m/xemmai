@@ -204,6 +204,7 @@ public:
 	{
 		return f_entries()[a_index];
 	}
+	const t_value& f_get_at(size_t a_index) const;
 	std::wstring f_string() const;
 	ptrdiff_t f_hash() const;
 	bool f_less(const t_tuple& a_other) const;

@@ -38,6 +38,7 @@ void t_type_of<std::wstring>::f_define()
 		(f_global()->f_symbol_greater_equal(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_greater_equal>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(const std::wstring&, const t_value&), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const std::wstring&, const t_value&), f_not_equals>())
+		(f_global()->f_symbol_size(), t_member<size_t (std::wstring::*)() const, &std::wstring::size>())
 		(L"substring",
 			t_member<std::wstring (*)(const std::wstring&, size_t), f_substring>(),
 			t_member<std::wstring (*)(const std::wstring&, size_t, size_t), f_substring>()

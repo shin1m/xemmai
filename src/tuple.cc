@@ -13,6 +13,12 @@ t_transfer t_tuple::f_instantiate(size_t a_size)
 	return object;
 }
 
+const t_value& t_tuple::f_get_at(size_t a_index) const
+{
+	if (a_index >= v_size) t_throwable::f_throw(L"out of range.");
+	return (*this)[a_index];
+}
+
 std::wstring t_tuple::f_string() const
 {
 	if (v_size <= 0) return L"'()";
@@ -119,7 +125,7 @@ void t_type_of<t_tuple>::f_define(t_object* a_class)
 		(f_global()->f_symbol_construct(), f_construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (t_tuple::*)() const, &t_tuple::f_hash>())
-		(f_global()->f_symbol_get_at(), t_member<const t_slot& (t_tuple::*)(size_t) const, &t_tuple::operator[]>())
+		(f_global()->f_symbol_get_at(), t_member<const t_value& (t_tuple::*)(size_t) const, &t_tuple::f_get_at>())
 		(f_global()->f_symbol_less(), t_member<bool (t_tuple::*)(const t_tuple&) const, &t_tuple::f_less>())
 		(f_global()->f_symbol_less_equal(), t_member<bool (t_tuple::*)(const t_tuple&) const, &t_tuple::f_less_equal>())
 		(f_global()->f_symbol_greater(), t_member<bool (t_tuple::*)(const t_tuple&) const, &t_tuple::f_greater>())
@@ -167,8 +173,8 @@ void t_type_of<t_tuple>::f_get_at(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
 	t_transfer a0 = a_stack[1].f_transfer();
-	f_check<ptrdiff_t>(a0, L"index");
-	a_stack[0].f_construct(f_as<const t_tuple&>(a_this)[f_as<ptrdiff_t>(a0)]);
+	f_check<size_t>(a0, L"index");
+	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_get_at(f_as<size_t>(a0)));
 	context.f_done();
 }
 

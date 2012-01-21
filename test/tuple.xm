@@ -14,6 +14,14 @@ assert(t[0] == "one");
 assert(t[1] == 2);
 assert(t[2] == 'three);
 assert(t[3] == 4.0);
+try {
+	t[4] == null;
+	assert(false);
+} catch (Throwable e) {
+	print(e);
+	e.dump();
+	assert(true);
+}
 assert(t == Tuple("one", 2, 'three, 4.0));
 
 Foo = Class(Tuple) :: @{
