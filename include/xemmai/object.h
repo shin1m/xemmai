@@ -298,7 +298,7 @@ class t_object
 			f_decrement_tree();
 		}
 	}
-	void f_decrement();
+	XEMMAI__PORTABLE__FORCE_INLINE void f_decrement();
 	void f_mark_gray();
 	void f_scan_gray();
 	XEMMAI__PORTABLE__FORCE_INLINE void f_scan_black()

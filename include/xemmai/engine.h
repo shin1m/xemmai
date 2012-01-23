@@ -203,7 +203,7 @@ inline t_object* t_object::f_pool__allocate()
 	return f_engine()->f_object__pool__allocate();
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE inline void t_object::f_decrement()
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_object::f_decrement()
 {
 	assert(v_count > 0);
 	if (--v_count > 0) {
