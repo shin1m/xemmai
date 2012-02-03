@@ -24,7 +24,7 @@ struct t_module
 	static t_transfer f_load_script(const std::wstring& a_path);
 	static t_library* f_load_library(const std::wstring& a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
-	static t_transfer f_instantiate(const std::wstring& a_name);
+	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_name);
 	static ptrdiff_t f_main(void (*a_main)(void*), void* a_p);
 	static void f_main(void* a_p);
 

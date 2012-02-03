@@ -1,18 +1,16 @@
 #ifndef XEMMAI__PORTABLE__ATOMIC_H
 #define XEMMAI__PORTABLE__ATOMIC_H
 
+#include "define.h"
+
 #if defined(__unix__) && (defined(__i386__) || defined(__x86_64__)) && defined(__GNUC__)
 #include <pthread.h>
 #endif
 
-#ifdef _MSC_VER
-#define _WIN32_WINNT 0x0400
-#define NOMINMAX
+#ifdef _WIN32
 #include <windows.h>
 #include <intrin.h>
 #endif
-
-#include "define.h"
 
 namespace xemmai
 {

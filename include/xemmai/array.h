@@ -29,7 +29,7 @@ class t_array
 	void f_validate(ptrdiff_t& a_index) const;
 
 public:
-	static t_transfer f_instantiate();
+	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate();
 
 	void f_clear()
 	{
@@ -41,8 +41,8 @@ public:
 		return v_size;
 	}
 	void f_swap(t_transfer& a_tuple, size_t& a_head, size_t& a_size);
-	const t_slot& operator[](ptrdiff_t a_index) const;
-	t_slot& operator[](ptrdiff_t a_index);
+	XEMMAI__PORTABLE__EXPORT const t_slot& operator[](ptrdiff_t a_index) const;
+	XEMMAI__PORTABLE__EXPORT t_slot& operator[](ptrdiff_t a_index);
 	const t_value& f_get_at(ptrdiff_t a_index) const
 	{
 		return (*this)[a_index];
@@ -51,12 +51,12 @@ public:
 	{
 		return (*this)[a_index] = a_value;
 	}
-	void f_push(const t_transfer& a_value);
-	t_transfer f_pop();
-	void f_unshift(const t_transfer& a_value);
-	t_transfer f_shift();
-	void f_insert(ptrdiff_t a_index, const t_transfer& a_value);
-	t_transfer f_remove(ptrdiff_t a_index);
+	XEMMAI__PORTABLE__EXPORT void f_push(const t_transfer& a_value);
+	XEMMAI__PORTABLE__EXPORT t_transfer f_pop();
+	XEMMAI__PORTABLE__EXPORT void f_unshift(const t_transfer& a_value);
+	XEMMAI__PORTABLE__EXPORT t_transfer f_shift();
+	XEMMAI__PORTABLE__EXPORT void f_insert(ptrdiff_t a_index, const t_transfer& a_value);
+	XEMMAI__PORTABLE__EXPORT t_transfer f_remove(ptrdiff_t a_index);
 };
 
 template<>

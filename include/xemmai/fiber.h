@@ -137,10 +137,14 @@ struct t_type_of<t_fiber> : t_type
 	virtual void f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n);
 };
 
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 inline t_fiber::t_context* f_context()
 {
 	return t_fiber::t_context::v_instance;
 }
+#else
+XEMMAI__PORTABLE__EXPORT t_fiber::t_context* f_context();
+#endif
 
 class t_native_context
 {

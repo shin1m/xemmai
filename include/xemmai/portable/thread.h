@@ -1,12 +1,12 @@
 #ifndef XEMMAI__PORTABLE__THREAD_H
 #define XEMMAI__PORTABLE__THREAD_H
 
+#include "define.h"
+
 #ifdef __unix__
 #include <pthread.h>
 #endif
 #ifdef _WIN32
-#define _WIN32_WINNT 0x0400
-#define NOMINMAX
 #include <windows.h>
 #include <process.h>
 #endif

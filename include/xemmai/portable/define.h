@@ -24,4 +24,11 @@
 #define XEMMAI__PORTABLE__FORMAT_SIZE_T "I"
 #endif
 
+#ifdef _WIN32
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0400
+#endif
+#define NOMINMAX
+#endif
+
 #endif

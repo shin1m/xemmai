@@ -279,7 +279,7 @@ struct t_code
 		return labels;
 	}
 #else
-	static void f_loop();
+	static XEMMAI__PORTABLE__EXPORT void f_loop();
 #endif
 	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 

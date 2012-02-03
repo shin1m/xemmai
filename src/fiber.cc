@@ -253,4 +253,11 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot*
 	}
 }
 
+#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+t_fiber::t_context* f_context()
+{
+	return t_fiber::t_context::v_instance;
+}
+#endif
+
 }
