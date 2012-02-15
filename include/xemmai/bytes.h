@@ -40,17 +40,17 @@ class t_bytes
 	void f_validate(ptrdiff_t& a_index, size_t a_size) const;
 
 public:
-	static t_transfer f_instantiate(size_t a_size);
+	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate(size_t a_size);
 
-	std::wstring f_string() const;
+	XEMMAI__PORTABLE__EXPORT std::wstring f_string() const;
 	ptrdiff_t f_hash() const
 	{
 		ptrdiff_t n = 0;
 		for (size_t i = 1; i < v_size; ++i) n += (*this)[i];
 		return n;
 	}
-	ptrdiff_t f_get_at(ptrdiff_t a_index) const;
-	ptrdiff_t f_set_at(ptrdiff_t a_index, ptrdiff_t a_value);
+	XEMMAI__PORTABLE__EXPORT ptrdiff_t f_get_at(ptrdiff_t a_index) const;
+	XEMMAI__PORTABLE__EXPORT ptrdiff_t f_set_at(ptrdiff_t a_index, ptrdiff_t a_value);
 	size_t f_size() const
 	{
 		return v_size;
@@ -63,7 +63,7 @@ public:
 	{
 		return f_entries()[a_index];
 	}
-	void f_copy(ptrdiff_t a_index0, size_t a_size, t_bytes& a_other, ptrdiff_t a_index1) const;
+	XEMMAI__PORTABLE__EXPORT void f_copy(ptrdiff_t a_index0, size_t a_size, t_bytes& a_other, ptrdiff_t a_index1) const;
 };
 
 template<>
