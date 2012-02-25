@@ -418,8 +418,8 @@ t_transfer f_parse_rfc2822(const std::wstring& a_value)
 	ptrdiff_t year;
 	ptrdiff_t hour;
 	ptrdiff_t minute;
-	ptrdiff_t i;
-	int n = std::swscanf(s, L"%*3ls, %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %3ls %4" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"n", &day, month, &year, &hour, &minute, &i);
+	int i;
+	int n = std::swscanf(s, L"%*3ls, %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %3ls %4" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d %2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d%n", &day, month, &year, &hour, &minute, &i);
 	if (n < 5) t_throwable::f_throw(L"invalid format.");
 	ptrdiff_t m = f_month_name_to_number(month);
 	if (m <= 0) t_throwable::f_throw(L"invalid format.");
