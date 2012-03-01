@@ -15,7 +15,7 @@ class t_throwable
 	std::wstring v_message;
 
 protected:
-	virtual ~t_throwable();
+	XEMMAI__PORTABLE__EXPORT virtual ~t_throwable();
 
 public:
 	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_message);
@@ -28,7 +28,7 @@ public:
 	{
 		return v_message;
 	}
-	virtual void f_dump() const;
+	XEMMAI__PORTABLE__EXPORT virtual void f_dump() const;
 };
 
 template<>
@@ -39,10 +39,10 @@ struct t_type_of<t_throwable> : t_type
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
 	}
-	virtual t_type* f_derive(t_object* a_this);
-	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive(t_object* a_this);
+	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
+	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
+	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }
