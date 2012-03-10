@@ -98,6 +98,13 @@ void t_fiber::t_context::f_dump() const
 
 XEMMAI__PORTABLE__THREAD t_object* t_fiber::v_current;
 
+#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+t_object* t_fiber::f_current()
+{
+	return v_current;
+}
+#endif
+
 void t_fiber::f_throw(const t_scoped& a_value)
 {
 	t_fiber& p = f_as<t_fiber&>(v_current);

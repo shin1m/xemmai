@@ -96,10 +96,14 @@ struct t_fiber
 
 	static XEMMAI__PORTABLE__THREAD t_object* v_current;
 
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	static t_object* f_current()
 	{
 		return v_current;
 	}
+#else
+	static XEMMAI__PORTABLE__EXPORT t_object* f_current();
+#endif
 	static void f_throw(const t_scoped& a_value);
 	static t_transfer f_instantiate(const t_transfer& a_callable, size_t a_stack, bool a_main = false, bool a_active = false);
 	static void f_define(t_object* a_class);
