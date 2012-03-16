@@ -44,12 +44,10 @@ double f_now()
 #ifdef _WIN32
 	FILETIME utc;
 	GetSystemTimeAsFileTime(&utc);
-	FILETIME local;
-	FileTimeToLocalFileTime(&utc, &local);
 	ULARGE_INTEGER ui;
-	ui.LowPart = local.dwLowDateTime;
-	ui.HighPart = local.dwHighDateTime;
-	return ui.QuadPart / 10000000.0;
+	ui.LowPart = utc.dwLowDateTime;
+	ui.HighPart = utc.dwHighDateTime;
+	return (ui.QuadPart - 116444736000000000) / 10000000.0;
 #endif
 }
 

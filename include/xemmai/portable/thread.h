@@ -209,8 +209,15 @@ public:
 			SwitchToThread();
 		}
 		a_mutex.f_acquire();
-		if (n == WAIT_TIMEOUT || n == WAIT_FAILED) return;
-		if (--v_wake <= 0) ResetEvent(v_handle);
+		switch (n) {
+		case WAIT_TIMEOUT:
+			++v_signal;
+			break;
+		case WAIT_FAILED:
+			break;
+		default:
+			if (--v_wake <= 0) ResetEvent(v_handle);
+		}
 	}
 	void f_signal()
 	{
