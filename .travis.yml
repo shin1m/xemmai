@@ -1,0 +1,6 @@
+language: node_js
+before_script:
+  - autoreconf -is
+  - ./configure
+  - make
+script: make check
