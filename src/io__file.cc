@@ -4,6 +4,9 @@
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
 #include <xemmai/io.h>
+#ifdef __unix__
+#include <unistd.h>
+#endif
 #ifdef _MSC_VER
 #include <io.h>
 #endif

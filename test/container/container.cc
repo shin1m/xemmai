@@ -82,11 +82,7 @@ void t_container::f_scan(t_scan a_scan)
 	a_scan(v_type_queue);
 }
 
-#ifdef _MSC_VER
-extern "C" __declspec(dllexport) t_extension* f_factory(t_object* a_module)
-#else
-extern "C" t_extension* f_factory(t_object* a_module)
-#endif
+XEMMAI__MODULE__FACTORY(xemmai::t_object* a_module)
 {
 	return new t_container(a_module);
 }

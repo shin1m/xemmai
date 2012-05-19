@@ -131,7 +131,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 					while (true) {
 						switch (v_lexer.f_token()) {
 						case t_lexer::e_token__SYMBOL:
-							lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable())).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_scoped(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()))), ast::t_variable())).first->second);
 							v_lexer.f_next();
 							if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 								v_lexer.f_next();
@@ -147,7 +147,7 @@ t_pointer<ast::t_node> t_parser::f_target(bool a_assignable)
 						case t_lexer::e_token__ASTERISK:
 							v_lexer.f_next();
 							if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
-							lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable())).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.insert(std::make_pair(t_scoped(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()))), ast::t_variable())).first->second);
 							lambda->v_variadic = true;
 							v_lexer.f_next();
 							break;

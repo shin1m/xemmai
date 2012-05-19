@@ -4,6 +4,9 @@
 
 #include <cstdlib>
 #include <vector>
+#ifdef __unix__
+#include <unistd.h>
+#endif
 
 namespace xemmai
 {

@@ -30,10 +30,11 @@ scripts = \
 	fix.xm
 TESTS = $(scripts) \
 	container/test.xm \
-	callback/test.xm
+	callback/test.xm \
+	enum/test.xm
 EXTRA_DIST = $(scripts) list.xm
 CLEANFILES = \
 	file.xm.test \
 	text.xm.test
 
-SUBDIRS = container callback
+SUBDIRS = container callback enum

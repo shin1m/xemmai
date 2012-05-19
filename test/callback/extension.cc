@@ -195,11 +195,7 @@ t_transfer t_callback_extension::f_as(t_client* a_value) const
 	return object;
 }
 
-#ifdef _MSC_VER
-extern "C" __declspec(dllexport) t_extension* f_factory(t_object* a_module)
-#else
-extern "C" t_extension* f_factory(t_object* a_module)
-#endif
+XEMMAI__MODULE__FACTORY(xemmai::t_object* a_module)
 {
 	return new t_callback_extension(a_module);
 }

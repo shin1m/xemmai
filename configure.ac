@@ -50,5 +50,6 @@ AC_CONFIG_FILES([
 	test/Makefile
 	test/container/Makefile
 	test/callback/Makefile
+	test/enum/Makefile
 ])
 AC_OUTPUT

@@ -78,7 +78,13 @@ t_math::t_math(t_object* a_module) : t_extension(a_module)
 	f_define<double (*)(double), std::sqrt>(this, L"sqrt");
 	f_define<double (*)(double), std::tan>(this, L"tan");
 	f_define<double (*)(double), std::tanh>(this, L"tanh");
-#ifndef _MSC_VER
+#if __cplusplus > 201100L
+	f_define<bool (*)(double), std::isfinite>(this, L"isfinite");
+	f_define<bool (*)(double), std::isinf>(this, L"isinf");
+	f_define<bool (*)(double), std::isnan>(this, L"isnan");
+	f_define<bool (*)(double), std::isnormal>(this, L"isnormal");
+	f_define<bool (*)(double), std::signbit>(this, L"signbit");
+#elif !defined(_MSC_VER)
 	f_define<bool (*)(double), f_boolean<std::isfinite> >(this, L"isfinite");
 	f_define<bool (*)(double), f_boolean<std::isinf> >(this, L"isinf");
 	f_define<bool (*)(double), f_boolean<std::isnan> >(this, L"isnan");
