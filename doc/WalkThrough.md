@@ -111,6 +111,16 @@ An empty arguments list can be omitted:
     fiftyfive = @{ 55; }; # Same as @() { 55; };
     fiftyfive(); # => 55;
 
+A single expression form:
+
+    sum3 = @(n) n > 0 ? n + sum3(n - 1) : 0;
+    sum3(10); # => 55
+
+An example of high order function:
+
+    xy = @(x)@(y) x * y; # Same as @(x) { @(y) { x * y; }; };
+    xy(11)(5); # => 55
+
 
 ### Scopes
 

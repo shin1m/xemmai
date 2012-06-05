@@ -25,6 +25,11 @@ This page explains primary expressions.
     self: ':'* '$' (':' | '^')* ;
 
 
+## Literals
+
+See [Literals](Literals.md).
+
+
 ## Lambda Expressions
 
     lambda: '@' ('(' arguments? ')')? '{' statement* '}'
