@@ -83,7 +83,7 @@ Operand based instructions tend to copy less object references than stack based 
 This is desirable because increment/decrement operations are relatively expensive.
 
 
-## Field Cache
+## Thread Local Field Cache
 
 Because threads in xemmai are preemptive, each thread has its own field cache in order to avoid expensive synchronizations.
 
@@ -92,3 +92,22 @@ Instead, acquire/release operations for the field cache are required in order to
 This is modeled from native memory barriers for SMP.
 
 As long as standard synchronization mechanisms such as mutexes and condition variables are used, these operations are called implicitly as appropriate.
+
+
+## Inline Field Cache
+
+In conjunction with the hidden structure, getting/putting object field are optimized using the inline field cache.
+
+Getting object field has 3 states: initial, monomorphic, and megamorphic.
+
+Putting object field has 4 states: initial, monomorphic add, monomorphic set, and megamorphic.
+
+The first time a code is executed, it is in the initial state.
+
+The second time the code is executed, the code is rewritten to move into the monomorphic state if the object is owned by a thread, otherwise the megamorphic state.
+
+When the code is in the monomorphic state, if the object is owned by a thread and has the same hidden structure as previous, the field access is optimized as accessing an array element by the index.
+
+Otherwise, the code is rewritten to move into the megamorphic.
+
+When the code is in the megamorphic state, the field access is done in a normal way.
