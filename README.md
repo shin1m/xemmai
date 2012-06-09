@@ -41,6 +41,7 @@ It also has a concurrent garbage collector to utilize multiple processors.
 
  * [Walk Through](/shin1m/xemmai/blob/master/doc/WalkThrough.md)
  * [Expressions and Statements](/shin1m/xemmai/blob/master/doc/ExpressionsAndStatements.md)
+ * [Object Traits](/shin1m/xemmai/blob/master/doc/ObjectTraits.md)
 
 
 ## Implementation Details

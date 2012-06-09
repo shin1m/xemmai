@@ -22,9 +22,9 @@ Note that `v_p` is a tag and of `t_object*`, and its usage is tricky:
  * `1` means boolean and `v_boolean` has its value.
  * `2` means integer and `v_integer` has its value.
  * `3` means float and `v_float` has its value.
- * Values greater than `3` means object reference and `v_p` *itself* is its value.
+ * Values greater than `3` means object reference and `v_p` **itself** is its value.
 
-This is because the garbage collector runs on another thread and each object reference must be examined *atomically*.
+This is because the garbage collector runs on another thread and each object reference must be examined **atomically**.
 
 Typical tag/value pair requires several steps to find out that it is an object reference and retrieve its value.
 
