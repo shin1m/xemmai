@@ -1,4 +1,4 @@
-language: node_js
+language: cpp
 before_script:
   - autoreconf -is
   - ./configure
