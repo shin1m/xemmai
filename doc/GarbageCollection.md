@@ -7,7 +7,7 @@ Below are modifications.
 
 ## Increment/Decrement Queues
 
-Each thread has its own increment/decrement queues.
+Each mutator thread has its own increment/decrement queues.
 
 This is in order to avoid heavy synchronization on queueing references across threads.
 
@@ -17,6 +17,12 @@ Increment/Decrement queues are fixed size ring buffers.
 ## Memory Synchronization
 
 Memory synchronization of each queue is done by context switching of native threads.
+
+The queueing operation itself does not emit any memory barrier instruction and only expects that the compiler does not reorder the instructions of the operation.
+
+Instead, it is assumed that context switching involves memory barriers and memory orders are preserved between before and after context switching.
+
+On memory synchronization, all synchronizers wake up all together, not in order.
 
 
 ## Scanning Stacks

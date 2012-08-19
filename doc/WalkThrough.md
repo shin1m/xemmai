@@ -106,6 +106,13 @@ Using `return` statement:
     };
     sum2(10); # => 55
 
+Tail call optimization is enabled:
+
+    sum3 = @(n, a) n > 0 ? sum3(n - 1, a + n) : a;
+    sum3(10, 0); # => 55
+
+So `sum3(1000000, 0)` does not run out of stack.
+
 An empty arguments list can be omitted:
 
     fiftyfive = @{ 55; }; # Same as @() { 55; };
