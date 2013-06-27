@@ -1,4 +1,7 @@
-TESTS_ENVIRONMENT = XEMMAI_MODULE_PATH=$(top_builddir)/modules $(top_builddir)/src/xemmai --verbose
+TEST_EXTENSIONS = .xm
+AM_TESTS_ENVIRONMENT = export XEMMAI_MODULE_PATH=$(top_builddir)/modules;
+XM_LOG_COMPILER = $(top_builddir)/src/xemmai
+AM_XM_LOG_FLAGS = --verbose
 scripts = \
 	field.xm \
 	flow.xm \
