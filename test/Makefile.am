@@ -1,7 +1,11 @@
 TEST_EXTENSIONS = .xm
+if AUTOMAKE_OLDER_THAN_1_13
+TESTS_ENVIRONMENT = XEMMAI_MODULE_PATH=$(top_builddir)/modules $(top_builddir)/src/xemmai --verbose
+else
 AM_TESTS_ENVIRONMENT = export XEMMAI_MODULE_PATH=$(top_builddir)/modules;
 XM_LOG_COMPILER = $(top_builddir)/src/xemmai
 AM_XM_LOG_FLAGS = --verbose
+endif
 scripts = \
 	field.xm \
 	flow.xm \
