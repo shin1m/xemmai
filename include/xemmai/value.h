@@ -3,10 +3,12 @@
 
 #include <cassert>
 #include <cstddef>
+#include <condition_variable>
+#include <mutex>
 #include <new>
+#include <thread>
 
 #include "portable/define.h"
-#include "portable/thread.h"
 #include "macro.h"
 
 #define XEMMAI__MACRO__ARGUMENTS_LIMIT 16
@@ -44,9 +46,9 @@ public:
 	protected:
 		bool v_collector__running;
 		bool v_collector__quitting;
-		portable::t_mutex v_collector__mutex;
-		portable::t_condition v_collector__wake;
-		portable::t_condition v_collector__done;
+		std::mutex v_collector__mutex;
+		std::condition_variable v_collector__wake;
+		std::condition_variable v_collector__done;
 		size_t v_collector__tick;
 		size_t v_collector__wait;
 		size_t v_collector__epoch;
@@ -74,28 +76,28 @@ public:
 		{
 			if (v_collector__running) return;
 			{
-				portable::t_scoped_lock lock(v_collector__mutex);
+				std::lock_guard<std::mutex> lock(v_collector__mutex);
 				++v_collector__tick;
 				if (v_collector__running) return;
 				v_collector__running = true;
 			}
-			v_collector__wake.f_signal();
+			v_collector__wake.notify_one();
 		}
 		void f_wait()
 		{
 			{
-				portable::t_scoped_lock lock(v_collector__mutex);
+				std::unique_lock<std::mutex> lock(v_collector__mutex);
 				++v_collector__wait;
 				if (v_collector__running) {
-					v_collector__done.f_wait(v_collector__mutex);
+					v_collector__done.wait(lock);
 					return;
 				}
 				v_collector__running = true;
 			}
-			v_collector__wake.f_signal();
+			v_collector__wake.notify_one();
 			{
-				portable::t_scoped_lock lock(v_collector__mutex);
-				if (v_collector__running) v_collector__done.f_wait(v_collector__mutex);
+				std::unique_lock<std::mutex> lock(v_collector__mutex);
+				if (v_collector__running) v_collector__done.wait(lock);
 			}
 		}
 	};
@@ -127,7 +129,7 @@ protected:
 		v_epoch(v_objects)
 		{
 		}
-		void f_next(t_object* a_object);
+		void f_next(t_object* a_object) noexcept;
 		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
 //		XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
 		{
@@ -702,7 +704,7 @@ struct t_slot : t_shared
 typedef void (*t_scan)(t_slot&);
 
 template<size_t A_SIZE>
-void t_value::t_queue<A_SIZE>::f_next(t_object* a_object)
+void t_value::t_queue<A_SIZE>::f_next(t_object* a_object) noexcept
 {
 	v_collector->f_tick();
 	while (v_head == v_tail) v_collector->f_wait();

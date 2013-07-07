@@ -13,7 +13,7 @@ size_t t_thread::t_cache::f_revise(size_t a_i)
 	size_t revision = portable::f_atomic_increment(v_revisions[a_i]);
 	if (revision != 0) return revision;
 	{
-		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
+		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		t_internal* internals = f_engine()->v_thread__internals;
 		t_internal* p = internals;
 		do {
@@ -29,19 +29,9 @@ XEMMAI__PORTABLE__THREAD t_thread::t_cache* t_thread::v_cache;
 XEMMAI__PORTABLE__THREAD size_t t_thread::v_cache_hit;
 XEMMAI__PORTABLE__THREAD size_t t_thread::v_cache_missed;
 
-namespace
+void t_thread::f_main(t_object* a_p)
 {
-
-void f_main(void* a_p)
-{
-	f_as<t_fiber&>(t_fiber::v_current).v_callable();
-}
-
-}
-
-void* t_thread::f_main(void* a_p)
-{
-	v_current = static_cast<t_object*>(a_p);
+	v_current = a_p;
 	t_thread& p = f_as<t_thread&>(v_current);
 	t_thread::t_internal* internal = p.v_internal;
 	t_value::v_collector = internal->v_collector;
@@ -49,20 +39,21 @@ void* t_thread::f_main(void* a_p)
 	p.v_active = p.v_fiber;
 	t_fiber::v_current = p.v_active;
 	t_global::v_instance = f_extension<t_global>(f_engine()->f_module_global());
-	t_module::f_main(xemmai::f_main, 0);
+	t_fiber::f_main([]{
+		f_as<t_fiber&>(t_fiber::v_current).v_callable();
+	});
 	f_cache_clear();
 	p.v_active = 0;
 	p.v_internal = 0;
 	t_value::v_decrements->f_push(v_current);
 	f_engine()->f_pools__return();
 	{
-		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
+		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		++internal->v_done;
 		internal->v_cache_hit = v_cache_hit;
 		internal->v_cache_missed = v_cache_missed;
-		f_engine()->v_thread__condition.f_broadcast();
+		f_engine()->v_thread__condition.notify_all();
 	}
-	return 0;
 }
 
 void t_thread::f_cache_clear()
@@ -96,17 +87,19 @@ t_transfer t_thread::f_instantiate(const t_transfer& a_callable, size_t a_stack)
 	object.f_pointer__(p);
 	t_internal* internal = p->v_internal;
 	{
-		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
+		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		t_internal*& internals = f_engine()->v_thread__internals;
 		internal->v_next = internals->v_next;
 		internals = internals->v_next = internal;
 	}
 	t_value::v_increments->f_push(static_cast<t_object*>(object));
 	f_cache_release();
-	if (!portable::f_thread(f_main, object)) {
+	try {
+		std::thread(f_main, static_cast<t_object*>(object)).detach();
+	} catch (std::system_error&) {
 		p->v_internal = 0;
 		t_value::v_decrements->f_push(static_cast<t_object*>(object));
-		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
+		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		++internal->v_done;
 	}
 	return object;
@@ -125,8 +118,8 @@ void t_thread::f_join()
 	if (this == &f_as<t_thread&>(v_current)) t_throwable::f_throw(L"current thread can not be joined.");
 	if (this == &f_as<t_thread&>(f_engine()->v_thread)) t_throwable::f_throw(L"engine thread can not be joined.");
 	{
-		portable::t_scoped_lock lock(f_engine()->v_thread__mutex);
-		while (v_internal) f_engine()->v_thread__condition.f_wait(f_engine()->v_thread__mutex);
+		std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
+		while (v_internal) f_engine()->v_thread__condition.wait(lock);
 	}
 	f_cache_acquire();
 }

@@ -3,10 +3,10 @@
 
 #include <cstddef>
 #include <list>
+#include <mutex>
 #include <new>
 
 #include "portable/define.h"
-#include "portable/thread.h"
 
 namespace xemmai
 {
@@ -31,7 +31,7 @@ class t_shared_pool
 
 	t_block* v_blocks;
 	std::list<t_chunk> v_chunks;
-	portable::t_mutex v_mutex;
+	std::mutex v_mutex;
 	size_t v_allocated;
 	size_t v_freed;
 
@@ -58,7 +58,7 @@ public:
 	}
 	T* f_allocate(bool a_grow = true)
 	{
-		portable::t_scoped_lock lock(v_mutex);
+		std::lock_guard<std::mutex> lock(v_mutex);
 		if (v_chunks.empty()) {
 			if (!a_grow) return 0;
 			f_grow();
@@ -71,7 +71,7 @@ public:
 	}
 	void f_free(T* a_p, size_t a_n)
 	{
-		portable::t_scoped_lock lock(v_mutex);
+		std::lock_guard<std::mutex> lock(v_mutex);
 		v_chunks.push_back(t_chunk(a_p, a_n));
 		v_freed += a_n;
 	}

@@ -1,6 +1,6 @@
 check_PROGRAMS = container.so
 AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CXXFLAGS = -fPIC
+AM_CXXFLAGS = -std=c++11 -fPIC
 AM_LDFLAGS = -shared
 if DEBUG
 AM_CXXFLAGS += -g

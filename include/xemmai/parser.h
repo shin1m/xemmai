@@ -29,7 +29,7 @@ class t_parser
 	{
 		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1;
 	}
-	void f_throw(const std::wstring& a_message);
+	void f_throw [[noreturn]] (const std::wstring& a_message);
 	ast::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop);
 	ptrdiff_t f_integer()
 	{

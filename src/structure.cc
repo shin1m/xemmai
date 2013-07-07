@@ -10,18 +10,18 @@ XEMMAI__PORTABLE__THREAD t_structure::t_cache* t_structure::v_cache;
 
 t_transfer t_structure::f_append(t_object* a_key)
 {
-	portable::t_scoped_lock lock(v_mutex);
-	f_engine()->v_object__reviving__mutex.f_acquire();
+	std::lock_guard<std::mutex> lock(v_mutex);
+	f_engine()->v_object__reviving__mutex.lock();
 	std::map<t_object*, t_object*>::iterator i = v_children.lower_bound(a_key);
 	if (i == v_children.end() || i->first != a_key) {
 		i = v_children.insert(i, std::make_pair(a_key, static_cast<t_object*>(0)));
 	} else if (i->second) {
 		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
-		f_engine()->v_object__reviving__mutex.f_release();
+		f_engine()->v_object__reviving__mutex.unlock();
 		return i->second;
 	}
-	f_engine()->v_object__reviving__mutex.f_release();
+	f_engine()->v_object__reviving__mutex.unlock();
 	t_transfer object = t_object::f_allocate(f_global()->f_type<t_structure>());
 	object.f_pointer__(new(v_size + 1) t_structure(i, static_cast<t_object*>(object), this));
 	i->second = object;

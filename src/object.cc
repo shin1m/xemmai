@@ -72,7 +72,7 @@ void t_object::f_collect()
 {
 	std::list<t_object*>& cycles = f_engine()->v_object__cycles;
 	for (std::list<t_object*>::reverse_iterator i = cycles.rbegin(); i != cycles.rend(); ++i) {
-		portable::t_scoped_lock lock(f_engine()->v_object__reviving__mutex);
+		std::lock_guard<std::mutex> lock(f_engine()->v_object__reviving__mutex);
 		t_object* cycle = *i;
 		t_object* p = cycle;
 		do {

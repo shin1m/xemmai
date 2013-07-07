@@ -13,10 +13,10 @@ t_module::t_scoped_lock::t_scoped_lock() : v_own(false)
 	t_object*& thread = f_engine()->v_module__thread;
 	t_object* current = t_thread::f_current();
 	if (thread == current) return;
-	portable::t_mutex& mutex = f_engine()->v_module__mutex;
-	portable::t_condition& condition = f_engine()->v_module__condition;
-	portable::t_scoped_lock lock(mutex);
-	while (thread) condition.f_wait(mutex);
+	std::mutex& mutex = f_engine()->v_module__mutex;
+	std::condition_variable& condition = f_engine()->v_module__condition;
+	std::unique_lock<std::mutex> lock(mutex);
+	while (thread) condition.wait(lock);
 	v_own = true;
 	thread = current;
 }
@@ -24,9 +24,9 @@ t_module::t_scoped_lock::t_scoped_lock() : v_own(false)
 t_module::t_scoped_lock::~t_scoped_lock()
 {
 	if (!v_own) return;
-	portable::t_scoped_lock lock(f_engine()->v_module__mutex);
+	std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
 	f_engine()->v_module__thread = 0;
-	f_engine()->v_module__condition.f_broadcast();
+	f_engine()->v_module__condition.notify_all();
 }
 
 t_transfer t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
@@ -35,7 +35,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name, t_module* a_modul
 	object.f_pointer__(a_module);
 	t_transfer second = static_cast<t_object*>(object);
 	{
-		portable::t_scoped_lock lock(f_engine()->v_module__mutex);
+		std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
 		a_module->v_iterator = f_engine()->v_module__instances.insert(std::make_pair(a_name, t_slot())).first;
 		a_module->v_iterator->second = second;
 	}
@@ -73,21 +73,21 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 t_transfer t_module::f_instantiate(const std::wstring& a_name)
 {
 	t_scoped_lock lock;
-	f_engine()->v_object__reviving__mutex.f_acquire();
-	f_engine()->v_module__mutex.f_acquire();
+	f_engine()->v_object__reviving__mutex.lock();
+	f_engine()->v_module__mutex.lock();
 	{
 		std::map<std::wstring, t_slot>& instances = f_engine()->v_module__instances;
 		std::map<std::wstring, t_slot>::iterator i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
 			f_engine()->v_object__reviving = true;
 			f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
-			f_engine()->v_module__mutex.f_release();
-			f_engine()->v_object__reviving__mutex.f_release();
+			f_engine()->v_module__mutex.unlock();
+			f_engine()->v_object__reviving__mutex.unlock();
 			return i->second;
 		}
 	}
-	f_engine()->v_module__mutex.f_release();
-	f_engine()->v_object__reviving__mutex.f_release();
+	f_engine()->v_module__mutex.unlock();
+	f_engine()->v_object__reviving__mutex.unlock();
 	t_transfer paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
 	t_transfer n = paths.f_get(f_global()->f_symbol_size())();
 	f_check<size_t>(n, L"size");
@@ -113,33 +113,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 	return 0;
 }
 
-ptrdiff_t t_module::f_main(void (*a_main)(void*), void* a_p)
-{
-	t_fiber::t_context::f_initiate(0);
-	try {
-		t_native_context context;
-		try {
-			a_main(a_p);
-			return 0;
-		} catch (const t_scoped& thrown) {
-			f_as<t_fiber&>(t_fiber::f_current()).f_caught(thrown);
-			std::wstring s = L"<unprintable>";
-			try {
-				t_scoped p = thrown.f_get(f_global()->f_symbol_string())();
-				if (f_is<std::wstring>(p)) s = f_as<const std::wstring&>(p);
-			} catch (...) {
-			}
-			std::fprintf(stderr, "caught: %ls\n", s.c_str());
-			if (f_is<t_throwable>(thrown)) thrown.f_get(t_symbol::f_instantiate(L"dump"))();
-		}
-	} catch (...) {
-		std::fprintf(stderr, "caught <unexpected>.\n");
-	}
-	t_fiber::t_context::f_terminate();
-	return -1;
-}
-
-void t_module::f_main(void* a_p)
+void t_module::f_main()
 {
 	t_transfer x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
 	f_check<std::wstring>(x, L"script");
@@ -157,7 +131,7 @@ t_module::t_module(const std::wstring& a_path) : v_path(a_path), v_iterator(f_en
 t_module::~t_module()
 {
 	if (v_iterator == f_engine()->v_module__instances__null) return;
-	portable::t_scoped_lock lock(f_engine()->v_module__mutex);
+	std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
 	f_engine()->v_module__instances.erase(v_iterator);
 }
 

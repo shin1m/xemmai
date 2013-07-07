@@ -65,7 +65,7 @@ struct t_thread
 	static XEMMAI__PORTABLE__THREAD size_t v_cache_hit;
 	static XEMMAI__PORTABLE__THREAD size_t v_cache_missed;
 
-	static void* f_main(void* a_p);
+	static void f_main(t_object* a_p);
 	static t_object* f_current()
 	{
 		return v_current;

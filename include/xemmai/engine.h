@@ -38,8 +38,8 @@ class t_engine : public t_value::t_collector
 		t_engine* v_engine;
 		size_t v_cpu;
 		bool v_wake;
-		portable::t_mutex v_mutex;
-		portable::t_condition v_condition;
+		std::mutex v_mutex;
+		std::condition_variable v_condition;
 		t_synchronizer* v_next;
 
 		t_synchronizer(t_engine* a_engine, size_t a_cpu) :
@@ -56,8 +56,6 @@ class t_engine : public t_value::t_collector
 
 	static const size_t V_COLLECTOR__SKIP = 1024;
 
-	static void* f_synchronizer(void* a_p);
-	static void* f_collector(void* a_p);
 	template<typename T, size_t A_size>
 	static void f_return(t_shared_pool<T, A_size>& a_pool)
 	{
@@ -91,7 +89,7 @@ class t_engine : public t_value::t_collector
 	t_object* v_object__cycle;
 	std::list<t_object*> v_object__cycles;
 	bool v_object__reviving;
-	portable::t_mutex v_object__reviving__mutex;
+	std::mutex v_object__reviving__mutex;
 	size_t v_object__release;
 	size_t v_object__collect;
 	t_structure* v_structure__finalizing;
@@ -102,21 +100,21 @@ class t_engine : public t_value::t_collector
 	t_thread::t_internal* v_thread__internals;
 	size_t v_thread__cache_hit;
 	size_t v_thread__cache_missed;
-	portable::t_mutex v_thread__mutex;
-	portable::t_condition v_thread__condition;
+	std::mutex v_thread__mutex;
+	std::condition_variable v_thread__condition;
 	t_synchronizer* v_synchronizers;
 	volatile size_t v_synchronizer__wake;
-	portable::t_mutex v_synchronizer__mutex;
-	portable::t_condition v_synchronizer__condition;
+	std::mutex v_synchronizer__mutex;
+	std::condition_variable v_synchronizer__condition;
 	t_object* v_type_class;
 	std::map<std::wstring, t_slot> v_module__instances;
 	std::map<std::wstring, t_slot>::iterator v_module__instances__null;
-	portable::t_mutex v_module__mutex;
-	portable::t_condition v_module__condition;
+	std::mutex v_module__mutex;
+	std::condition_variable v_module__condition;
 	t_object* v_module__thread;
 	t_library::t_handle* v_library__handle__finalizing;
 	std::map<std::wstring, t_slot> v_symbol__instances;
-	portable::t_mutex v_symbol__instantiate__mutex;
+	std::mutex v_symbol__instantiate__mutex;
 	t_shared_pool<t_dictionary::t_entry, 1024> v_dictionary__entry__pool;
 	size_t v_dictionary__entry__freed;
 	t_slot v_structure_root;
@@ -187,7 +185,7 @@ public:
 	ptrdiff_t f_run();
 	void f_synchronize()
 	{
-		portable::t_scoped_lock lock(v_thread__mutex);
+		std::lock_guard<std::mutex> lock(v_thread__mutex);
 		f_signal_synchronizers();
 		f_wait_synchronizers();
 	}

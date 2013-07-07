@@ -1,6 +1,10 @@
 language: cpp
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install gcc-4.8
 before_script:
   - autoreconf -is
-  - ./configure
+  - CXX=g++-4.8 ./configure
   - make
 script: make check

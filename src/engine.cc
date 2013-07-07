@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <xemmai/portable/thread.h>
 #include <xemmai/portable/path.h>
 #include <xemmai/portable/convert.h>
 #include <xemmai/structure.h>
@@ -22,32 +23,20 @@ void t_engine::t_synchronizer::f_run()
 	}
 	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d) starting...\n", v_cpu);
 	{
-		portable::t_scoped_lock lock(v_mutex);
+		std::unique_lock<std::mutex> lock(v_mutex);
 		while (true) {
-			while (!v_wake) v_condition.f_wait(v_mutex);
+			while (!v_wake) v_condition.wait(lock);
 			v_wake = false;
 			if (v_engine->v_collector__quitting) break;
 			{
-				portable::t_scoped_lock lock(v_engine->v_synchronizer__mutex);
+				std::lock_guard<std::mutex> lock(v_engine->v_synchronizer__mutex);
 				if (--v_engine->v_synchronizer__wake > 0) continue;
 			}
-//			v_engine->v_synchronizer__condition.f_signal();
+//			v_engine->v_synchronizer__condition.notify_one();
 		}
 	}
 	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d) quitting...\n", v_cpu);
-	v_condition.f_signal();
-}
-
-void* t_engine::f_synchronizer(void* a_p)
-{
-	static_cast<t_synchronizer*>(a_p)->f_run();
-	return 0;
-}
-
-void* t_engine::f_collector(void* a_p)
-{
-	static_cast<t_engine*>(a_p)->f_collector();
-	return 0;
+	v_condition.notify_one();
 }
 
 void t_engine::f_pools__return()
@@ -66,20 +55,20 @@ void t_engine::f_signal_synchronizers()
 	for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) {
 		if (p->v_cpu == cpu) continue;
 		{
-			portable::t_scoped_lock lock(p->v_mutex);
+			std::lock_guard<std::mutex> lock(p->v_mutex);
 			p->v_wake = true;
 		}
-		p->v_condition.f_signal();
+		p->v_condition.notify_one();
 	}
 }
 
 void t_engine::f_wait_synchronizers()
 {
 /*	if (v_synchronizers) {
-		portable::t_scoped_lock lock(v_synchronizer__mutex);
-		while (v_synchronizer__wake > 0) v_synchronizer__condition.f_wait(v_synchronizer__mutex);
+		std::unique_lock<std::mutex> lock(v_synchronizer__mutex);
+		while (v_synchronizer__wake > 0) v_synchronizer__condition.wait(lock);
 	}*/
-	while (v_synchronizer__wake > 0) portable::f_yield();
+	while (v_synchronizer__wake > 0) std::this_thread::yield();
 }
 
 void t_engine::f_collector()
@@ -88,30 +77,30 @@ void t_engine::f_collector()
 	if (v_verbose) std::fprintf(stderr, "collector starting...\n");
 	while (true) {
 		{
-			portable::t_scoped_lock lock(v_collector__mutex);
+			std::lock_guard<std::mutex> lock(v_collector__mutex);
 			v_collector__running = false;
 		}
-		v_collector__done.f_broadcast();
+		v_collector__done.notify_all();
 		{
-			portable::t_scoped_lock lock(v_collector__mutex);
-			while (!v_collector__running) v_collector__wake.f_wait(v_collector__mutex);
+			std::unique_lock<std::mutex> lock(v_collector__mutex);
+			while (!v_collector__running) v_collector__wake.wait(lock);
 		}
 		if (v_collector__quitting) {
 			if (v_verbose) std::fprintf(stderr, "collector quitting...\n");
 			{
-				portable::t_scoped_lock lock(v_collector__mutex);
+				std::lock_guard<std::mutex> lock(v_collector__mutex);
 				v_collector__running = false;
 			}
-			v_collector__done.f_signal();
+			v_collector__done.notify_one();
 			break;
 		}
 		++v_collector__epoch;
 		{
-			portable::t_scoped_lock lock(v_object__reviving__mutex);
+			std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
 			v_object__reviving = false;
 		}
 		{
-			portable::t_scoped_lock lock(v_thread__mutex);
+			std::lock_guard<std::mutex> lock(v_thread__mutex);
 			t_thread::t_internal* p = v_thread__internals;
 			if (p) {
 				do {
@@ -121,7 +110,7 @@ void t_engine::f_collector()
 				} while (p != v_thread__internals);
 				f_signal_synchronizers();
 				{
-					portable::t_scoped_lock lock(v_object__reviving__mutex);
+					std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
 					do {
 						p = p->v_next;
 						if (p->v_done > 0) ++p->v_done;
@@ -239,15 +228,19 @@ v_verbose(a_verbose)
 			n = portable::t_affinity::V_SIZE;
 			while (n > 0) {
 				if (!affinity.f_contains(--n)) continue;
-				new t_synchronizer(this, n);
-				portable::f_thread(f_synchronizer, v_synchronizers);
+				auto p = new t_synchronizer(this, n);
+				std::thread([p]() {
+					p->f_run();
+				}).detach();
 			}
 		}
 	}
 	{
-		portable::t_scoped_lock lock(v_collector__mutex);
-		portable::f_thread(f_collector, this);
-		while (v_collector__running) v_collector__done.f_wait(v_collector__mutex);
+		std::unique_lock<std::mutex> lock(v_collector__mutex);
+		std::thread([this]() {
+			f_collector();
+		}).detach();
+		while (v_collector__running) v_collector__done.wait(lock);
 	}
 	library->v_extension = new t_global(v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_structure.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
 	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
@@ -358,7 +351,7 @@ t_engine::~t_engine()
 		t_thread::t_internal* internal = thread.v_internal;
 		thread.v_internal = 0;
 		v_thread = 0;
-		portable::t_scoped_lock lock(v_thread__mutex);
+		std::lock_guard<std::mutex> lock(v_thread__mutex);
 		++internal->v_done;
 		internal->v_cache_hit = t_thread::v_cache_hit;
 		internal->v_cache_missed = t_thread::v_cache_missed;
@@ -369,24 +362,24 @@ t_engine::~t_engine()
 	f_collect();
 	f_collect();
 	{
-		portable::t_scoped_lock lock(v_collector__mutex);
+		std::lock_guard<std::mutex> lock(v_collector__mutex);
 		v_collector__running = v_collector__quitting = true;
 	}
-	v_collector__wake.f_signal();
+	v_collector__wake.notify_one();
 	{
-		portable::t_scoped_lock lock(v_collector__mutex);
-		while (v_collector__running) v_collector__done.f_wait(v_collector__mutex);
+		std::unique_lock<std::mutex> lock(v_collector__mutex);
+		while (v_collector__running) v_collector__done.wait(lock);
 	}
 	if (v_synchronizers) {
 		do {
 			{
-				portable::t_scoped_lock lock(v_synchronizers->v_mutex);
+				std::lock_guard<std::mutex> lock(v_synchronizers->v_mutex);
 				v_synchronizers->v_wake = true;
 			}
-			v_synchronizers->v_condition.f_signal();
+			v_synchronizers->v_condition.notify_one();
 			{
-				portable::t_scoped_lock lock(v_synchronizers->v_mutex);
-				while (v_synchronizers->v_wake) v_synchronizers->v_condition.f_wait(v_synchronizers->v_mutex);
+				std::unique_lock<std::mutex> lock(v_synchronizers->v_mutex);
+				while (v_synchronizers->v_wake) v_synchronizers->v_condition.wait(lock);
 			}
 			delete v_synchronizers;
 		} while (v_synchronizers);
@@ -422,8 +415,8 @@ t_engine::~t_engine()
 
 ptrdiff_t t_engine::f_run()
 {
-	ptrdiff_t n = t_module::f_main(t_module::f_main, 0);
-	portable::t_scoped_lock lock(v_thread__mutex);
+	ptrdiff_t n = t_fiber::f_main(t_module::f_main);
+	std::unique_lock<std::mutex> lock(v_thread__mutex);
 	t_thread::t_internal*& internals = v_thread__internals;
 	t_thread::t_internal* internal = f_as<t_thread&>(t_thread::f_current()).v_internal;
 	while (true) {
@@ -435,7 +428,7 @@ ptrdiff_t t_engine::f_run()
 			break;
 		} while (p != internals);
 		if (p) break;
-		v_thread__condition.f_wait(v_thread__mutex);
+		v_thread__condition.wait(lock);
 	}
 	return n;
 }

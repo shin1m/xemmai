@@ -19,7 +19,7 @@ protected:
 
 public:
 	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_message);
-	XEMMAI__PORTABLE__EXPORT static void f_throw(const std::wstring& a_message);
+	XEMMAI__PORTABLE__EXPORT static void f_throw [[noreturn]] (const std::wstring& a_message);
 
 	t_throwable(const std::wstring& a_message) : v_context(0), v_message(a_message)
 	{

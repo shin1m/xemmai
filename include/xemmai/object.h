@@ -52,7 +52,7 @@ class t_structure
 	t_slot v_this;
 	t_slot v_parent0;
 	t_structure* v_parent1;
-	portable::t_mutex v_mutex;
+	std::mutex v_mutex;
 	std::map<t_object*, t_object*> v_children;
 
 	void* operator new(size_t a_size, size_t a_n)

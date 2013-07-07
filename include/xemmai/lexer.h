@@ -91,7 +91,7 @@ private:
 	t_token v_token;
 	std::vector<wchar_t> v_value;
 
-	void f_throw();
+	void f_throw [[noreturn]] ();
 	void f_get();
 
 public:

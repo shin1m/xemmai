@@ -1,4 +1,3 @@
-#include <xemmai/portable/thread.h>
 #include <xemmai/portable/path.h>
 #include <xemmai/portable/convert.h>
 
@@ -13,35 +12,6 @@ namespace xemmai
 
 namespace portable
 {
-
-#ifdef _WIN32
-namespace
-{
-
-struct t_main
-{
-	void* (*v_main)(void*);
-	void* v_p;
-
-	t_main(void* (*a_main)(void*), void* a_p) : v_main(a_main), v_p(a_p)
-	{
-	}
-};
-
-void f_main(void* a_p)
-{
-	t_main* p = static_cast<t_main*>(a_p);
-	p->v_main(p->v_p);
-	delete p;
-}
-
-}
-
-bool f_thread(void* (*a_main)(void*), void* a_p)
-{
-	return _beginthread(f_main, 0, new t_main(a_main, a_p)) != -1L;
-}
-#endif
 
 #ifdef __unix__
 t_path::t_path(const std::wstring& a_path)

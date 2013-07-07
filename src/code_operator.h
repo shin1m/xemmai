@@ -14,7 +14,6 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer)
 							break;
@@ -30,7 +29,6 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							XEMMAI__CODE__PRIMITIVE_CALL(-a0.v_integer)
 							break;
@@ -50,7 +48,6 @@
 						case t_value::e_tag__INTEGER:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_not, 0)
 						}
@@ -64,7 +61,6 @@
 						case t_value::e_tag__BOOLEAN:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_complement, 0)
 						}
@@ -76,13 +72,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1.v_integer)
 								break;
@@ -105,7 +99,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * a1.v_integer)
 								break;
@@ -132,13 +125,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1.v_integer)
 								break;
@@ -161,7 +152,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / a1.v_integer)
 								break;
@@ -193,7 +183,6 @@
 						case t_value::e_tag__BOOLEAN:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
 						}
@@ -203,13 +192,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1.v_integer)
 								break;
@@ -232,7 +219,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + a1.v_integer)
 								break;
@@ -259,13 +245,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1.v_integer)
 								break;
@@ -288,7 +272,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - a1.v_integer)
 								break;
@@ -320,7 +303,6 @@
 						case t_value::e_tag__BOOLEAN:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
 						}
@@ -335,7 +317,6 @@
 						case t_value::e_tag__BOOLEAN:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
 						}
@@ -345,13 +326,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1.v_integer)
 								break;
@@ -374,7 +353,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < a1.v_integer)
 								break;
@@ -401,13 +379,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1.v_integer)
 								break;
@@ -430,7 +406,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= a1.v_integer)
 								break;
@@ -457,13 +432,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1.v_integer)
 								break;
@@ -486,7 +459,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > a1.v_integer)
 								break;
@@ -513,13 +485,11 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
-							break;
 						case t_value::e_tag__INTEGER:
 							switch (a1.f_tag()) {
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1.v_integer)
 								break;
@@ -542,7 +512,6 @@
 							case t_value::e_tag__NULL:
 							case t_value::e_tag__BOOLEAN:
 								t_throwable::f_throw(L"not supported");
-								break;
 							case t_value::e_tag__INTEGER:
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= a1.v_integer)
 								break;
@@ -683,7 +652,6 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
 						}
@@ -701,7 +669,6 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
 						}
@@ -719,7 +686,6 @@
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__FLOAT:
 							t_throwable::f_throw(L"not supported");
-							break;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
 						}
