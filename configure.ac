@@ -37,7 +37,7 @@ AC_ARG_ENABLE(
 )
 AM_CONDITIONAL([PROFILE], [test x$profile = xtrue])
 
-AM_CONDITIONAL([AUTOMAKE_OLDER_THAN_1_13], [test ${am__api_version%.*} -le 1 -a ${am__api_version#*.} -lt 13])
+AM_CONDITIONAL([AUTOMAKE_OLDER_THAN_1_13], [test ${am__api_version%.*} -eq 1 -a ${am__api_version#*.} -lt 13])
 
 AM_CONFIG_HEADER([include/xemmai/portable/configure.h])
 AC_CONFIG_FILES([
