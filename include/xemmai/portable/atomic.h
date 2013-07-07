@@ -68,7 +68,7 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 
 class t_lock
 {
-	volatile size_t v_lock;
+	volatile std::ptrdiff_t v_lock;
 
 public:
 	t_lock() : v_lock(0)
@@ -76,7 +76,7 @@ public:
 	}
 	void f_acquire_for_read()
 	{
-		size_t value;
+		std::ptrdiff_t value;
 		asm volatile (
 			"lock; xadd %0, %1"
 			: "=r" (value)
@@ -102,7 +102,7 @@ public:
 	void f_acquire_for_write()
 	{
 		while (true) {
-			size_t value;
+			std::ptrdiff_t value;
 			asm volatile (
 				"lock; cmpxchg %1, %2"
 				: "=a" (value)
