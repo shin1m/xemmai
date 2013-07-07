@@ -105,7 +105,7 @@ class t_engine : public t_value::t_collector
 	portable::t_mutex v_thread__mutex;
 	portable::t_condition v_thread__condition;
 	t_synchronizer* v_synchronizers;
-	size_t v_synchronizer__wake;
+	volatile size_t v_synchronizer__wake;
 	portable::t_mutex v_synchronizer__mutex;
 	portable::t_condition v_synchronizer__condition;
 	t_object* v_type_class;
