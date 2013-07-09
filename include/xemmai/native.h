@@ -20,9 +20,7 @@ private:
 	t_native(const t_transfer& a_module, t_function a_function) : v_module(a_module), v_function(a_function)
 	{
 	}
-	~t_native()
-	{
-	}
+	~t_native() = default;
 
 public:
 	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const t_transfer& a_module, t_function a_function);

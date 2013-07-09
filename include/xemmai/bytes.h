@@ -29,9 +29,7 @@ class t_bytes
 	t_bytes()
 	{
 	}
-	~t_bytes()
-	{
-	}
+	~t_bytes() = default;
 	unsigned char* f_entries() const
 	{
 		return const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(this + 1));

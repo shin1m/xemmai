@@ -17,9 +17,7 @@ protected:
 	t_lambda(const t_transfer& a_scope, const t_transfer& a_code) : v_scope(a_scope), v_code(a_code)
 	{
 	}
-	~t_lambda()
-	{
-	}
+	~t_lambda() = default;
 
 public:
 	static t_transfer f_instantiate(const t_transfer& a_scope, const t_transfer& a_code);
@@ -48,6 +46,7 @@ class t_advanced_lambda : public t_lambda
 	t_advanced_lambda(const t_transfer& a_scope, const t_transfer& a_code, const t_transfer& a_defaults) : t_lambda(a_scope, a_code), v_defaults(a_defaults)
 	{
 	}
+	~t_advanced_lambda() = default;
 
 public:
 	static t_transfer f_instantiate(const t_transfer& a_scope, const t_transfer& a_code, t_slot* a_stack);

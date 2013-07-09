@@ -24,12 +24,8 @@ struct t_thread
 		t_slot v_object;
 		t_slot v_key;
 		t_slot v_value;
-		volatile size_t v_revision;
-		volatile size_t v_key_revision;
-
-		t_cache() : v_revision(0), v_key_revision(0)
-		{
-		}
+		volatile size_t v_revision = 0;
+		volatile size_t v_key_revision = 0;
 	};
 	struct t_internal
 	{

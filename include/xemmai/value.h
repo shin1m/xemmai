@@ -44,25 +44,18 @@ public:
 	class t_collector
 	{
 	protected:
-		bool v_collector__running;
-		bool v_collector__quitting;
+		bool v_collector__running = true;
+		bool v_collector__quitting = false;
 		std::mutex v_collector__mutex;
 		std::condition_variable v_collector__wake;
 		std::condition_variable v_collector__done;
-		size_t v_collector__tick;
-		size_t v_collector__wait;
-		size_t v_collector__epoch;
-		size_t v_collector__skip;
-		size_t v_collector__collect;
+		size_t v_collector__tick = 0;
+		size_t v_collector__wait = 0;
+		size_t v_collector__epoch = 0;
+		size_t v_collector__skip = 0;
+		size_t v_collector__collect = 0;
 
-		t_collector() :
-		v_collector__running(true),
-		v_collector__quitting(false),
-		v_collector__tick(0),
-		v_collector__wait(0),
-		v_collector__epoch(0),
-		v_collector__skip(0),
-		v_collector__collect(0)
+		t_collector()
 		{
 			v_collector = this;
 		}

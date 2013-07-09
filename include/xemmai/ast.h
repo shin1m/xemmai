@@ -56,13 +56,9 @@ void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, co
 
 struct t_variable
 {
-	bool v_shared;
-	bool v_varies;
+	bool v_shared = false;
+	bool v_varies = false;
 	size_t v_index;
-
-	t_variable() : v_shared(false), v_varies(false)
-	{
-	}
 };
 
 struct t_scope

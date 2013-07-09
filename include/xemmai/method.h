@@ -16,9 +16,7 @@ class t_method
 	t_method(const t_transfer& a_function, const t_transfer& a_self) : v_function(a_function), v_self(a_self)
 	{
 	}
-	~t_method()
-	{
-	}
+	~t_method() = default;
 
 public:
 	static t_transfer f_instantiate(const t_transfer& a_function, const t_transfer& a_self);

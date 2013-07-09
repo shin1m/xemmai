@@ -14,15 +14,11 @@ class t_array
 	static t_slot* f_move_backward(t_slot* a_p, t_slot* a_q);
 
 	t_slot v_tuple;
-	size_t v_head;
-	size_t v_size;
+	size_t v_head = 0;
+	size_t v_size = 0;
 
-	t_array() : v_head(0), v_size(0)
-	{
-	}
-	~t_array()
-	{
-	}
+	t_array() = default;
+	~t_array() = default;
 	void f_resize();
 	void f_grow();
 	void f_shrink();

@@ -156,25 +156,7 @@ void t_engine::f_collector()
 	}
 }
 
-t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) :
-v_object__freed(0),
-v_object__cycle(0),
-v_object__reviving(false),
-v_object__release(0),
-v_object__collect(0),
-v_structure__finalizing(0),
-v_fiber__context__freed(0),
-v_fiber__try__freed(0),
-v_thread__internals(0),
-v_thread__cache_hit(0),
-v_thread__cache_missed(0),
-v_synchronizers(0),
-v_synchronizer__wake(0),
-v_module__thread(0),
-v_library__handle__finalizing(0),
-v_dictionary__entry__freed(0),
-v_stack_size(a_stack),
-v_verbose(a_verbose)
+t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_stack_size(a_stack), v_verbose(a_verbose)
 {
 	v_object__pool.f_grow();
 	t_thread* thread = new t_thread(0);

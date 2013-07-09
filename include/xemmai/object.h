@@ -101,9 +101,7 @@ class t_structure
 			++i;
 		}
 	}
-	~t_structure()
-	{
-	}
+	~t_structure() = default;
 	t_slot* f_fields() const
 	{
 		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
@@ -176,9 +174,7 @@ class t_tuple
 		t_slot* p = f_entries();
 		for (size_t i = 0; i < v_size; ++i) new(p + i) t_slot();
 	}
-	~t_tuple()
-	{
-	}
+	~t_tuple() = default;
 	t_slot* f_entries() const
 	{
 		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
@@ -268,7 +264,7 @@ class t_object
 	size_t v_cyclic;
 	t_slot v_type;
 	t_structure* v_structure;
-	t_tuple* v_fields;
+	t_tuple* v_fields = nullptr;
 	portable::t_lock v_lock;
 	t_value::t_increments* v_owner;
 
@@ -328,9 +324,6 @@ public:
 	static XEMMAI__PORTABLE__EXPORT t_transfer f_allocate(t_object* a_type);
 #endif
 
-	t_object() : v_fields(0)
-	{
-	}
 	t_object* f_type() const
 	{
 		return v_type;

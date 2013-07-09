@@ -29,16 +29,13 @@ class t_shared_pool
 		}
 	};
 
-	t_block* v_blocks;
+	t_block* v_blocks = nullptr;
 	std::list<t_chunk> v_chunks;
 	std::mutex v_mutex;
-	size_t v_allocated;
-	size_t v_freed;
+	size_t v_allocated = 0;
+	size_t v_freed = 0;
 
 public:
-	t_shared_pool() : v_blocks(0), v_allocated(0), v_freed(0)
-	{
-	}
 	void f_clear()
 	{
 		while (v_blocks) {

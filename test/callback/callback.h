@@ -10,12 +10,9 @@ class t_client
 {
 	friend class t_server;
 
-	t_server* v_server;
+	t_server* v_server = nullptr;
 
 public:
-	t_client() : v_server(0)
-	{
-	}
 	virtual ~t_client();
 	virtual void f_on_message(const std::wstring& a_message);
 	void f_remove();

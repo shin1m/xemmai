@@ -26,12 +26,9 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 
 class t_lock
 {
-	volatile size_t v_lock;
+	volatile size_t v_lock = 0;
 
 public:
-	t_lock() : v_lock(0)
-	{
-	}
 	void f_acquire_for_read()
 	{
 		++v_lock;
@@ -68,12 +65,9 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 
 class t_lock
 {
-	volatile std::ptrdiff_t v_lock;
+	volatile std::ptrdiff_t v_lock = 0;
 
 public:
-	t_lock() : v_lock(0)
-	{
-	}
 	void f_acquire_for_read()
 	{
 		std::ptrdiff_t value;
@@ -133,12 +127,9 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 
 class t_lock
 {
-	volatile long v_lock;
+	volatile long v_lock = 0;
 
 public:
-	t_lock() : v_lock(0)
-	{
-	}
 	XEMMAI__PORTABLE__FORCE_INLINE void f_acquire_for_read()
 	{
 		if (_InterlockedIncrement(&v_lock) > 0) return;

@@ -22,12 +22,10 @@ namespace portable
 #ifdef __unix__
 class t_library
 {
-	void* v_handle;
+	void* v_handle = NULL;
 
 public:
-	t_library() : v_handle(NULL)
-	{
-	}
+	t_library() = default;
 	t_library(const std::wstring& a_path) : v_handle(dlopen(f_convert(a_path + L".so").c_str(), RTLD_LAZY | RTLD_GLOBAL))
 	{
 //		if (v_handle == NULL) std::fprintf(stderr, "dlopen: %s\n", dlerror());
@@ -57,12 +55,10 @@ public:
 #ifdef _WIN32
 class t_library
 {
-	HMODULE v_handle;
+	HMODULE v_handle = NULL;
 
 public:
-	t_library() : v_handle(NULL)
-	{
-	}
+	t_library() = default;
 	t_library(const std::wstring& a_path) : v_handle(LoadLibraryW((a_path + L".dll").c_str()))
 	{
 	}
