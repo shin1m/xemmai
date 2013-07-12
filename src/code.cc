@@ -1117,7 +1117,7 @@ t_transfer t_code::f_instantiate(const std::wstring& a_path, bool a_shared, bool
 
 void t_code::f_scan(t_scan a_scan)
 {
-	for (t_pointers<t_slot>::t_iterator i = v_objects.f_begin(); i != v_objects.f_end(); ++i) a_scan(**i);
+	for (auto& p : v_objects) a_scan(*p);
 }
 
 const t_at* t_code::f_at(void** a_address) const

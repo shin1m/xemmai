@@ -51,8 +51,8 @@ public:
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand) = 0;
 };
 
-void f_generate_block(t_generator& a_generator, size_t a_stack, const t_pointers<t_node>& a_nodes, bool a_tail);
-void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, const t_pointers<t_node>& a_nodes);
+void f_generate_block(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail);
+void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes);
 
 struct t_variable
 {
@@ -64,7 +64,7 @@ struct t_variable
 struct t_scope
 {
 	t_scope* v_outer;
-	t_pointers<t_node> v_block;
+	std::vector<std::unique_ptr<t_node>> v_block;
 	bool v_shared;
 	bool v_self_shared;
 	std::map<t_scoped, t_variable> v_variables;
@@ -80,7 +80,7 @@ struct t_lambda : t_node, t_scope
 {
 	bool v_variadic;
 	size_t v_arguments;
-	t_pointers<t_node> v_defaults;
+	std::vector<std::unique_ptr<t_node>> v_defaults;
 
 	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer), v_variadic(false), v_arguments(0)
 	{
@@ -90,11 +90,11 @@ struct t_lambda : t_node, t_scope
 
 struct t_if : t_node
 {
-	t_pointer<t_node> v_expression;
-	t_pointers<t_node> v_true;
-	t_pointers<t_node> v_false;
+	std::unique_ptr<t_node> v_expression;
+	std::vector<std::unique_ptr<t_node>> v_true;
+	std::vector<std::unique_ptr<t_node>> v_false;
 
-	t_if(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
+	t_if(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -102,10 +102,10 @@ struct t_if : t_node
 
 struct t_while : t_node
 {
-	t_pointer<t_node> v_expression;
-	t_pointers<t_node> v_block;
+	std::unique_ptr<t_node> v_expression;
+	std::vector<std::unique_ptr<t_node>> v_block;
 
-	t_while(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
+	t_while(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -113,10 +113,10 @@ struct t_while : t_node
 
 struct t_for : t_node
 {
-	t_pointers<t_node> v_initialization;
-	t_pointer<t_node> v_condition;
-	t_pointers<t_node> v_next;
-	t_pointers<t_node> v_block;
+	std::vector<std::unique_ptr<t_node>> v_initialization;
+	std::unique_ptr<t_node> v_condition;
+	std::vector<std::unique_ptr<t_node>> v_next;
+	std::vector<std::unique_ptr<t_node>> v_block;
 
 	t_for(const t_at& a_at) : t_node(a_at)
 	{
@@ -126,9 +126,9 @@ struct t_for : t_node
 
 struct t_break : t_node
 {
-	t_pointer<t_node> v_expression;
+	std::unique_ptr<t_node> v_expression;
 
-	t_break(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
+	t_break(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -144,9 +144,9 @@ struct t_continue : t_node
 
 struct t_return : t_node
 {
-	t_pointer<t_node> v_expression;
+	std::unique_ptr<t_node> v_expression;
 
-	t_return(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
+	t_return(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -156,18 +156,18 @@ struct t_try : t_node
 {
 	struct t_catch
 	{
-		t_pointer<t_node> v_expression;
+		std::unique_ptr<t_node> v_expression;
 		const t_variable& v_variable;
-		t_pointers<t_node> v_block;
+		std::vector<std::unique_ptr<t_node>> v_block;
 
-		t_catch(const t_pointer<t_node>& a_expression, const t_variable& a_variable) : v_expression(a_expression), v_variable(a_variable)
+		t_catch(std::unique_ptr<t_node>&& a_expression, const t_variable& a_variable) : v_expression(std::move(a_expression)), v_variable(a_variable)
 		{
 		}
 	};
 
-	t_pointers<t_node> v_block;
-	t_pointers<t_catch> v_catches;
-	t_pointers<t_node> v_finally;
+	std::vector<std::unique_ptr<t_node>> v_block;
+	std::vector<std::unique_ptr<t_catch>> v_catches;
+	std::vector<std::unique_ptr<t_node>> v_finally;
 
 	t_try(const t_at& a_at) : t_node(a_at)
 	{
@@ -177,9 +177,9 @@ struct t_try : t_node
 
 struct t_throw : t_node
 {
-	t_pointer<t_node> v_expression;
+	std::unique_ptr<t_node> v_expression;
 
-	t_throw(const t_at& a_at, const t_pointer<t_node>& a_expression) : t_node(a_at), v_expression(a_expression)
+	t_throw(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -187,10 +187,10 @@ struct t_throw : t_node
 
 struct t_object_get : t_node
 {
-	t_pointer<t_node> v_target;
+	std::unique_ptr<t_node> v_target;
 	t_scoped v_key;
 
-	t_object_get(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
+	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -198,10 +198,10 @@ struct t_object_get : t_node
 
 struct t_object_get_indirect : t_node
 {
-	t_pointer<t_node> v_target;
-	t_pointer<t_node> v_key;
+	std::unique_ptr<t_node> v_target;
+	std::unique_ptr<t_node> v_key;
 
-	t_object_get_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
+	t_object_get_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -209,11 +209,11 @@ struct t_object_get_indirect : t_node
 
 struct t_object_put : t_node
 {
-	t_pointer<t_node> v_target;
+	std::unique_ptr<t_node> v_target;
 	t_scoped v_key;
-	t_pointer<t_node> v_value;
+	std::unique_ptr<t_node> v_value;
 
-	t_object_put(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key, const t_pointer<t_node>& a_value) : t_node(a_at), v_target(a_target), v_key(a_key), v_value(a_value)
+	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -221,11 +221,11 @@ struct t_object_put : t_node
 
 struct t_object_put_indirect : t_node
 {
-	t_pointer<t_node> v_target;
-	t_pointer<t_node> v_key;
-	t_pointer<t_node> v_value;
+	std::unique_ptr<t_node> v_target;
+	std::unique_ptr<t_node> v_key;
+	std::unique_ptr<t_node> v_value;
 
-	t_object_put_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key, const t_pointer<t_node>& a_value) : t_node(a_at), v_target(a_target), v_key(a_key), v_value(a_value)
+	t_object_put_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key)), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -233,10 +233,10 @@ struct t_object_put_indirect : t_node
 
 struct t_object_has : t_node
 {
-	t_pointer<t_node> v_target;
+	std::unique_ptr<t_node> v_target;
 	t_scoped v_key;
 
-	t_object_has(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
+	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -244,10 +244,10 @@ struct t_object_has : t_node
 
 struct t_object_has_indirect : t_node
 {
-	t_pointer<t_node> v_target;
-	t_pointer<t_node> v_key;
+	std::unique_ptr<t_node> v_target;
+	std::unique_ptr<t_node> v_key;
 
-	t_object_has_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
+	t_object_has_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -255,10 +255,10 @@ struct t_object_has_indirect : t_node
 
 struct t_object_remove : t_node
 {
-	t_pointer<t_node> v_target;
+	std::unique_ptr<t_node> v_target;
 	t_scoped v_key;
 
-	t_object_remove(const t_at& a_at, const t_pointer<t_node>& a_target, const t_transfer& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
+	t_object_remove(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -266,10 +266,10 @@ struct t_object_remove : t_node
 
 struct t_object_remove_indirect : t_node
 {
-	t_pointer<t_node> v_target;
-	t_pointer<t_node> v_key;
+	std::unique_ptr<t_node> v_target;
+	std::unique_ptr<t_node> v_key;
 
-	t_object_remove_indirect(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_key) : t_node(a_at), v_target(a_target), v_key(a_key)
+	t_object_remove_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -300,9 +300,9 @@ struct t_scope_put : t_node
 {
 	size_t v_outer;
 	const t_variable& v_variable;
-	t_pointer<t_node> v_value;
+	std::unique_ptr<t_node> v_value;
 
-	t_scope_put(const t_at& a_at, size_t a_outer, const t_variable& a_variable, const t_pointer<t_node>& a_value) : t_node(a_at), v_outer(a_outer), v_variable(a_variable), v_value(a_value)
+	t_scope_put(const t_at& a_at, size_t a_outer, const t_variable& a_variable, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_outer(a_outer), v_variable(a_variable), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -320,9 +320,9 @@ struct t_self : t_node
 
 struct t_class : t_node
 {
-	t_pointer<t_node> v_target;
+	std::unique_ptr<t_node> v_target;
 
-	t_class(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target)
+	t_class(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -330,9 +330,9 @@ struct t_class : t_node
 
 struct t_super : t_node
 {
-	t_pointer<t_node> v_target;
+	std::unique_ptr<t_node> v_target;
 
-	t_super(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target)
+	t_super(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -389,9 +389,9 @@ struct t_instance : t_node
 struct t_unary : t_node
 {
 	t_instruction v_instruction;
-	t_pointer<t_node> v_expression;
+	std::unique_ptr<t_node> v_expression;
 
-	t_unary(const t_at& a_at, t_instruction a_instruction, const t_pointer<t_node>& a_expression) : t_node(a_at), v_instruction(a_instruction), v_expression(a_expression)
+	t_unary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_instruction(a_instruction), v_expression(std::move(a_expression))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -400,10 +400,10 @@ struct t_unary : t_node
 struct t_binary : t_node
 {
 	t_instruction v_instruction;
-	t_pointer<t_node> v_left;
-	t_pointer<t_node> v_right;
+	std::unique_ptr<t_node> v_left;
+	std::unique_ptr<t_node> v_right;
 
-	t_binary(const t_at& a_at, t_instruction a_instruction, const t_pointer<t_node>& a_left, const t_pointer<t_node>& a_right) : t_node(a_at), v_instruction(a_instruction), v_left(a_left), v_right(a_right)
+	t_binary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_left, std::unique_ptr<t_node>&& a_right) : t_node(a_at), v_instruction(a_instruction), v_left(std::move(a_left)), v_right(std::move(a_right))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -411,11 +411,11 @@ struct t_binary : t_node
 
 struct t_call : t_node
 {
-	t_pointer<t_node> v_target;
-	t_pointers<t_node> v_arguments;
+	std::unique_ptr<t_node> v_target;
+	std::vector<std::unique_ptr<t_node>> v_arguments;
 	bool v_expand;
 
-	t_call(const t_at& a_at, const t_pointer<t_node>& a_target) : t_node(a_at), v_target(a_target), v_expand(false)
+	t_call(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target)), v_expand(false)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -423,10 +423,10 @@ struct t_call : t_node
 
 struct t_get_at : t_node
 {
-	t_pointer<t_node> v_target;
-	t_pointer<t_node> v_index;
+	std::unique_ptr<t_node> v_target;
+	std::unique_ptr<t_node> v_index;
 
-	t_get_at(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_index) : t_node(a_at), v_target(a_target), v_index(a_index)
+	t_get_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index) : t_node(a_at), v_target(std::move(a_target)), v_index(std::move(a_index))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -434,11 +434,11 @@ struct t_get_at : t_node
 
 struct t_set_at : t_node
 {
-	t_pointer<t_node> v_target;
-	t_pointer<t_node> v_index;
-	t_pointer<t_node> v_value;
+	std::unique_ptr<t_node> v_target;
+	std::unique_ptr<t_node> v_index;
+	std::unique_ptr<t_node> v_value;
 
-	t_set_at(const t_at& a_at, const t_pointer<t_node>& a_target, const t_pointer<t_node>& a_index, const t_pointer<t_node>& a_value) : t_node(a_at), v_target(a_target), v_index(a_index), v_value(a_value)
+	t_set_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_index(std::move(a_index)), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);

@@ -8,103 +8,6 @@
 namespace xemmai
 {
 
-template<typename U>
-class t_pointers;
-
-template<typename T>
-class t_pointer
-{
-	template<typename U>
-	friend class t_pointer;
-	template<typename U>
-	friend class t_pointers;
-
-	mutable T* v_p;
-
-	T* f_release() const
-	{
-		T* p = v_p;
-		v_p = 0;
-		return p;
-	}
-
-public:
-	t_pointer(T* a_p = 0) : v_p(a_p)
-	{
-	}
-	t_pointer(const t_pointer& a_p) : v_p(a_p.f_release())
-	{
-	}
-	template<typename U>
-	t_pointer(const t_pointer<U>& a_p) : v_p(a_p.f_release())
-	{
-	}
-	~t_pointer()
-	{
-		delete v_p;
-	}
-	t_pointer& operator=(const t_pointer& a_p)
-	{
-		delete v_p;
-		v_p = a_p.f_release();
-		return *this;
-	}
-	template<typename U>
-	t_pointer& operator=(const t_pointer<U>& a_p)
-	{
-		delete v_p;
-		v_p = a_p.f_release();
-		return *this;
-	}
-	operator T*() const
-	{
-		return v_p;
-	}
-	T* operator->() const
-	{
-		return v_p;
-	}
-};
-
-template<typename T>
-class t_pointers
-{
-	std::vector<T*> v_ps;
-
-public:
-	typedef typename std::vector<T*>::const_iterator t_iterator;
-
-	~t_pointers()
-	{
-		for (t_iterator i = f_begin(); i != f_end(); ++i) delete *i;
-	}
-	size_t f_size() const
-	{
-		return v_ps.size();
-	}
-	t_iterator f_begin() const
-	{
-		return v_ps.begin();
-	}
-	t_iterator f_end() const
-	{
-		return v_ps.end();
-	}
-	T* operator[](size_t a_i) const
-	{
-		return v_ps[a_i];
-	}
-	void f_add(T* a_p)
-	{
-		v_ps.push_back(a_p);
-	}
-	template<typename U>
-	void f_add(const t_pointer<U>& a_p)
-	{
-		v_ps.push_back(a_p.f_release());
-	}
-};
-
 enum t_instruction
 {
 	e_instruction__JUMP,
@@ -292,7 +195,7 @@ struct t_code
 	size_t v_arguments;
 	size_t v_minimum;
 	std::vector<void*> v_instructions;
-	t_pointers<t_slot> v_objects;
+	std::vector<std::unique_ptr<t_slot>> v_objects;
 	std::vector<t_address_at> v_ats;
 
 	t_code(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_path(a_path), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
@@ -349,13 +252,13 @@ struct t_code
 	void f_operand(t_object* a_operand)
 	{
 		v_instructions.push_back(a_operand);
-		v_objects.f_add(new t_slot(a_operand));
+		v_objects.emplace_back(new t_slot(a_operand));
 	}
 	void f_operand(const t_transfer& a_operand)
 	{
 		t_slot* p = new t_slot(a_operand);
 		v_instructions.push_back(p);
-		v_objects.f_add(p);
+		v_objects.emplace_back(p);
 	}
 	void f_operand(t_label& a_label)
 	{

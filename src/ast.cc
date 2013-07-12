@@ -12,10 +12,10 @@ t_node::~t_node()
 {
 }
 
-void f_generate_block(t_generator& a_generator, size_t a_stack, const t_pointers<t_node>& a_nodes, bool a_tail)
+void f_generate_block(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail)
 {
-	t_pointers<t_node>::t_iterator i = a_nodes.f_begin();
-	t_pointers<t_node>::t_iterator j = a_nodes.f_end();
+	auto i = a_nodes.begin();
+	auto j = a_nodes.end();
 	if (i == j) {
 		a_generator.f_reserve(a_stack + 1);
 	} else {
@@ -28,10 +28,10 @@ void f_generate_block(t_generator& a_generator, size_t a_stack, const t_pointers
 	}
 }
 
-void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, const t_pointers<t_node>& a_nodes)
+void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes)
 {
-	for (t_pointers<t_node>::t_iterator i = a_nodes.f_begin(); i != a_nodes.f_end(); ++i) {
-		(*i)->f_generate(a_generator, a_stack, false, false);
+	for (auto& p : a_nodes) {
+		p->f_generate(a_generator, a_stack, false, false);
 		a_generator.f_emit(e_instruction__CLEAR);
 		a_generator.f_operand(a_stack);
 	}
@@ -40,7 +40,7 @@ void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, co
 t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	size_t stack = v_privates.size();
-	size_t minimum = v_arguments - v_defaults.f_size();
+	size_t minimum = v_arguments - v_defaults.size();
 	if (v_variadic) --minimum;
 	t_transfer code = t_code::f_instantiate(a_generator.v_path, v_shared, v_variadic, stack, v_shareds, v_arguments, minimum);
 	t_scope* scope0 = a_generator.v_scope;
@@ -89,8 +89,8 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	a_generator.v_labels = labels0;
 	a_generator.v_targets = targets0;
 	a_generator.f_reserve(a_stack + 1);
-	if (v_variadic || v_defaults.f_size() > 0) {
-		for (size_t i = 0; i < v_defaults.f_size(); ++i) v_defaults[i]->f_generate(a_generator, a_stack + i, false, false);
+	if (v_variadic || v_defaults.size() > 0) {
+		for (size_t i = 0; i < v_defaults.size(); ++i) v_defaults[i]->f_generate(a_generator, a_stack + i, false, false);
 		a_generator.f_emit(e_instruction__ADVANCED_LAMBDA);
 	} else {
 		a_generator.f_emit(e_instruction__LAMBDA);
@@ -144,7 +144,7 @@ t_operand t_for::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 {
 	f_generate_block_without_value(a_generator, a_stack, v_initialization);
 	t_code::t_label& continue0 = a_generator.f_label();
-	t_code::t_label& continue1 = v_next.f_size() > 0 ? a_generator.f_label() : continue0;
+	t_code::t_label& continue1 = v_next.size() > 0 ? a_generator.f_label() : continue0;
 	a_generator.f_target(continue0);
 	t_code::t_label& label0 = a_generator.f_label();
 	if (v_condition) {
@@ -158,7 +158,7 @@ t_operand t_for::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 	t_generator::t_targets targets1(&break0, a_tail, &continue1, targets0->v_return, targets0->v_return_is_tail);
 	a_generator.v_targets = &targets1;
 	f_generate_block_without_value(a_generator, a_stack, v_block);
-	if (v_next.f_size() > 0) {
+	if (v_next.size() > 0) {
 		a_generator.f_target(continue1);
 		f_generate_block_without_value(a_generator, a_stack, v_next);
 	}
@@ -220,8 +220,7 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 		a_generator.f_emit(e_instruction__FINALLY);
 		a_generator.f_operand(t_fiber::t_try::e_state__STEP);
 		a_generator.f_target(catch0);
-		for (t_pointers<t_catch>::t_iterator i = v_catches.f_begin(); i != v_catches.f_end(); ++i) {
-			t_catch* p = *i;
+		for (auto& p : v_catches) {
 			p->v_expression->f_generate(a_generator, a_stack + 1, false, false);
 			t_code::t_label& label0 = a_generator.f_label();
 			a_generator.f_emit(e_instruction__CATCH);
@@ -567,12 +566,12 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
-	for (size_t i = 0; i < v_arguments.f_size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 1 + i, false, false);
+	for (size_t i = 0; i < v_arguments.size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 1 + i, false, false);
 	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
-	a_generator.f_operand(v_arguments.f_size());
+	a_generator.f_operand(v_arguments.size());
 	a_generator.f_at(this);
 	return a_stack;
 }

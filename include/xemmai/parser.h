@@ -39,27 +39,31 @@ class t_parser
 	{
 		return t_type_of<double>::f_parse(&v_lexer.f_value()[0]);
 	}
-	t_pointer<ast::t_node> f_target(bool a_assignable);
-	t_pointer<ast::t_node> f_action(const t_pointer<ast::t_node>& a_target, bool a_assignable);
-	t_pointer<ast::t_node> f_unary(bool a_assignable);
-	t_pointer<ast::t_node> f_multiplicative(bool a_assignable);
-	t_pointer<ast::t_node> f_additive(bool a_assignable);
-	t_pointer<ast::t_node> f_shift(bool a_assignable);
-	t_pointer<ast::t_node> f_relational(bool a_assignable);
-	t_pointer<ast::t_node> f_equality(bool a_assignable);
-	t_pointer<ast::t_node> f_and(bool a_assignable);
-	t_pointer<ast::t_node> f_xor(bool a_assignable);
-	t_pointer<ast::t_node> f_or(bool a_assignable);
-	t_pointer<ast::t_node> f_and_also(bool a_assignable);
-	t_pointer<ast::t_node> f_or_else(bool a_assignable);
-	t_pointer<ast::t_node> f_send(bool a_assignable);
-	t_pointer<ast::t_node> f_conditional(bool a_assignable);
-	t_pointer<ast::t_node> f_expression();
-	bool f_expressions(t_pointers<ast::t_node>& a_nodes);
-	t_pointer<ast::t_node> f_statement();
-	void f_statements(t_pointers<ast::t_node>& a_nodes, t_lexer::t_token a_token);
-	void f_block(t_pointers<ast::t_node>& a_nodes);
-	void f_block_or_statement(t_pointers<ast::t_node>& a_nodes);
+	std::unique_ptr<ast::t_node> f_target(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_action(std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_action(ast::t_node* a_target, bool a_assignable)
+	{
+		return f_action(std::unique_ptr<ast::t_node>(a_target), a_assignable);
+	}
+	std::unique_ptr<ast::t_node> f_unary(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_multiplicative(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_additive(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_shift(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_relational(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_equality(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_and(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_xor(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_or(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_and_also(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_or_else(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_send(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_conditional(bool a_assignable);
+	std::unique_ptr<ast::t_node> f_expression();
+	bool f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	std::unique_ptr<ast::t_node> f_statement();
+	void f_statements(std::vector<std::unique_ptr<ast::t_node>>& a_nodes, t_lexer::t_token a_token);
+	void f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_block_or_statement(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
 
 public:
 	struct t_error : t_throwable
