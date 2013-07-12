@@ -282,7 +282,7 @@ inline void t_global::f_type__<t_throwable>(const t_transfer& a_type)
 }
 
 template<>
-inline void t_global::f_type__<t_null>(const t_transfer& a_type)
+inline void t_global::f_type__<std::nullptr_t>(const t_transfer& a_type)
 {
 	v_type_null = a_type;
 }
@@ -432,7 +432,7 @@ inline t_object* t_global::f_type<t_throwable>() const
 }
 
 template<>
-inline t_object* t_global::f_type<t_null>() const
+inline t_object* t_global::f_type<std::nullptr_t>() const
 {
 	return v_type_null;
 }
@@ -543,7 +543,7 @@ inline t_object* t_value::f_type() const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
-		return f_global()->f_type<t_null>();
+		return f_global()->f_type<std::nullptr_t>();
 	case e_tag__BOOLEAN:
 		return f_global()->f_type<bool>();
 	case e_tag__INTEGER:
@@ -620,7 +620,7 @@ inline t_transfer t_value::f_hash() const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
-		return t_value(t_type_of<t_null>::f_hash(*this));
+		return t_value(t_type_of<std::nullptr_t>::f_hash(*this));
 	case e_tag__BOOLEAN:
 		return t_value(t_type_of<bool>::f_hash(v_boolean));
 	case e_tag__INTEGER:

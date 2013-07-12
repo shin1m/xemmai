@@ -89,7 +89,7 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type&>(v_type_native).v_builtin = true;
 	t_type_of<t_throwable>::f_define();
 	xemmai::f_as<t_type&>(v_type_throwable).v_builtin = true;
-	t_type_of<t_null>::f_define();
+	t_type_of<std::nullptr_t>::f_define();
 	xemmai::f_as<t_type&>(v_type_null).v_builtin = true;
 	xemmai::f_as<t_type&>(v_type_null).v_primitive = true;
 	t_type_of<bool>::f_define();

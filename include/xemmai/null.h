@@ -6,12 +6,8 @@
 namespace xemmai
 {
 
-class t_null
-{
-};
-
 template<>
-struct t_type_of<t_null> : t_type
+struct t_type_of<std::nullptr_t> : t_type
 {
 	static std::wstring f_string(const t_value& a_self)
 	{
