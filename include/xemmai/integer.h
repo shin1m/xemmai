@@ -2,6 +2,7 @@
 #define XEMMAI__INTEGER_H
 
 #include "object.h"
+#include "macro.h"
 
 namespace xemmai
 {

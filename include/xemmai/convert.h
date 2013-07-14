@@ -5,6 +5,7 @@
 #include "global.h"
 #include "macro.h"
 
+#define XEMMAI__MACRO__ARGUMENTS_LIMIT 16
 #define XEMMAI__MACRO__OVERLOADS_LIMIT 8
 
 namespace xemmai

@@ -390,10 +390,13 @@ public:
 	}
 	XEMMAI__PORTABLE__EXPORT void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT t_transfer f_call_with_same(t_slot* a_stack, size_t a_n);
-#define XEMMAI__MACRO__CONSTRUCT_A_N(n) stack[n + 1].f_construct(a_##n);
-#define XEMMAI__MACRO__ITERATE "object_call.h"
-#define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT
-#include "macro.h"
+	template<typename... T>
+	t_transfer f_call(const T&... a_arguments)
+	{
+		t_scoped_stack stack({a_arguments...});
+		f_call_and_return(t_value(), stack, sizeof...(a_arguments));
+		return stack.f_return();
+	}
 };
 
 }

@@ -9,9 +9,6 @@
 #include <thread>
 
 #include "portable/define.h"
-#include "macro.h"
-
-#define XEMMAI__MACRO__ARGUMENTS_LIMIT 16
 
 namespace xemmai
 {
@@ -317,9 +314,8 @@ public:
 	void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n) const;
 	t_transfer f_call_with_same(t_slot* a_stack, size_t a_n) const;
 	t_transfer f_hash() const;
-#define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
-#define XEMMAI__MACRO__CALL(n) t_transfer operator()(XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TRANSFER_A_N, n)) const;
-	XEMMAI__MACRO__REPEAT(XEMMAI__MACRO__CALL, XEMMAI__MACRO__ARGUMENTS_LIMIT)
+	template<typename... T>
+	t_transfer operator()(const T&... a_arguments) const;
 	t_transfer f_get_at(const t_value& a_index) const;
 	t_transfer f_set_at(const t_value& a_index, const t_value& a_value) const;
 	t_transfer f_plus() const;
@@ -787,6 +783,11 @@ public:
 		t_slot* used = v_p + a_n;
 		stack->f_allocate(used);
 		stack->v_used = used;
+	}
+	t_scoped_stack(std::initializer_list<t_transfer> a_xs) : t_scoped_stack(a_xs.size() + 1)
+	{
+		t_slot* p = v_p;
+		for (auto& x : a_xs) (++p)->f_construct(x);
 	}
 	~t_scoped_stack()
 	{

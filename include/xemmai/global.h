@@ -632,9 +632,13 @@ inline t_transfer t_value::f_hash() const
 	}
 }
 
-#define XEMMAI__MACRO__ITERATE "value_call.h"
-#define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT
-#include "macro.h"
+template<typename... T>
+inline t_transfer t_value::operator()(const T&... a_arguments) const
+{
+	t_scoped_stack stack({a_arguments...});
+	f_call_and_return(t_value(), stack, sizeof...(a_arguments));
+	return stack.f_return();
+}
 
 inline t_transfer t_value::f_get_at(const t_value& a_index) const
 {
