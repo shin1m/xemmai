@@ -207,42 +207,42 @@ template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMM
 struct t_call_member<T_extension, T_r (T_self::*)(XEMMAI__MACRO__T_AN__) const, T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, false, T_with> t_call;
+	typedef typename t_type::template t_bind<false, std::is_void<T_r>::value, false, T_with> t_call;
 };
 
 template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
 struct t_call_member<T_extension, T_r (T_self::*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__) const, T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, true, T_with> t_call;
+	typedef typename t_type::template t_bind<false, std::is_void<T_r>::value, true, T_with> t_call;
 };
 
 template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
 struct t_call_member<T_extension, T_r (T_self::*)(XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, false, T_with> t_call;
+	typedef typename t_type::template t_bind<false, std::is_void<T_r>::value, false, T_with> t_call;
 };
 
 template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
 struct t_call_member<T_extension, T_r (T_self::*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<false, t_is_void<T_r>::v_value, true, T_with> t_call;
+	typedef typename t_type::template t_bind<false, std::is_void<T_r>::value, true, T_with> t_call;
 };
 
 template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
 struct t_call_member<T_extension, T_r (*)(T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<true, t_is_void<T_r>::v_value, false, T_with> t_call;
+	typedef typename t_type::template t_bind<true, std::is_void<T_r>::value, false, T_with> t_call;
 };
 
 template<typename T_extension, typename T_self, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, typename T_with>
 struct t_call_member<T_extension, T_r (*)(T_extension*, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__), T_with>
 {
 	typedef XEMMAI__MACRO__CALL_MEMBERN<T_extension, T_self XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<true, t_is_void<T_r>::v_value, true, T_with> t_call;
+	typedef typename t_type::template t_bind<true, std::is_void<T_r>::value, true, T_with> t_call;
 };
 
 template<typename T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__, bool A_void, bool A_extension>
@@ -321,14 +321,14 @@ template<typename T_extension, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MA
 struct t_call_static<T_extension, T_r (*)(XEMMAI__MACRO__T_AN__)>
 {
 	typedef XEMMAI__MACRO__CALL_STATICN<T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<t_is_void<T_r>::v_value, false> t_call;
+	typedef typename t_type::template t_bind<std::is_void<T_r>::value, false> t_call;
 };
 
 template<typename T_extension, typename T_r XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__TYPENAME_T_AN__>
 struct t_call_static<T_extension, T_r (*)(T_extension* XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__)>
 {
 	typedef XEMMAI__MACRO__CALL_STATICN<T_extension XEMMAI__MACRO__COMMA_IF_N XEMMAI__MACRO__T_AN__> t_type;
-	typedef typename t_type::template t_bind<t_is_void<T_r>::v_value, true> t_call;
+	typedef typename t_type::template t_bind<std::is_void<T_r>::value, true> t_call;
 };
 
 #undef XEMMAI__MACRO__TYPENAME_T_AN__

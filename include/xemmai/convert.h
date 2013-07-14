@@ -11,18 +11,6 @@
 namespace xemmai
 {
 
-template<typename T>
-struct t_is_void
-{
-	static const bool v_value = false;
-};
-
-template<>
-struct t_is_void<void>
-{
-	static const bool v_value = true;
-};
-
 template<typename T_function>
 struct t_call_construct
 {
