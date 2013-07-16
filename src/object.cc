@@ -349,7 +349,7 @@ void t_object::f_own()
 {
 	if (f_type_as_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
 	{
-		portable::t_scoped_lock_for_write lock(v_lock);
+		t_scoped_lock_for_write lock(v_lock);
 		if (v_owner) t_throwable::f_throw(L"already owned.");
 		v_owner = t_value::v_increments;
 	}
@@ -368,7 +368,7 @@ void t_object::f_share()
 {
 	if (f_type_as_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
 	if (v_owner != t_value::v_increments) t_throwable::f_throw(L"not owned.");
-	portable::t_scoped_lock_for_write lock(v_lock);
+	t_scoped_lock_for_write lock(v_lock);
 	v_owner = 0;
 }
 

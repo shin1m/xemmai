@@ -10,7 +10,7 @@ volatile size_t t_thread::t_cache::v_revisions[V_SIZE];
 
 size_t t_thread::t_cache::f_revise(size_t a_i)
 {
-	size_t revision = portable::f_atomic_increment(v_revisions[a_i]);
+	size_t revision = f_atomic_increment(v_revisions[a_i]);
 	if (revision != 0) return revision;
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);

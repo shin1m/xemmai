@@ -3,7 +3,7 @@
 
 #include <map>
 
-#include "portable/atomic.h"
+#include "atomic.h"
 #include "pool.h"
 #include "type.h"
 
@@ -265,7 +265,7 @@ class t_object
 	t_slot v_type;
 	t_structure* v_structure;
 	t_tuple* v_fields = nullptr;
-	portable::t_lock v_lock;
+	t_lock v_lock;
 	t_value::t_increments* v_owner;
 
 	t_type* f_type_as_type() const

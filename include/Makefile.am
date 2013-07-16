@@ -1,7 +1,6 @@
 includeversiondir = $(includedir)/xemmai-$(VERSION)
 
 nobase_includeversion_HEADERS = \
-	xemmai/portable/atomic.h \
 	xemmai/portable/convert.h \
 	xemmai/portable/define.h \
 	xemmai/portable/library.h \
@@ -9,6 +8,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/portable/thread.h \
 	xemmai/array.h \
 	xemmai/ast.h \
+	xemmai/atomic.h \
 	xemmai/boolean.h \
 	xemmai/bytes.h \
 	xemmai/class.h \

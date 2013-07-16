@@ -49,7 +49,7 @@ struct t_unspecified
 
 class t_with_lock_for_read
 {
-	portable::t_scoped_lock_for_read v_lock;
+	t_scoped_lock_for_read v_lock;
 
 public:
 	t_with_lock_for_read(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)
@@ -59,7 +59,7 @@ public:
 
 class t_with_lock_for_write
 {
-	portable::t_scoped_lock_for_write v_lock;
+	t_scoped_lock_for_write v_lock;
 
 public:
 	t_with_lock_for_write(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)

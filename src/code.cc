@@ -308,7 +308,7 @@ void t_code::f_loop()
 						t_object* key = static_cast<t_object*>(pc0[2]);
 						t_slot& top = stack[0];
 						size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
-						if (portable::f_atomic_increment(count) == 2) {
+						if (f_atomic_increment(count) == 2) {
 							t_object* p = static_cast<t_object*>(top);
 							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 								ptrdiff_t index = p->f_field_index(key);
@@ -390,7 +390,7 @@ void t_code::f_loop()
 						t_slot& top = stack[0];
 						t_slot& value = stack[1];
 						size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
-						if (portable::f_atomic_increment(count) == 2) {
+						if (f_atomic_increment(count) == 2) {
 							t_object* p = static_cast<t_object*>(top);
 							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 								ptrdiff_t index = p->f_field_index(key);

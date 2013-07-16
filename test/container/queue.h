@@ -24,7 +24,7 @@ struct t_pair
 
 class t_queue
 {
-	mutable portable::t_lock v_lock;
+	mutable t_lock v_lock;
 	t_slot v_head;
 
 public:
