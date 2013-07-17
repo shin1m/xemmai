@@ -420,24 +420,6 @@ void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable
 	}
 }
 
-namespace
-{
-
-struct t_less
-{
-	const t_value& v_callable;
-
-	t_less(const t_value& a_callable) : v_callable(a_callable)
-	{
-	}
-	bool operator()(const t_transfer& a_x, const t_transfer& a_y) const
-	{
-		return f_as<bool>(v_callable(a_x, a_y));
-	}
-};
-
-}
-
 void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable)
 {
 	f_check<t_array>(a_self, L"this");
@@ -454,7 +436,10 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 	std::vector<t_scoped> a(size);
 	for (size_t i = 0; i < size; ++i) a[i] = t[(head + i) % t.f_size()].f_transfer();
 	head = 0;
-	std::sort(a.begin(), a.end(), t_less(a_callable));
+	std::sort(a.begin(), a.end(), [&a_callable](const t_transfer& a_x, const t_transfer& a_y)
+	{
+		return f_as<bool>(a_callable(a_x, a_y));
+	});
 	for (size_t i = 0; i < size; ++i) t[i] = a[i].f_transfer();
 	{
 		t_with_lock_for_read lock0(a_self);
