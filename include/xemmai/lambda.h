@@ -28,6 +28,7 @@ struct t_type_of<t_lambda> : t_type
 {
 	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
 	{
+		v_shared = true;
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
@@ -55,10 +56,7 @@ public:
 template<>
 struct t_type_of<t_advanced_lambda> : t_type_of<t_lambda>
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<t_lambda>(a_module, a_super)
-	{
-		v_shared = true;
-	}
+	using t_type_of<t_lambda>::t_type_of;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n);

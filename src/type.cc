@@ -21,7 +21,7 @@ bool t_type::f_derives(t_object* a_this, t_object* a_type)
 
 void t_type::f_initialize(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 {
-	for (size_t i = 1; i <= a_n; ++i) a_stack[i] = 0;
+	for (size_t i = 1; i <= a_n; ++i) a_stack[i] = nullptr;
 }
 
 void t_type::f_own(const t_value& a_self)
@@ -45,10 +45,6 @@ void t_type::f_define(t_object* a_class)
 		(L"own", t_member<void (*)(const t_value&), f_own>())
 		(L"share", t_member<void (*)(const t_value&), f_share>())
 	;
-}
-
-t_type::~t_type_of()
-{
 }
 
 t_type* t_type::f_derive(t_object* a_this)
@@ -128,7 +124,7 @@ void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
 		}
 		size_t i = t_thread::t_cache::f_index(a_this, a_key);
 		t_thread::t_cache& cache = t_thread::v_cache[i];
-		if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) cache.v_object = cache.v_key = cache.v_value = 0;
+		if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) cache.v_object = cache.v_key = cache.v_value = nullptr;
 		cache.v_revision = t_thread::t_cache::f_revise(i);
 		cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
 	}
@@ -166,7 +162,7 @@ t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
 		}
 		size_t i = t_thread::t_cache::f_index(a_this, a_key);
 		t_thread::t_cache& cache = t_thread::v_cache[i];
-		if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) cache.v_object = cache.v_key = cache.v_value = 0;
+		if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key) cache.v_object = cache.v_key = cache.v_value = nullptr;
 		cache.v_revision = t_thread::t_cache::f_revise(i);
 		cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
 		return value;

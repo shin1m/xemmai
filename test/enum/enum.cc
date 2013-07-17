@@ -66,9 +66,7 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 		;
 	}
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_base(a_module, a_super)
-	{
-	}
+	using t_base::t_base;
 };
 
 }

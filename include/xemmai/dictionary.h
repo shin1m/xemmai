@@ -69,7 +69,7 @@ private:
 		t_table() : v_size(0)
 		{
 			t_entry** entries = f_entries();
-			for (size_t i = 0; i < v_capacity; ++i) entries[i] = 0;
+			for (size_t i = 0; i < v_capacity; ++i) entries[i] = nullptr;
 		}
 		~t_table();
 		t_entry** f_entries() const
@@ -127,7 +127,7 @@ public:
 	t_transfer f_put(const t_value& a_key, const t_transfer& a_value);
 	bool f_has(const t_value& a_key) const
 	{
-		return f_find(a_key) != 0;
+		return f_find(a_key) != nullptr;
 	}
 	t_transfer f_remove(const t_value& a_key);
 };
@@ -135,9 +135,7 @@ public:
 template<>
 struct t_type_of<t_dictionary::t_table> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
-	{
-	}
+	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
@@ -158,9 +156,7 @@ struct t_type_of<t_dictionary> : t_type
 	static void f_each(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
-	{
-	}
+	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
@@ -172,7 +168,7 @@ struct t_type_of<t_dictionary> : t_type
 	virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
 };
 
-inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(f_as<const t_table&>(a_dictionary.v_table)), v_i(0), v_entry(0)
+inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(f_as<const t_table&>(a_dictionary.v_table)), v_i(0), v_entry(nullptr)
 {
 	t_entry** entries = v_table.f_entries();
 	do {

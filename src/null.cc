@@ -14,7 +14,7 @@ void t_type_of<std::nullptr_t>::f_define()
 
 t_type* t_type_of<std::nullptr_t>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<std::nullptr_t>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)

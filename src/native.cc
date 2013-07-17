@@ -15,7 +15,7 @@ t_transfer t_native::f_instantiate(const t_transfer& a_module, t_function a_func
 
 t_type* t_type_of<t_native>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_native>::f_scan(t_object* a_this, t_scan a_scan)

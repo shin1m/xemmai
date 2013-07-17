@@ -862,7 +862,7 @@ void t_parser::t_error::f_dump() const
 
 t_type* t_type_of<t_parser::t_error>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_parser::t_error>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)

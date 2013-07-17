@@ -14,9 +14,9 @@ class t_symbol
 	friend struct t_type_of<t_symbol>;
 
 	std::map<std::wstring, t_slot>::iterator v_entry;
-	volatile size_t v_revision;
+	volatile size_t v_revision = 0;
 
-	t_symbol(std::map<std::wstring, t_slot>::iterator a_entry) : v_entry(a_entry), v_revision(0)
+	t_symbol(std::map<std::wstring, t_slot>::iterator a_entry) : v_entry(a_entry)
 	{
 	}
 	~t_symbol() = default;

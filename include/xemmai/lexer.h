@@ -82,12 +82,12 @@ private:
 
 	std::wstring v_path;
 	FILE* v_stream;
-	long v_p;
-	long v_position;
-	size_t v_line;
-	size_t v_column;
+	long v_p = 0;
+	long v_position = 0;
+	size_t v_line = 1;
+	size_t v_column = 1;
 	wint_t v_c;
-	t_at v_at;
+	t_at v_at{0, 0, 0};
 	t_token v_token;
 	std::vector<wchar_t> v_value;
 
@@ -108,8 +108,7 @@ public:
 		virtual void f_dump() const;
 	};
 
-	t_lexer(const std::wstring& a_path, FILE* a_stream) :
-	v_path(a_path), v_stream(a_stream), v_p(0), v_position(0), v_line(1), v_column(1), v_c(std::getwc(v_stream)), v_at(0, 0, 0)
+	t_lexer(const std::wstring& a_path, FILE* a_stream) : v_path(a_path), v_stream(a_stream), v_c(std::getwc(v_stream))
 	{
 		f_next();
 	}
@@ -135,9 +134,7 @@ public:
 template<>
 struct t_type_of<t_lexer::t_error> : t_type_of<t_throwable>
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<t_throwable>(a_module, a_super)
-	{
-	}
+	using t_type_of<t_throwable>::t_type_of;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
 };

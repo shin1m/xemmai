@@ -71,7 +71,7 @@ void t_reader::f_close(t_io* a_extension)
 {
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	v_stream.f_get(a_extension->f_symbol_close())();
-	v_stream = 0;
+	v_stream = nullptr;
 }
 
 std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)

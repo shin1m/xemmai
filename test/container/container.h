@@ -18,9 +18,7 @@ struct t_type_of<t_pair> : t_type
 	static t_transfer f_instantiate(t_container* a_extension, const t_transfer& a_value);
 	static t_transfer f_define(t_container* a_extension);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
-	{
-	}
+	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
@@ -34,9 +32,7 @@ struct t_type_of<t_queue> : t_type
 
 	static void f_define(t_container* a_extension);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
-	{
-	}
+	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

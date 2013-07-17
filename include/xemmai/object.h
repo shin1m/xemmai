@@ -51,7 +51,7 @@ class t_structure
 	std::map<t_object*, t_object*>::iterator v_iterator;
 	t_slot v_this;
 	t_slot v_parent0;
-	t_structure* v_parent1;
+	t_structure* v_parent1 = nullptr;
 	std::mutex v_mutex;
 	std::map<t_object*, t_object*> v_children;
 
@@ -70,7 +70,7 @@ class t_structure
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_structure(const t_transfer& a_this) : v_this(a_this), v_parent1(0)
+	t_structure(const t_transfer& a_this) : v_this(a_this)
 	{
 	}
 	t_structure(std::map<t_object*, t_object*>::iterator a_iterator, const t_transfer& a_this, t_structure* a_parent) : v_iterator(a_iterator), v_this(a_this), v_parent0(a_parent->v_this), v_parent1(a_parent)

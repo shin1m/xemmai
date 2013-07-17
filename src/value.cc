@@ -133,7 +133,7 @@ void t_value::f_assign(const t_transfer& a_value)
 		v_float = a_value.v_float;
 		break;
 	}
-	a_value.v_p = 0;
+	a_value.v_p = nullptr;
 	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
 }
 

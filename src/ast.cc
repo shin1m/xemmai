@@ -8,10 +8,6 @@ namespace xemmai
 namespace ast
 {
 
-t_node::~t_node()
-{
-}
-
 void f_generate_block(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail)
 {
 	auto i = a_nodes.begin();
@@ -52,7 +48,7 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	a_generator.v_labels = &labels1;
 	t_generator::t_targets* targets0 = a_generator.v_targets;
 	t_code::t_label& return0 = a_generator.f_label();
-	t_generator::t_targets targets1(0, false, 0, &return0, true);
+	t_generator::t_targets targets1(nullptr, false, nullptr, &return0, true);
 	a_generator.v_targets = &targets1;
 	if (v_self_shared) {
 		a_generator.f_reserve(stack + 1);
@@ -214,7 +210,7 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 		t_code::t_label& break0 = a_generator.f_label();
 		t_code::t_label& continue0 = a_generator.f_label();
 		t_code::t_label& return0 = a_generator.f_label();
-		t_generator::t_targets targets1(targets0->v_break ? &break0 : 0, false, targets0->v_continue ? &continue0 : 0, targets0->v_return ? &return0 : 0, false);
+		t_generator::t_targets targets1(targets0->v_break ? &break0 : nullptr, false, targets0->v_continue ? &continue0 : nullptr, targets0->v_return ? &return0 : nullptr, false);
 		a_generator.v_targets = &targets1;
 		f_generate_block(a_generator, a_stack, v_block, false);
 		a_generator.f_emit(e_instruction__FINALLY);
@@ -246,7 +242,7 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 	}
 	a_generator.f_target(finally0);
 	{
-		t_generator::t_targets targets2(0, false, 0, 0, false);
+		t_generator::t_targets targets2(nullptr, false, nullptr, nullptr, false);
 		a_generator.v_targets = &targets2;
 		f_generate_block_without_value(a_generator, a_stack + 1, v_finally);
 	}
@@ -608,7 +604,7 @@ t_transfer t_generator::f_generate(ast::t_module& a_module)
 	v_code = &f_as<t_code&>(code);
 	std::deque<t_code::t_label> labels;
 	v_labels = &labels;
-	t_targets targets(0, false, 0, 0, false);
+	t_targets targets(nullptr, false, nullptr, nullptr, false);
 	v_targets = &targets;
 	f_reserve(stack + 1);
 	if (a_module.v_self_shared) {

@@ -16,9 +16,7 @@ struct t_type_of<t_client> : t_type
 
 	static void f_define(t_callback_extension* a_extension);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
-	{
-	}
+	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
 	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
@@ -31,9 +29,7 @@ struct t_type_of<t_server> : t_type
 
 	static void f_define(t_callback_extension* a_extension);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
-	{
-	}
+	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
 	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);

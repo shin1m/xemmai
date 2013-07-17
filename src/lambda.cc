@@ -16,7 +16,7 @@ t_transfer t_lambda::f_instantiate(const t_transfer& a_scope, const t_transfer& 
 
 t_type* t_type_of<t_lambda>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_lambda>::f_scan(t_object* a_this, t_scan a_scan)

@@ -18,7 +18,7 @@ t_transfer t_class::f_instantiate(t_type* a_type)
 
 t_type* t_class::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_class::f_scan(t_object* a_this, t_scan a_scan)

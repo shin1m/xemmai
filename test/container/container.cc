@@ -17,7 +17,7 @@ t_transfer t_type_of<t_pair>::f_define(t_container* a_extension)
 
 t_type* t_type_of<t_pair>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_pair>::f_scan(t_object* a_this, t_scan a_scan)

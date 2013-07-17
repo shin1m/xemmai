@@ -37,11 +37,11 @@ void t_dictionary::t_table::f_clear()
 	t_entry** entries = f_entries();
 	for (size_t i = 0; i < v_capacity; ++i) {
 		t_entry* p = entries[i];
-		entries[i] = 0;
+		entries[i] = nullptr;
 		while (p) {
 			t_entry* q = p->v_next;
-			p->v_key = 0;
-			p->v_value = 0;
+			p->v_key = nullptr;
+			p->v_value = nullptr;
 			t_local_pool<t_entry>::f_free(p);
 			p = q;
 		}
@@ -57,7 +57,7 @@ void t_dictionary::f_rehash(size_t a_rank)
 	t_entry** entries = table0.f_entries();
 	for (size_t i = 0; i < table0.v_capacity; ++i) {
 		t_entry* p = entries[i];
-		entries[i] = 0;
+		entries[i] = nullptr;
 		while (p) {
 			t_entry* q = p->v_next;
 			t_entry** bucket = table1.f_bucket(f_as<size_t>(p->v_key.f_hash()));
@@ -78,7 +78,7 @@ t_dictionary::t_entry* t_dictionary::f_find(const t_value& a_key) const
 		if (f_as<bool>(p->v_key.f_equals(a_key))) return p;
 		p = p->v_next;
 	}
-	return 0;
+	return nullptr;
 }
 
 t_transfer t_dictionary::f_instantiate()
@@ -126,7 +126,7 @@ t_transfer t_dictionary::f_remove(const t_value& a_key)
 	}
 	t_entry* p = *bucket;
 	*bucket = p->v_next;
-	p->v_key = 0;
+	p->v_key = nullptr;
 	t_transfer value = p->v_value.f_transfer();
 	t_local_pool<t_entry>::f_free(p);
 	--table.v_size;
@@ -136,7 +136,7 @@ t_transfer t_dictionary::f_remove(const t_value& a_key)
 
 t_type* t_type_of<t_dictionary::t_table>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_dictionary::t_table>::f_scan(t_object* a_this, t_scan a_scan)

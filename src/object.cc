@@ -14,7 +14,7 @@ void t_object::f_decrement(t_slot& a_slot)
 	t_object* p = a_slot.v_p;
 	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
 	p->f_decrement();
-	a_slot.v_p = 0;
+	a_slot.v_p = nullptr;
 }
 
 void t_object::f_mark_gray(t_slot& a_slot)
@@ -65,7 +65,7 @@ void t_object::f_cyclic_decrement(t_slot& a_slot)
 			p->f_decrement();
 		}
 	}
-	a_slot.v_p = 0;
+	a_slot.v_p = nullptr;
 }
 
 void t_object::f_collect()
@@ -78,7 +78,7 @@ void t_object::f_collect()
 		do {
 			p = p->v_next;
 			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && p->f_type_as_type()->v_revive) {
-				p = 0;
+				p = nullptr;
 				break;
 			}
 		} while (p != cycle);
@@ -113,7 +113,7 @@ void t_object::f_collect()
 				f_append(v_roots, p);
 			} else {
 				p->v_color = e_color__BLACK;
-				p->v_next = 0;
+				p->v_next = nullptr;
 			}
 			while (p != cycle) {
 				p = q;
@@ -122,7 +122,7 @@ void t_object::f_collect()
 					f_append(v_roots, p);
 				} else {
 					p->v_color = e_color__BLACK;
-					p->v_next = 0;
+					p->v_next = nullptr;
 				}
 			}
 		}
@@ -155,9 +155,9 @@ void t_object::f_collect()
 				if (q->v_count <= 0)
 					f_engine()->f_free_as_release(q);
 				else
-					q->v_next = 0;
+					q->v_next = nullptr;
 				if (q == v_roots) {
-					if (p == q) p = 0;
+					if (p == q) p = nullptr;
 					v_roots = p;
 					break;
 				}
@@ -178,15 +178,15 @@ void t_object::f_collect()
 		t_object* p = v_roots->v_next;
 		v_roots->v_next = p->v_next;
 		if (p->v_color == e_color__WHITE) {
-			cycle = 0;
+			cycle = nullptr;
 			p->f_collect_white();
 			cycles.push_back(cycle);
 		} else {
-			p->v_next = 0;
+			p->v_next = nullptr;
 		}
 		if (p == v_roots) break;
 	}
-	v_roots = 0;
+	v_roots = nullptr;
 	for (auto cycle : cycles) {
 		t_object* p = cycle;
 		do {
@@ -214,7 +214,7 @@ void t_object::f_decrement_tree()
 	if (v_fields) {
 		v_fields->f_scan(f_decrement);
 		delete v_fields;
-		v_fields = 0;
+		v_fields = nullptr;
 	}
 	t_type* type = f_type_as_type();
 	type->f_scan(this, f_decrement);
@@ -279,12 +279,12 @@ void t_object::f_cyclic_decrement()
 	if (v_fields) {
 		v_fields->f_scan(f_cyclic_decrement);
 		delete v_fields;
-		v_fields = 0;
+		v_fields = nullptr;
 	}
 	f_type_as_type()->f_scan(this, f_cyclic_decrement);
 	if (static_cast<t_object*>(v_type) != f_engine()->v_type_class) {
 		f_type_as_type()->f_finalize(this);
-		v_type.v_pointer = 0;
+		v_type.v_pointer = nullptr;
 	}
 	f_cyclic_decrement(v_type);
 }
@@ -309,11 +309,11 @@ void t_object::f_field_add(const t_transfer& a_structure, const t_transfer& a_va
 t_transfer t_object::f_allocate_on_boot(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	p->v_next = 0;
+	p->v_next = nullptr;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
-	p->v_type.v_pointer = 0;
-	p->v_owner = 0;
+	p->v_type.v_pointer = nullptr;
+	p->v_owner = nullptr;
 	return t_transfer(p, t_transfer::t_pass());
 }
 
@@ -321,25 +321,25 @@ t_transfer t_object::f_allocate_on_boot(t_object* a_type)
 t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	p->v_next = 0;
+	p->v_next = nullptr;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 
 t_transfer t_object::f_allocate(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	p->v_next = 0;
+	p->v_next = nullptr;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
-	p->v_type.v_pointer = 0;
+	p->v_type.v_pointer = nullptr;
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 #endif
@@ -357,7 +357,7 @@ void t_object::f_own()
 		t_object* key = p[i];
 		size_t j = t_thread::t_cache::f_index(this, key);
 		t_thread::t_cache& cache = t_thread::v_cache[j];
-		if (static_cast<t_object*>(cache.v_object) == this && static_cast<t_object*>(cache.v_key) == key) cache.v_object = cache.v_key = cache.v_value = 0;
+		if (static_cast<t_object*>(cache.v_object) == this && static_cast<t_object*>(cache.v_key) == key) cache.v_object = cache.v_key = cache.v_value = nullptr;
 		cache.v_revision = t_thread::t_cache::f_revise(j);
 		cache.v_key_revision = f_as<t_symbol&>(key).v_revision;
 	}
@@ -368,7 +368,7 @@ void t_object::f_share()
 	if (f_type_as_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
 	if (v_owner != t_value::v_increments) t_throwable::f_throw(L"not owned.");
 	t_scoped_lock_for_write lock(v_lock);
-	v_owner = 0;
+	v_owner = nullptr;
 }
 
 void t_object::f_field_put(t_object* a_key, const t_transfer& a_value)

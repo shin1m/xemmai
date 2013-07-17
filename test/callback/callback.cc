@@ -17,7 +17,7 @@ void t_client::f_remove()
 {
 	if (!v_server) return;
 	v_server->f_remove(this);
-	v_server = 0;
+	v_server = nullptr;
 }
 
 void t_server::f_remove(t_client* a_client)

@@ -23,7 +23,6 @@ t_transfer t_type_of<ptrdiff_t>::f_multiply(ptrdiff_t a_self, const t_value& a_v
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return t_transfer();
 }
 
 t_transfer t_type_of<ptrdiff_t>::f_divide(ptrdiff_t a_self, const t_value& a_value)
@@ -43,7 +42,6 @@ t_transfer t_type_of<ptrdiff_t>::f_divide(ptrdiff_t a_self, const t_value& a_val
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return t_transfer();
 }
 
 t_transfer t_type_of<ptrdiff_t>::f_add(ptrdiff_t a_self, const t_value& a_value)
@@ -63,7 +61,6 @@ t_transfer t_type_of<ptrdiff_t>::f_add(ptrdiff_t a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return t_transfer();
 }
 
 t_transfer t_type_of<ptrdiff_t>::f_subtract(ptrdiff_t a_self, const t_value& a_value)
@@ -83,7 +80,6 @@ t_transfer t_type_of<ptrdiff_t>::f_subtract(ptrdiff_t a_self, const t_value& a_v
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return t_transfer();
 }
 
 bool t_type_of<ptrdiff_t>::f_less(ptrdiff_t a_self, const t_value& a_value)
@@ -103,7 +99,6 @@ bool t_type_of<ptrdiff_t>::f_less(ptrdiff_t a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return false;
 }
 
 bool t_type_of<ptrdiff_t>::f_less_equal(ptrdiff_t a_self, const t_value& a_value)
@@ -123,7 +118,6 @@ bool t_type_of<ptrdiff_t>::f_less_equal(ptrdiff_t a_self, const t_value& a_value
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return false;
 }
 
 bool t_type_of<ptrdiff_t>::f_greater(ptrdiff_t a_self, const t_value& a_value)
@@ -143,7 +137,6 @@ bool t_type_of<ptrdiff_t>::f_greater(ptrdiff_t a_self, const t_value& a_value)
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return false;
 }
 
 bool t_type_of<ptrdiff_t>::f_greater_equal(ptrdiff_t a_self, const t_value& a_value)
@@ -163,7 +156,6 @@ bool t_type_of<ptrdiff_t>::f_greater_equal(ptrdiff_t a_self, const t_value& a_va
 		}
 	}
 	t_throwable::f_throw(L"not supported");
-	return false;
 }
 
 bool t_type_of<ptrdiff_t>::f_equals(ptrdiff_t a_self, const t_value& a_value)

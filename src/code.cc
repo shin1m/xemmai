@@ -211,7 +211,7 @@ void t_code::f_loop()
 							++pc;
 						else
 							pc = static_cast<void**>(*pc);
-						stack[0] = 0;
+						stack[0] = nullptr;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(TRY)
@@ -244,7 +244,7 @@ void t_code::f_loop()
 						} else {
 							pc = static_cast<void**>(*pc);
 						}
-						type = 0;
+						type = nullptr;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(FINALLY)
@@ -292,7 +292,7 @@ void t_code::f_loop()
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						++pc;
-						stack[0] = 0;
+						stack[0] = nullptr;
 					}
 					XEMMAI__CODE__BREAK
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
@@ -378,7 +378,7 @@ void t_code::f_loop()
 						t_slot& top = stack[0];
 						t_slot& key = stack[1];
 						top = top.f_get(key);
-						key = 0;
+						key = nullptr;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_PUT)
@@ -495,7 +495,7 @@ void t_code::f_loop()
 						t_slot& key = stack[1];
 						t_slot& value = stack[2];
 						top.f_put(key, value);
-						key = 0;
+						key = nullptr;
 						top = value.f_transfer();
 					}
 					XEMMAI__CODE__BREAK
@@ -515,7 +515,7 @@ void t_code::f_loop()
 						t_slot& top = stack[0];
 						t_slot& key = stack[1];
 						top = t_value(top.f_has(key));
-						key = 0;
+						key = nullptr;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_REMOVE)
@@ -534,7 +534,7 @@ void t_code::f_loop()
 						t_slot& top = stack[0];
 						t_slot& key = stack[1];
 						top = top.f_remove(key);
-						key = 0;
+						key = nullptr;
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(GLOBAL_GET)
@@ -858,7 +858,7 @@ void t_code::f_loop()
 						t_slot& a1 = stack[1];
 #define XEMMAI__CODE__PRIMITIVE_TT(a_x)\
 								stack[0] = t_value(a_x);\
-								stack[1] = 0;
+								stack[1] = nullptr;
 #define XEMMAI__CODE__PREPARE_TT() XEMMAI__CODE__PREPARE()
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\
 				XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name, XEMMAI__CODE__OPERANDS))\
@@ -966,7 +966,7 @@ void t_code::f_loop()
 								t_transfer x = a0.f_transfer();
 #undef XEMMAI__CODE__PRIMITIVE_T
 #define XEMMAI__CODE__PRIMITIVE_T(a_x)\
-								stack[0] = 0;
+								stack[0] = nullptr;
 #undef XEMMAI__CODE__PREPARE_VL
 #define XEMMAI__CODE__PREPARE_VL()\
 								t_transfer x = a0.f_transfer();\
@@ -979,8 +979,8 @@ void t_code::f_loop()
 								stack[1].f_construct(stack[0].f_transfer());
 #undef XEMMAI__CODE__PRIMITIVE_TT
 #define XEMMAI__CODE__PRIMITIVE_TT(a_x)\
-								stack[0] = 0;\
-								stack[1] = 0;
+								stack[0] = nullptr;\
+								stack[1] = nullptr;
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\
 				XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name##_TAIL, XEMMAI__CODE__OPERANDS))\
 					{\
@@ -1066,9 +1066,9 @@ void t_code::f_loop()
 						if (state == t_fiber::t_try::e_state__THROW) {
 							t_fiber::t_context::f_free(q.v_backtrace);
 							t_fiber::t_context::v_instance->v_next = p.v_backtrace;
-							p.v_backtrace = 0;
+							p.v_backtrace = nullptr;
 							q.v_backtrace = t_fiber::t_context::v_instance;
-							p.v_context = 0;
+							p.v_context = nullptr;
 							p.v_stack.f_clear(p.v_stack.f_head());
 							p.v_stack.v_used = p.v_stack.f_head();
 						} else {
@@ -1123,12 +1123,12 @@ void t_code::f_scan(t_scan a_scan)
 const t_at* t_code::f_at(void** a_address) const
 {
 	auto i = std::lower_bound(v_ats.begin(), v_ats.end(), t_address_at(a_address - &v_instructions[0], t_at(0, 0, 0)));
-	return i == v_ats.end() ? 0 : &*i;
+	return i == v_ats.end() ? nullptr : &*i;
 }
 
 t_type* t_type_of<t_code>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_code>::f_scan(t_object* a_this, t_scan a_scan)

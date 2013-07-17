@@ -58,7 +58,7 @@ public:
 		}
 		~t_collector()
 		{
-			v_collector = 0;
+			v_collector = nullptr;
 		}
 
 	public:
@@ -230,7 +230,7 @@ protected:
 #endif
 
 public:
-	t_value(t_object* a_p = 0) : v_p(a_p)
+	t_value(t_object* a_p = nullptr) : v_p(a_p)
 	{
 	}
 	explicit t_value(bool a_value) : v_p(reinterpret_cast<t_object*>(e_tag__BOOLEAN)), v_boolean(a_value)
@@ -355,7 +355,7 @@ class t_transfer : public t_value
 	}
 
 public:
-	t_transfer(t_object* a_p = 0) : t_value(a_p, t_own())
+	t_transfer(t_object* a_p = nullptr) : t_value(a_p, t_own())
 	{
 	}
 	explicit t_transfer(bool a_value) : t_value(a_value)
@@ -387,7 +387,7 @@ public:
 	}
 	t_transfer(const t_transfer& a_value) : t_value(a_value)
 	{
-		a_value.v_p = 0;
+		a_value.v_p = nullptr;
 	}
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	XEMMAI__PORTABLE__ALWAYS_INLINE ~t_transfer()
@@ -449,7 +449,7 @@ protected:
 	}
 	t_shared(const t_transfer& a_value) : t_value(a_value)
 	{
-		a_value.v_p = 0;
+		a_value.v_p = nullptr;
 	}
 	t_shared(const t_shared& a_value) : t_value(a_value, t_own())
 	{
@@ -459,14 +459,14 @@ public:
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_transfer f_transfer()
 	{
 		t_value p = *this;
-		v_p = 0;
+		v_p = nullptr;
 		return t_transfer(p, t_pass());
 	}
 };
 
 struct t_scoped : t_shared
 {
-	t_scoped(t_object* a_p = 0) : t_shared(a_p)
+	t_scoped(t_object* a_p = nullptr) : t_shared(a_p)
 	{
 	}
 	explicit t_scoped(bool a_value) : t_shared(a_value)
@@ -536,7 +536,7 @@ struct t_slot : t_shared
 {
 	friend class t_object;
 
-	t_slot(t_object* a_p = 0) : t_shared(a_p)
+	t_slot(t_object* a_p = nullptr) : t_shared(a_p)
 	{
 	}
 	explicit t_slot(bool a_value) : t_shared(a_value)
@@ -593,7 +593,7 @@ struct t_slot : t_shared
 		return *this;
 	}
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	void f_construct(t_object* a_p = 0)
+	void f_construct(t_object* a_p = nullptr)
 	{
 		assert(!v_p);
 		if (a_p) v_increments->f_push(a_p);
@@ -620,7 +620,7 @@ struct t_slot : t_shared
 		v_p = a_value.v_p;
 	}
 #else
-	XEMMAI__PORTABLE__EXPORT void f_construct(t_object* a_p = 0);
+	XEMMAI__PORTABLE__EXPORT void f_construct(t_object* a_p = nullptr);
 	XEMMAI__PORTABLE__EXPORT void f_construct(const t_value& a_value);
 #endif
 	void f_construct(bool a_value)
@@ -686,7 +686,7 @@ struct t_slot : t_shared
 			v_float = a_value.v_float;
 			break;
 		}
-		a_value.v_p = 0;
+		a_value.v_p = nullptr;
 	}
 };
 
@@ -725,7 +725,7 @@ inline void t_value::f_assign(const t_transfer& a_value)
 		v_float = a_value.v_float;
 		break;
 	}
-	a_value.v_p = 0;
+	a_value.v_p = nullptr;
 	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
 }
 #endif
@@ -757,7 +757,7 @@ struct t_stack
 	}
 	void f_clear(t_slot* a_p)
 	{
-		while (a_p < v_used) *a_p++ = 0;
+		while (a_p < v_used) *a_p++ = nullptr;
 	}
 };
 
@@ -773,10 +773,10 @@ XEMMAI__PORTABLE__EXPORT t_stack* f_stack();
 class t_scoped_stack
 {
 	t_slot* v_p;
-	bool v_done;
+	bool v_done = false;
 
 public:
-	t_scoped_stack(size_t a_n) : v_done(false)
+	t_scoped_stack(size_t a_n)
 	{
 		t_stack* stack = f_stack();
 		v_p = stack->v_used;

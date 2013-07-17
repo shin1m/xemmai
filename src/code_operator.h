@@ -556,7 +556,7 @@
 							default:
 								{
 									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) != 0 && a0.v_integer == p->f_integer())
+									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_integer == p->f_integer())
 								}
 							}
 							break;
@@ -575,7 +575,7 @@
 							default:
 								{
 									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != 0 && a0.v_float == p->f_float())
+									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_float == p->f_float())
 								}
 							}
 							break;
@@ -606,7 +606,7 @@
 							default:
 								{
 									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) == 0 || a0.v_integer != p->f_integer())
+									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_integer != p->f_integer())
 								}
 							}
 							break;
@@ -625,7 +625,7 @@
 							default:
 								{
 									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == 0 || a0.v_float != p->f_float())
+									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_float != p->f_float())
 								}
 							}
 							break;

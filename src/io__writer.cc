@@ -76,7 +76,7 @@ void t_writer::f_close(t_io* a_extension)
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	f_unshift(a_extension);
 	v_stream.f_get(a_extension->f_symbol_close())();
-	v_stream = 0;
+	v_stream = nullptr;
 }
 
 void t_writer::f_write(t_io* a_extension, const t_value& a_value)

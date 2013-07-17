@@ -57,9 +57,9 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(v_mutex);
 		if (v_chunks.empty()) {
-			if (!a_grow) return 0;
+			if (!a_grow) return nullptr;
 			f_grow();
-			if (v_chunks.empty()) return 0;
+			if (v_chunks.empty()) return nullptr;
 		}
 		T* p = v_chunks.front().v_head;
 		v_allocated += v_chunks.front().v_size;
@@ -85,7 +85,7 @@ void t_shared_pool<T, A_size>::f_grow()
 		p->v_next = p + 1;
 		++p;
 	}
-	p->v_next = 0;
+	p->v_next = nullptr;
 	v_chunks.push_back(t_chunk(block->v_cells, A_size));
 }
 
@@ -111,7 +111,7 @@ public:
 	static T* f_detach()
 	{
 		T* p = v_head;
-		v_head = 0;
+		v_head = nullptr;
 		return p;
 	}
 };

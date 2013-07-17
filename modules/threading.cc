@@ -115,7 +115,7 @@ void t_type_of<std::mutex>::f_define(t_threading* a_extension)
 
 t_type* t_type_of<std::mutex>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<std::mutex>::f_finalize(t_object* a_this)
@@ -174,7 +174,7 @@ void t_type_of<std::condition_variable>::f_define(t_threading* a_extension)
 
 t_type* t_type_of<std::condition_variable>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<std::condition_variable>::f_finalize(t_object* a_this)

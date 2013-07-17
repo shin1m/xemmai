@@ -42,7 +42,7 @@ t_transfer t_queue::f_pop()
 	if (!v_head) t_throwable::f_throw(L"empty queue.");
 	t_transfer pair = f_as<t_pair&>(v_head).v_next;
 	if (pair == v_head)
-		v_head = 0;
+		v_head = nullptr;
 	else
 		f_as<t_pair&>(v_head).v_next = f_as<t_pair&>(pair).v_next;
 	return f_as<t_pair&>(pair).v_value.f_transfer();

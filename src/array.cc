@@ -49,7 +49,7 @@ void t_array::f_shrink()
 	if (v_size > 1) {
 		f_resize();
 	} else if (v_size <= 0) {
-		v_tuple = 0;
+		v_tuple = nullptr;
 		v_head = 0;
 	}
 }

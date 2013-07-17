@@ -984,7 +984,7 @@ inline t_transfer t_value::f_send(const t_value& a_value) const
 template<typename T_main>
 ptrdiff_t t_fiber::f_main(T_main a_main)
 {
-	t_context::f_initiate(0);
+	t_context::f_initiate(nullptr);
 	try {
 		t_native_context context;
 		try {

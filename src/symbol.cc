@@ -39,14 +39,14 @@ void t_symbol::f_revise(t_object* a_this)
 	if (f_atomic_increment(f_as<t_symbol&>(a_this).v_revision) != 0) return;
 	for (size_t i = 0; i < t_thread::t_cache::V_SIZE; ++i) {
 		t_thread::t_cache& cache = t_thread::v_cache[i];
-		if (static_cast<t_object*>(cache.v_key) == a_this) cache.v_object = cache.v_key = cache.v_value = 0;
+		if (static_cast<t_object*>(cache.v_key) == a_this) cache.v_object = cache.v_key = cache.v_value = nullptr;
 		cache.v_revision = t_thread::t_cache::f_revise(i);
 	}
 }
 
 t_type* t_type_of<t_symbol>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_symbol>::f_scan(t_object* a_this, t_scan a_scan)

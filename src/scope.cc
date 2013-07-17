@@ -15,7 +15,7 @@ t_transfer t_scope::f_instantiate(size_t a_size, const t_transfer& a_outer)
 
 t_type* t_type_of<t_scope>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_scope>::f_scan(t_object* a_this, t_scan a_scan)

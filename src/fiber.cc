@@ -35,7 +35,7 @@ void t_fiber::t_context::f_pop()
 	t_stack* stack = f_stack();
 	t_context* p = v_instance;
 	t_code& code = f_as<t_code&>(p->v_code);
-	for (size_t i = 0; i < code.v_privates; ++i) p->v_base[i] = 0;
+	for (size_t i = 0; i < code.v_privates; ++i) p->v_base[i] = nullptr;
 	stack->v_used = p->v_previous;
 	v_instance = p->v_next;
 	p->f_free();
@@ -50,7 +50,7 @@ void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	++a_stack;
 	size_t i = 0;
 	for (; i < a_n; ++i) p->v_base[i] = a_stack[i].f_transfer();
-	for (; i < code.v_privates; ++i) p->v_base[i] = 0;
+	for (; i < code.v_privates; ++i) p->v_base[i] = nullptr;
 	stack->v_used = std::max(p->v_previous, p->v_base + a_n);
 	v_instance = p->v_next;
 	p->f_free();
@@ -174,20 +174,20 @@ void t_fiber::f_caught(const t_value& a_object)
 		t_with_lock_for_write lock(a_object);
 		t_throwable& p = f_as<t_throwable&>(a_object);
 		t_context::f_free(p.v_context);
-		p.v_context = t_context::f_instantiate(v_backtrace, 0);
+		p.v_context = t_context::f_instantiate(v_backtrace, nullptr);
 		p.v_context->v_code.f_construct(t_context::v_instance->v_code);
 		p.v_context->v_pc = v_caught;
 		p.v_context->v_native = v_undone;
 	} else {
 		t_context::f_free(v_backtrace);
 	}
-	v_backtrace = 0;
+	v_backtrace = nullptr;
 	v_undone = 0;
 }
 
 t_type* t_type_of<t_fiber>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)

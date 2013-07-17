@@ -9,9 +9,7 @@ namespace xemmai
 template<typename T>
 struct t_derived : T
 {
-	t_derived(const t_transfer& a_module, const t_transfer& a_super) : T(a_module, a_super)
-	{
-	}
+	using T::T;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_slot* a_stack);

@@ -8,7 +8,7 @@
 namespace xemmai
 {
 
-t_module::t_scoped_lock::t_scoped_lock() : v_own(false)
+t_module::t_scoped_lock::t_scoped_lock()
 {
 	t_object*& thread = f_engine()->v_module__thread;
 	t_object* current = t_thread::f_current();
@@ -25,7 +25,7 @@ t_module::t_scoped_lock::~t_scoped_lock()
 {
 	if (!v_own) return;
 	std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
-	f_engine()->v_module__thread = 0;
+	f_engine()->v_module__thread = nullptr;
 	f_engine()->v_module__condition.notify_all();
 }
 
@@ -45,7 +45,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name, t_module* a_modul
 t_transfer t_module::f_load_script(const std::wstring& a_path)
 {
 	io::t_file stream(a_path, "r");
-	if (!stream) return 0;
+	if (!stream) return t_transfer();
 	t_parser parser(a_path, stream);
 	ast::t_module module(a_path);
 	parser.f_parse(module);
@@ -56,7 +56,7 @@ t_transfer t_module::f_load_script(const std::wstring& a_path)
 t_library* t_module::f_load_library(const std::wstring& a_path)
 {
 	portable::t_library library(a_path);
-	if (!library) return 0;
+	if (!library) return nullptr;
 	t_library::t_handle* handle = new t_library::t_handle();
 	handle->v_library.f_swap(library);
 	return new t_library(a_path, handle);
@@ -65,7 +65,7 @@ t_library* t_module::f_load_library(const std::wstring& a_path)
 void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
 	t_scoped_stack stack(0);
-	t_fiber::t_context::f_push(a_code, 0, a_this, stack);
+	t_fiber::t_context::f_push(a_code, nullptr, a_this, stack);
 	t_code::f_loop();
 	t_fiber::t_context::f_pop();
 }
@@ -110,7 +110,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 		}
 	}
 	t_throwable::f_throw(L"module \"" + a_name + L"\" not found.");
-	return 0;
+	return t_transfer();
 }
 
 void t_module::f_main()

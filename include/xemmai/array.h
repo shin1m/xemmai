@@ -29,7 +29,7 @@ public:
 
 	void f_clear()
 	{
-		v_tuple = 0;
+		v_tuple = nullptr;
 		v_head = v_size = 0;
 	}
 	size_t f_size() const
@@ -74,9 +74,7 @@ struct t_type_of<t_array> : t_type
 	static void f_sort(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
-	{
-	}
+	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

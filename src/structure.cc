@@ -14,7 +14,7 @@ t_transfer t_structure::f_append(t_object* a_key)
 	f_engine()->v_object__reviving__mutex.lock();
 	auto i = v_children.lower_bound(a_key);
 	if (i == v_children.end() || i->first != a_key) {
-		i = v_children.insert(i, std::make_pair(a_key, static_cast<t_object*>(0)));
+		i = v_children.insert(i, std::make_pair(a_key, nullptr));
 	} else if (i->second) {
 		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
@@ -39,7 +39,7 @@ t_transfer t_structure::f_remove(size_t a_index)
 
 t_type* t_type_of<t_structure>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_structure>::f_scan(t_object* a_this, t_scan a_scan)

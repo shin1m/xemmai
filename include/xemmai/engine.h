@@ -37,13 +37,12 @@ class t_engine : public t_value::t_collector
 	{
 		t_engine* v_engine;
 		size_t v_cpu;
-		bool v_wake;
+		bool v_wake = false;
 		std::mutex v_mutex;
 		std::condition_variable v_condition;
 		t_synchronizer* v_next;
 
-		t_synchronizer(t_engine* a_engine, size_t a_cpu) :
-		v_engine(a_engine), v_cpu(a_cpu), v_wake(false), v_next(a_engine->v_synchronizers)
+		t_synchronizer(t_engine* a_engine, size_t a_cpu) : v_engine(a_engine), v_cpu(a_cpu), v_next(a_engine->v_synchronizers)
 		{
 			v_engine->v_synchronizers = this;
 		}
@@ -66,7 +65,7 @@ class t_engine : public t_value::t_collector
 			while (++n < A_size && q->v_next) q = q->v_next;
 			T* p0 = p;
 			p = q->v_next;
-			q->v_next = 0;
+			q->v_next = nullptr;
 			a_pool.f_free(p0, n);
 		}
 	}
@@ -79,7 +78,7 @@ class t_engine : public t_value::t_collector
 	template<typename T, size_t A_size>
 	static void f_free(t_shared_pool<T, A_size>& a_pool, size_t& a_freed, T* a_p)
 	{
-		assert(t_thread::v_current == 0);
+		assert(t_thread::v_current == nullptr);
 		t_local_pool<T>::f_free(a_p);
 		if (++a_freed >= A_size) f_return(a_pool, a_freed);
 	}
@@ -215,7 +214,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_object::f_decrement()
 		if (v_fields) {
 			v_fields->f_scan(f_decrement);
 			delete v_fields;
-			v_fields = 0;
+			v_fields = nullptr;
 		}
 		t_type* type = f_type_as_type();
 		if (!type->v_primitive) {
@@ -223,7 +222,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_object::f_decrement()
 			type->f_finalize(this);
 		}
 		f_type()->f_decrement_member();
-		v_type.v_p = 0;
+		v_type.v_p = nullptr;
 		v_color = e_color__BLACK;
 		if (!v_next) f_engine()->f_free_as_release(this);
 	}
@@ -233,25 +232,25 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_object::f_decrement()
 inline t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	p->v_next = 0;
+	p->v_next = nullptr;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 
 inline t_transfer t_object::f_allocate(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	p->v_next = 0;
+	p->v_next = nullptr;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
-	p->v_type.v_pointer = 0;
+	p->v_type.v_pointer = nullptr;
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? 0 : t_value::v_increments;
+	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
 	return t_transfer(p, t_transfer::t_pass());
 }
 #endif

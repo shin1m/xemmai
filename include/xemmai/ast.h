@@ -47,7 +47,7 @@ public:
 	t_node(const t_at& a_at) : v_at(a_at)
 	{
 	}
-	virtual ~t_node();
+	virtual ~t_node() = default;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand) = 0;
 };
 
@@ -65,24 +65,24 @@ struct t_scope
 {
 	t_scope* v_outer;
 	std::vector<std::unique_ptr<t_node>> v_block;
-	bool v_shared;
-	bool v_self_shared;
+	bool v_shared = false;
+	bool v_self_shared = false;
 	std::map<t_scoped, t_variable> v_variables;
 	std::vector<t_variable*> v_privates;
-	size_t v_shareds;
+	size_t v_shareds = 0;
 
-	t_scope(t_scope* a_outer) : v_outer(a_outer), v_shared(false), v_self_shared(false), v_shareds(0)
+	t_scope(t_scope* a_outer) : v_outer(a_outer)
 	{
 	}
 };
 
 struct t_lambda : t_node, t_scope
 {
-	bool v_variadic;
-	size_t v_arguments;
+	bool v_variadic = false;
+	size_t v_arguments = 0;
 	std::vector<std::unique_ptr<t_node>> v_defaults;
 
-	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer), v_variadic(false), v_arguments(0)
+	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -118,9 +118,7 @@ struct t_for : t_node
 	std::vector<std::unique_ptr<t_node>> v_next;
 	std::vector<std::unique_ptr<t_node>> v_block;
 
-	t_for(const t_at& a_at) : t_node(a_at)
-	{
-	}
+	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
 };
 
@@ -136,9 +134,7 @@ struct t_break : t_node
 
 struct t_continue : t_node
 {
-	t_continue(const t_at& a_at) : t_node(a_at)
-	{
-	}
+	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
 };
 
@@ -169,9 +165,7 @@ struct t_try : t_node
 	std::vector<std::unique_ptr<t_catch>> v_catches;
 	std::vector<std::unique_ptr<t_node>> v_finally;
 
-	t_try(const t_at& a_at) : t_node(a_at)
-	{
-	}
+	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
 };
 
@@ -340,9 +334,7 @@ struct t_super : t_node
 
 struct t_null : t_node
 {
-	t_null(const t_at& a_at) : t_node(a_at)
-	{
-	}
+	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
 };
 
@@ -448,7 +440,7 @@ struct t_module : t_scope
 {
 	std::wstring v_path;
 
-	t_module(const std::wstring& a_path) : t_scope(0), v_path(a_path)
+	t_module(const std::wstring& a_path) : t_scope(nullptr), v_path(a_path)
 	{
 	}
 	const std::wstring& f_path() const

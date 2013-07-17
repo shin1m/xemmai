@@ -353,9 +353,7 @@ struct t_enum_of : t_type_of<ptrdiff_t>
 		return f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
 	}
 
-	t_enum_of(const t_transfer& a_module, const t_transfer& a_super) : t_type_of<ptrdiff_t>(a_module, a_super)
-	{
-	}
+	using t_type_of<ptrdiff_t>::t_type_of;
 	virtual t_type* f_derive(t_object* a_this);
 };
 

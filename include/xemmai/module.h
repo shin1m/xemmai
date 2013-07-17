@@ -13,7 +13,7 @@ struct t_module
 {
 	class t_scoped_lock
 	{
-		bool v_own;
+		bool v_own = false;
 
 	public:
 		t_scoped_lock();
@@ -64,9 +64,9 @@ struct t_library : t_module
 	};
 
 	t_handle* v_handle;
-	t_extension* v_extension;
+	t_extension* v_extension = nullptr;
 
-	t_library(const std::wstring& a_path, t_handle* a_handle) : t_module(a_path), v_handle(a_handle), v_extension(0)
+	t_library(const std::wstring& a_path, t_handle* a_handle) : t_module(a_path), v_handle(a_handle)
 	{
 	}
 	virtual ~t_library();

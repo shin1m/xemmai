@@ -29,18 +29,18 @@ struct t_thread
 	};
 	struct t_internal
 	{
-		t_internal* v_next;
-		size_t v_done;
+		t_internal* v_next = nullptr;
+		size_t v_done = 0;
 		t_value::t_collector* v_collector;
 		t_value::t_increments v_increments;
 		t_value::t_decrements v_decrements;
-		t_object* volatile* v_reviving;
+		t_object* volatile* v_reviving = nullptr;
 		t_structure::t_cache v_index_cache[t_structure::t_cache::V_SIZE];
 		t_cache v_cache[t_cache::V_SIZE];
-		size_t v_cache_hit;
-		size_t v_cache_missed;
+		size_t v_cache_hit = 0;
+		size_t v_cache_missed = 0;
 
-		t_internal() : v_next(0), v_done(0), v_collector(t_value::v_collector), v_reviving(0), v_cache_hit(0), v_cache_missed(0)
+		t_internal() : v_collector(t_value::v_collector)
 		{
 		}
 		void f_initialize()

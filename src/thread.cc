@@ -43,8 +43,8 @@ void t_thread::f_main(t_object* a_p)
 		f_as<t_fiber&>(t_fiber::v_current).v_callable();
 	});
 	f_cache_clear();
-	p.v_active = 0;
-	p.v_internal = 0;
+	p.v_active = nullptr;
+	p.v_internal = nullptr;
 	t_value::v_decrements->f_push(v_current);
 	f_engine()->f_pools__return();
 	{
@@ -60,11 +60,11 @@ void t_thread::f_cache_clear()
 {
 	for (size_t i = 0; i < t_structure::t_cache::V_SIZE; ++i) {
 		t_structure::t_cache& cache = t_structure::v_cache[i];
-		cache.v_structure = cache.v_key = 0;
+		cache.v_structure = cache.v_key = nullptr;
 	}
 	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
 		t_cache& cache = v_cache[i];
-		cache.v_object = cache.v_key = cache.v_value = 0;
+		cache.v_object = cache.v_key = cache.v_value = nullptr;
 	}
 }
 
@@ -75,7 +75,7 @@ void t_thread::f_cache_acquire()
 		size_t revision = t_cache::v_revisions[i];
 		if (cache.v_revision == revision) continue;
 		cache.v_revision = revision;
-		cache.v_object = cache.v_key = cache.v_value = 0;
+		cache.v_object = cache.v_key = cache.v_value = nullptr;
 	}
 }
 
@@ -97,7 +97,7 @@ t_transfer t_thread::f_instantiate(const t_transfer& a_callable, size_t a_stack)
 	try {
 		std::thread(f_main, static_cast<t_object*>(object)).detach();
 	} catch (std::system_error&) {
-		p->v_internal = 0;
+		p->v_internal = nullptr;
 		t_value::v_decrements->f_push(static_cast<t_object*>(object));
 		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		++internal->v_done;
@@ -126,7 +126,7 @@ void t_thread::f_join()
 
 t_type* t_type_of<t_thread>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_thread>::f_scan(t_object* a_this, t_scan a_scan)
