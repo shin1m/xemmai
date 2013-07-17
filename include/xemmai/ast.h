@@ -539,7 +539,7 @@ struct t_generator
 	}
 	void f_resolve()
 	{
-		for (std::deque<t_code::t_label>::const_iterator i = v_labels->begin(); i != v_labels->end(); ++i) v_code->f_resolve(*i);
+		for (const auto& label : *v_labels) v_code->f_resolve(label);
 	}
 	void f_at(ast::t_node* a_node)
 	{

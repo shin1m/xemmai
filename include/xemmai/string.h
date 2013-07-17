@@ -27,7 +27,7 @@ struct t_type_of<std::wstring> : t_type
 	static ptrdiff_t f_hash(const std::wstring& a_self)
 	{
 		ptrdiff_t n = 0;
-		for (std::wstring::const_iterator i = a_self.begin(); i != a_self.end(); ++i) n ^= *i;
+		for (auto c : a_self) n ^= c;
 		return n;
 	}
 	static std::wstring f_add(const std::wstring& a_self, const t_value& a_value);

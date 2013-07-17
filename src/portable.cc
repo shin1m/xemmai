@@ -43,7 +43,7 @@ t_path::t_path(const std::wstring& a_path)
 
 t_path& t_path::operator/=(const std::wstring& a_path)
 {
-	std::wstring::const_iterator i = a_path.begin();
+	auto i = a_path.begin();
 	while (i != a_path.end()) {
 		std::vector<wchar_t> cs;
 		do {

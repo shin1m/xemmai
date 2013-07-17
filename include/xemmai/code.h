@@ -272,7 +272,7 @@ struct t_code
 	void f_resolve(const t_label& a_label)
 	{
 		void* p = &v_instructions[a_label.v_target];
-		for (t_label::const_iterator i = a_label.begin(); i != a_label.end(); ++i) v_instructions[*i] = p;
+		for (auto i : a_label) v_instructions[i] = p;
 	}
 	void f_at(const t_at& a_at)
 	{

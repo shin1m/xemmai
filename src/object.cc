@@ -71,7 +71,7 @@ void t_object::f_cyclic_decrement(t_slot& a_slot)
 void t_object::f_collect()
 {
 	std::list<t_object*>& cycles = f_engine()->v_object__cycles;
-	for (std::list<t_object*>::reverse_iterator i = cycles.rbegin(); i != cycles.rend(); ++i) {
+	for (auto i = cycles.rbegin(); i != cycles.rend(); ++i) {
 		std::lock_guard<std::mutex> lock(f_engine()->v_object__reviving__mutex);
 		t_object* cycle = *i;
 		t_object* p = cycle;
@@ -187,8 +187,7 @@ void t_object::f_collect()
 		if (p == v_roots) break;
 	}
 	v_roots = 0;
-	for (std::list<t_object*>::const_iterator i = cycles.begin(); i != cycles.end(); ++i) {
-		t_object* cycle = *i;
+	for (auto cycle : cycles) {
 		t_object* p = cycle;
 		do {
 			p = p->v_next;

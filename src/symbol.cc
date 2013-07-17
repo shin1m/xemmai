@@ -11,7 +11,7 @@ t_transfer t_symbol::f_instantiate(const std::wstring& a_value)
 	std::lock_guard<std::mutex> lock(f_engine()->v_symbol__instantiate__mutex);
 	f_engine()->v_object__reviving__mutex.lock();
 	std::map<std::wstring, t_slot>& instances = f_engine()->v_symbol__instances;
-	std::map<std::wstring, t_slot>::iterator i = instances.lower_bound(a_value);
+	auto i = instances.lower_bound(a_value);
 	if (i == instances.end() || i->first != a_value) {
 		i = instances.insert(i, std::make_pair(a_value, t_slot()));
 	} else if (i->second.f_tag() != t_value::e_tag__NULL) {

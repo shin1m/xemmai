@@ -12,7 +12,7 @@ t_transfer t_structure::f_append(t_object* a_key)
 {
 	std::lock_guard<std::mutex> lock(v_mutex);
 	f_engine()->v_object__reviving__mutex.lock();
-	std::map<t_object*, t_object*>::iterator i = v_children.lower_bound(a_key);
+	auto i = v_children.lower_bound(a_key);
 	if (i == v_children.end() || i->first != a_key) {
 		i = v_children.insert(i, std::make_pair(a_key, static_cast<t_object*>(0)));
 	} else if (i->second) {

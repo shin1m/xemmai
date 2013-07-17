@@ -12,7 +12,7 @@ void t_parser::f_throw(const std::wstring& a_message)
 
 ast::t_variable& t_parser::f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop)
 {
-	std::map<t_scoped, ast::t_variable>::iterator i = a_scope->v_variables.find(a_symbol);
+	auto i = a_scope->v_variables.find(a_symbol);
 	if (i == a_scope->v_variables.end()) {
 		i = a_scope->v_variables.insert(i, std::make_pair(a_symbol, ast::t_variable()));
 		a_scope->v_privates.push_back(&i->second);
@@ -55,7 +55,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						return std::unique_ptr<ast::t_node>(new ast::t_scope_put(at, outer, variable, f_expression()));
 					}
 					while (scope) {
-						std::map<t_scoped, ast::t_variable>::iterator i = scope->v_variables.find(t_value(symbol));
+						auto i = scope->v_variables.find(t_value(symbol));
 						if (i != scope->v_variables.end()) {
 							if (outer > 0) i->second.v_shared = true;
 							return std::unique_ptr<ast::t_node>(new ast::t_scope_get(at, outer, i->second));
@@ -70,8 +70,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					if (!scope) t_throwable::f_throw(L"no more outer scope.");
 					if (outer > 0) scope->v_self_shared = true;
 					std::unique_ptr<ast::t_node> target(new ast::t_self(at, outer));
-					std::vector<wchar_t>::const_iterator end = v_lexer.f_value().end();
-					for (std::vector<wchar_t>::const_iterator i = v_lexer.f_value().begin(); i != end; ++i) target = std::unique_ptr<ast::t_node>(*i == L':' ? static_cast<ast::t_node*>(new ast::t_class(at, std::move(target))) : static_cast<ast::t_node*>(new ast::t_super(at, std::move(target))));
+					for (auto c : v_lexer.f_value()) target = std::unique_ptr<ast::t_node>(c == L':' ? static_cast<ast::t_node*>(new ast::t_class(at, std::move(target))) : static_cast<ast::t_node*>(new ast::t_super(at, std::move(target))));
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 						t_at at = v_lexer.f_at();
@@ -175,8 +174,8 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			std::vector<ast::t_variable*> variables;
 			variables.swap(lambda->v_privates);
 			if (lambda->v_self_shared) ++lambda->v_shareds;
-			std::vector<ast::t_variable*>::const_iterator i = variables.begin();
-			for (std::vector<ast::t_variable*>::const_iterator j = i + lambda->v_arguments; i != j; ++i) {
+			auto i = variables.begin();
+			for (auto j = i + lambda->v_arguments; i != j; ++i) {
 				ast::t_variable* p = *i;
 				p->v_index = p->v_shared ? lambda->v_shareds++ : lambda->v_privates.size();
 				lambda->v_privates.push_back(p);
@@ -837,8 +836,7 @@ void t_parser::f_parse(ast::t_module& a_module)
 	std::vector<ast::t_variable*> variables;
 	variables.swap(a_module.v_privates);
 	if (a_module.v_self_shared) ++a_module.v_shareds;
-	for (std::vector<ast::t_variable*>::const_iterator i = variables.begin(); i != variables.end(); ++i) {
-		ast::t_variable* p = *i;
+	for (auto p : variables) {
 		if (p->v_shared) {
 			p->v_index = a_module.v_shareds++;
 		} else {

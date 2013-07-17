@@ -77,7 +77,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 	f_engine()->v_module__mutex.lock();
 	{
 		std::map<std::wstring, t_slot>& instances = f_engine()->v_module__instances;
-		std::map<std::wstring, t_slot>::iterator i = instances.lower_bound(a_name);
+		auto i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
 			f_engine()->v_object__reviving = true;
 			f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();

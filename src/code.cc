@@ -1122,7 +1122,7 @@ void t_code::f_scan(t_scan a_scan)
 
 const t_at* t_code::f_at(void** a_address) const
 {
-	std::vector<t_address_at>::const_iterator i = std::lower_bound(v_ats.begin(), v_ats.end(), t_address_at(a_address - &v_instructions[0], t_at(0, 0, 0)));
+	auto i = std::lower_bound(v_ats.begin(), v_ats.end(), t_address_at(a_address - &v_instructions[0], t_at(0, 0, 0)));
 	return i == v_ats.end() ? 0 : &*i;
 }
 

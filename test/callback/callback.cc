@@ -22,7 +22,7 @@ void t_client::f_remove()
 
 void t_server::f_remove(t_client* a_client)
 {
-	std::vector<t_client*>::iterator i = std::find(v_clients.begin(), v_clients.end(), a_client);
+	auto i = std::find(v_clients.begin(), v_clients.end(), a_client);
 	if (i != v_clients.end()) v_clients.erase(i);
 }
 
@@ -40,7 +40,7 @@ void t_server::f_add(t_client& a_client)
 
 void t_server::f_post(const std::wstring& a_message)
 {
-	for (std::vector<t_client*>::const_iterator i = v_clients.begin(); i != v_clients.end(); ++i) (*i)->f_on_message(a_message);
+	for (auto p : v_clients) p->f_on_message(a_message);
 }
 
 void t_server::f_run()
