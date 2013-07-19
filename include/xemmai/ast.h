@@ -484,41 +484,10 @@ struct t_generator
 	{
 		if (a_size > v_code->v_size) v_code->v_size = a_size;
 	}
-	void f_operand(size_t a_operand)
+	template<typename T>
+	void f_operand(T&& a_operand)
 	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(bool a_operand)
-	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(short a_operand)
-	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(int a_operand)
-	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(long a_operand)
-	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(double a_operand)
-	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(t_object* a_operand)
-	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(const t_transfer& a_operand)
-	{
-		v_code->f_operand(a_operand);
-	}
-	void f_operand(t_code::t_label& a_label)
-	{
-		v_code->f_operand(a_label);
+		v_code->f_operand(std::forward<T>(a_operand));
 	}
 	void f_target(t_code::t_label& a_label)
 	{
