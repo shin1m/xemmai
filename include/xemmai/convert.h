@@ -6,7 +6,6 @@
 #include "macro.h"
 
 #define XEMMAI__MACRO__ARGUMENTS_LIMIT 16
-#define XEMMAI__MACRO__OVERLOADS_LIMIT 8
 
 namespace xemmai
 {
@@ -28,20 +27,6 @@ struct t_call_static
 
 struct t_unspecified
 {
-	template<typename T>
-	struct t_bind
-	{
-		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
-		{
-			t_throwable::f_throw(L"no method matching signature is found.");
-		}
-		static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
-		{
-			t_throwable::f_throw(L"no method matching signature is found.");
-			return t_transfer();
-		}
-	};
-
 	t_unspecified(const t_value& a_self)
 	{
 	}
@@ -91,14 +76,14 @@ struct t_construct_default
 #define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT
 #include "macro.h"
 
-template<XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TYPENAME_UNSPECIFIED, XEMMAI__MACRO__ARGUMENTS_LIMIT), typename T_an = t_unspecified>
+template<typename... T_an>
 struct t_construct
 {
 	template<typename T_self>
 	struct t_bind
 	{
-		typedef typename t_construct_default<T_self, XEMMAI__MACRO__JOIN(XEMMAI__MACRO__T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), T_an>::t_type t_type;
-		typedef t_construct_default<T_self, XEMMAI__MACRO__JOIN(XEMMAI__MACRO__T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), T_an> t_call;
+		typedef typename t_construct_default<T_self, T_an...>::t_type t_type;
+		typedef t_construct_default<T_self, T_an...> t_call;
 
 		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 		{
@@ -186,8 +171,28 @@ struct t_static
 	};
 };
 
-template<typename T, typename T_next = t_unspecified>
-struct t_overload
+template<typename... T>
+struct t_overload;
+
+template<>
+struct t_overload<>
+{
+	template<typename T>
+	struct t_bind
+	{
+		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
+		{
+			t_throwable::f_throw(L"no method matching signature is found.");
+		}
+		static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
+		{
+			t_throwable::f_throw(L"no method matching signature is found.");
+		}
+	};
+};
+
+template<typename T, typename... T_next>
+struct t_overload<T, T_next...>
 {
 	template<typename T_self>
 	struct t_bind
@@ -199,17 +204,17 @@ struct t_overload
 			if (t_bound::t_type::f_match(a_stack, a_n))
 				t_bound::f_call(a_self, a_stack);
 			else
-				T_next::template t_bind<T_self>::f_call(a_module, a_self, a_stack, a_n);
+				t_overload<T_next...>::template t_bind<T_self>::f_call(a_module, a_self, a_stack, a_n);
 		}
 		static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
 		{
-			return t_bound::t_type::f_match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : T_next::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
+			return t_bound::t_type::f_match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : t_overload<T_next...>::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
 		}
 	};
 };
 
-template<typename T_function, T_function A_function, typename T_with, typename T_next>
-struct t_overload<t_member<T_function, A_function, T_with>, T_next>
+template<typename T_function, T_function A_function, typename T_with, typename... T_next>
+struct t_overload<t_member<T_function, A_function, T_with>, T_next...>
 {
 	template<typename T_extension>
 	struct t_bind
@@ -221,13 +226,13 @@ struct t_overload<t_member<T_function, A_function, T_with>, T_next>
 			if (t_bound::t_type::f_match(a_self, a_stack, a_n))
 				t_bound::f_call(a_module, a_self, a_stack);
 			else
-				T_next::template t_bind<T_extension>::f_call(a_module, a_self, a_stack, a_n);
+				t_overload<T_next...>::template t_bind<T_extension>::f_call(a_module, a_self, a_stack, a_n);
 		}
 	};
 };
 
-template<typename T_function, T_function A_function, typename T_next>
-struct t_overload<t_static<T_function, A_function>, T_next>
+template<typename T_function, T_function A_function, typename... T_next>
+struct t_overload<t_static<T_function, A_function>, T_next...>
 {
 	template<typename T_extension>
 	struct t_bind
@@ -239,7 +244,7 @@ struct t_overload<t_static<T_function, A_function>, T_next>
 			if (t_bound::t_type::f_match(a_stack, a_n))
 				t_bound::f_call(a_module, a_stack);
 			else
-				T_next::template t_bind<T_extension>::f_call(a_module, a_self, a_stack, a_n);
+				t_overload<T_next...>::template t_bind<T_extension>::f_call(a_module, a_self, a_stack, a_n);
 		}
 	};
 };
@@ -285,10 +290,16 @@ public:
 	{
 		return (*this)(t_symbol::f_instantiate(a_name), a_function);
 	}
-	template<XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TYPENAME_T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), typename T_an>
-	t_define& operator()(const t_construct<XEMMAI__MACRO__JOIN(XEMMAI__MACRO__T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), T_an>&)
+	template<typename... T_an>
+	t_define& operator()(const t_construct<T_an...>&)
 	{
-		v_type.f_put(f_global()->f_symbol_construct(), v_extension->f_function(t_construct<XEMMAI__MACRO__JOIN(XEMMAI__MACRO__T_AN, XEMMAI__MACRO__ARGUMENTS_LIMIT), T_an>::template t_bind<T>::f_call));
+		v_type.f_put(f_global()->f_symbol_construct(), v_extension->f_function(t_construct<T_an...>::template t_bind<T>::f_call));
+		return *this;
+	}
+	template<typename... T_an, typename T_overload0, typename... T_overloadn>
+	t_define& operator()(const t_construct<T_an...>&, const T_overload0&, const T_overloadn&...)
+	{
+		v_type.f_put(f_global()->f_symbol_construct(), v_extension->f_function(t_overload<t_construct<T_an...>, T_overload0, T_overloadn...>::template t_bind<T>::f_call));
 		return *this;
 	}
 	template<typename T_function, T_function A_function>
@@ -297,16 +308,28 @@ public:
 		v_type.f_put(f_global()->f_symbol_construct(), v_extension->f_function(t_construct_with<T_function, A_function>::template t_bind<T>::f_call));
 		return *this;
 	}
+	template<typename T_function, T_function A_function, typename T_overload0, typename... T_overloadn>
+	t_define& operator()(const t_construct_with<T_function, A_function>&, const T_overload0&, const T_overloadn&...)
+	{
+		v_type.f_put(f_global()->f_symbol_construct(), v_extension->f_function(t_overload<t_construct_with<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T>::f_call));
+		return *this;
+	}
 	template<typename T_function, T_function A_function, typename T_with>
 	t_define& operator()(t_object* a_name, const t_member<T_function, A_function, T_with>&)
 	{
 		v_type.f_put(a_name, v_extension->f_function(t_member<T_function, A_function, T_with>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
 		return *this;
 	}
-	template<typename T_function, T_function A_function, typename T_with>
-	t_define& operator()(const std::wstring& a_name, const t_member<T_function, A_function, T_with>& a_member0)
+	template<typename T_function, T_function A_function, typename T_with, typename T_overload0, typename... T_overloadn>
+	t_define& operator()(t_object* a_name, const t_member<T_function, A_function, T_with>&, const T_overload0&, const T_overloadn&...)
 	{
-		return (*this)(t_symbol::f_instantiate(a_name), a_member0);
+		v_type.f_put(a_name, v_extension->f_function(t_overload<t_member<T_function, A_function, T_with>, T_overload0, T_overloadn...>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
+		return *this;
+	}
+	template<typename T_function, T_function A_function, typename T_with, typename... T_overloadn>
+	t_define& operator()(const std::wstring& a_name, const t_member<T_function, A_function, T_with>& a_member0, const T_overloadn&... a_overloadn)
+	{
+		return (*this)(t_symbol::f_instantiate(a_name), a_member0, a_overloadn...);
 	}
 	template<typename T_function, T_function A_function>
 	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&)
@@ -314,20 +337,17 @@ public:
 		v_type.f_put(a_name, v_extension->f_function(t_static<T_function, A_function>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
 		return *this;
 	}
-	template<typename T_function, T_function A_function>
-	t_define& operator()(const std::wstring& a_name, const t_static<T_function, A_function>& a_member0)
+	template<typename T_function, T_function A_function, typename T_overload0, typename... T_overloadn>
+	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&, const T_overload0&, const T_overloadn&...)
 	{
-		return (*this)(t_symbol::f_instantiate(a_name), a_member0);
+		v_type.f_put(a_name, v_extension->f_function(t_overload<t_static<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
+		return *this;
 	}
-#define XEMMAI__MACRO__TYPENAME_T_OVERLOADN(n) typename T_overload##n
-#define XEMMAI__MACRO__CONST_T_OVERLOADN(n) const T_overload##n&
-#define XEMMAI__MACRO__CONST_T_OVERLOADN_A_OVERLOADN(n) const T_overload##n& a_overload##n
-#define XEMMAI__MACRO__A_OVERLOADN(n) a_overload##n
-#define XEMMAI__MACRO__T_OVERLOADN_OPEN(n) , t_overload<T_overload##n
-#define XEMMAI__MACRO__T_OVERLOADN_CLOSE(n)  >
-#define XEMMAI__MACRO__ITERATE "convert_override.h"
-#define XEMMAI__MACRO__N XEMMAI__MACRO__OVERLOADS_LIMIT
-#include "macro.h"
+	template<typename T_function, T_function A_function, typename... T_overloadn>
+	t_define& operator()(const std::wstring& a_name, const t_static<T_function, A_function>& a_static0, const T_overloadn&... a_overloadn)
+	{
+		return (*this)(t_symbol::f_instantiate(a_name), a_static0, a_overloadn...);
+	}
 };
 
 template<typename T_function, T_function A_function, typename T_extension>

@@ -62,10 +62,10 @@ void t_type_of<t_queue>::f_finalize(t_object* a_this)
 
 t_transfer t_type_of<t_queue>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return
-		t_overload<t_construct<>,
-		t_overload<t_construct<const std::wstring&>
-	> >::t_bind<t_queue>::f_do(a_class, a_stack, a_n);
+	return t_overload<
+		t_construct<>,
+		t_construct<const std::wstring&>
+	>::t_bind<t_queue>::f_do(a_class, a_stack, a_n);
 }
 
 }

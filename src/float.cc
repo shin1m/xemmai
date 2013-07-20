@@ -44,11 +44,11 @@ t_type* t_type_of<double>::f_derive(t_object* a_this)
 
 t_transfer t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return
-		t_overload<t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
-		t_overload<t_construct_with<t_transfer (*)(t_object*, ptrdiff_t), f_construct>,
-		t_overload<t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
-	> > >::t_bind<double>::f_do(a_class, a_stack, a_n);
+	return t_overload<
+		t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
+		t_construct_with<t_transfer (*)(t_object*, ptrdiff_t), f_construct>,
+		t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
+	>::t_bind<double>::f_do(a_class, a_stack, a_n);
 }
 
 }
