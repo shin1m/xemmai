@@ -11,19 +11,13 @@ namespace xemmai
 {
 
 template<typename T_function>
-struct t_call_construct
-{
-};
+struct t_call_construct;
 
 template<typename T_extension, typename T_function, typename T_with>
-struct t_call_member
-{
-};
+struct t_call_member;
 
 template<typename T_extension, typename T_function>
-struct t_call_static
-{
-};
+struct t_call_static;
 
 struct t_unspecified
 {
@@ -54,9 +48,7 @@ public:
 
 #define XEMMAI__MACRO__TYPENAME_UNSPECIFIED(n) typename T_a##n = t_unspecified
 template<typename T_self, XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TYPENAME_UNSPECIFIED, XEMMAI__MACRO__ARGUMENTS_LIMIT), typename T_an = t_unspecified>
-struct t_construct_default
-{
-};
+struct t_construct_default;
 
 #define XEMMAI__MACRO__TYPENAME_T_AN(n) typename T_a##n
 #define XEMMAI__MACRO__T_AN(n) T_a##n

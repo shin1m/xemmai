@@ -60,9 +60,7 @@ struct t_fundamental<t_slot>
 };
 
 template<typename T>
-struct t_type_of
-{
-};
+struct t_type_of;
 
 template<>
 struct t_type_of<t_object>
@@ -126,9 +124,7 @@ struct t_type_of<t_object>
 		}
 	};
 	template<typename T>
-	struct t_as<t_object*, T>
-	{
-	};
+	struct t_as<t_object*, T>;
 	template<typename T>
 	struct t_as<const t_value&, T>
 	{
@@ -183,9 +179,7 @@ struct t_type_of<t_object>
 		}
 	};
 	template<typename T>
-	struct t_is<t_object*, T>
-	{
-	};
+	struct t_is<t_object*, T>;
 	template<typename T>
 	struct t_is<const t_value&, T>
 	{
