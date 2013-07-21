@@ -1,27 +1,65 @@
 #ifndef XEMMAI__CONVERT_H
 #define XEMMAI__CONVERT_H
 
-#include "portable/convert.h"
 #include "global.h"
 #include "macro.h"
-
-#define XEMMAI__MACRO__ARGUMENTS_LIMIT 16
 
 namespace xemmai
 {
 
-template<typename T_function>
-struct t_call_construct;
-
-template<typename T_extension, typename T_function, typename T_with>
-struct t_call_member;
-
-template<typename T_extension, typename T_function>
-struct t_call_static;
-
-struct t_unspecified
+template<typename... T_an>
+struct t_signature
 {
-	t_unspecified(const t_value& a_self)
+	template<size_t A_i>
+	static void f_check__(t_slot* a_stack)
+	{
+	}
+	template<size_t A_i, typename T_a0, typename... T_am>
+	static void f_check__(t_slot* a_stack)
+	{
+		xemmai::f_check<T_a0>(*++a_stack, L"argument" XEMMAI__MACRO__LQ(A_i));
+		f_check__<A_i + 1, T_am...>(a_stack);
+	}
+	static void f_check(t_slot* a_stack, size_t a_n)
+	{
+		if (a_n != sizeof...(T_an)) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__LQ(sizeof...(T_an)) L" argument(s).");
+		f_check__<0, T_an...>(a_stack);
+	}
+	template<t_transfer (*A_function)(t_object*, const t_value&, T_an&&...)>
+	static t_transfer f__call(t_object* a_module, const t_value& a_self, t_slot* a_stack, T_an&&... a_n)
+	{
+		return A_function(a_module, a_self, std::forward<T_an>(a_n)...);
+	}
+	template<t_transfer (*A_function)(t_object*, const t_value&, T_an&&...), typename T_a0, typename... T_am, typename... T_ak>
+	static t_transfer f__call(t_object* a_module, const t_value& a_self, t_slot* a_stack, T_ak&&... a_k)
+	{
+		t_transfer a0 = (++a_stack)->f_transfer();
+		return f__call<A_function, T_am...>(a_module, a_self, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(a0));
+	}
+	template<t_transfer (*A_function)(t_object*, const t_value&, T_an&&...)>
+	static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack)
+	{
+		a_stack[0].f_construct(f__call<A_function, T_an...>(a_module, a_self, a_stack));
+	}
+	template<bool>
+	static bool f__match(t_slot* a_stack)
+	{
+		return true;
+	}
+	template<bool, typename T_a0, typename... T_am>
+	static bool f__match(t_slot* a_stack)
+	{
+		return f_is<T_a0>(*++a_stack) && f__match<false, T_am...>(a_stack);
+	}
+	static bool f_match(t_slot* a_stack, size_t a_n)
+	{
+		return a_n == sizeof...(T_an) && f__match<false, T_an...>(a_stack);
+	}
+};
+
+struct t_with_none
+{
+	t_with_none(const t_value& a_self)
 	{
 	}
 };
@@ -46,101 +84,300 @@ public:
 	}
 };
 
-#define XEMMAI__MACRO__TYPENAME_UNSPECIFIED(n) typename T_a##n = t_unspecified
-template<typename T_self, XEMMAI__MACRO__JOIN(XEMMAI__MACRO__TYPENAME_UNSPECIFIED, XEMMAI__MACRO__ARGUMENTS_LIMIT), typename T_an = t_unspecified>
-struct t_construct_default;
+template<typename T_function, T_function A_function>
+struct t_call_construct;
 
-#define XEMMAI__MACRO__TYPENAME_T_AN(n) typename T_a##n
-#define XEMMAI__MACRO__T_AN(n) T_a##n
-#define XEMMAI__MACRO__T_AN_A_N(n) T_a##n a_##n
-#define XEMMAI__MACRO__TRANSFER_A_N(n) const t_transfer& a_##n
-#define XEMMAI__MACRO__A_N(n) a_##n
-#define XEMMAI__MACRO__AS_A_N(n) f_as<T_a##n>(a_##n)
-#define XEMMAI__MACRO__AN(n) a##n
-#define XEMMAI__MACRO__AS_AN(n) f_as<T_a##n>(a##n)
-#define XEMMAI__MACRO__CHECK_STACK(n) f_check<T_a##n>(a_stack[n + 1], L"argument" XEMMAI__MACRO__LQ(n));
-#define XEMMAI__MACRO__AS_STACK(n) f_as<T_a##n>(a_stack[n + 1])
-#define XEMMAI__MACRO__IS_STACK(n) if (!f_is<T_a##n>(a_stack[n + 1])) return false;
-#define XEMMAI__MACRO__STACK_TRANSFER(n) t_transfer a##n = a_stack[n + 1].f_transfer();
-#define XEMMAI__MACRO__CHECK_AN(n) f_check<T_a##n>(a##n, L"argument" XEMMAI__MACRO__LQ(n));
-#define XEMMAI__MACRO__UNSPECIFIED(n) t_unspecified
-#define XEMMAI__MACRO__ITERATE "convert_call.h"
-#define XEMMAI__MACRO__N XEMMAI__MACRO__ARGUMENTS_LIMIT
-#include "macro.h"
+template<typename... T_an, t_transfer (*A_function)(t_object*, T_an...)>
+struct t_call_construct<t_transfer (*)(t_object*, T_an...), A_function>
+{
+	static t_transfer f_function(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		return A_function(a_self, std::forward<T_an>(a_n)...);
+	}
+	static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
+	{
+		if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+		t_signature<T_an...>::f_check(a_stack, a_n);
+		t_signature<T_an...>::template f_call<f_function>(a_module, a_self, a_stack);
+	}
+	static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack)
+	{
+		t_signature<T_an...>::template f_call<f_function>(a_module, a_self, a_stack);
+	}
+	template<typename...>
+	static t_transfer f__do(t_object* a_class, t_slot* a_stack, T_an&&... a_n)
+	{
+		return A_function(a_class, std::forward<T_an>(a_n)...);
+	}
+	template<typename T_a0, typename... T_am, typename... T_ak>
+	static t_transfer f__do(t_object* a_class, t_slot* a_stack, T_ak&&... a_k)
+	{
+		++a_stack;
+		return f__do<T_am...>(a_class, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(*a_stack));
+	}
+	static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
+	{
+		t_signature<T_an...>::f_check(a_stack, a_n);
+		return f__do<T_an...>(a_class, a_stack);
+	}
+	static t_transfer f_do(t_object* a_class, t_slot* a_stack)
+	{
+		return f__do<T_an...>(a_class, a_stack);
+	}
+	static bool f_match(t_slot* a_stack, size_t a_n)
+	{
+		return t_signature<T_an...>::f_match(a_stack, a_n);
+	}
+	static bool f_match(const t_value& a_self, t_slot* a_stack, size_t a_n)
+	{
+		return a_self.f_type() == f_global()->f_type<t_class>() && f_match(a_stack, a_n);
+	}
+};
 
 template<typename... T_an>
 struct t_construct
 {
 	template<typename T_self>
-	struct t_bind
+	static t_transfer f_default(t_object* a_class, T_an&&... a_an)
 	{
-		typedef typename t_construct_default<T_self, T_an...>::t_type t_type;
-		typedef t_construct_default<T_self, T_an...> t_call;
+		t_transfer object = t_object::f_allocate(a_class);
+		object.f_pointer__(new T_self(std::forward<T_an>(a_an)...));
+		return object;
+	}
 
-		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
-		{
-			t_call::f_call(a_self, a_stack, a_n);
-		}
-		static void f_call(const t_value& a_self, t_slot* a_stack)
-		{
-			t_call::f_call(a_self, a_stack);
-		}
-		static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
-		{
-			return t_call::f_do(a_class, a_stack, a_n);
-		}
-		static t_transfer f_do(t_object* a_class, t_slot* a_stack)
-		{
-			return t_call::f_do(a_class, a_stack);
-		}
-	};
+	template<typename T_self>
+	using t_bind = t_call_construct<t_transfer (*)(t_object*, T_an...), f_default<T_self>>;
 };
 
 template<typename T_function, T_function A_function>
 struct t_construct_with
 {
 	template<typename T_self>
-	struct t_bind
-	{
-		typedef t_call_construct<T_function> t_type;
-
-		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
-		{
-			t_type::f_call(A_function, a_self, a_stack, a_n);
-		}
-		static void f_call(const t_value& a_self, t_slot* a_stack)
-		{
-			t_type::f_call(A_function, a_self, a_stack);
-		}
-		static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
-		{
-			return t_type::f_do(A_function, a_class, a_stack, a_n);
-		}
-		static t_transfer f_do(t_object* a_class, t_slot* a_stack)
-		{
-			return t_type::f_do(A_function, a_class, a_stack);
-		}
-	};
+	using t_bind = t_call_construct<T_function, A_function>;
 };
 
-template<typename T_function, T_function A_function, typename T_with = t_unspecified>
+template<typename T_self, typename... T_an>
+struct t_call_member_base
+{
+	typedef T_self t_self;
+	typedef xemmai::t_signature<T_an...> t_signature;
+};
+
+template<typename T_extension, typename T_function>
+struct t_call_member;
+
+template<typename T_extension, typename T_self, typename T_r, typename... T_an>
+struct t_call_member<T_extension, T_r (T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
+{
+	template<T_r (T_self::*A_function)(T_an...) const>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		return f_extension<T_extension>(a_module)->f_as((f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename T_self, typename... T_an>
+struct t_call_member<T_extension, void (T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
+{
+	template<void (T_self::*A_function)(T_an...) const>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		(f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
+};
+
+template<typename T_extension, typename T_self, typename T_r, typename... T_an>
+struct t_call_member<T_extension, T_r (T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<T_r (T_self::*A_function)(T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		return f_extension<T_extension>(a_module)->f_as((f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename T_self, typename... T_an>
+struct t_call_member<T_extension, void (T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<void (T_self::*A_function)(T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		(f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
+};
+
+template<typename T_extension, typename T_self, typename T_r, typename... T_an>
+struct t_call_member<T_extension, T_r (T_self::*)(T_extension*, T_an...) const> : t_call_member_base<T_self, T_an...>
+{
+	template<T_r (T_self::*A_function)(T_extension*, T_an...) const>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		T_extension* extension = f_extension<T_extension>(a_module);
+		return extension->f_as((f_as<const T_self&>(a_self).*A_function)(extension, std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename T_self, typename... T_an>
+struct t_call_member<T_extension, void (T_self::*)(T_extension*, T_an...) const> : t_call_member_base<T_self, T_an...>
+{
+	template<void (T_self::*A_function)(T_extension*, T_an...) const>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		(f_as<const T_self&>(a_self).*A_function)(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
+};
+
+template<typename T_extension, typename T_self, typename T_r, typename... T_an>
+struct t_call_member<T_extension, T_r (T_self::*)(T_extension*, T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<T_r (T_self::*A_function)(T_extension*, T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		T_extension* extension = f_extension<T_extension>(a_module);
+		return extension->f_as((f_as<T_self&>(a_self).*A_function)(extension, std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename T_self, typename... T_an>
+struct t_call_member<T_extension, void (T_self::*)(T_extension*, T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<void (T_self::*A_function)(T_extension*, T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		(f_as<T_self&>(a_self).*A_function)(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
+};
+
+template<typename T_extension, typename T_r, typename T_self, typename... T_an>
+struct t_call_member<T_extension, T_r (*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<T_r (*A_function)(T_self, T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		return f_extension<T_extension>(a_module)->f_as(A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename T_self, typename... T_an>
+struct t_call_member<T_extension, void (*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<void (*A_function)(T_self, T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
+};
+
+template<typename T_extension, typename T_r, typename T_self, typename... T_an>
+struct t_call_member<T_extension, T_r (*)(T_extension*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<T_r (*A_function)(T_extension*, T_self, T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		T_extension* extension = f_extension<T_extension>(a_module);
+		return extension->f_as(A_function(extension, f_as<T_self>(a_self), std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename T_self, typename... T_an>
+struct t_call_member<T_extension, void (*)(T_extension*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+{
+	template<void (*A_function)(T_extension*, T_self, T_an...)>
+	static t_transfer f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+	{
+		A_function(f_extension<T_extension>(a_module), f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
+};
+
+template<typename T_function, T_function A_function, typename T_with = t_with_none>
 struct t_member
 {
 	template<typename T_extension>
 	struct t_bind
 	{
-		typedef typename t_call_member<T_extension, T_function, T_with>::t_type t_type;
-		typedef typename t_call_member<T_extension, T_function, T_with>::t_call t_call;
+		typedef typename t_call_member<T_extension, T_function>::t_self t_self;
+		typedef typename t_call_member<T_extension, T_function>::t_signature t_signature;
 
+		template<typename... T_an>
+		static t_transfer f_function(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+		{
+			T_with with(a_self);
+			return t_call_member<T_extension, T_function>::template f_call<A_function>(a_module, a_self, std::forward<T_an>(a_n)...);
+		}
 		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 		{
-			t_call::f_call(A_function, a_module, a_self, a_stack, a_n);
+			f_check<t_self>(a_self, L"this");
+			t_signature::f_check(a_stack, a_n);
+			t_signature::template f_call<f_function>(a_module, a_self, a_stack);
 		}
 		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack)
 		{
-			t_call::f_call(A_function, a_module, a_self, a_stack);
+			t_signature::template f_call<f_function>(a_module, a_self, a_stack);
+		}
+		static bool f_match(const t_value& a_self, t_slot* a_stack, size_t a_n)
+		{
+			return f_is<t_self>(a_self) && t_signature::f_match(a_stack, a_n);
 		}
 	};
+};
+
+template<typename T_extension, typename T_function>
+struct t_call_static;
+
+template<typename T_extension, typename T_r, typename... T_an>
+struct t_call_static<T_extension, T_r (*)(T_an...)>
+{
+	typedef xemmai::t_signature<T_an...> t_signature;
+
+	template<T_r (*A_function)(T_an...)>
+	static t_transfer f_call(T_extension* a_extension, T_an&&... a_n)
+	{
+		return a_extension->f_as(A_function(std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename... T_an>
+struct t_call_static<T_extension, void (*)(T_an...)>
+{
+	typedef xemmai::t_signature<T_an...> t_signature;
+
+	template<void (*A_function)(T_an...)>
+	static t_transfer f_call(T_extension* a_extension, T_an&&... a_n)
+	{
+		A_function(std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
+};
+
+template<typename T_extension, typename T_r, typename... T_an>
+struct t_call_static<T_extension, T_r (*)(T_extension*, T_an...)>
+{
+	typedef xemmai::t_signature<T_an...> t_signature;
+
+	template<T_r (*A_function)(T_extension*, T_an...)>
+	static t_transfer f_call(T_extension* a_extension, T_an&&... a_n)
+	{
+		return a_extension->f_as(A_function(a_extension, std::forward<T_an>(a_n)...));
+	}
+};
+
+template<typename T_extension, typename... T_an>
+struct t_call_static<T_extension, void (*)(T_extension*, T_an...)>
+{
+	typedef xemmai::t_signature<T_an...> t_signature;
+
+	template<void (*A_function)(T_extension*, T_an...)>
+	static t_transfer f_call(T_extension* a_extension, T_an&&... a_n)
+	{
+		A_function(a_extension, std::forward<T_an>(a_n)...);
+		return t_transfer();
+	}
 };
 
 template<typename T_function, T_function A_function>
@@ -149,16 +386,25 @@ struct t_static
 	template<typename T_extension>
 	struct t_bind
 	{
-		typedef typename t_call_static<T_extension, T_function>::t_type t_type;
-		typedef typename t_call_static<T_extension, T_function>::t_call t_call;
+		typedef typename t_call_static<T_extension, T_function>::t_signature t_signature;
 
+		template<typename... T_an>
+		static t_transfer f_function(t_object* a_module, const t_value& a_self, T_an&&... a_n)
+		{
+			return t_call_static<T_extension, T_function>::template f_call<A_function>(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
+		}
 		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 		{
-			t_call::f_call(A_function, a_module, a_stack, a_n);
+			t_signature::f_check(a_stack, a_n);
+			t_signature::template f_call<f_function>(a_module, a_self, a_stack);
 		}
-		static void f_call(t_object* a_module, t_slot* a_stack)
+		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack)
 		{
-			t_call::f_call(A_function, a_module, a_stack);
+			t_signature::template f_call<f_function>(a_module, a_self, a_stack);
+		}
+		static bool f_match(const t_value& a_self, t_slot* a_stack, size_t a_n)
+		{
+			return t_signature::f_match(a_stack, a_n);
 		}
 	};
 };
@@ -193,14 +439,14 @@ struct t_overload<T, T_next...>
 
 		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 		{
-			if (t_bound::t_type::f_match(a_stack, a_n))
-				t_bound::f_call(a_self, a_stack);
+			if (t_bound::f_match(a_self, a_stack, a_n))
+				t_bound::f_call(a_module, a_self, a_stack);
 			else
 				t_overload<T_next...>::template t_bind<T_self>::f_call(a_module, a_self, a_stack, a_n);
 		}
 		static t_transfer f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
 		{
-			return t_bound::t_type::f_match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : t_overload<T_next...>::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
+			return t_bound::f_match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : t_overload<T_next...>::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
 		}
 	};
 };
@@ -215,7 +461,7 @@ struct t_overload<t_member<T_function, A_function, T_with>, T_next...>
 
 		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 		{
-			if (t_bound::t_type::f_match(a_self, a_stack, a_n))
+			if (t_bound::f_match(a_self, a_stack, a_n))
 				t_bound::f_call(a_module, a_self, a_stack);
 			else
 				t_overload<T_next...>::template t_bind<T_extension>::f_call(a_module, a_self, a_stack, a_n);
@@ -233,7 +479,7 @@ struct t_overload<t_static<T_function, A_function>, T_next...>
 
 		static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
 		{
-			if (t_bound::t_type::f_match(a_stack, a_n))
+			if (t_bound::f_match(a_stack, a_n))
 				t_bound::f_call(a_module, a_stack);
 			else
 				t_overload<T_next...>::template t_bind<T_extension>::f_call(a_module, a_self, a_stack, a_n);
@@ -268,19 +514,10 @@ public:
 		v_type.f_put(a_name, v_extension->f_as(a_value));
 		return *this;
 	}
-	template<typename T_value>
-	t_define& operator()(const std::wstring& a_name, T_value a_value)
-	{
-		return (*this)(t_symbol::f_instantiate(a_name), a_value);
-	}
 	t_define& operator()(t_object* a_name, t_native::t_function a_function)
 	{
 		v_type.f_put(a_name, v_extension->f_function(a_function));
 		return *this;
-	}
-	t_define& operator()(const std::wstring& a_name, t_native::t_function a_function)
-	{
-		return (*this)(t_symbol::f_instantiate(a_name), a_function);
 	}
 	template<typename... T_an>
 	t_define& operator()(const t_construct<T_an...>&)
@@ -318,11 +555,6 @@ public:
 		v_type.f_put(a_name, v_extension->f_function(t_overload<t_member<T_function, A_function, T_with>, T_overload0, T_overloadn...>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
 		return *this;
 	}
-	template<typename T_function, T_function A_function, typename T_with, typename... T_overloadn>
-	t_define& operator()(const std::wstring& a_name, const t_member<T_function, A_function, T_with>& a_member0, const T_overloadn&... a_overloadn)
-	{
-		return (*this)(t_symbol::f_instantiate(a_name), a_member0, a_overloadn...);
-	}
 	template<typename T_function, T_function A_function>
 	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&)
 	{
@@ -335,10 +567,10 @@ public:
 		v_type.f_put(a_name, v_extension->f_function(t_overload<t_static<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<typename t_type_of<T>::t_extension>::f_call));
 		return *this;
 	}
-	template<typename T_function, T_function A_function, typename... T_overloadn>
-	t_define& operator()(const std::wstring& a_name, const t_static<T_function, A_function>& a_static0, const T_overloadn&... a_overloadn)
+	template<typename... T_an>
+	t_define& operator()(const std::wstring& a_name, T_an&&... a_n)
 	{
-		return (*this)(t_symbol::f_instantiate(a_name), a_static0, a_overloadn...);
+		return (*this)(t_symbol::f_instantiate(a_name), std::forward<T_an>(a_n)...);
 	}
 };
 
