@@ -2,10 +2,46 @@
 #define XEMMAI__CONVERT_H
 
 #include "global.h"
-#include "macro.h"
 
 namespace xemmai
 {
+
+template<wchar_t... A_cs>
+struct t_cs
+{
+	static constexpr wchar_t v[sizeof...(A_cs) + 1] = {A_cs..., L'\0'};
+
+	constexpr operator const wchar_t*() const
+	{
+		return v;
+	}
+	template<wchar_t... A_ys>
+	constexpr t_cs<A_cs..., A_ys...> operator+(const t_cs<A_ys...>&) const
+	{
+		return t_cs<A_cs..., A_ys...>();
+	}
+};
+
+template<wchar_t... A_cs>
+constexpr wchar_t t_cs<A_cs...>::v[sizeof...(A_cs) + 1];
+
+template<size_t A_n>
+struct t__n2s
+{
+	typedef decltype(typename t__n2s<A_n / 10>::t() + t_cs<L'0' + (A_n % 10)>()) t;
+};
+
+template<>
+struct t__n2s<0>
+{
+	typedef t_cs<> t;
+};
+
+template<size_t A_n>
+struct t_n2s
+{
+	typedef typename std::conditional<A_n <= 0, t_cs<L'0'>, typename t__n2s<A_n>::t>::type t;
+};
 
 template<typename... T_an>
 struct t_signature
@@ -17,12 +53,12 @@ struct t_signature
 	template<size_t A_i, typename T_a0, typename... T_am>
 	static void f_check__(t_slot* a_stack)
 	{
-		xemmai::f_check<T_a0>(*++a_stack, L"argument" XEMMAI__MACRO__LQ(A_i));
+		xemmai::f_check<T_a0>(*++a_stack, t_cs<L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't'>() + typename t_n2s<A_i>::t());
 		f_check__<A_i + 1, T_am...>(a_stack);
 	}
 	static void f_check(t_slot* a_stack, size_t a_n)
 	{
-		if (a_n != sizeof...(T_an)) t_throwable::f_throw(L"must be called with " XEMMAI__MACRO__LQ(sizeof...(T_an)) L" argument(s).");
+		if (a_n != sizeof...(T_an)) t_throwable::f_throw((t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>()).v);
 		f_check__<0, T_an...>(a_stack);
 	}
 	template<t_transfer (*A_function)(t_object*, const t_value&, T_an&&...)>
