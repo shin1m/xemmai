@@ -36,7 +36,7 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name, t_module* a_modul
 	t_transfer second = static_cast<t_object*>(object);
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
-		a_module->v_iterator = f_engine()->v_module__instances.insert(std::make_pair(a_name, t_slot())).first;
+		a_module->v_iterator = f_engine()->v_module__instances.emplace(a_name, t_slot()).first;
 		a_module->v_iterator->second = second;
 	}
 	return object;

@@ -14,7 +14,7 @@ t_transfer t_structure::f_append(t_object* a_key)
 	f_engine()->v_object__reviving__mutex.lock();
 	auto i = v_children.lower_bound(a_key);
 	if (i == v_children.end() || i->first != a_key) {
-		i = v_children.insert(i, std::make_pair(a_key, nullptr));
+		i = v_children.emplace_hint(i, a_key, nullptr);
 	} else if (i->second) {
 		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();

@@ -185,8 +185,8 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	v_module_global = t_object::f_allocate(type_module);
 	t_library* library = new t_library(std::wstring(), nullptr);
 	v_module_global.f_pointer__(library);
-	v_module__instances__null = v_module__instances.insert(std::make_pair(std::wstring(), t_slot())).first;
-	library->v_iterator = v_module__instances.insert(std::make_pair(L"__global", t_slot())).first;
+	v_module__instances__null = v_module__instances.emplace(std::wstring(), t_slot()).first;
+	library->v_iterator = v_module__instances.emplace(L"__global", t_slot()).first;
 	library->v_iterator->second = v_module_global;
 	f_as<t_type&>(type_object).v_module = v_module_global;
 	f_as<t_type&>(type_class).v_module = v_module_global;
