@@ -64,14 +64,14 @@ XEMMAI__PORTABLE__THREAD t_value::t_increments* t_value::v_increments;
 XEMMAI__PORTABLE__THREAD t_value::t_decrements* t_value::v_decrements;
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-void t_value::f_increment(t_object* a_p)
+t_increments* t_value::f_increments()
 {
-	v_increments->f_push(a_p);
+	return v_increments;
 }
 
-void t_value::f_decrement(t_object* a_p)
+t_decrements* t_value::f_decrements()
 {
-	v_decrements->f_push(a_p);
+	return v_decrements;
 }
 #endif
 

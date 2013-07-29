@@ -21,7 +21,6 @@ class t_scoped;
 class t_slot;
 struct t_thread;
 struct t_code;
-class t_parser;
 t_engine* f_engine();
 
 class t_value
@@ -33,7 +32,6 @@ class t_value
 	friend class t_slot;
 	friend struct t_thread;
 	friend struct t_code;
-	friend class t_parser;
 	friend t_engine* f_engine();
 
 public:
@@ -160,17 +158,17 @@ protected:
 	static XEMMAI__PORTABLE__THREAD t_decrements* v_decrements;
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	static void f_increment(t_object* a_p)
+	static t_increments* f_increments()
 	{
-		v_increments->f_push(a_p);
+		return v_increments;
 	}
-	static void f_decrement(t_object* a_p)
+	static t_decrements* f_decrements()
 	{
-		v_decrements->f_push(a_p);
+		return v_decrements;
 	}
 #else
-	XEMMAI__PORTABLE__EXPORT static void f_increment(t_object* a_p);
-	XEMMAI__PORTABLE__EXPORT static void f_decrement(t_object* a_p);
+	static XEMMAI__PORTABLE__EXPORT t_increments* f_increments();
+	static XEMMAI__PORTABLE__EXPORT t_decrements* f_decrements();
 #endif
 
 	t_object* v_p;
@@ -197,7 +195,7 @@ protected:
 			v_float = a_value.v_float;
 			break;
 		default:
-			f_increment(a_value.v_p);
+			f_increments()->f_push(a_value.v_p);
 		}
 	}
 	void f_copy_union(const t_value& a_value)
@@ -216,7 +214,7 @@ protected:
 	}
 	t_value(t_object* a_p, const t_own&) : v_p(a_p)
 	{
-		if (v_p) f_increment(v_p);
+		if (v_p) f_increments()->f_push(v_p);
 	}
 	t_value(const t_value& a_value, const t_own&) : v_p(a_value.v_p)
 	{
@@ -228,17 +226,17 @@ protected:
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_object* a_p)
 	{
-		if (a_p) v_increments->f_push(a_p);
+		if (a_p) f_increments()->f_push(a_p);
 		t_object* p = v_p;
 		v_p = a_p;
-		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrement(p);
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(const t_value& a_value)
 	{
 		f_copy(a_value);
 		t_object* p = v_p;
 		v_p = a_value.v_p;
-		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrement(p);
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 	void f_assign(t_value&& a_value)
 	{
@@ -246,7 +244,7 @@ protected:
 		t_object* p = v_p;
 		v_p = a_value.v_p;
 		a_value.v_p = nullptr;
-		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrement(p);
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 
 public:
@@ -376,7 +374,7 @@ public:
 	t_scoped(t_slot&& a_value);
 	~t_scoped()
 	{
-		if (f_tag() >= e_tag__OBJECT) f_decrement(v_p);
+		if (f_tag() >= e_tag__OBJECT) f_decrements()->f_push(v_p);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_object* a_p)
 	{
@@ -500,7 +498,7 @@ public:
 	void f_construct(t_object* a_p = nullptr)
 	{
 		assert(!v_p);
-		if (a_p) f_increment(a_p);
+		if (a_p) f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
 	void f_construct(const t_value& a_value)

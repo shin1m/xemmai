@@ -257,6 +257,14 @@ class t_object
 	static void f_cyclic_decrement(t_slot& a_slot);
 	static void f_collect();
 	static t_object* f_pool__allocate();
+#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+	static t_object* f_local_pool__allocate()
+	{
+		return t_local_pool<t_object>::f_allocate(f_pool__allocate);
+	}
+#else
+	static XEMMAI__PORTABLE__EXPORT t_object* f_local_pool__allocate();
+#endif
 
 	t_object* v_next;
 	t_color v_color;
@@ -316,13 +324,8 @@ class t_object
 
 public:
 	static t_scoped f_allocate_on_boot(t_object* a_type);
-#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	static t_scoped f_allocate_uninitialized(t_object* a_type);
 	static t_scoped f_allocate(t_object* a_type);
-#else
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_allocate_uninitialized(t_object* a_type);
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_allocate(t_object* a_type);
-#endif
 
 	t_object* f_type() const
 	{
@@ -350,7 +353,7 @@ public:
 	}
 	bool f_owned() const
 	{
-		return v_owner == t_value::v_increments;
+		return v_owner == t_value::f_increments();
 	}
 	bool f_shared() const
 	{

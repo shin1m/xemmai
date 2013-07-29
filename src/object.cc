@@ -208,6 +208,13 @@ void t_object::f_collect()
 	}
 }
 
+#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+t_object* t_object::f_local_pool__allocate()
+{
+	return t_local_pool<t_object>::f_allocate(f_pool__allocate);
+}
+#endif
+
 void t_object::f_decrement_tree()
 {
 	static_cast<t_object*>(v_structure->v_this)->f_decrement();
@@ -308,7 +315,7 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 
 t_scoped t_object::f_allocate_on_boot(t_object* a_type)
 {
-	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
+	t_object* p = f_local_pool__allocate();
 	p->v_next = nullptr;
 	p->v_count = 1;
 	p->v_type.f_construct(a_type);
@@ -316,33 +323,6 @@ t_scoped t_object::f_allocate_on_boot(t_object* a_type)
 	p->v_owner = nullptr;
 	return t_scoped(p, t_scoped::t_pass());
 }
-
-#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_scoped t_object::f_allocate_uninitialized(t_object* a_type)
-{
-	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	p->v_next = nullptr;
-	p->v_count = 1;
-	p->v_type.f_construct(a_type);
-	t_value::v_increments->f_push(f_engine()->v_structure_root);
-	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
-	return t_scoped(p, t_scoped::t_pass());
-}
-
-t_scoped t_object::f_allocate(t_object* a_type)
-{
-	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	p->v_next = nullptr;
-	p->v_count = 1;
-	p->v_type.f_construct(a_type);
-	p->v_type.v_pointer = nullptr;
-	t_value::v_increments->f_push(f_engine()->v_structure_root);
-	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
-	return t_scoped(p, t_scoped::t_pass());
-}
-#endif
 
 void t_object::f_own()
 {
