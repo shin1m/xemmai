@@ -24,7 +24,7 @@ struct t_operand
 	};
 
 	t_tag v_tag;
-	t_transfer v_value;
+	t_scoped v_value;
 
 	t_operand(size_t a_value) : v_tag(e_tag__TEMPORARY), v_value(a_value)
 	{
@@ -32,7 +32,7 @@ struct t_operand
 	t_operand(t_tag a_tag, size_t a_value) : v_tag(a_tag), v_value(a_value)
 	{
 	}
-	t_operand(const t_transfer& a_value) : v_tag(e_tag__LITERAL), v_value(a_value)
+	t_operand(t_scoped&& a_value) : v_tag(e_tag__LITERAL), v_value(std::move(a_value))
 	{
 	}
 };
@@ -184,7 +184,7 @@ struct t_object_get : t_node
 	std::unique_ptr<t_node> v_target;
 	t_scoped v_key;
 
-	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
+	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -207,7 +207,7 @@ struct t_object_put : t_node
 	t_scoped v_key;
 	std::unique_ptr<t_node> v_value;
 
-	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key), v_value(std::move(a_value))
+	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key)), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -230,7 +230,7 @@ struct t_object_has : t_node
 	std::unique_ptr<t_node> v_target;
 	t_scoped v_key;
 
-	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
+	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -252,7 +252,7 @@ struct t_object_remove : t_node
 	std::unique_ptr<t_node> v_target;
 	t_scoped v_key;
 
-	t_object_remove(const t_at& a_at, std::unique_ptr<t_node>&& a_target, const t_transfer& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
+	t_object_remove(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -273,7 +273,7 @@ struct t_global_get : t_node
 {
 	t_scoped v_key;
 
-	t_global_get(const t_at& a_at, const t_transfer& a_key) : t_node(a_at), v_key(a_key)
+	t_global_get(const t_at& a_at, t_scoped&& a_key) : t_node(a_at), v_key(std::move(a_key))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -372,7 +372,7 @@ struct t_instance : t_node
 {
 	t_scoped v_value;
 
-	t_instance(const t_at& a_at, const t_transfer& a_value) : t_node(a_at), v_value(a_value)
+	t_instance(const t_at& a_at, t_scoped&& a_value) : t_node(a_at), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -475,7 +475,7 @@ struct t_generator
 	std::deque<t_code::t_label>* v_labels;
 	t_targets* v_targets;
 
-	t_transfer f_generate(ast::t_module& a_module);
+	t_scoped f_generate(ast::t_module& a_module);
 	void f_emit(t_instruction a_instruction)
 	{
 		v_code->f_emit(a_instruction);

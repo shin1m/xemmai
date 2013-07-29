@@ -20,11 +20,11 @@ struct t_module
 		~t_scoped_lock();
 	};
 
-	static t_transfer f_instantiate(const std::wstring& a_name, t_module* a_module);
-	static t_transfer f_load_script(const std::wstring& a_path);
+	static t_scoped f_instantiate(const std::wstring& a_name, t_module* a_module);
+	static t_scoped f_load_script(const std::wstring& a_path);
 	static t_library* f_load_library(const std::wstring& a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
-	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_name);
+	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_name);
 	static void f_main();
 
 	std::wstring v_path;
@@ -49,7 +49,7 @@ public:
 		return v_module;
 	}
 	virtual void f_scan(t_scan a_scan) = 0;
-	t_transfer f_function(t_native::t_function a_function)
+	t_scoped f_function(t_native::t_function a_function)
 	{
 		return t_native::f_instantiate(v_module, a_function);
 	}
@@ -77,7 +77,7 @@ struct t_library : t_module
 template<>
 struct t_type_of<t_module> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_revive = v_shared = true;
 	}

@@ -25,7 +25,7 @@ struct t_time : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(T a_value) const
+	t_scoped f_as(T a_value) const
 	{
 		return f_global()->f_as(a_value);
 	}
@@ -108,12 +108,12 @@ double f_compose(const t_tuple& a_value)
 	return t;
 }
 
-t_transfer f_decompose(double a_value)
+t_scoped f_decompose(double a_value)
 {
 	std::time_t t0 = static_cast<std::time_t>(std::floor(a_value));
 	double fraction = a_value - t0;
 	std::tm* t1 = std::gmtime(&t0);
-	t_transfer p = t_tuple::f_instantiate(8);
+	t_scoped p = t_tuple::f_instantiate(8);
 	t_tuple& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(t1->tm_year + 1900);
 	tuple[1] = t_value(t1->tm_mon + 1);
@@ -408,7 +408,7 @@ const wchar_t* v_rfc2822_months[] = {
 	L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"
 };
 
-t_transfer f_parse_rfc2822(const std::wstring& a_value)
+t_scoped f_parse_rfc2822(const std::wstring& a_value)
 {
 	const wchar_t* s = a_value.c_str();
 	ptrdiff_t day;
@@ -435,7 +435,7 @@ t_transfer f_parse_rfc2822(const std::wstring& a_value)
 		year += 2000;
 	else if (year < 1000)
 		year += 1900;
-	t_transfer p = t_tuple::f_instantiate(7);
+	t_scoped p = t_tuple::f_instantiate(7);
 	t_tuple& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(year);
 	tuple[1] = t_value(m);
@@ -465,7 +465,7 @@ std::wstring f_format_rfc2822(const t_tuple& a_value, ptrdiff_t a_offset)
 	return cs;
 }
 
-t_transfer f_parse_http(const std::wstring& a_value)
+t_scoped f_parse_http(const std::wstring& a_value)
 {
 	ptrdiff_t day;
 	wchar_t month[4];
@@ -487,7 +487,7 @@ t_transfer f_parse_http(const std::wstring& a_value)
 		year += 2000;
 	else if (year < 1000)
 		year += 1900;
-	t_transfer p = t_tuple::f_instantiate(6);
+	t_scoped p = t_tuple::f_instantiate(6);
 	t_tuple& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(year);
 	tuple[1] = t_value(m);
@@ -513,7 +513,7 @@ std::wstring f_format_http(const t_tuple& a_value)
 	return cs;
 }
 
-t_transfer f_parse_xsd(const std::wstring& a_value)
+t_scoped f_parse_xsd(const std::wstring& a_value)
 {
 	ptrdiff_t year;
 	ptrdiff_t month;
@@ -524,7 +524,7 @@ t_transfer f_parse_xsd(const std::wstring& a_value)
 	wchar_t zone[7];
 	int n = std::swscanf(a_value.c_str(), L"%5" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d-%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"dT%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%2" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_PTRDIFF_T) L"d:%lf%6ls", &year, &month, &day, &hour, &minute, &second, zone);
 	if (n < 6) t_throwable::f_throw(L"invalid format.");
-	t_transfer p = t_tuple::f_instantiate(n < 7 ? 6 : 7);
+	t_scoped p = t_tuple::f_instantiate(n < 7 ? 6 : 7);
 	t_tuple& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(year);
 	tuple[1] = t_value(month);
@@ -566,13 +566,13 @@ t_time::t_time(t_object* a_module) : t_extension(a_module)
 	f_define<double (*)(), f_now>(this, L"now");
 	f_define<ptrdiff_t (*)(t_time*), f_tick>(this, L"tick");
 	f_define<double (*)(const t_tuple&), f_compose>(this, L"compose");
-	f_define<t_transfer (*)(double), f_decompose>(this, L"decompose");
+	f_define<t_scoped (*)(double), f_decompose>(this, L"decompose");
 	f_define<ptrdiff_t (*)(), f_offset>(this, L"offset");
-	f_define<t_transfer (*)(const std::wstring&), f_parse_rfc2822>(this, L"parse_rfc2822");
+	f_define<t_scoped (*)(const std::wstring&), f_parse_rfc2822>(this, L"parse_rfc2822");
 	f_define<std::wstring (*)(const t_tuple&, ptrdiff_t), f_format_rfc2822>(this, L"format_rfc2822");
-	f_define<t_transfer (*)(const std::wstring&), f_parse_http>(this, L"parse_http");
+	f_define<t_scoped (*)(const std::wstring&), f_parse_http>(this, L"parse_http");
 	f_define<std::wstring (*)(const t_tuple&), f_format_http>(this, L"format_http");
-	f_define<t_transfer (*)(const std::wstring&), f_parse_xsd>(this, L"parse_xsd");
+	f_define<t_scoped (*)(const std::wstring&), f_parse_xsd>(this, L"parse_xsd");
 	f_define<std::wstring (*)(const t_tuple&, ptrdiff_t, ptrdiff_t), f_format_xsd>(this, L"format_xsd");
 }
 

@@ -29,23 +29,23 @@ t_module::t_scoped_lock::~t_scoped_lock()
 	f_engine()->v_module__condition.notify_all();
 }
 
-t_transfer t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
+t_scoped t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_module>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_module>());
 	object.f_pointer__(a_module);
-	t_transfer second = static_cast<t_object*>(object);
+	t_scoped second = static_cast<t_object*>(object);
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
 		a_module->v_iterator = f_engine()->v_module__instances.emplace(a_name, t_slot()).first;
-		a_module->v_iterator->second = second;
+		a_module->v_iterator->second = std::move(second);
 	}
 	return object;
 }
 
-t_transfer t_module::f_load_script(const std::wstring& a_path)
+t_scoped t_module::f_load_script(const std::wstring& a_path)
 {
 	io::t_file stream(a_path, "r");
-	if (!stream) return t_transfer();
+	if (!stream) return t_value();
 	t_parser parser(a_path, stream);
 	ast::t_module module(a_path);
 	parser.f_parse(module);
@@ -70,7 +70,7 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	t_fiber::t_context::f_pop();
 }
 
-t_transfer t_module::f_instantiate(const std::wstring& a_name)
+t_scoped t_module::f_instantiate(const std::wstring& a_name)
 {
 	t_scoped_lock lock;
 	f_engine()->v_object__reviving__mutex.lock();
@@ -88,38 +88,38 @@ t_transfer t_module::f_instantiate(const std::wstring& a_name)
 	}
 	f_engine()->v_module__mutex.unlock();
 	f_engine()->v_object__reviving__mutex.unlock();
-	t_transfer paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
-	t_transfer n = paths.f_get(f_global()->f_symbol_size())();
+	t_scoped paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
+	t_scoped n = paths.f_get(f_global()->f_symbol_size())();
 	f_check<size_t>(n, L"size");
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
-		t_transfer x = paths.f_get_at(f_global()->f_as(i));
+		t_scoped x = paths.f_get_at(f_global()->f_as(i));
 		f_check<std::wstring>(x, L"path");
 		std::wstring path = portable::t_path(f_as<const std::wstring&>(x)) / a_name;
 		std::wstring s = path + L".xm";
-		t_transfer script = f_load_script(s);
+		t_scoped script = f_load_script(s);
 		if (script) {
-			t_transfer module = f_instantiate(a_name, new t_module(s));
+			t_scoped module = f_instantiate(a_name, new t_module(s));
 			f_execute_script(module, script);
 			return module;
 		}
 		t_library* library = f_load_library(path);
 		if (library) {
-			t_transfer module = f_instantiate(a_name, library);
+			t_scoped module = f_instantiate(a_name, library);
 			library->f_initialize(module);
 			return module;
 		}
 	}
 	t_throwable::f_throw(L"module \"" + a_name + L"\" not found.");
-	return t_transfer();
+	return t_value();
 }
 
 void t_module::f_main()
 {
-	t_transfer x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
+	t_scoped x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
 	f_check<std::wstring>(x, L"script");
 	const std::wstring& path = f_as<const std::wstring&>(x);
 	if (path.empty()) t_throwable::f_throw(L"script path is empty.");
-	t_transfer script = f_load_script(path);
+	t_scoped script = f_load_script(path);
 	if (!script) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
 	f_execute_script(f_instantiate(L"__main", new t_module(path)), script);
 }
@@ -185,7 +185,7 @@ void t_type_of<t_module>::f_finalize(t_object* a_this)
 void t_type_of<t_module>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack[0].f_construct(t_module::f_instantiate(f_as<const std::wstring&>(a0)));
 }

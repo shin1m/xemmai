@@ -14,19 +14,19 @@ protected:
 	t_slot v_scope;
 	t_slot v_code;
 
-	t_lambda(const t_transfer& a_scope, const t_transfer& a_code) : v_scope(a_scope), v_code(a_code)
+	t_lambda(t_scoped&& a_scope, t_scoped&& a_code) : v_scope(std::move(a_scope)), v_code(std::move(a_code))
 	{
 	}
 	~t_lambda() = default;
 
 public:
-	static t_transfer f_instantiate(const t_transfer& a_scope, const t_transfer& a_code);
+	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code);
 };
 
 template<>
 struct t_type_of<t_lambda> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_shared = true;
 	}
@@ -44,13 +44,13 @@ class t_advanced_lambda : public t_lambda
 
 	t_slot v_defaults;
 
-	t_advanced_lambda(const t_transfer& a_scope, const t_transfer& a_code, const t_transfer& a_defaults) : t_lambda(a_scope, a_code), v_defaults(a_defaults)
+	t_advanced_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_scoped&& a_defaults) : t_lambda(std::move(a_scope), std::move(a_code)), v_defaults(std::move(a_defaults))
 	{
 	}
 	~t_advanced_lambda() = default;
 
 public:
-	static t_transfer f_instantiate(const t_transfer& a_scope, const t_transfer& a_code, t_slot* a_stack);
+	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code, t_slot* a_stack);
 };
 
 template<>

@@ -23,27 +23,27 @@ bool t_queue::f_empty() const
 	return !v_head;
 }
 
-void t_queue::f_push(t_container* a_extension, const t_transfer& a_value)
+void t_queue::f_push(t_container* a_extension, t_scoped&& a_value)
 {
 	t_scoped_lock_for_write lock(v_lock);
-	t_scoped pair = t_type_of<t_pair>::f_instantiate(a_extension, a_value);
+	t_scoped pair = t_type_of<t_pair>::f_instantiate(a_extension, std::move(a_value));
 	if (v_head) {
-		f_as<t_pair&>(pair).v_next = f_as<t_pair&>(v_head).v_next.f_transfer();
+		f_as<t_pair&>(pair).v_next = std::move(f_as<t_pair&>(v_head).v_next);
 		f_as<t_pair&>(v_head).v_next = pair;
 	} else {
 		f_as<t_pair&>(pair).v_next = pair;
 	}
-	v_head = pair.f_transfer();
+	v_head = std::move(pair);
 }
 
-t_transfer t_queue::f_pop()
+t_scoped t_queue::f_pop()
 {
 	t_scoped_lock_for_write lock(v_lock);
 	if (!v_head) t_throwable::f_throw(L"empty queue.");
-	t_transfer pair = f_as<t_pair&>(v_head).v_next;
+	t_scoped pair = std::move(f_as<t_pair&>(v_head).v_next);
 	if (pair == v_head)
 		v_head = nullptr;
 	else
-		f_as<t_pair&>(v_head).v_next = f_as<t_pair&>(pair).v_next;
-	return f_as<t_pair&>(pair).v_value.f_transfer();
+		f_as<t_pair&>(v_head).v_next = std::move(f_as<t_pair&>(pair).v_next);
+	return f_as<t_pair&>(pair).v_value;
 }

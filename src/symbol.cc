@@ -6,7 +6,7 @@
 namespace xemmai
 {
 
-t_transfer t_symbol::f_instantiate(const std::wstring& a_value)
+t_scoped t_symbol::f_instantiate(const std::wstring& a_value)
 {
 	std::lock_guard<std::mutex> lock(f_engine()->v_symbol__instantiate__mutex);
 	f_engine()->v_object__reviving__mutex.lock();
@@ -21,7 +21,7 @@ t_transfer t_symbol::f_instantiate(const std::wstring& a_value)
 		return i->second;
 	}
 	f_engine()->v_object__reviving__mutex.unlock();
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_symbol>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_symbol>());
 	object.f_pointer__(new t_symbol(i));
 	i->second = static_cast<t_object*>(object);
 	return object;
@@ -64,7 +64,7 @@ void t_type_of<t_symbol>::f_finalize(t_object* a_this)
 void t_type_of<t_symbol>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack[0].f_construct(t_symbol::f_instantiate(f_as<const std::wstring&>(a0)));
 }

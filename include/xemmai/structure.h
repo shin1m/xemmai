@@ -9,7 +9,7 @@ namespace xemmai
 template<>
 struct t_type_of<t_structure> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_revive = v_shared = true;
 	}

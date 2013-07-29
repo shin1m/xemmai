@@ -8,7 +8,7 @@ namespace xemmai
 
 XEMMAI__PORTABLE__THREAD t_structure::t_cache* t_structure::v_cache;
 
-t_transfer t_structure::f_append(t_object* a_key)
+t_scoped t_structure::f_append(t_object* a_key)
 {
 	std::lock_guard<std::mutex> lock(v_mutex);
 	f_engine()->v_object__reviving__mutex.lock();
@@ -22,17 +22,17 @@ t_transfer t_structure::f_append(t_object* a_key)
 		return i->second;
 	}
 	f_engine()->v_object__reviving__mutex.unlock();
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_structure>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_structure>());
 	object.f_pointer__(new(v_size + 1) t_structure(i, static_cast<t_object*>(object), this));
 	i->second = object;
 	return object;
 }
 
-t_transfer t_structure::f_remove(size_t a_index)
+t_scoped t_structure::f_remove(size_t a_index)
 {
 	t_structure* p = this;
 	while (p->v_size > a_index) p = p->v_parent1;
-	t_transfer q = p->v_this;
+	t_scoped q = p->v_this;
 	while (++a_index < v_size) q = f_as<t_structure&>(q).f_append(f_fields()[a_index]);
 	return q;
 }

@@ -30,7 +30,7 @@ class t_scope
 	}
 
 public:
-	static t_transfer f_instantiate(size_t a_size, const t_transfer& a_outer);
+	static t_scoped f_instantiate(size_t a_size, t_scoped&& a_outer);
 
 	t_slot v_outer;
 
@@ -49,7 +49,7 @@ public:
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_scope(const t_transfer& a_outer) : v_outer(a_outer)
+	t_scope(t_scoped&& a_outer) : v_outer(std::move(a_outer))
 	{
 		f_initialize();
 	}
@@ -80,7 +80,7 @@ public:
 template<>
 struct t_type_of<t_scope> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_shared = true;
 	}

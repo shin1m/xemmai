@@ -19,7 +19,7 @@ struct t_type_of<t_client> : t_type
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 template<>
@@ -32,7 +32,7 @@ struct t_type_of<t_server> : t_type
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }
@@ -44,7 +44,7 @@ struct t_callback_extension : t_extension
 	t_slot v_type_server;
 
 	template<typename T>
-	void f_type__(const t_transfer& a_type);
+	void f_type__(t_scoped&& a_type);
 
 	t_callback_extension(t_object* a_module) : t_extension(a_module)
 	{
@@ -59,23 +59,23 @@ struct t_callback_extension : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(T a_value) const
+	t_scoped f_as(T a_value) const
 	{
 		return f_global()->f_as(a_value);
 	}
-	t_transfer f_as(t_client* a_value) const;
+	t_scoped f_as(t_client* a_value) const;
 };
 
 template<>
-inline void t_callback_extension::f_type__<t_client>(const t_transfer& a_type)
+inline void t_callback_extension::f_type__<t_client>(t_scoped&& a_type)
 {
-	v_type_client = a_type;
+	v_type_client = std::move(a_type);
 }
 
 template<>
-inline void t_callback_extension::f_type__<t_server>(const t_transfer& a_type)
+inline void t_callback_extension::f_type__<t_server>(t_scoped&& a_type)
 {
-	v_type_server = a_type;
+	v_type_server = std::move(a_type);
 }
 
 template<>
@@ -97,9 +97,9 @@ class t_client_wrapper : public t_client
 	t_object* v_self;
 
 public:
-	static t_transfer f_construct(t_object* a_class)
+	static t_scoped f_construct(t_object* a_class)
 	{
-		t_transfer object = t_object::f_allocate(a_class);
+		t_scoped object = t_object::f_allocate(a_class);
 		object.f_pointer__(new t_client_wrapper(object));
 		return object;
 	}
@@ -136,7 +136,7 @@ void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 
 t_type* t_type_of<t_client>::f_derive(t_object* a_this)
 {
-	return new t_type_of(v_module, a_this);
+	return new t_type_of(t_scoped(v_module), a_this);
 }
 
 void t_type_of<t_client>::f_finalize(t_object* a_this)
@@ -144,9 +144,9 @@ void t_type_of<t_client>::f_finalize(t_object* a_this)
 	delete dynamic_cast<t_client_wrapper*>(&f_as<t_client&>(a_this));
 }
 
-t_transfer t_type_of<t_client>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<t_client>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct_with<t_transfer (*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(a_class, a_stack, a_n);
+	return t_construct_with<t_scoped (*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(a_class, a_stack, a_n);
 }
 
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
@@ -160,7 +160,7 @@ void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 
 t_type* t_type_of<t_server>::f_derive(t_object* a_this)
 {
-	return new t_type_of(v_module, a_this);
+	return new t_type_of(t_scoped(v_module), a_this);
 }
 
 void t_type_of<t_server>::f_finalize(t_object* a_this)
@@ -168,7 +168,7 @@ void t_type_of<t_server>::f_finalize(t_object* a_this)
 	delete &f_as<t_server&>(a_this);
 }
 
-t_transfer t_type_of<t_server>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<t_server>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<t_server>::f_do(a_class, a_stack, a_n);
 }
@@ -182,11 +182,11 @@ void t_callback_extension::f_scan(t_scan a_scan)
 	a_scan(v_type_server);
 }
 
-t_transfer t_callback_extension::f_as(t_client* a_value) const
+t_scoped t_callback_extension::f_as(t_client* a_value) const
 {
 	t_client_wrapper* p = dynamic_cast<t_client_wrapper*>(a_value);
 	if (p) return p->v_self;
-	t_transfer object = t_object::f_allocate(v_type_client);
+	t_scoped object = t_object::f_allocate(v_type_client);
 	object.f_pointer__(a_value);
 	return object;
 }

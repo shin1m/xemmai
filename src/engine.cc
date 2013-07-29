@@ -167,11 +167,11 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	v_type_class = type_class;
 	t_scoped type_object = t_object::f_allocate_on_boot(type_class);
 	type_object.f_pointer__(new t_type(nullptr, nullptr));
-	type_class.f_pointer__(new t_class(nullptr, type_object));
+	type_class.f_pointer__(new t_class(nullptr, t_scoped(type_object)));
 	t_scoped type_structure = t_object::f_allocate_on_boot(type_class);
-	type_structure.f_pointer__(new t_type_of<t_structure>(nullptr, type_object));
+	type_structure.f_pointer__(new t_type_of<t_structure>(nullptr, t_scoped(type_object)));
 	v_structure_root = t_object::f_allocate_on_boot(type_structure);
-	t_structure* root = new(0) t_structure(v_structure_root);
+	t_structure* root = new(0) t_structure(t_scoped(v_structure_root));
 	v_structure_root.f_pointer__(root);
 	t_value::v_increments->f_push(v_structure_root);
 	static_cast<t_object*>(type_object)->v_structure = root;
@@ -181,7 +181,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	static_cast<t_object*>(type_structure)->v_structure = root;
 	t_value::v_increments->f_push(v_structure_root);
 	static_cast<t_object*>(v_structure_root)->v_structure = root;
-	t_scoped type_module = t_class::f_instantiate(new t_type_of<t_module>(nullptr, type_object));
+	t_scoped type_module = t_class::f_instantiate(new t_type_of<t_module>(nullptr, t_scoped(type_object)));
 	v_module_global = t_object::f_allocate(type_module);
 	t_library* library = new t_library(std::wstring(), nullptr);
 	v_module_global.f_pointer__(library);
@@ -192,14 +192,14 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	f_as<t_type&>(type_class).v_module = v_module_global;
 	f_as<t_type&>(type_structure).v_module = v_module_global;
 	f_as<t_type&>(type_module).v_module = v_module_global;
-	t_scoped type_fiber = t_class::f_instantiate(new t_type_of<t_fiber>(v_module_global, type_object));
-	t_scoped type_thread = t_class::f_instantiate(new t_type_of<t_thread>(v_module_global, type_object));
+	t_scoped type_fiber = t_class::f_instantiate(new t_type_of<t_fiber>(t_scoped(v_module_global), t_scoped(type_object)));
+	t_scoped type_thread = t_class::f_instantiate(new t_type_of<t_thread>(t_scoped(v_module_global), t_scoped(type_object)));
 	v_thread = t_object::f_allocate(type_thread);
 	v_thread.f_pointer__(thread);
 	t_thread::v_current = v_thread;
-	(*thread).v_fiber = t_object::f_allocate(type_fiber);
-	(*thread).v_fiber.f_pointer__(new t_fiber(nullptr, v_stack_size, true, true));
-	(*thread).v_active = thread->v_fiber;
+	thread->v_fiber = t_object::f_allocate(type_fiber);
+	thread->v_fiber.f_pointer__(new t_fiber(nullptr, v_stack_size, true, true));
+	thread->v_active = thread->v_fiber;
 	t_fiber::v_current = thread->v_active;
 	{
 		portable::t_affinity affinity;
@@ -224,9 +224,9 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		}).detach();
 		while (v_collector__running) v_collector__done.wait(lock);
 	}
-	library->v_extension = new t_global(v_module_global, type_object.f_transfer(), type_class.f_transfer(), type_structure.f_transfer(), type_module.f_transfer(), type_fiber.f_transfer(), type_thread.f_transfer());
+	library->v_extension = new t_global(v_module_global, std::move(type_object), std::move(type_class), std::move(type_structure), std::move(type_module), std::move(type_fiber), std::move(type_thread));
 	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
-	t_transfer path = t_array::f_instantiate();
+	t_scoped path = t_array::f_instantiate();
 	static_cast<t_object*>(path)->v_owner = nullptr;
 	{
 		char* p = std::getenv("XEMMAI_MODULE_PATH");
@@ -259,41 +259,41 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 			portable::t_path script(portable::f_convert(a_arguments[1]));
 			v_module_system.f_put(f_global()->f_symbol_script(), f_global()->f_as(static_cast<const std::wstring&>(script)));
 			f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L"..")));
-			t_transfer arguments = t_array::f_instantiate();
+			t_scoped arguments = t_array::f_instantiate();
 			t_array& p = f_as<t_array&>(arguments);
 			for (size_t i = 2; i < a_count; ++i) p.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
-			v_module_system.f_put(f_global()->f_symbol_arguments(), arguments);
+			v_module_system.f_put(f_global()->f_symbol_arguments(), std::move(arguments));
 		}
 	}
-	v_module_system.f_put(f_global()->f_symbol_path(), path);
+	v_module_system.f_put(f_global()->f_symbol_path(), std::move(path));
 	{
 		t_library* library = new t_library(std::wstring(), nullptr);
 		v_module_io = t_module::f_instantiate(L"io", library);
 		library->v_extension = new t_io(v_module_io);
 	}
 	{
-		t_transfer file = io::t_file::f_instantiate(stdin);
+		t_scoped file = io::t_file::f_instantiate(stdin);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"native_in"), t_value(file));
-		t_transfer reader = io::t_reader::f_instantiate(file, L"");
+		v_module_system.f_put(t_symbol::f_instantiate(L"native_in"), t_scoped(file));
+		t_scoped reader = io::t_reader::f_instantiate(std::move(file), L"");
 		static_cast<t_object*>(reader)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"in"), reader);
+		v_module_system.f_put(t_symbol::f_instantiate(L"in"), std::move(reader));
 	}
 	{
-		t_transfer file = io::t_file::f_instantiate(stdout);
+		t_scoped file = io::t_file::f_instantiate(stdout);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"native_out"), t_value(file));
-		t_transfer writer = io::t_writer::f_instantiate(file, L"");
+		v_module_system.f_put(t_symbol::f_instantiate(L"native_out"), t_scoped(file));
+		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L"");
 		static_cast<t_object*>(writer)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"out"), writer);
+		v_module_system.f_put(t_symbol::f_instantiate(L"out"), std::move(writer));
 	}
 	{
-		t_transfer file = io::t_file::f_instantiate(stderr);
+		t_scoped file = io::t_file::f_instantiate(stderr);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"native_error"), t_value(file));
-		t_transfer writer = io::t_writer::f_instantiate(file, L"");
+		v_module_system.f_put(t_symbol::f_instantiate(L"native_error"), t_scoped(file));
+		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L"");
 		static_cast<t_object*>(writer)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"error"), writer);
+		v_module_system.f_put(t_symbol::f_instantiate(L"error"), std::move(writer));
 	}
 	{
 		v_code_fiber = t_code::f_instantiate(std::wstring(), false, false, 2, 0, 0, 0);

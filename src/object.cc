@@ -289,24 +289,24 @@ void t_object::f_cyclic_decrement()
 	f_cyclic_decrement(v_type);
 }
 
-void t_object::f_field_add(const t_transfer& a_structure, const t_transfer& a_value)
+void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 {
 	size_t index = v_structure->f_size();
 	if (!v_fields || index >= v_fields->f_size()) {
-		t_transfer tuple = t_tuple::f_instantiate(index + 1);
+		t_scoped tuple = t_tuple::f_instantiate(index + 1);
 		t_tuple& fields = f_as<t_tuple&>(tuple);
-		for (size_t i = 0; i < index; ++i) fields[i] = (*v_fields)[i].f_transfer();
+		for (size_t i = 0; i < index; ++i) fields[i] = std::move((*v_fields)[i]);
 		tuple.f_pointer__(v_fields);
 		v_fields = &fields;
 	}
 	t_object* structure0 = v_structure->v_this;
-	t_slot structure1 = a_structure;
+	t_slot structure1 = std::move(a_structure);
 	v_structure = &f_as<t_structure&>(structure1);
 	t_value::v_decrements->f_push(structure0);
-	(*v_fields)[index] = a_value;
+	(*v_fields)[index] = std::move(a_value);
 }
 
-t_transfer t_object::f_allocate_on_boot(t_object* a_type)
+t_scoped t_object::f_allocate_on_boot(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 	p->v_next = nullptr;
@@ -314,11 +314,11 @@ t_transfer t_object::f_allocate_on_boot(t_object* a_type)
 	p->v_type.f_construct(a_type);
 	p->v_type.v_pointer = nullptr;
 	p->v_owner = nullptr;
-	return t_transfer(p, t_transfer::t_pass());
+	return t_scoped(p, t_scoped::t_pass());
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
+t_scoped t_object::f_allocate_uninitialized(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 	p->v_next = nullptr;
@@ -327,10 +327,10 @@ t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
 	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
-	return t_transfer(p, t_transfer::t_pass());
+	return t_scoped(p, t_scoped::t_pass());
 }
 
-t_transfer t_object::f_allocate(t_object* a_type)
+t_scoped t_object::f_allocate(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 	p->v_next = nullptr;
@@ -340,7 +340,7 @@ t_transfer t_object::f_allocate(t_object* a_type)
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = &f_as<t_structure&>(f_engine()->v_structure_root);
 	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
-	return t_transfer(p, t_transfer::t_pass());
+	return t_scoped(p, t_scoped::t_pass());
 }
 #endif
 
@@ -371,13 +371,13 @@ void t_object::f_share()
 	v_owner = nullptr;
 }
 
-void t_object::f_field_put(t_object* a_key, const t_transfer& a_value)
+void t_object::f_field_put(t_object* a_key, t_scoped&& a_value)
 {
 	ptrdiff_t index = v_structure->f_index(a_key);
 	if (index < 0)
-		f_field_add(v_structure->f_append(a_key), a_value);
+		f_field_add(v_structure->f_append(a_key), std::move(a_value));
 	else
-		(*v_fields)[index] = a_value;
+		(*v_fields)[index] = std::move(a_value);
 }
 
 void t_object::f_field_remove(size_t a_index)
@@ -388,18 +388,18 @@ void t_object::f_field_remove(size_t a_index)
 	t_value::v_decrements->f_push(structure0);
 	size_t size = v_structure->f_size();
 	if (size + 4 < v_fields->f_size()) {
-		t_transfer tuple = t_tuple::f_instantiate(size);
+		t_scoped tuple = t_tuple::f_instantiate(size);
 		t_tuple& fields = f_as<t_tuple&>(tuple);
-		for (size_t i = 0; i < a_index; ++i) fields[i] = (*v_fields)[i].f_transfer();
+		for (size_t i = 0; i < a_index; ++i) fields[i] = std::move((*v_fields)[i]);
 		while (a_index < size) {
-			fields[a_index] = (*v_fields)[a_index + 1].f_transfer();
+			fields[a_index] = std::move((*v_fields)[a_index + 1]);
 			++a_index;
 		}
 		tuple.f_pointer__(v_fields);
 		v_fields = &fields;
 	} else {
 		while (a_index < size) {
-			(*v_fields)[a_index] = (*v_fields)[a_index + 1].f_transfer();
+			(*v_fields)[a_index] = std::move((*v_fields)[a_index + 1]);
 			++a_index;
 		}
 	}
@@ -411,7 +411,7 @@ void t_object::f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t 
 	if (f_context()->v_native <= 0) t_code::f_loop();
 }
 
-t_transfer t_object::f_call_with_same(t_slot* a_stack, size_t a_n)
+t_scoped t_object::f_call_with_same(t_slot* a_stack, size_t a_n)
 {
 	t_scoped_stack stack(a_n + 1);
 	for (size_t i = 1; i <= a_n; ++i) stack[i].f_construct(a_stack[i]);

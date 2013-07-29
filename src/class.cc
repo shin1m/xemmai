@@ -9,9 +9,9 @@
 namespace xemmai
 {
 
-t_transfer t_class::f_instantiate(t_type* a_type)
+t_scoped t_class::f_instantiate(t_type* a_type)
 {
-	t_transfer object = t_object::f_allocate(f_engine()->v_type_class);
+	t_scoped object = t_object::f_allocate(f_engine()->v_type_class);
 	object.f_pointer__(a_type);
 	return object;
 }
@@ -37,9 +37,9 @@ void t_class::f_finalize(t_object* a_this)
 void t_class::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n > 1) t_throwable::f_throw(L"must be called with or without an argument.");
-	t_transfer x;
+	t_scoped x;
 	if (a_n > 0) {
-		x = a_stack[1].f_transfer();
+		x = std::move(a_stack[1]);
 		if (x.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	} else {
 		x = f_global()->f_type<t_object>();
@@ -49,7 +49,7 @@ void t_class::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 	a_stack[0].f_construct(f_instantiate(type));
 }
 
-t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
+t_scoped t_class::f_get(const t_value& a_this, t_object* a_key)
 {
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	t_thread::t_cache& cache = t_thread::v_cache[i];
@@ -60,7 +60,7 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 	}
 	++t_thread::v_cache_missed;
 	cache.v_key_revision = symbol.v_revision;
-	t_transfer value;
+	t_scoped value;
 	t_object* type = a_this;
 	while (true) {
 		{
@@ -70,7 +70,7 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 				const t_slot& slot = type->f_field_get(index);
 				t_object* p = slot;
 				if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && (f_is<t_lambda>(p) || p->f_type() == f_global()->f_type<t_native>()))
-					value = t_method::f_instantiate(p, a_this);
+					value = t_method::f_instantiate(p, t_scoped(a_this));
 				else
 					value = slot;
 				break;
@@ -81,21 +81,21 @@ t_transfer t_class::f_get(const t_value& a_this, t_object* a_key)
 	}
 	cache.v_object = a_this;
 	cache.v_key = a_key;
-	return cache.v_value = value;
+	return cache.v_value = std::move(value);
 }
 
-void t_class::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
+void t_class::f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
 {
 	{
 		t_with_lock_for_write lock(a_this);
-		a_this->f_field_put(a_key, a_value);
+		a_this->f_field_put(a_key, std::move(a_value));
 	}
 	t_symbol::f_revise(a_key);
 }
 
-t_transfer t_class::f_remove(t_object* a_this, t_object* a_key)
+t_scoped t_class::f_remove(t_object* a_this, t_object* a_key)
 {
-	t_transfer value;
+	t_scoped value;
 	{
 		t_with_lock_for_write lock(a_this);
 		ptrdiff_t index = a_this->f_field_index(a_key);
@@ -117,7 +117,8 @@ void t_class::f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, s
 void t_class::f_send(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
-	a_stack[1].f_transfer().f_call_and_return(a_this, a_stack, 0);
+	t_scoped a0 = std::move(a_stack[1]);
+	a0.f_call_and_return(a_this, a_stack, 0);
 	a_stack[0] = a_this;
 	context.f_done();
 }

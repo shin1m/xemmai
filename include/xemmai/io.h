@@ -26,7 +26,7 @@ class t_io : public t_extension
 	t_slot v_type_path;
 
 	template<typename T>
-	void f_type__(const t_transfer& a_type);
+	void f_type__(t_scoped&& a_type);
 
 public:
 	t_io(t_object* a_module);
@@ -66,7 +66,7 @@ public:
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(const T& a_value) const
+	t_scoped f_as(const T& a_value) const
 	{
 		typedef t_type_of<typename t_fundamental<T>::t_type> t;
 		return t::f_transfer(f_extension<typename t::t_extension>(), a_value);
@@ -74,27 +74,27 @@ public:
 };
 
 template<>
-inline void t_io::f_type__<io::t_file>(const t_transfer& a_type)
+inline void t_io::f_type__<io::t_file>(t_scoped&& a_type)
 {
-	v_type_file = a_type;
+	v_type_file = std::move(a_type);
 }
 
 template<>
-inline void t_io::f_type__<io::t_reader>(const t_transfer& a_type)
+inline void t_io::f_type__<io::t_reader>(t_scoped&& a_type)
 {
-	v_type_reader = a_type;
+	v_type_reader = std::move(a_type);
 }
 
 template<>
-inline void t_io::f_type__<io::t_writer>(const t_transfer& a_type)
+inline void t_io::f_type__<io::t_writer>(t_scoped&& a_type)
 {
-	v_type_writer = a_type;
+	v_type_writer = std::move(a_type);
 }
 
 template<>
-inline void t_io::f_type__<portable::t_path>(const t_transfer& a_type)
+inline void t_io::f_type__<portable::t_path>(t_scoped&& a_type)
 {
-	v_type_path = a_type;
+	v_type_path = std::move(a_type);
 }
 
 template<>

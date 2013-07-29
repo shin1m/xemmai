@@ -25,7 +25,7 @@ class t_array
 	void f_validate(ptrdiff_t& a_index) const;
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate();
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate();
 
 	void f_clear()
 	{
@@ -36,23 +36,23 @@ public:
 	{
 		return v_size;
 	}
-	void f_swap(t_transfer& a_tuple, size_t& a_head, size_t& a_size);
+	void f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size);
 	XEMMAI__PORTABLE__EXPORT const t_slot& operator[](ptrdiff_t a_index) const;
 	XEMMAI__PORTABLE__EXPORT t_slot& operator[](ptrdiff_t a_index);
 	const t_value& f_get_at(ptrdiff_t a_index) const
 	{
 		return (*this)[a_index];
 	}
-	const t_value& f_set_at(ptrdiff_t a_index, const t_transfer& a_value)
+	const t_value& f_set_at(ptrdiff_t a_index, t_scoped&& a_value)
 	{
-		return (*this)[a_index] = a_value;
+		return (*this)[a_index] = std::move(a_value);
 	}
-	XEMMAI__PORTABLE__EXPORT void f_push(const t_transfer& a_value);
-	XEMMAI__PORTABLE__EXPORT t_transfer f_pop();
-	XEMMAI__PORTABLE__EXPORT void f_unshift(const t_transfer& a_value);
-	XEMMAI__PORTABLE__EXPORT t_transfer f_shift();
-	XEMMAI__PORTABLE__EXPORT void f_insert(ptrdiff_t a_index, const t_transfer& a_value);
-	XEMMAI__PORTABLE__EXPORT t_transfer f_remove(ptrdiff_t a_index);
+	XEMMAI__PORTABLE__EXPORT void f_push(t_scoped&& a_value);
+	XEMMAI__PORTABLE__EXPORT t_scoped f_pop();
+	XEMMAI__PORTABLE__EXPORT void f_unshift(t_scoped&& a_value);
+	XEMMAI__PORTABLE__EXPORT t_scoped f_shift();
+	XEMMAI__PORTABLE__EXPORT void f_insert(ptrdiff_t a_index, t_scoped&& a_value);
+	XEMMAI__PORTABLE__EXPORT t_scoped f_remove(ptrdiff_t a_index);
 };
 
 template<>
@@ -78,7 +78,7 @@ struct t_type_of<t_array> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_slot* a_stack);
 	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
 	virtual void f_set_at(t_object* a_this, t_slot* a_stack);

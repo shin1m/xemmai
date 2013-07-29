@@ -100,10 +100,10 @@ class t_global : public t_extension
 	t_slot v_symbol_push;
 
 	template<typename T>
-	void f_type__(const t_transfer& a_type);
+	void f_type__(t_scoped&& a_type);
 
 public:
-	t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_structure, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread);
+	t_global(t_object* a_module, t_scoped&& a_type_object, t_scoped&& a_type_class, t_scoped&& a_type_structure, t_scoped&& a_type_module, t_scoped&& a_type_fiber, t_scoped&& a_type_thread);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_object* f_type() const;
@@ -244,7 +244,7 @@ public:
 		return v_symbol_push;
 	}
 	template<typename T>
-	t_transfer f_as(const T& a_value) const
+	t_scoped f_as(const T& a_value) const
 	{
 		typedef t_type_of<typename t_fundamental<T>::t_type> t;
 		return t::f_transfer(this, a_value);
@@ -252,93 +252,93 @@ public:
 };
 
 template<>
-inline void t_global::f_type__<t_scope>(const t_transfer& a_type)
+inline void t_global::f_type__<t_scope>(t_scoped&& a_type)
 {
-	v_type_scope = a_type;
+	v_type_scope = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_code>(const t_transfer& a_type)
+inline void t_global::f_type__<t_code>(t_scoped&& a_type)
 {
-	v_type_code = a_type;
+	v_type_code = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_lambda>(const t_transfer& a_type)
+inline void t_global::f_type__<t_lambda>(t_scoped&& a_type)
 {
-	v_type_lambda = a_type;
+	v_type_lambda = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_advanced_lambda>(const t_transfer& a_type)
+inline void t_global::f_type__<t_advanced_lambda>(t_scoped&& a_type)
 {
-	v_type_advanced_lambda = a_type;
+	v_type_advanced_lambda = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_throwable>(const t_transfer& a_type)
+inline void t_global::f_type__<t_throwable>(t_scoped&& a_type)
 {
-	v_type_throwable = a_type;
+	v_type_throwable = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<std::nullptr_t>(const t_transfer& a_type)
+inline void t_global::f_type__<std::nullptr_t>(t_scoped&& a_type)
 {
-	v_type_null = a_type;
+	v_type_null = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<bool>(const t_transfer& a_type)
+inline void t_global::f_type__<bool>(t_scoped&& a_type)
 {
-	v_type_boolean = a_type;
+	v_type_boolean = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<ptrdiff_t>(const t_transfer& a_type)
+inline void t_global::f_type__<ptrdiff_t>(t_scoped&& a_type)
 {
-	v_type_integer = a_type;
+	v_type_integer = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<double>(const t_transfer& a_type)
+inline void t_global::f_type__<double>(t_scoped&& a_type)
 {
-	v_type_float = a_type;
+	v_type_float = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<std::wstring>(const t_transfer& a_type)
+inline void t_global::f_type__<std::wstring>(t_scoped&& a_type)
 {
-	v_type_string = a_type;
+	v_type_string = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_array>(const t_transfer& a_type)
+inline void t_global::f_type__<t_array>(t_scoped&& a_type)
 {
-	v_type_array = a_type;
+	v_type_array = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_dictionary>(const t_transfer& a_type)
+inline void t_global::f_type__<t_dictionary>(t_scoped&& a_type)
 {
-	v_type_dictionary = a_type;
+	v_type_dictionary = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_bytes>(const t_transfer& a_type)
+inline void t_global::f_type__<t_bytes>(t_scoped&& a_type)
 {
-	v_type_bytes = a_type;
+	v_type_bytes = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_lexer::t_error>(const t_transfer& a_type)
+inline void t_global::f_type__<t_lexer::t_error>(t_scoped&& a_type)
 {
-	v_type_lexer__error = a_type;
+	v_type_lexer__error = std::move(a_type);
 }
 
 template<>
-inline void t_global::f_type__<t_parser::t_error>(const t_transfer& a_type)
+inline void t_global::f_type__<t_parser::t_error>(t_scoped&& a_type)
 {
-	v_type_parser__error = a_type;
+	v_type_parser__error = std::move(a_type);
 }
 
 template<>
@@ -560,15 +560,15 @@ inline bool t_value::f_is(t_object* a_class) const
 	return t_type::f_derives(f_type(), a_class);
 }
 
-inline t_transfer t_value::f_get(t_object* a_key) const
+inline t_scoped t_value::f_get(t_object* a_key) const
 {
 	return f_as<t_type&>(f_type()).f_get(*this, a_key);
 }
 
-inline void t_value::f_put(t_object* a_key, const t_transfer& a_value) const
+inline void t_value::f_put(t_object* a_key, t_scoped&& a_value) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	f_as<t_type&>(v_p->f_type()).f_put(v_p, a_key, a_value);
+	f_as<t_type&>(v_p->f_type()).f_put(v_p, a_key, std::move(a_value));
 }
 
 inline bool t_value::f_has(t_object* a_key) const
@@ -576,7 +576,7 @@ inline bool t_value::f_has(t_object* a_key) const
 	return static_cast<t_type*>(f_type()->f_pointer())->f_has(*this, a_key);
 }
 
-inline t_transfer t_value::f_remove(t_object* a_key) const
+inline t_scoped t_value::f_remove(t_object* a_key) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
@@ -594,7 +594,7 @@ inline void t_value::f_call_and_return(const t_value& a_self, t_slot* a_stack, s
 	v_p->f_call_and_return(a_self, a_stack, a_n);
 }
 
-inline t_transfer t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
+inline t_scoped t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	return v_p->f_call_with_same(a_stack, a_n);
@@ -616,7 +616,7 @@ inline t_transfer t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
 			return stack.f_return();\
 		}
 
-inline t_transfer t_value::f_hash() const
+inline t_scoped t_value::f_hash() const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -633,14 +633,14 @@ inline t_transfer t_value::f_hash() const
 }
 
 template<typename... T>
-inline t_transfer t_value::operator()(const T&... a_arguments) const
+inline t_scoped t_value::operator()(T&&... a_arguments) const
 {
 	t_scoped_stack stack({a_arguments...});
 	f_call_and_return(t_value(), stack, sizeof...(a_arguments));
 	return stack.f_return();
 }
 
-inline t_transfer t_value::f_get_at(const t_value& a_index) const
+inline t_scoped t_value::f_get_at(const t_value& a_index) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_scoped_stack stack(2);
@@ -650,7 +650,7 @@ inline t_transfer t_value::f_get_at(const t_value& a_index) const
 	return stack.f_return();
 }
 
-inline t_transfer t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
+inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_scoped_stack stack(3);
@@ -661,7 +661,7 @@ inline t_transfer t_value::f_set_at(const t_value& a_index, const t_value& a_val
 	return stack.f_return();
 }
 
-inline t_transfer t_value::f_plus() const
+inline t_scoped t_value::f_plus() const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -676,7 +676,7 @@ inline t_transfer t_value::f_plus() const
 	}
 }
 
-inline t_transfer t_value::f_minus() const
+inline t_scoped t_value::f_minus() const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -691,7 +691,7 @@ inline t_transfer t_value::f_minus() const
 	}
 }
 
-inline t_transfer t_value::f_not() const
+inline t_scoped t_value::f_not() const
 {
 	switch (f_tag()) {
 	case e_tag__BOOLEAN:
@@ -705,7 +705,7 @@ inline t_transfer t_value::f_not() const
 	}
 }
 
-inline t_transfer t_value::f_complement() const
+inline t_scoped t_value::f_complement() const
 {
 	switch (f_tag()) {
 	case e_tag__INTEGER:
@@ -719,7 +719,7 @@ inline t_transfer t_value::f_complement() const
 	}
 }
 
-inline t_transfer t_value::f_multiply(const t_value& a_value) const
+inline t_scoped t_value::f_multiply(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -735,7 +735,7 @@ inline t_transfer t_value::f_multiply(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_divide(const t_value& a_value) const
+inline t_scoped t_value::f_divide(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -751,7 +751,7 @@ inline t_transfer t_value::f_divide(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_modulus(const t_value& a_value) const
+inline t_scoped t_value::f_modulus(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__INTEGER:
@@ -766,7 +766,7 @@ inline t_transfer t_value::f_modulus(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_add(const t_value& a_value) const
+inline t_scoped t_value::f_add(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -782,7 +782,7 @@ inline t_transfer t_value::f_add(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_subtract(const t_value& a_value) const
+inline t_scoped t_value::f_subtract(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -798,7 +798,7 @@ inline t_transfer t_value::f_subtract(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_left_shift(const t_value& a_value) const
+inline t_scoped t_value::f_left_shift(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__INTEGER:
@@ -813,7 +813,7 @@ inline t_transfer t_value::f_left_shift(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_right_shift(const t_value& a_value) const
+inline t_scoped t_value::f_right_shift(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__INTEGER:
@@ -828,7 +828,7 @@ inline t_transfer t_value::f_right_shift(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_less(const t_value& a_value) const
+inline t_scoped t_value::f_less(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -844,7 +844,7 @@ inline t_transfer t_value::f_less(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_less_equal(const t_value& a_value) const
+inline t_scoped t_value::f_less_equal(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -860,7 +860,7 @@ inline t_transfer t_value::f_less_equal(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_greater(const t_value& a_value) const
+inline t_scoped t_value::f_greater(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -876,7 +876,7 @@ inline t_transfer t_value::f_greater(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_greater_equal(const t_value& a_value) const
+inline t_scoped t_value::f_greater_equal(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -892,7 +892,7 @@ inline t_transfer t_value::f_greater_equal(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_equals(const t_value& a_value) const
+inline t_scoped t_value::f_equals(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -908,7 +908,7 @@ inline t_transfer t_value::f_equals(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_not_equals(const t_value& a_value) const
+inline t_scoped t_value::f_not_equals(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -924,7 +924,7 @@ inline t_transfer t_value::f_not_equals(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_and(const t_value& a_value) const
+inline t_scoped t_value::f_and(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__BOOLEAN:
@@ -941,7 +941,7 @@ inline t_transfer t_value::f_and(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_xor(const t_value& a_value) const
+inline t_scoped t_value::f_xor(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__BOOLEAN:
@@ -958,7 +958,7 @@ inline t_transfer t_value::f_xor(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_or(const t_value& a_value) const
+inline t_scoped t_value::f_or(const t_value& a_value) const
 {
 	switch (f_tag()) {
 	case e_tag__BOOLEAN:
@@ -975,7 +975,7 @@ inline t_transfer t_value::f_or(const t_value& a_value) const
 	}
 }
 
-inline t_transfer t_value::f_send(const t_value& a_value) const
+inline t_scoped t_value::f_send(const t_value& a_value) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	XEMMAI__VALUE__BINARY(f_send)

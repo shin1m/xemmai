@@ -19,7 +19,7 @@ bool t_type_of<double>::f_not_equals(double a_self, const t_value& a_value)
 void t_type_of<double>::f_define()
 {
 	t_define<double, t_object>(f_global(), L"Float")
-		(t_construct_with<t_transfer (*)(t_object*, double), f_construct_derived>())
+		(t_construct_with<t_scoped (*)(t_object*, double), f_construct_derived>())
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(double), f_string>())
 		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (*)(double), f_hash>())
 		(f_global()->f_symbol_plus(), t_member<double (*)(double), f_plus>())
@@ -39,15 +39,15 @@ void t_type_of<double>::f_define()
 
 t_type* t_type_of<double>::f_derive(t_object* a_this)
 {
-	return new t_derived<t_type_of>(v_module, a_this);
+	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
 }
 
-t_transfer t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<double>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct_with<t_transfer (*)(t_object*, double), f_construct>,
-		t_construct_with<t_transfer (*)(t_object*, ptrdiff_t), f_construct>,
-		t_construct_with<t_transfer (*)(t_object*, const std::wstring&), f_construct>
+		t_construct_with<t_scoped (*)(t_object*, double), f_construct>,
+		t_construct_with<t_scoped (*)(t_object*, ptrdiff_t), f_construct>,
+		t_construct_with<t_scoped (*)(t_object*, const std::wstring&), f_construct>
 	>::t_bind<double>::f_do(a_class, a_stack, a_n);
 }
 

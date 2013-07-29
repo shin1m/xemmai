@@ -17,19 +17,19 @@ private:
 	t_slot v_module;
 	t_function v_function;
 
-	t_native(const t_transfer& a_module, t_function a_function) : v_module(a_module), v_function(a_function)
+	t_native(t_scoped&& a_module, t_function a_function) : v_module(std::move(a_module)), v_function(a_function)
 	{
 	}
 	~t_native() = default;
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const t_transfer& a_module, t_function a_function);
+	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(t_scoped&& a_module, t_function a_function);
 };
 
 template<>
 struct t_type_of<t_native> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_shared = true;
 	}

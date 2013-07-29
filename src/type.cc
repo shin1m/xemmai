@@ -49,7 +49,7 @@ void t_type::f_define(t_object* a_class)
 
 t_type* t_type::f_derive(t_object* a_this)
 {
-	t_type* p = new t_type(v_module, a_this);
+	t_type* p = new t_type(t_scoped(v_module), a_this);
 	p->v_primitive = true;
 	return p;
 }
@@ -62,19 +62,19 @@ void t_type::f_finalize(t_object* a_this)
 {
 }
 
-t_transfer t_type::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	return t_object::f_allocate(a_class);
 }
 
 void t_type::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	t_transfer object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
+	t_scoped object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
 	object.f_get(f_global()->f_symbol_initialize()).f_call_and_return(t_value(), a_stack, a_n);
-	a_stack[0] = object;
+	a_stack[0] = std::move(object);
 }
 
-t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
+t_scoped t_type::f_get(const t_value& a_this, t_object* a_key)
 {
 	t_object* p = static_cast<t_object*>(a_this);
 	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
@@ -95,7 +95,7 @@ t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 	++t_thread::v_cache_missed;
 	cache.v_key_revision = symbol.v_revision;
 	ptrdiff_t index = -1;
-	t_transfer value;
+	t_scoped value;
 	if (a_this.f_tag() >= t_value::e_tag__OBJECT && !p->f_owned()) {
 		t_with_lock_for_read lock(a_this);
 		if (!p->f_shared()) t_throwable::f_throw(L"owned by another thread.");
@@ -104,23 +104,23 @@ t_transfer t_type::f_get(const t_value& a_this, t_object* a_key)
 	}
 	if (index < 0) {
 		value = a_this.f_type()->f_get(a_key);
-		if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(a_this);
+		if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(t_scoped(a_this));
 	}
 	cache.v_object = a_this;
 	cache.v_key = a_key;
-	return cache.v_value = value;
+	return cache.v_value = std::move(value);
 }
 
-void t_type::f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value)
+void t_type::f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
 {
 	if (a_this->f_owned()) {
-		a_this->f_field_put(a_key, a_value);
+		a_this->f_field_put(a_key, std::move(a_value));
 	} else {
 		if (f_as<t_type&>(a_this->f_type()).v_immutable) t_throwable::f_throw(L"immutable.");
 		{
 			t_with_lock_for_write lock(a_this);
 			if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
-			a_this->f_field_put(a_key, a_value);
+			a_this->f_field_put(a_key, std::move(a_value));
 		}
 		size_t i = t_thread::t_cache::f_index(a_this, a_key);
 		t_thread::t_cache& cache = t_thread::v_cache[i];
@@ -141,17 +141,17 @@ bool t_type::f_has(const t_value& a_this, t_object* a_key)
 	}
 }
 
-t_transfer t_type::f_remove(t_object* a_this, t_object* a_key)
+t_scoped t_type::f_remove(t_object* a_this, t_object* a_key)
 {
 	if (a_this->f_owned()) {
 		ptrdiff_t index = a_this->f_field_index(a_key);
 		if (index < 0) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
-		t_transfer value = a_this->f_field_get(index);
+		t_scoped value = a_this->f_field_get(index);
 		a_this->f_field_remove(index);
 		return value;
 	} else {
 		if (f_as<t_type&>(a_this->f_type()).v_immutable) t_throwable::f_throw(L"immutable.");
-		t_transfer value;
+		t_scoped value;
 		{
 			t_with_lock_for_write lock(a_this);
 			if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");

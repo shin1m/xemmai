@@ -13,24 +13,24 @@ class t_method
 	t_slot v_function;
 	t_slot v_self;
 
-	t_method(const t_transfer& a_function, const t_transfer& a_self) : v_function(a_function), v_self(a_self)
+	t_method(t_scoped&& a_function, t_scoped&& a_self) : v_function(std::move(a_function)), v_self(std::move(a_self))
 	{
 	}
 	~t_method() = default;
 
 public:
-	static t_transfer f_instantiate(const t_transfer& a_function, const t_transfer& a_self);
+	static t_scoped f_instantiate(t_scoped&& a_function, t_scoped&& a_self);
 
-	t_transfer f_bind(const t_transfer& a_target) const
+	t_scoped f_bind(t_scoped&& a_target) const
 	{
-		return f_instantiate(v_function, a_target);
+		return f_instantiate(t_scoped(v_function), std::move(a_target));
 	}
 };
 
 template<>
 struct t_type_of<t_method> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_fixed = v_shared = v_immutable = true;
 	}

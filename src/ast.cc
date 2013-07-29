@@ -38,7 +38,7 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	size_t stack = v_privates.size();
 	size_t minimum = v_arguments - v_defaults.size();
 	if (v_variadic) --minimum;
-	t_transfer code = t_code::f_instantiate(a_generator.v_path, v_shared, v_variadic, stack, v_shareds, v_arguments, minimum);
+	t_scoped code = t_code::f_instantiate(a_generator.v_path, v_shared, v_variadic, stack, v_shareds, v_arguments, minimum);
 	t_scope* scope0 = a_generator.v_scope;
 	a_generator.v_scope = this;
 	t_code* code0 = a_generator.v_code;
@@ -281,7 +281,7 @@ t_operand t_object_get::f_generate(t_generator& a_generator, size_t a_stack, boo
 	a_generator.f_operand(static_cast<t_object*>(v_key));
 	a_generator.f_operand(0);
 	a_generator.f_operand(0);
-	a_generator.f_operand(t_transfer());
+	a_generator.f_operand(t_scoped());
 	a_generator.f_at(this);
 	return a_stack;
 }
@@ -305,7 +305,7 @@ t_operand t_object_put::f_generate(t_generator& a_generator, size_t a_stack, boo
 	a_generator.f_operand(static_cast<t_object*>(v_key));
 	a_generator.f_operand(0);
 	a_generator.f_operand(0);
-	a_generator.f_operand(t_transfer());
+	a_generator.f_operand(t_scoped());
 	a_generator.f_at(this);
 	return a_stack;
 }
@@ -436,14 +436,14 @@ t_operand t_super::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 
 t_operand t_null::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (a_operand) return t_transfer();
+	if (a_operand) return t_scoped();
 	a_generator.f_reserve(a_stack + 1);
 	return a_stack;
 }
 
 t_operand t_boolean::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (a_operand) return t_transfer(v_value);
+	if (a_operand) return t_scoped(v_value);
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(e_instruction__BOOLEAN);
 	a_generator.f_operand(a_stack);
@@ -454,7 +454,7 @@ t_operand t_boolean::f_generate(t_generator& a_generator, size_t a_stack, bool a
 
 t_operand t_integer::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (a_operand) return t_transfer(v_value);
+	if (a_operand) return t_scoped(v_value);
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(e_instruction__INTEGER);
 	a_generator.f_operand(a_stack);
@@ -465,7 +465,7 @@ t_operand t_integer::f_generate(t_generator& a_generator, size_t a_stack, bool a
 
 t_operand t_float::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (a_operand) return t_transfer(v_value);
+	if (a_operand) return t_scoped(v_value);
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(e_instruction__FLOAT);
 	a_generator.f_operand(a_stack);
@@ -476,11 +476,11 @@ t_operand t_float::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 
 t_operand t_instance::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (a_operand) return t_transfer(v_value);
+	if (a_operand) return t_scoped(v_value);
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(e_instruction__INSTANCE);
 	a_generator.f_operand(a_stack);
-	a_generator.f_operand(t_transfer(v_value));
+	a_generator.f_operand(t_scoped(v_value));
 	a_generator.f_at(this);
 	return a_stack;
 }
@@ -503,7 +503,7 @@ t_operand t_unary::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 	a_generator.f_operand(a_stack);
 	switch (operand.v_tag) {
 	case t_operand::e_tag__LITERAL:
-		a_generator.f_operand(operand.v_value);
+		a_generator.f_operand(std::move(operand.v_value));
 		break;
 	case t_operand::e_tag__VARIABLE:
 		a_generator.f_operand(operand.v_value.f_integer());
@@ -541,7 +541,7 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	a_generator.f_operand(a_stack);
 	switch (left.v_tag) {
 	case t_operand::e_tag__LITERAL:
-		a_generator.f_operand(left.v_value);
+		a_generator.f_operand(std::move(left.v_value));
 		break;
 	case t_operand::e_tag__VARIABLE:
 		a_generator.f_operand(left.v_value.f_integer());
@@ -549,7 +549,7 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	}
 	switch (right.v_tag) {
 	case t_operand::e_tag__LITERAL:
-		a_generator.f_operand(right.v_value);
+		a_generator.f_operand(std::move(right.v_value));
 		break;
 	case t_operand::e_tag__VARIABLE:
 		a_generator.f_operand(right.v_value.f_integer());
@@ -595,12 +595,12 @@ t_operand t_set_at::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 
 }
 
-t_transfer t_generator::f_generate(ast::t_module& a_module)
+t_scoped t_generator::f_generate(ast::t_module& a_module)
 {
 	v_path = a_module.f_path();
 	v_scope = &a_module;
 	size_t stack = a_module.v_privates.size();
-	t_transfer code = t_code::f_instantiate(v_path, true, false, stack, a_module.v_shareds, 0, 0);
+	t_scoped code = t_code::f_instantiate(v_path, true, false, stack, a_module.v_shareds, 0, 0);
 	v_code = &f_as<t_code&>(code);
 	std::deque<t_code::t_label> labels;
 	v_labels = &labels;

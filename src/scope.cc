@@ -6,10 +6,10 @@
 namespace xemmai
 {
 
-t_transfer t_scope::f_instantiate(size_t a_size, const t_transfer& a_outer)
+t_scoped t_scope::f_instantiate(size_t a_size, t_scoped&& a_outer)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_scope>());
-	object.f_pointer__(new(a_size) t_scope(a_outer));
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_scope>());
+	object.f_pointer__(new(a_size) t_scope(std::move(a_outer)));
 	return object;
 }
 

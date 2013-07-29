@@ -17,18 +17,18 @@ namespace xemmai
 namespace io
 {
 
-t_transfer t_file::f_instantiate(FILE* a_stream)
+t_scoped t_file::f_instantiate(FILE* a_stream)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_transfer object = t_object::f_allocate(extension->f_type<t_file>());
+	t_scoped object = t_object::f_allocate(extension->f_type<t_file>());
 	object.f_pointer__(new t_file(a_stream));
 	return object;
 }
 
-t_transfer t_file::f_instantiate(const std::wstring& a_path, const std::wstring& a_mode)
+t_scoped t_file::f_instantiate(const std::wstring& a_path, const std::wstring& a_mode)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_transfer object = t_object::f_allocate(extension->f_type<t_file>());
+	t_scoped object = t_object::f_allocate(extension->f_type<t_file>());
 	object.f_pointer__(new t_file(a_path, a_mode));
 	return object;
 }
@@ -133,7 +133,7 @@ void t_type_of<io::t_file>::f_define(t_io* a_extension)
 
 t_type* t_type_of<io::t_file>::f_derive(t_object* a_this)
 {
-	return new t_derived<t_type_of>(v_module, a_this);
+	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
 }
 
 void t_type_of<io::t_file>::f_finalize(t_object* a_this)
@@ -141,7 +141,7 @@ void t_type_of<io::t_file>::f_finalize(t_object* a_this)
 	delete &f_as<io::t_file&>(a_this);
 }
 
-t_transfer t_type_of<io::t_file>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<io::t_file>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	return t_construct<const std::wstring&, const std::wstring&>::t_bind<io::t_file>::f_do(a_class, a_stack, a_n);
 }

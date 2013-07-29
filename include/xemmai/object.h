@@ -70,10 +70,10 @@ class t_structure
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_structure(const t_transfer& a_this) : v_this(a_this)
+	t_structure(t_scoped&& a_this) : v_this(std::move(a_this))
 	{
 	}
-	t_structure(std::map<t_object*, t_object*>::iterator a_iterator, const t_transfer& a_this, t_structure* a_parent) : v_iterator(a_iterator), v_this(a_this), v_parent0(a_parent->v_this), v_parent1(a_parent)
+	t_structure(std::map<t_object*, t_object*>::iterator a_iterator, t_scoped&& a_this, t_structure* a_parent) : v_iterator(a_iterator), v_this(std::move(a_this)), v_parent0(a_parent->v_this), v_parent1(a_parent)
 	{
 		t_object* key = v_iterator->first;
 		size_t n = a_parent->v_size;
@@ -143,8 +143,8 @@ public:
 		}
 		return cache.v_index = -1;
 	}
-	t_transfer f_append(t_object* a_key);
-	t_transfer f_remove(size_t a_index);
+	t_scoped f_append(t_object* a_key);
+	t_scoped f_remove(size_t a_index);
 };
 
 class t_tuple
@@ -181,7 +181,7 @@ class t_tuple
 	}
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate(size_t a_size);
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
 
 	void f_scan(t_scan a_scan)
 	{
@@ -312,16 +312,16 @@ class t_object
 		if (v_color == e_color__RED && v_cyclic > 0) --v_cyclic;
 	}
 	void f_cyclic_decrement();
-	void f_field_add(const t_transfer& a_structure, const t_transfer& a_value);
+	void f_field_add(t_scoped&& a_structure, t_scoped&& a_value);
 
 public:
-	static t_transfer f_allocate_on_boot(t_object* a_type);
+	static t_scoped f_allocate_on_boot(t_object* a_type);
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	static t_transfer f_allocate_uninitialized(t_object* a_type);
-	static t_transfer f_allocate(t_object* a_type);
+	static t_scoped f_allocate_uninitialized(t_object* a_type);
+	static t_scoped f_allocate(t_object* a_type);
 #else
-	static XEMMAI__PORTABLE__EXPORT t_transfer f_allocate_uninitialized(t_object* a_type);
-	static XEMMAI__PORTABLE__EXPORT t_transfer f_allocate(t_object* a_type);
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_allocate_uninitialized(t_object* a_type);
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_allocate(t_object* a_type);
 #endif
 
 	t_object* f_type() const
@@ -366,21 +366,21 @@ public:
 	{
 		return (*v_fields)[a_index];
 	}
-	void f_field_put(t_object* a_key, const t_transfer& a_value);
+	void f_field_put(t_object* a_key, t_scoped&& a_value);
 	void f_field_remove(size_t a_index);
-	t_transfer f_get(t_object* a_key)
+	t_scoped f_get(t_object* a_key)
 	{
 		return f_type_as_type()->f_get(this, a_key);
 	}
-	void f_put(t_object* a_key, const t_transfer& a_value)
+	void f_put(t_object* a_key, t_scoped&& a_value)
 	{
-		f_type_as_type()->f_put(this, a_key, a_value);
+		f_type_as_type()->f_put(this, a_key, std::move(a_value));
 	}
 	bool f_has(t_object* a_key)
 	{
 		return f_type_as_type()->f_has(this, a_key);
 	}
-	t_transfer f_remove(t_object* a_key)
+	t_scoped f_remove(t_object* a_key)
 	{
 		return f_type_as_type()->f_remove(this, a_key);
 	}
@@ -389,9 +389,9 @@ public:
 		f_type_as_type()->f_call(this, a_self, a_stack, a_n);
 	}
 	XEMMAI__PORTABLE__EXPORT void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT t_transfer f_call_with_same(t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT t_scoped f_call_with_same(t_slot* a_stack, size_t a_n);
 	template<typename... T>
-	t_transfer f_call(const T&... a_arguments)
+	t_scoped f_call(T&&... a_arguments)
 	{
 		t_scoped_stack stack({a_arguments...});
 		f_call_and_return(t_value(), stack, sizeof...(a_arguments));

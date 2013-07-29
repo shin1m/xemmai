@@ -25,9 +25,9 @@ void t_bytes::f_validate(ptrdiff_t& a_index, size_t a_size) const
 	if (a_index + a_size > v_size) t_throwable::f_throw(L"out of range.");
 }
 
-t_transfer t_bytes::f_instantiate(size_t a_size)
+t_scoped t_bytes::f_instantiate(size_t a_size)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_bytes>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_bytes>());
 	object.f_pointer__(new(a_size) t_bytes());
 	return object;
 }
@@ -69,11 +69,11 @@ void t_type_of<t_bytes>::f_construct(t_object* a_module, const t_value& a_self, 
 {
 	if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	f_check<size_t>(a0, L"argument0");
-	t_transfer p = t_object::f_allocate(a_self);
+	t_scoped p = t_object::f_allocate(a_self);
 	p.f_pointer__(new(f_as<size_t>(a0)) t_bytes());
-	a_stack[0].f_construct(p);
+	a_stack[0].f_construct(std::move(p));
 }
 
 bool t_type_of<t_bytes>::f_equals(const t_value& a_self, const t_value& a_other)
@@ -105,7 +105,7 @@ void t_type_of<t_bytes>::f_define()
 
 t_type* t_type_of<t_bytes>::f_derive(t_object* a_this)
 {
-	return new t_derived<t_type_of>(v_module, a_this);
+	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
 }
 
 void t_type_of<t_bytes>::f_finalize(t_object* a_this)
@@ -113,12 +113,12 @@ void t_type_of<t_bytes>::f_finalize(t_object* a_this)
 	delete &f_as<t_bytes&>(a_this);
 }
 
-t_transfer t_type_of<t_bytes>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<t_bytes>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	const t_slot& a0 = a_stack[1];
 	f_check<size_t>(a0, L"argument0");
-	t_transfer p = t_object::f_allocate(a_class);
+	t_scoped p = t_object::f_allocate(a_class);
 	p.f_pointer__(new(f_as<size_t>(a0)) t_bytes());
 	return p;
 }
@@ -135,7 +135,7 @@ void t_type_of<t_bytes>::f_get_at(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
 	f_check<t_bytes>(a_this, L"this");
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	f_check<ptrdiff_t>(a0, L"index");
 	a_stack[0].f_construct(f_as<const t_bytes&>(a_this).f_get_at(f_as<ptrdiff_t>(a0)));
 	context.f_done();
@@ -145,8 +145,8 @@ void t_type_of<t_bytes>::f_set_at(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
 	f_check<t_bytes>(a_this, L"this");
-	t_transfer a0 = a_stack[1].f_transfer();
-	t_transfer a1 = a_stack[2].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a1 = std::move(a_stack[2]);
 	f_check<ptrdiff_t>(a0, L"index");
 	f_check<ptrdiff_t>(a1, L"value");
 	a_stack[0].f_construct(f_as<t_bytes&>(a_this).f_set_at(f_as<ptrdiff_t>(a0), f_as<ptrdiff_t>(a1)));
@@ -156,7 +156,7 @@ void t_type_of<t_bytes>::f_set_at(t_object* a_this, t_slot* a_stack)
 void t_type_of<t_bytes>::f_equals(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	a_stack[0].f_construct(f_equals(a_this, a0));
 	context.f_done();
 }
@@ -164,7 +164,7 @@ void t_type_of<t_bytes>::f_equals(t_object* a_this, t_slot* a_stack)
 void t_type_of<t_bytes>::f_not_equals(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	a_stack[0].f_construct(f_not_equals(a_this, a0));
 	context.f_done();
 }

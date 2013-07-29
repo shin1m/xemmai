@@ -229,7 +229,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_object::f_decrement()
 }
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-inline t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
+inline t_scoped t_object::f_allocate_uninitialized(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 	p->v_next = nullptr;
@@ -238,10 +238,10 @@ inline t_transfer t_object::f_allocate_uninitialized(t_object* a_type)
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
 	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
-	return t_transfer(p, t_transfer::t_pass());
+	return t_scoped(p, t_scoped::t_pass());
 }
 
-inline t_transfer t_object::f_allocate(t_object* a_type)
+inline t_scoped t_object::f_allocate(t_object* a_type)
 {
 	t_object* p = t_local_pool<t_object>::f_allocate(f_pool__allocate);
 	p->v_next = nullptr;
@@ -251,7 +251,7 @@ inline t_transfer t_object::f_allocate(t_object* a_type)
 	t_value::v_increments->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
 	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::v_increments;
-	return t_transfer(p, t_transfer::t_pass());
+	return t_scoped(p, t_scoped::t_pass());
 }
 #endif
 

@@ -15,7 +15,7 @@ struct t_math : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(T a_value) const
+	t_scoped f_as(T a_value) const
 	{
 		return f_global()->f_as(a_value);
 	}
@@ -24,22 +24,22 @@ struct t_math : t_extension
 namespace
 {
 
-t_transfer f_frexp(double a_value)
+t_scoped f_frexp(double a_value)
 {
 	int e;
 	double m = std::frexp(a_value, &e);
-	t_transfer p = t_tuple::f_instantiate(2);
+	t_scoped p = t_tuple::f_instantiate(2);
 	t_tuple& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(m);
 	tuple[1] = t_value(e);
 	return p;
 }
 
-t_transfer f_modf(double a_value)
+t_scoped f_modf(double a_value)
 {
 	double i;
 	double f = std::modf(a_value, &i);
-	t_transfer p = t_tuple::f_instantiate(2);
+	t_scoped p = t_tuple::f_instantiate(2);
 	t_tuple& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(f);
 	tuple[1] = t_value(i);
@@ -67,11 +67,11 @@ t_math::t_math(t_object* a_module) : t_extension(a_module)
 	f_define<double (*)(double), std::fabs>(this, L"fabs");
 	f_define<double (*)(double), std::floor>(this, L"floor");
 	f_define<double (*)(double, double), std::fmod>(this, L"fmod");
-	f_define<t_transfer (*)(double), f_frexp>(this, L"frexp");
+	f_define<t_scoped (*)(double), f_frexp>(this, L"frexp");
 	f_define<double (*)(double, int), std::ldexp>(this, L"ldexp");
 	f_define<double (*)(double), std::log>(this, L"log");
 	f_define<double (*)(double), std::log10>(this, L"log10");
-	f_define<t_transfer (*)(double), f_modf>(this, L"modf");
+	f_define<t_scoped (*)(double), f_modf>(this, L"modf");
 	f_define<double (*)(double, double), std::pow>(this, L"pow");
 	f_define<double (*)(double), std::sin>(this, L"sin");
 	f_define<double (*)(double), std::sinh>(this, L"sinh");

@@ -18,7 +18,7 @@ size_t t_reader::f_read(t_io* a_extension)
 	char* p = reinterpret_cast<char*>(&buffer[0]);
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;
-	t_transfer n = v_stream.f_get(a_extension->f_symbol_read())(v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
+	t_scoped n = v_stream.f_get(a_extension->f_symbol_read())(v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
 	f_check<size_t>(n, L"result of read");
 	v_n += f_as<size_t>(n);
 	return f_as<size_t>(n);
@@ -51,18 +51,18 @@ wint_t t_reader::f_get(t_io* a_extension)
 	return c;
 }
 
-t_transfer t_reader::f_instantiate(const t_transfer& a_stream, const std::wstring& a_encoding)
+t_scoped t_reader::f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_transfer object = t_object::f_allocate(extension->f_type<t_reader>());
-	object.f_pointer__(new t_reader(a_stream, a_encoding));
+	t_scoped object = t_object::f_allocate(extension->f_type<t_reader>());
+	object.f_pointer__(new t_reader(std::move(a_stream), a_encoding));
 	return object;
 }
 
-t_reader::t_reader(const t_transfer& a_stream, const std::wstring& a_encoding) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
+t_reader::t_reader(t_scoped&& a_stream, const std::wstring& a_encoding) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
 {
 	if (v_cd == iconv_t(-1)) t_throwable::f_throw(L"failed to iconv_open.");
-	v_stream = a_stream;
+	v_stream = std::move(a_stream);
 	v_buffer = t_bytes::f_instantiate(1024);
 	static_cast<t_object*>(v_buffer)->f_share();
 }
@@ -104,7 +104,7 @@ std::wstring t_reader::f_read_line(t_io* a_extension)
 void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader")
-		(t_construct<const t_transfer&, const std::wstring&>())
+		(t_construct<t_scoped&&, const std::wstring&>())
 		(a_extension->f_symbol_close(), t_member<void (io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
 		(a_extension->f_symbol_read(), t_member<std::wstring (io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
 		(a_extension->f_symbol_read_line(), t_member<std::wstring (io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
@@ -113,7 +113,7 @@ void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 
 t_type* t_type_of<io::t_reader>::f_derive(t_object* a_this)
 {
-	return new t_derived<t_type_of>(v_module, a_this);
+	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
 }
 
 void t_type_of<io::t_reader>::f_scan(t_object* a_this, t_scan a_scan)
@@ -129,9 +129,9 @@ void t_type_of<io::t_reader>::f_finalize(t_object* a_this)
 	delete &f_as<io::t_reader&>(a_this);
 }
 
-t_transfer t_type_of<io::t_reader>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<io::t_reader>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
-	return t_construct<const t_transfer&, const std::wstring&>::t_bind<io::t_reader>::f_do(a_class, a_stack, a_n);
+	return t_construct<t_scoped&&, const std::wstring&>::t_bind<io::t_reader>::f_do(a_class, a_stack, a_n);
 }
 
 }

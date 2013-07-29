@@ -11,20 +11,20 @@ namespace xemmai
 
 XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
 
-t_global::t_global(t_object* a_module, const t_transfer& a_type_object, const t_transfer& a_type_class, const t_transfer& a_type_structure, const t_transfer& a_type_module, const t_transfer& a_type_fiber, const t_transfer& a_type_thread) :
+t_global::t_global(t_object* a_module, t_scoped&& a_type_object, t_scoped&& a_type_class, t_scoped&& a_type_structure, t_scoped&& a_type_module, t_scoped&& a_type_fiber, t_scoped&& a_type_thread) :
 t_extension(a_module),
-v_type_object(a_type_object),
-v_type_class(a_type_class),
-v_type_structure(a_type_structure),
-v_type_module(a_type_module),
-v_type_fiber(a_type_fiber),
-v_type_thread(a_type_thread)
+v_type_object(std::move(a_type_object)),
+v_type_class(std::move(a_type_class)),
+v_type_structure(std::move(a_type_structure)),
+v_type_module(std::move(a_type_module)),
+v_type_fiber(std::move(a_type_fiber)),
+v_type_thread(std::move(a_type_thread))
 {
 	v_instance = this;
-	v_type_tuple = t_class::f_instantiate(new t_type_of<t_tuple>(a_module, v_type_object));
-	v_type_symbol = t_class::f_instantiate(new t_type_of<t_symbol>(a_module, v_type_object));
-	v_type_method = t_class::f_instantiate(new t_type_of<t_method>(a_module, v_type_object));
-	v_type_native = t_class::f_instantiate(new t_type_of<t_native>(a_module, v_type_object));
+	v_type_tuple = t_class::f_instantiate(new t_type_of<t_tuple>(a_module, t_scoped(v_type_object)));
+	v_type_symbol = t_class::f_instantiate(new t_type_of<t_symbol>(a_module, t_scoped(v_type_object)));
+	v_type_method = t_class::f_instantiate(new t_type_of<t_method>(a_module, t_scoped(v_type_object)));
+	v_type_native = t_class::f_instantiate(new t_type_of<t_native>(a_module, t_scoped(v_type_object)));
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct");
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize");
 	v_symbol_string = t_symbol::f_instantiate(L"__string");
@@ -62,10 +62,10 @@ v_type_thread(a_type_thread)
 	t_type::f_define(v_type_object);
 	xemmai::f_as<t_type&>(v_type_object).v_builtin = true;
 	xemmai::f_as<t_type&>(v_type_object).v_primitive = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Class"), v_type_class);
+	a_module->f_put(t_symbol::f_instantiate(L"Class"), t_scoped(v_type_class));
 	xemmai::f_as<t_type&>(v_type_class).v_builtin = true;
 	xemmai::f_as<t_type&>(v_type_structure).v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Module"), v_type_module);
+	a_module->f_put(t_symbol::f_instantiate(L"Module"), t_scoped(v_type_module));
 	xemmai::f_as<t_type&>(v_type_module).v_builtin = true;
 	t_fiber::f_define(v_type_fiber);
 	xemmai::f_as<t_type&>(v_type_fiber).v_builtin = true;
@@ -75,17 +75,17 @@ v_type_thread(a_type_thread)
 	xemmai::f_as<t_type&>(v_type_tuple).v_builtin = true;
 	t_symbol::f_define(v_type_symbol);
 	xemmai::f_as<t_type&>(v_type_symbol).v_builtin = true;
-	v_type_scope = t_class::f_instantiate(new t_type_of<t_scope>(a_module, v_type_object));
+	v_type_scope = t_class::f_instantiate(new t_type_of<t_scope>(a_module, t_scoped(v_type_object)));
 	xemmai::f_as<t_type&>(v_type_scope).v_builtin = true;
-	t_define<t_method, t_object>(this, L"Method", v_type_method);
+	t_define<t_method, t_object>(this, L"Method", t_scoped(v_type_method));
 	xemmai::f_as<t_type&>(v_type_method).v_builtin = true;
 	t_define<t_code, t_object>(this, L"Code");
 	xemmai::f_as<t_type&>(v_type_code).v_builtin = true;
 	t_define<t_lambda, t_object>(this, L"Lambda");
 	xemmai::f_as<t_type&>(v_type_lambda).v_builtin = true;
-	v_type_advanced_lambda = t_class::f_instantiate(new t_type_of<t_advanced_lambda>(a_module, v_type_lambda));
+	v_type_advanced_lambda = t_class::f_instantiate(new t_type_of<t_advanced_lambda>(a_module, t_scoped(v_type_lambda)));
 	xemmai::f_as<t_type&>(v_type_advanced_lambda).v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Native"), v_type_native);
+	a_module->f_put(t_symbol::f_instantiate(L"Native"), t_scoped(v_type_native));
 	xemmai::f_as<t_type&>(v_type_native).v_builtin = true;
 	t_type_of<t_throwable>::f_define();
 	xemmai::f_as<t_type&>(v_type_throwable).v_builtin = true;

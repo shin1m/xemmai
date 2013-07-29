@@ -12,7 +12,7 @@ struct t_pair
 	t_slot v_value;
 	t_slot v_next;
 
-	t_pair(const t_transfer& a_value) : v_value(a_value)
+	t_pair(t_scoped&& a_value) : v_value(std::move(a_value))
 	{
 	}
 	void f_scan(t_scan a_scan)
@@ -42,8 +42,8 @@ public:
 	}
 	std::wstring f_string() const;
 	bool f_empty() const;
-	void f_push(t_container* a_extension, const t_transfer& a_value);
-	t_transfer f_pop();
+	void f_push(t_container* a_extension, t_scoped&& a_value);
+	t_scoped f_pop();
 };
 
 #endif

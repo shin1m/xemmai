@@ -184,7 +184,7 @@ struct t_code
 #else
 	static XEMMAI__PORTABLE__EXPORT void f_loop();
 #endif
-	static t_transfer f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
+	static t_scoped f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 
 	std::wstring v_path;
 	bool v_shared;
@@ -254,9 +254,9 @@ struct t_code
 		v_instructions.push_back(a_operand);
 		v_objects.emplace_back(new t_slot(a_operand));
 	}
-	void f_operand(const t_transfer& a_operand)
+	void f_operand(t_scoped&& a_operand)
 	{
-		t_slot* p = new t_slot(a_operand);
+		t_slot* p = new t_slot(std::move(a_operand));
 		v_instructions.push_back(p);
 		v_objects.emplace_back(p);
 	}
@@ -283,7 +283,7 @@ struct t_code
 template<>
 struct t_type_of<t_code> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_shared = true;
 	}

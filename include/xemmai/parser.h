@@ -68,7 +68,7 @@ class t_parser
 public:
 	struct t_error : t_throwable
 	{
-		static t_transfer f_instantiate(const std::wstring& a_message, t_lexer& a_lexer);
+		static t_scoped f_instantiate(const std::wstring& a_message, t_lexer& a_lexer);
 
 		std::wstring v_path;
 		t_at v_at;

@@ -12,7 +12,7 @@ struct t_enum : t_extension
 	t_slot v_type_number;
 
 	template<typename T>
-	void f_type__(const t_transfer& a_type);
+	void f_type__(t_scoped&& a_type);
 
 	t_enum(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
@@ -27,7 +27,7 @@ struct t_enum : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(const T& a_value) const
+	t_scoped f_as(const T& a_value) const
 	{
 		typedef t_type_of<typename t_fundamental<T>::t_type> t;
 		return t::f_transfer(f_extension<typename t::t_extension>(), a_value);
@@ -35,9 +35,9 @@ struct t_enum : t_extension
 };
 
 template<>
-inline void t_enum::f_type__<t_number>(const t_transfer& a_type)
+inline void t_enum::f_type__<t_number>(t_scoped&& a_type)
 {
-	v_type_number = a_type;
+	v_type_number = std::move(a_type);
 }
 
 template<>

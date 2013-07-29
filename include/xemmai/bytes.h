@@ -38,7 +38,7 @@ class t_bytes
 	void f_validate(ptrdiff_t& a_index, size_t a_size) const;
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate(size_t a_size);
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
 
 	XEMMAI__PORTABLE__EXPORT std::wstring f_string() const;
 	ptrdiff_t f_hash() const
@@ -78,7 +78,7 @@ struct t_type_of<t_bytes> : t_type
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_slot* a_stack);
 	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
 	virtual void f_set_at(t_object* a_this, t_slot* a_stack);

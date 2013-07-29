@@ -35,7 +35,7 @@ struct t_fiber
 			}
 		}
 		static void f_initiate(void** a_pc);
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_initiate(const t_value& a_code, const t_value& a_callable, const t_transfer& a_x);
+		XEMMAI__PORTABLE__FORCE_INLINE static void f_initiate(const t_value& a_code, const t_value& a_callable, t_scoped&& a_x);
 		static void f_terminate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, t_slot* a_stack);
 		static void f_pop();
@@ -105,7 +105,7 @@ struct t_fiber
 	static XEMMAI__PORTABLE__EXPORT t_object* f_current();
 #endif
 	static void f_throw(const t_scoped& a_value);
-	static t_transfer f_instantiate(const t_transfer& a_callable, size_t a_stack, bool a_main = false, bool a_active = false);
+	static t_scoped f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main = false, bool a_active = false);
 	static void f_define(t_object* a_class);
 	template<typename T_main>
 	static ptrdiff_t f_main(T_main a_main);
@@ -123,7 +123,7 @@ struct t_fiber
 	t_slot* v_used;
 	t_slot* v_return;
 
-	t_fiber(const t_transfer& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(a_callable), v_stack(a_stack), v_main(a_main), v_active(a_active), v_used(v_stack.v_used)
+	t_fiber(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(std::move(a_callable)), v_stack(a_stack), v_main(a_main), v_active(a_active), v_used(v_stack.v_used)
 	{
 	}
 	~t_fiber();
@@ -179,7 +179,7 @@ inline void t_fiber::t_context::f_initiate(void** a_pc)
 	v_instance->v_pc = a_pc;
 }
 
-inline void t_fiber::t_context::f_initiate(const t_value& a_code, const t_value& a_callable, const t_transfer& a_x)
+inline void t_fiber::t_context::f_initiate(const t_value& a_code, const t_value& a_callable, t_scoped&& a_x)
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
 	t_stack::v_instance = &fiber.v_stack;
@@ -192,7 +192,7 @@ inline void t_fiber::t_context::f_initiate(const t_value& a_code, const t_value&
 	v_instance->v_code.f_construct(a_code);
 	v_instance->v_pc = &code.v_instructions[0];
 	stack[0].f_construct(a_callable);
-	stack[1].f_construct(a_x);
+	stack[1].f_construct(std::move(a_x));
 }
 
 inline void t_fiber::t_context::f_terminate()
@@ -218,7 +218,7 @@ inline void t_fiber::t_context::f_push(const t_value& a_code, const t_value& a_s
 	p->v_previous = previous;
 	p->v_outer.f_construct(a_scope);
 	p->v_self.f_construct(a_self);
-	if (code.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(code.v_shareds, a_scope));
+	if (code.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(code.v_shareds, t_scoped(a_scope)));
 	p->v_code.f_construct(a_code);
 	p->v_pc = &code.v_instructions[0];
 }

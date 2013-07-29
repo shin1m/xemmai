@@ -5,10 +5,10 @@
 namespace xemmai
 {
 
-t_transfer t_method::f_instantiate(const t_transfer& a_function, const t_transfer& a_self)
+t_scoped t_method::f_instantiate(t_scoped&& a_function, t_scoped&& a_self)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_method>());
-	object.f_pointer__(new t_method(a_function, a_self));
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_method>());
+	object.f_pointer__(new t_method(std::move(a_function), std::move(a_self)));
 	return object;
 }
 
@@ -43,8 +43,8 @@ void t_type_of<t_method>::f_call(t_object* a_this, const t_value& a_self, t_slot
 void t_type_of<t_method>::f_get_at(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
-	t_transfer a0 = a_stack[1].f_transfer();
-	a_stack[0].f_construct(f_as<t_method&>(a_this).f_bind(a0));
+	t_scoped a0 = std::move(a_stack[1]);
+	a_stack[0].f_construct(f_as<t_method&>(a_this).f_bind(std::move(a0)));
 	context.f_done();
 }
 

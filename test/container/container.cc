@@ -3,14 +3,14 @@
 namespace xemmai
 {
 
-t_transfer t_type_of<t_pair>::f_instantiate(t_container* a_extension, const t_transfer& a_value)
+t_scoped t_type_of<t_pair>::f_instantiate(t_container* a_extension, t_scoped&& a_value)
 {
-	t_transfer object = t_object::f_allocate(a_extension->v_type_pair);
-	object.f_pointer__(new t_pair(a_value));
+	t_scoped object = t_object::f_allocate(a_extension->v_type_pair);
+	object.f_pointer__(new t_pair(std::move(a_value)));
 	return object;
 }
 
-t_transfer t_type_of<t_pair>::f_define(t_container* a_extension)
+t_scoped t_type_of<t_pair>::f_define(t_container* a_extension)
 {
 	return t_class::f_instantiate(new t_type_of(a_extension->f_module(), a_extension->f_type<t_object>()));
 }
@@ -40,14 +40,14 @@ void t_type_of<t_queue>::f_define(t_container* a_extension)
 	t_define<t_queue, t_object>(a_extension, L"Queue")
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_queue::*)() const, &t_queue::f_string>())
 		(L"empty", t_member<bool (t_queue::*)() const, &t_queue::f_empty>())
-		(L"push", t_member<void (t_queue::*)(t_container*, const t_transfer&), &t_queue::f_push>())
-		(L"pop", t_member<t_transfer (t_queue::*)(), &t_queue::f_pop>())
+		(L"push", t_member<void (t_queue::*)(t_container*, t_scoped&&), &t_queue::f_push>())
+		(L"pop", t_member<t_scoped (t_queue::*)(), &t_queue::f_pop>())
 	;
 }
 
 t_type* t_type_of<t_queue>::f_derive(t_object* a_this)
 {
-	return new t_type_of(v_module, a_this);
+	return new t_type_of(t_scoped(v_module), a_this);
 }
 
 void t_type_of<t_queue>::f_scan(t_object* a_this, t_scan a_scan)
@@ -60,7 +60,7 @@ void t_type_of<t_queue>::f_finalize(t_object* a_this)
 	delete &f_as<t_queue&>(a_this);
 }
 
-t_transfer t_type_of<t_queue>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<t_queue>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct<>,

@@ -64,115 +64,14 @@ XEMMAI__PORTABLE__THREAD t_value::t_increments* t_value::v_increments;
 XEMMAI__PORTABLE__THREAD t_value::t_decrements* t_value::v_decrements;
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_value::t_value(t_object* a_p, const t_own&) : v_p(a_p)
+void t_value::f_increment(t_object* a_p)
 {
-	if (v_p) v_increments->f_push(v_p);
+	v_increments->f_push(a_p);
 }
 
-t_value::t_value(const t_value& a_value, const t_own&) : v_p(a_value.v_p)
+void t_value::f_decrement(t_object* a_p)
 {
-	switch (f_tag()) {
-	case e_tag__NULL:
-		break;
-	case e_tag__BOOLEAN:
-		v_boolean = a_value.v_boolean;
-		break;
-	case e_tag__INTEGER:
-		v_integer = a_value.v_integer;
-		break;
-	case e_tag__FLOAT:
-		v_float = a_value.v_float;
-		break;
-	default:
-		v_increments->f_push(v_p);
-	}
-}
-
-void t_value::f_assign(t_object* a_p)
-{
-	if (a_p) v_increments->f_push(a_p);
-	t_object* p = v_p;
-	v_p = a_p;
-	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
-}
-
-void t_value::f_assign(const t_value& a_value)
-{
-	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-		break;
-	case e_tag__BOOLEAN:
-		v_boolean = a_value.v_boolean;
-		break;
-	case e_tag__INTEGER:
-		v_integer = a_value.v_integer;
-		break;
-	case e_tag__FLOAT:
-		v_float = a_value.v_float;
-		break;
-	default:
-		v_increments->f_push(a_value.v_p);
-	}
-	t_object* p = v_p;
-	v_p = a_value.v_p;
-	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
-}
-
-void t_value::f_assign(const t_transfer& a_value)
-{
-	t_object* p = v_p;
-	v_p = a_value.v_p;
-	switch (f_tag()) {
-	case e_tag__BOOLEAN:
-		v_boolean = a_value.v_boolean;
-		break;
-	case e_tag__INTEGER:
-		v_integer = a_value.v_integer;
-		break;
-	case e_tag__FLOAT:
-		v_float = a_value.v_float;
-		break;
-	}
-	a_value.v_p = nullptr;
-	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) v_decrements->f_push(p);
-}
-
-t_transfer::~t_transfer()
-{
-	if (f_tag() >= e_tag__OBJECT) v_decrements->f_push(v_p);
-}
-
-t_scoped::~t_scoped()
-{
-	if (f_tag() >= e_tag__OBJECT) v_decrements->f_push(v_p);
-}
-
-void t_slot::f_construct(t_object* a_p)
-{
-	assert(!v_p);
-	if (a_p) v_increments->f_push(a_p);
-	v_p = a_p;
-}
-
-void t_slot::f_construct(const t_value& a_value)
-{
-	assert(!v_p);
-	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-		break;
-	case e_tag__BOOLEAN:
-		v_boolean = a_value.v_boolean;
-		break;
-	case e_tag__INTEGER:
-		v_integer = a_value.v_integer;
-		break;
-	case e_tag__FLOAT:
-		v_float = a_value.v_float;
-		break;
-	default:
-		v_increments->f_push(a_value.v_p);
-	}
-	v_p = a_value.v_p;
+	v_decrements->f_push(a_p);
 }
 #endif
 

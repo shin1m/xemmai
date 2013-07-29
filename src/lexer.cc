@@ -7,7 +7,7 @@ namespace xemmai
 
 void t_lexer::f_throw()
 {
-	throw t_scoped(t_error::f_instantiate(*this));
+	throw t_error::f_instantiate(*this);
 }
 
 void t_lexer::f_get()
@@ -636,9 +636,9 @@ void t_lexer::f_next()
 	}
 }
 
-t_transfer t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
+t_scoped t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_error>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_error>());
 	object.f_pointer__(new t_error(a_lexer));
 	return object;
 }

@@ -15,8 +15,8 @@ namespace xemmai
 template<>
 struct t_type_of<t_pair> : t_type
 {
-	static t_transfer f_instantiate(t_container* a_extension, const t_transfer& a_value);
-	static t_transfer f_define(t_container* a_extension);
+	static t_scoped f_instantiate(t_container* a_extension, t_scoped&& a_value);
+	static t_scoped f_define(t_container* a_extension);
 
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
@@ -36,7 +36,7 @@ struct t_type_of<t_queue> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }
@@ -47,7 +47,7 @@ struct t_container : t_extension
 	t_slot v_type_queue;
 
 	template<typename T>
-	void f_type__(const t_transfer& a_type);
+	void f_type__(t_scoped&& a_type);
 
 	t_container(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
@@ -57,22 +57,22 @@ struct t_container : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(T a_value) const
+	t_scoped f_as(T a_value) const
 	{
 		return f_global()->f_as(a_value);
 	}
 };
 
 template<>
-inline void t_container::f_type__<t_pair>(const t_transfer& a_type)
+inline void t_container::f_type__<t_pair>(t_scoped&& a_type)
 {
-	v_type_pair = a_type;
+	v_type_pair = std::move(a_type);
 }
 
 template<>
-inline void t_container::f_type__<t_queue>(const t_transfer& a_type)
+inline void t_container::f_type__<t_queue>(t_scoped&& a_type)
 {
-	v_type_queue = a_type;
+	v_type_queue = std::move(a_type);
 }
 
 template<>

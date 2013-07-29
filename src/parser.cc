@@ -7,7 +7,7 @@ namespace xemmai
 
 void t_parser::f_throw(const std::wstring& a_message)
 {
-	throw t_scoped(t_error::f_instantiate(a_message, v_lexer));
+	throw t_error::f_instantiate(a_message, v_lexer);
 }
 
 ast::t_variable& t_parser::f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop)
@@ -44,7 +44,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			switch (v_lexer.f_token()) {
 			case t_lexer::e_token__SYMBOL:
 				{
-					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
+					t_scoped symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 						if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
@@ -55,7 +55,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						return std::unique_ptr<ast::t_node>(new ast::t_scope_put(at, outer, variable, f_expression()));
 					}
 					while (scope) {
-						auto i = scope->v_variables.find(t_value(symbol));
+						auto i = scope->v_variables.find(symbol);
 						if (i != scope->v_variables.end()) {
 							if (outer > 0) i->second.v_shared = true;
 							return std::unique_ptr<ast::t_node>(new ast::t_scope_get(at, outer, i->second));
@@ -63,7 +63,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						++outer;
 						scope = scope->v_outer;
 					}
-					return std::unique_ptr<ast::t_node>(new ast::t_global_get(at, symbol));
+					return std::unique_ptr<ast::t_node>(new ast::t_global_get(at, std::move(symbol)));
 				}
 			case t_lexer::e_token__SELF:
 				{
@@ -74,14 +74,14 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 						t_at at = v_lexer.f_at();
-						t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
+						t_scoped symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 							if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 							v_lexer.f_next();
-							return std::unique_ptr<ast::t_node>(new ast::t_object_put(at, std::move(target), symbol, f_expression()));
+							return std::unique_ptr<ast::t_node>(new ast::t_object_put(at, std::move(target), std::move(symbol), f_expression()));
 						}
-						return std::unique_ptr<ast::t_node>(new ast::t_object_get(at, std::move(target), symbol));
+						return std::unique_ptr<ast::t_node>(new ast::t_object_get(at, std::move(target), std::move(symbol)));
 					}
 					return target;
 				}
@@ -94,9 +94,9 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__SYMBOL:
 			{
-				t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
+				t_scoped symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 				v_lexer.f_next();
-				return std::unique_ptr<ast::t_node>(new ast::t_instance(at, symbol));
+				return std::unique_ptr<ast::t_node>(new ast::t_instance(at, std::move(symbol)));
 			}
 		case t_lexer::e_token__LEFT_PARENTHESIS:
 			{
@@ -130,7 +130,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					while (true) {
 						switch (v_lexer.f_token()) {
 						case t_lexer::e_token__SYMBOL:
-							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_scoped(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()))), ast::t_variable()).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable()).first->second);
 							v_lexer.f_next();
 							if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 								v_lexer.f_next();
@@ -146,7 +146,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						case t_lexer::e_token__ASTERISK:
 							v_lexer.f_next();
 							if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
-							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_scoped(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()))), ast::t_variable()).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable()).first->second);
 							lambda->v_variadic = true;
 							v_lexer.f_next();
 							break;
@@ -291,14 +291,14 @@ std::unique_ptr<ast::t_node> t_parser::f_action(std::unique_ptr<ast::t_node>&& a
 				}
 			case t_lexer::e_token__SYMBOL:
 				{
-					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
+					t_scoped symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 						if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 						v_lexer.f_next();
-						return std::unique_ptr<ast::t_node>(new ast::t_object_put(at, std::move(a_target), symbol, f_expression()));
+						return std::unique_ptr<ast::t_node>(new ast::t_object_put(at, std::move(a_target), std::move(symbol), f_expression()));
 					}
-					return f_action(new ast::t_object_get(at, std::move(a_target), symbol), a_assignable);
+					return f_action(new ast::t_object_get(at, std::move(a_target), std::move(symbol)), a_assignable);
 				}
 			case t_lexer::e_token__COLON:
 				if (v_lexer.f_value().size() != 1) f_throw(L"expecting '(' or ':' or '?' or '^' or '~' or symbol.");
@@ -321,9 +321,9 @@ std::unique_ptr<ast::t_node> t_parser::f_action(std::unique_ptr<ast::t_node>&& a
 					}
 				case t_lexer::e_token__SYMBOL:
 					{
-						t_transfer key = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
+						t_scoped key = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 						v_lexer.f_next();
-						return f_action(token == t_lexer::e_token__QUESTION ? static_cast<ast::t_node*>(new ast::t_object_has(at, std::move(a_target), key)) : static_cast<ast::t_node*>(new ast::t_object_remove(at, std::move(a_target), key)), a_assignable);
+						return f_action(token == t_lexer::e_token__QUESTION ? static_cast<ast::t_node*>(new ast::t_object_has(at, std::move(a_target), std::move(key))) : static_cast<ast::t_node*>(new ast::t_object_remove(at, std::move(a_target), std::move(key))), a_assignable);
 					}
 				default:
 					f_throw(L"expecting '(' or symbol.");
@@ -696,7 +696,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 					v_lexer.f_next();
 					std::unique_ptr<ast::t_node> expression = f_expression();
 					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
-					t_transfer symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
+					t_scoped symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'.");
 					v_lexer.f_next();
@@ -846,9 +846,9 @@ void t_parser::f_parse(ast::t_module& a_module)
 	}
 }
 
-t_transfer t_parser::t_error::f_instantiate(const std::wstring& a_message, t_lexer& a_lexer)
+t_scoped t_parser::t_error::f_instantiate(const std::wstring& a_message, t_lexer& a_lexer)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_error>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_error>());
 	object.f_pointer__(new t_error(a_message, a_lexer));
 	return object;
 }

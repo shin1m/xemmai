@@ -15,13 +15,13 @@ struct t_type_of<std::mutex> : t_type
 	static void f_release(std::mutex& a_self);
 	static void f_define(t_threading* a_extension);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_fixed = v_shared = true;
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 template<>
@@ -35,13 +35,13 @@ struct t_type_of<std::condition_variable> : t_type
 	static void f_broadcast(std::condition_variable& a_self);
 	static void f_define(t_threading* a_extension);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_fixed = v_shared = true;
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 class t_threading : public t_extension
@@ -52,7 +52,7 @@ class t_threading : public t_extension
 	t_slot v_type_condition;
 
 	template<typename T>
-	void f_type__(const t_transfer& a_type);
+	void f_type__(t_scoped&& a_type);
 
 public:
 	t_threading(t_object* a_module);
@@ -63,22 +63,22 @@ public:
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_transfer f_as(const T& a_value) const
+	t_scoped f_as(const T& a_value) const
 	{
 		return f_global()->f_as(a_value);
 	}
 };
 
 template<>
-inline void t_threading::f_type__<std::mutex>(const t_transfer& a_type)
+inline void t_threading::f_type__<std::mutex>(t_scoped&& a_type)
 {
-	v_type_mutex = a_type;
+	v_type_mutex = std::move(a_type);
 }
 
 template<>
-inline void t_threading::f_type__<std::condition_variable>(const t_transfer& a_type)
+inline void t_threading::f_type__<std::condition_variable>(t_scoped&& a_type)
 {
-	v_type_condition = a_type;
+	v_type_condition = std::move(a_type);
 }
 
 template<>
@@ -123,7 +123,7 @@ void t_type_of<std::mutex>::f_finalize(t_object* a_this)
 	delete &f_as<std::mutex&>(a_this);
 }
 
-t_transfer t_type_of<std::mutex>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<std::mutex>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<std::mutex>::f_do(a_class, a_stack, a_n);
 }
@@ -182,7 +182,7 @@ void t_type_of<std::condition_variable>::f_finalize(t_object* a_this)
 	delete &f_as<std::condition_variable&>(a_this);
 }
 
-t_transfer t_type_of<std::condition_variable>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<std::condition_variable>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<std::condition_variable>::f_do(a_class, a_stack, a_n);
 }

@@ -21,8 +21,8 @@ class t_file
 	bool v_own = false;
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate(FILE* a_stream);
-	static XEMMAI__PORTABLE__EXPORT t_transfer f_instantiate(const std::wstring& a_path, const std::wstring& a_mode);
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(FILE* a_stream);
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(const std::wstring& a_path, const std::wstring& a_mode);
 
 	t_file(FILE* a_stream) : v_stream(a_stream)
 	{
@@ -58,7 +58,7 @@ struct t_type_of<io::t_file> : t_type
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }

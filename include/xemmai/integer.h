@@ -101,25 +101,25 @@ struct t_type_of<ptrdiff_t> : t_type
 	};
 
 	template<typename T_extension, typename T>
-	static t_transfer f_transfer(T_extension* a_extension, T a_value)
+	static t_scoped f_transfer(T_extension* a_extension, T a_value)
 	{
-		return t_transfer(static_cast<ptrdiff_t>(a_value));
+		return t_value(static_cast<ptrdiff_t>(a_value));
 	}
-	static t_transfer f_construct(t_object* a_class, ptrdiff_t a_value)
+	static t_scoped f_construct(t_object* a_class, ptrdiff_t a_value)
 	{
-		return t_transfer(a_value);
+		return t_value(a_value);
 	}
-	static t_transfer f_construct(t_object* a_class, double a_value)
+	static t_scoped f_construct(t_object* a_class, double a_value)
 	{
 		return f_construct(a_class, static_cast<ptrdiff_t>(a_value));
 	}
-	static t_transfer f_construct(t_object* a_class, const std::wstring& a_value)
+	static t_scoped f_construct(t_object* a_class, const std::wstring& a_value)
 	{
 		return f_construct(a_class, f_parse(a_value.c_str()));
 	}
-	static t_transfer f_construct_derived(t_object* a_class, ptrdiff_t a_value)
+	static t_scoped f_construct_derived(t_object* a_class, ptrdiff_t a_value)
 	{
-		t_transfer object = t_object::f_allocate_uninitialized(a_class);
+		t_scoped object = t_object::f_allocate_uninitialized(a_class);
 		object.f_integer__(a_value);
 		return object;
 	}
@@ -151,14 +151,14 @@ struct t_type_of<ptrdiff_t> : t_type
 	{
 		return ~a_self;
 	}
-	static t_transfer f_multiply(ptrdiff_t a_self, const t_value& a_value);
-	static t_transfer f_divide(ptrdiff_t a_self, const t_value& a_value);
+	static t_scoped f_multiply(ptrdiff_t a_self, const t_value& a_value);
+	static t_scoped f_divide(ptrdiff_t a_self, const t_value& a_value);
 	static ptrdiff_t f_modulus(ptrdiff_t a_self, ptrdiff_t a_value)
 	{
 		return a_self % a_value;
 	}
-	static t_transfer f_add(ptrdiff_t a_self, const t_value& a_value);
-	static t_transfer f_subtract(ptrdiff_t a_self, const t_value& a_value);
+	static t_scoped f_add(ptrdiff_t a_self, const t_value& a_value);
+	static t_scoped f_subtract(ptrdiff_t a_self, const t_value& a_value);
 	static ptrdiff_t f_left_shift(ptrdiff_t a_self, ptrdiff_t a_value)
 	{
 		return a_self << a_value;
@@ -187,12 +187,12 @@ struct t_type_of<ptrdiff_t> : t_type
 	}
 	static void f_define();
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_shared = v_immutable = true;
 	}
 	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive(t_object* a_this);
-	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }

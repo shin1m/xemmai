@@ -35,14 +35,14 @@ struct t_fundamental<T&>
 	typedef typename t_fundamental<T>::t_type t_type;
 };
 
-template<>
-struct t_fundamental<t_value>
+template<typename T>
+struct t_fundamental<T&&>
 {
-	typedef t_object t_type;
+	typedef typename t_fundamental<T>::t_type t_type;
 };
 
 template<>
-struct t_fundamental<t_transfer>
+struct t_fundamental<t_value>
 {
 	typedef t_object t_type;
 };
@@ -128,19 +128,19 @@ struct t_type_of<t_object>
 	template<typename T>
 	struct t_as<const t_value&, T>
 	{
-		typedef t_transfer t_type;
+		typedef t_scoped t_type;
 
-		static t_transfer f_call(T a_object)
+		static t_scoped f_call(T a_object)
 		{
 			return a_object;
 		}
 	};
 	template<typename T>
-	struct t_as<const t_transfer&, T>
+	struct t_as<t_scoped&&, T>
 	{
-		typedef t_transfer t_type;
+		typedef t_scoped t_type;
 
-		static t_transfer f_call(T a_object)
+		static t_scoped f_call(T a_object)
 		{
 			return a_object;
 		}
@@ -189,7 +189,7 @@ struct t_type_of<t_object>
 		}
 	};
 	template<typename T>
-	struct t_is<const t_transfer&, T>
+	struct t_is<t_scoped&&, T>
 	{
 		static bool f_call(T a_object)
 		{
@@ -207,15 +207,15 @@ struct t_type_of<t_object>
 	bool v_shared = false;
 	bool v_immutable = false;
 
-	static t_transfer f_transfer(const t_global* a_extension, t_object* a_value)
+	static t_scoped f_transfer(const t_global* a_extension, t_object* a_value)
 	{
 		return a_value;
 	}
-	static t_transfer f_transfer(const t_global* a_extension, const t_value& a_value)
+	static t_scoped f_transfer(const t_global* a_extension, const t_value& a_value)
 	{
 		return a_value;
 	}
-	static t_transfer f_transfer(const t_global* a_extension, const t_transfer& a_value)
+	static t_scoped f_transfer(const t_global* a_extension, t_scoped&& a_value)
 	{
 		return a_value;
 	}
@@ -243,19 +243,19 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT static void f_share(const t_value& a_self);
 	XEMMAI__PORTABLE__EXPORT static void f_define(t_object* a_class);
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : v_module(a_module), v_super(a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : v_module(std::move(a_module)), v_super(std::move(a_super))
 	{
 	}
 	XEMMAI__PORTABLE__EXPORT virtual ~t_type_of() = default;
 	XEMMAI__PORTABLE__EXPORT virtual t_type_of* f_derive(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
-	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_get(const t_value& a_this, t_object* a_key);
-	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, const t_transfer& a_value);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_get(const t_value& a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
 	XEMMAI__PORTABLE__EXPORT virtual bool f_has(const t_value& a_this, t_object* a_key);
-	XEMMAI__PORTABLE__EXPORT virtual t_transfer f_remove(t_object* a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_slot* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual void f_get_at(t_object* a_this, t_slot* a_stack);
@@ -295,13 +295,13 @@ struct t_type_of<t_object>::t_as<const t_value&, const t_value&>
 };
 
 template<>
-struct t_type_of<t_object>::t_as<const t_transfer&, const t_transfer&>
+struct t_type_of<t_object>::t_as<t_scoped&&, t_scoped&&>
 {
-	typedef const t_transfer& t_type;
+	typedef t_scoped&& t_type;
 
-	static const t_transfer& f_call(const t_transfer& a_object)
+	static t_scoped&& f_call(t_scoped&& a_object)
 	{
-		return a_object;
+		return std::move(a_object);
 	}
 };
 
@@ -320,9 +320,9 @@ inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, c
 }
 
 template<typename T>
-inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_transfer&>::t_type f_as(const t_transfer& a_object)
+inline typename t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, t_scoped&&>::t_type f_as(t_scoped&& a_object)
 {
-	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, const t_transfer&>::f_call(a_object);
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T, t_scoped&&>::f_call(std::move(a_object));
 }
 
 template<typename T>

@@ -64,7 +64,7 @@ private:
 			delete[] static_cast<char*>(a_p);
 		}
 
-		static t_transfer f_instantiate(size_t a_rank);
+		static t_scoped f_instantiate(size_t a_rank);
 
 		t_table() : v_size(0)
 		{
@@ -119,17 +119,17 @@ public:
 	};
 	friend class t_iterator;
 
-	static t_transfer f_instantiate();
+	static t_scoped f_instantiate();
 
 	void f_clear();
 	size_t f_size() const;
 	const t_value& f_get(const t_value& a_key) const;
-	t_transfer f_put(const t_value& a_key, const t_transfer& a_value);
+	t_scoped f_put(const t_value& a_key, t_scoped&& a_value);
 	bool f_has(const t_value& a_key) const
 	{
 		return f_find(a_key) != nullptr;
 	}
-	t_transfer f_remove(const t_value& a_key);
+	t_scoped f_remove(const t_value& a_key);
 };
 
 template<>
@@ -160,7 +160,7 @@ struct t_type_of<t_dictionary> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_slot* a_stack);
 	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
 	virtual void f_set_at(t_object* a_this, t_slot* a_stack);

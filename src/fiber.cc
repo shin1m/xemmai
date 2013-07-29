@@ -49,7 +49,7 @@ void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	t_code& code = f_as<t_code&>(p->v_code);
 	++a_stack;
 	size_t i = 0;
-	for (; i < a_n; ++i) p->v_base[i] = a_stack[i].f_transfer();
+	for (; i < a_n; ++i) p->v_base[i] = std::move(a_stack[i]);
 	for (; i < code.v_privates; ++i) p->v_base[i] = nullptr;
 	stack->v_used = std::max(p->v_previous, p->v_base + a_n);
 	v_instance = p->v_next;
@@ -143,10 +143,10 @@ void t_fiber::f_throw(const t_scoped& a_value)
 	}
 }
 
-t_transfer t_fiber::f_instantiate(const t_transfer& a_callable, size_t a_stack, bool a_main, bool a_active)
+t_scoped t_fiber::f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active)
 {
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_fiber>());
-	object.f_pointer__(new t_fiber(a_callable, a_stack, a_main, a_active));
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_fiber>());
+	object.f_pointer__(new t_fiber(std::move(a_callable), a_stack, a_main, a_active));
 	return object;
 }
 
@@ -218,14 +218,14 @@ void t_type_of<t_fiber>::f_finalize(t_object* a_this)
 void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(L"must be called with 1 or 2 argument(s).");
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	size_t size = f_engine()->v_stack_size;
 	if (a_n == 2) {
-		t_transfer a1 = a_stack[2].f_transfer();
+		t_scoped a1 = std::move(a_stack[2]);
 		f_check<size_t>(a1, L"argument1");
 		size = f_as<size_t>(a1);
 	}
-	a_stack[0].f_construct(t_fiber::f_instantiate(a0, size));
+	a_stack[0].f_construct(t_fiber::f_instantiate(std::move(a0), size));
 }
 
 void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n)
@@ -245,7 +245,7 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot*
 		p.v_active = true;
 		q.v_active = false;
 	}
-	t_transfer x = a_stack[1].f_transfer();
+	t_scoped x = std::move(a_stack[1]);
 	q.v_context = t_fiber::t_context::v_instance;
 	q.v_used = q.v_stack.v_used;
 	q.v_return = a_stack;
@@ -254,9 +254,9 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot*
 	if (p.v_context) {
 		t_stack::v_instance = &p.v_stack;
 		t_fiber::t_context::v_instance = p.v_context;
-		p.v_return->f_construct(x);
+		p.v_return->f_construct(std::move(x));
 	} else {
-		t_fiber::t_context::f_initiate(f_engine()->v_code_fiber, p.v_callable, x);
+		t_fiber::t_context::f_initiate(f_engine()->v_code_fiber, p.v_callable, std::move(x));
 	}
 }
 

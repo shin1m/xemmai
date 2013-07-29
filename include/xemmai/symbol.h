@@ -22,7 +22,7 @@ class t_symbol
 	~t_symbol() = default;
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_transfer f_instantiate(const std::wstring& a_value);
+	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_value);
 	static void f_define(t_object* a_class);
 	static void f_revise(t_object* a_this);
 
@@ -35,7 +35,7 @@ public:
 template<>
 struct t_type_of<t_symbol> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_revive = v_fixed = v_shared = v_immutable = true;
 	}

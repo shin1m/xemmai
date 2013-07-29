@@ -71,14 +71,14 @@ struct t_thread
 	static void f_cache_release()
 	{
 	}
-	static t_transfer f_instantiate(const t_transfer& a_callable, size_t a_stack);
+	static t_scoped f_instantiate(t_scoped&& a_callable, size_t a_stack);
 	static void f_define(t_object* a_class);
 
 	t_internal* v_internal;
 	t_slot v_fiber;
 	t_scoped v_active;
 
-	t_thread(const t_transfer& a_fiber) : v_internal(new t_internal()), v_fiber(a_fiber)
+	t_thread(t_scoped&& a_fiber) : v_internal(new t_internal()), v_fiber(std::move(a_fiber))
 	{
 	}
 	void f_join();
@@ -87,7 +87,7 @@ struct t_thread
 template<>
 struct t_type_of<t_thread> : t_type
 {
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_fixed = v_shared = true;
 	}

@@ -77,25 +77,25 @@ struct t_type_of<double> : t_type
 	};
 
 	template<typename T_extension, typename T>
-	static t_transfer f_transfer(T_extension* a_extension, T a_value)
+	static t_scoped f_transfer(T_extension* a_extension, T a_value)
 	{
-		return t_transfer(static_cast<double>(a_value));
+		return t_value(static_cast<double>(a_value));
 	}
-	static t_transfer f_construct(t_object* a_class, double a_value)
+	static t_scoped f_construct(t_object* a_class, double a_value)
 	{
-		return t_transfer(a_value);
+		return t_value(a_value);
 	}
-	static t_transfer f_construct(t_object* a_class, ptrdiff_t a_value)
+	static t_scoped f_construct(t_object* a_class, ptrdiff_t a_value)
 	{
 		return f_construct(a_class, static_cast<double>(a_value));
 	}
-	static t_transfer f_construct(t_object* a_class, const std::wstring& a_value)
+	static t_scoped f_construct(t_object* a_class, const std::wstring& a_value)
 	{
 		return f_construct(a_class, f_parse(a_value.c_str()));
 	}
-	static t_transfer f_construct_derived(t_object* a_class, double a_value)
+	static t_scoped f_construct_derived(t_object* a_class, double a_value)
 	{
-		t_transfer object = t_object::f_allocate_uninitialized(a_class);
+		t_scoped object = t_object::f_allocate_uninitialized(a_class);
 		object.f_float__(a_value);
 		return object;
 	}
@@ -167,12 +167,12 @@ struct t_type_of<double> : t_type
 	static bool f_not_equals(double a_self, const t_value& a_value);
 	static void f_define();
 
-	t_type_of(const t_transfer& a_module, const t_transfer& a_super) : t_type(a_module, a_super)
+	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
 	{
 		v_shared = v_immutable = true;
 	}
 	virtual t_type* f_derive(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }

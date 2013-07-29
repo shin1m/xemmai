@@ -79,11 +79,11 @@ void t_thread::f_cache_acquire()
 	}
 }
 
-t_transfer t_thread::f_instantiate(const t_transfer& a_callable, size_t a_stack)
+t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 {
-	t_transfer fiber = t_fiber::f_instantiate(a_callable, a_stack, true, true);
-	t_transfer object = t_object::f_allocate(f_global()->f_type<t_thread>());
-	t_thread* p = new t_thread(fiber);
+	t_scoped fiber = t_fiber::f_instantiate(std::move(a_callable), a_stack, true, true);
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_thread>());
+	t_thread* p = new t_thread(std::move(fiber));
 	object.f_pointer__(p);
 	t_internal* internal = p->v_internal;
 	{
@@ -143,13 +143,13 @@ void t_type_of<t_thread>::f_instantiate(t_object* a_class, t_slot* a_stack, size
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(L"must be called with 1 or 2 argument(s).");
 	size_t size = f_engine()->v_stack_size;
-	t_transfer a0 = a_stack[1].f_transfer();
+	t_scoped a0 = std::move(a_stack[1]);
 	if (a_n == 2) {
-		t_transfer a1 = a_stack[2].f_transfer();
+		t_scoped a1 = std::move(a_stack[2]);
 		f_check<size_t>(a1, L"argument1");
 		size = f_as<size_t>(a1);
 	}
-	a_stack[0].f_construct(t_thread::f_instantiate(a0, size));
+	a_stack[0].f_construct(t_thread::f_instantiate(std::move(a0), size));
 }
 
 }

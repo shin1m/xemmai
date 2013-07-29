@@ -32,9 +32,9 @@ class t_writer
 	void f_unshift(t_io* a_extension);
 
 public:
-	static t_transfer f_instantiate(const t_transfer& a_stream, const std::wstring& a_encoding);
+	static t_scoped f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding);
 
-	t_writer(const t_transfer& a_stream, const std::wstring& a_encoding);
+	t_writer(t_scoped&& a_stream, const std::wstring& a_encoding);
 	~t_writer()
 	{
 		iconv_close(v_cd);
@@ -59,7 +59,7 @@ struct t_type_of<io::t_writer> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_transfer f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
 };
 
 }
