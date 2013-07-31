@@ -35,7 +35,7 @@ Using fat values reduces redundant increment/decrement operations.
 This is desirable because increment/decrement operations are relatively expensive.
 
 
-## Transferable Values
+## Transferable Values (Obsoleted)
 
 `t_transfer` is a derived class of `t_value`, and it also is a tricky stuff.
 
@@ -46,6 +46,28 @@ Whenever an argument of `const t_transfer&` is explicitly/implicitly passed, the
 Using move semantics reduces redundant increment/decrement operations.
 
 This is desirable because increment/decrement operations are relatively expensive.
+
+
+## Moving Values
+
+As xemmai is migrating to C++11, the tricky `t_transfer` has been obsoleted.
+
+Now, xemmai utilizes C++11 move semantics for `t_value` as much as possible.
+
+Using move semantics reduces redundant increment/decrement operations.
+
+This is desirable because increment/decrement operations are relatively expensive.
+
+
+## Minimal Locks for Objects
+
+Objects in the shared thread model are protected from simultaneous accesses from threads using locks they contain.
+
+xemmai only provides a minimal lock mechanism which is a kind of spin locks without system calls.
+
+Note that this is not a general purpose synchronization mechanism but just only for avoiding an engine crash.
+
+Use standard synchronization mechanisms such as mutexes and condition variables to implement application logics.
 
 
 ## Hidden Structures

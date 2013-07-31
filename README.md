@@ -39,15 +39,15 @@ It also has a concurrent garbage collector to utilize multiple processors.
 
 ## Documentation
 
- * [Walk Through](/shin1m/xemmai/blob/master/doc/WalkThrough.md)
- * [Expressions and Statements](/shin1m/xemmai/blob/master/doc/ExpressionsAndStatements.md)
- * [Object Traits](/shin1m/xemmai/blob/master/doc/ObjectTraits.md)
+ * [Walk Through](doc/WalkThrough.md)
+ * [Expressions and Statements](doc/ExpressionsAndStatements.md)
+ * [Object Traits](doc/ObjectTraits.md)
 
 
 ## Implementation Details
 
- * [Garbage Collection](/shin1m/xemmai/blob/master/doc/GarbageCollection.md)
- * [Other Internals](/shin1m/xemmai/blob/master/doc/OtherInternals.md)
+ * [Garbage Collection](doc/GarbageCollection.md)
+ * [Other Internals](doc/OtherInternals.md)
 
 
 ## License
