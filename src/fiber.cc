@@ -30,18 +30,6 @@ void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_co
 
 XEMMAI__PORTABLE__THREAD t_fiber::t_context* t_fiber::t_context::v_instance;
 
-void t_fiber::t_context::f_pop()
-{
-	t_stack* stack = f_stack();
-	t_context* p = v_instance;
-	t_code& code = f_as<t_code&>(p->v_code);
-	for (size_t i = 0; i < code.v_privates; ++i) p->v_base[i] = nullptr;
-	stack->v_used = p->v_previous;
-	v_instance = p->v_next;
-	p->f_free();
-	if (v_instance->v_native > 0) --f_as<t_fiber&>(v_current).v_native;
-}
-
 void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 {
 	t_stack* stack = f_stack();

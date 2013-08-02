@@ -118,7 +118,6 @@ protected:
 		}
 		void f_next(t_object* a_object) noexcept;
 		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
-//		XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
 		{
 			t_object* volatile* head = v_head;
 			if (head == v_next) {
@@ -180,7 +179,7 @@ protected:
 		void* v_pointer;
 	};
 
-	void f_copy(const t_value& a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_copy(const t_value& a_value)
 	{
 		switch (a_value.f_tag()) {
 		case e_tag__NULL:
@@ -238,7 +237,7 @@ protected:
 		v_p = a_value.v_p;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
-	void f_assign(t_value&& a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_value&& a_value)
 	{
 		f_copy_union(a_value);
 		t_object* p = v_p;

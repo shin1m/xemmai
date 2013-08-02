@@ -38,7 +38,7 @@ struct t_fiber
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_initiate(const t_value& a_code, const t_value& a_callable, t_scoped&& a_x);
 		static void f_terminate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_value& a_code, const t_value& a_scope, const t_value& a_self, t_slot* a_stack);
-		static void f_pop();
+		XEMMAI__PORTABLE__ALWAYS_INLINE static void f_pop();
 		static void f_pop(t_slot* a_stack, size_t a_n);
 		static void f_backtrace();
 
@@ -59,7 +59,7 @@ struct t_fiber
 			a_scan(v_scope);
 			a_scan(v_code);
 		}
-		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_free()
+		XEMMAI__PORTABLE__FORCE_INLINE void f_free()
 		{
 			v_outer = nullptr;
 			v_self = nullptr;
@@ -221,6 +221,18 @@ inline void t_fiber::t_context::f_push(const t_value& a_code, const t_value& a_s
 	if (code.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(code.v_shareds, t_scoped(a_scope)));
 	p->v_code.f_construct(a_code);
 	p->v_pc = &code.v_instructions[0];
+}
+
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_fiber::t_context::f_pop()
+{
+	t_stack* stack = f_stack();
+	t_context* p = v_instance;
+	t_code& code = f_as<t_code&>(p->v_code);
+	for (size_t i = 0; i < code.v_privates; ++i) p->v_base[i] = nullptr;
+	stack->v_used = p->v_previous;
+	v_instance = p->v_next;
+	p->f_free();
+	if (v_instance->v_native > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 
 inline void t_fiber::t_try::f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally)
