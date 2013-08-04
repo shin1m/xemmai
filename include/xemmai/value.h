@@ -17,8 +17,8 @@ template<typename T>
 struct t_type_of;
 class t_engine;
 class t_object;
-class t_scoped;
 class t_slot;
+class t_scoped;
 struct t_thread;
 struct t_code;
 t_engine* f_engine();
@@ -30,6 +30,7 @@ class t_value
 	friend class t_engine;
 	friend class t_object;
 	friend class t_slot;
+	friend class t_scoped;
 	friend struct t_thread;
 	friend struct t_code;
 	friend t_engine* f_engine();
@@ -219,9 +220,8 @@ protected:
 	{
 		f_copy(a_value);
 	}
-	t_value(t_value&& a_value) : t_value(a_value)
+	t_value(const t_pass&)
 	{
-		a_value.v_p = nullptr;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_object* a_p)
 	{
@@ -235,14 +235,6 @@ protected:
 		f_copy(a_value);
 		t_object* p = v_p;
 		v_p = a_value.v_p;
-		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_value&& a_value)
-	{
-		f_copy_union(a_value);
-		t_object* p = v_p;
-		v_p = a_value.v_p;
-		a_value.v_p = nullptr;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 
@@ -348,56 +340,6 @@ public:
 	t_scoped f_send(const t_value& a_value) const;
 };
 
-class t_scoped : public t_value
-{
-	friend class t_object;
-
-	t_scoped(t_object* a_p, const t_pass&) : t_value(a_p)
-	{
-	}
-
-public:
-	using t_value::t_value;
-	t_scoped(t_object* a_p = nullptr) : t_value(a_p, t_own())
-	{
-	}
-	t_scoped(const t_value& a_value) : t_value(a_value, t_own())
-	{
-	}
-	t_scoped(const t_scoped& a_value) : t_value(a_value, t_own())
-	{
-	}
-	t_scoped(t_scoped&& a_value) : t_value(std::move(a_value))
-	{
-	}
-	t_scoped(t_slot&& a_value);
-	~t_scoped()
-	{
-		if (f_tag() >= e_tag__OBJECT) f_decrements()->f_push(v_p);
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_object* a_p)
-	{
-		f_assign(a_p);
-		return *this;
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_value& a_value)
-	{
-		f_assign(a_value);
-		return *this;
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_scoped& a_value)
-	{
-		f_assign(a_value);
-		return *this;
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_scoped&& a_value)
-	{
-		f_assign(std::move(a_value));
-		return *this;
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_slot&& a_value);
-};
-
 class t_slot : public t_value
 {
 	friend class t_object;
@@ -408,12 +350,27 @@ class t_slot : public t_value
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
 		v_integer = a_value;
 	}
-	void f__construct(t_value&& a_value)
+	void f_move(t_slot&& a_value)
 	{
-		assert(!v_p);
-		f_copy_union(a_value);
-		v_p = a_value.v_p;
+		t_object* p = a_value.v_p;
 		a_value.v_p = nullptr;
+		v_p = p;
+		switch (f_tag()) {
+		case e_tag__NULL:
+			break;
+		case e_tag__BOOLEAN:
+			v_boolean = a_value.v_boolean;
+			break;
+		case e_tag__INTEGER:
+			v_integer = a_value.v_integer;
+			break;
+		case e_tag__FLOAT:
+			v_float = a_value.v_float;
+			break;
+		default:
+			f_increments()->f_push(v_p);
+			f_decrements()->f_push(p);
+		}
 	}
 
 public:
@@ -427,11 +384,9 @@ public:
 	t_slot(const t_slot& a_value) : t_value(a_value, t_own())
 	{
 	}
-	t_slot(t_slot&& a_value) : t_value(std::move(a_value))
+	t_slot(t_slot&& a_value) : t_value(t_pass())
 	{
-	}
-	t_slot(t_scoped&& a_value) : t_value(std::move(a_value))
-	{
+		f_move(std::move(a_value));
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_object* a_p)
 	{
@@ -450,12 +405,9 @@ public:
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_slot&& a_value)
 	{
-		f_assign(std::move(a_value));
-		return *this;
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_scoped&& a_value)
-	{
-		f_assign(std::move(a_value));
+		t_object* p = v_p;
+		f_move(std::move(a_value));
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 		return *this;
 	}
 	void f_construct(bool a_value)
@@ -508,11 +460,74 @@ public:
 	}
 	void f_construct(t_slot&& a_value)
 	{
-		f__construct(std::move(a_value));
+		assert(!v_p);
+		f_move(std::move(a_value));
 	}
-	void f_construct(t_scoped&& a_value)
+};
+
+class t_scoped : public t_value
+{
+	friend class t_object;
+
+	t_scoped(t_object* a_p, const t_pass&) : t_value(a_p)
 	{
-		f__construct(std::move(a_value));
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_move(t_value&& a_value)
+	{
+		f_copy_union(a_value);
+		t_object* p = v_p;
+		v_p = a_value.v_p;
+		a_value.v_p = nullptr;
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
+	}
+
+public:
+	using t_value::t_value;
+	t_scoped(t_object* a_p = nullptr) : t_value(a_p, t_own())
+	{
+	}
+	t_scoped(const t_value& a_value) : t_value(a_value, t_own())
+	{
+	}
+	t_scoped(const t_scoped& a_value) : t_value(a_value, t_own())
+	{
+	}
+	t_scoped(t_scoped&& a_value) : t_value(a_value)
+	{
+		a_value.v_p = nullptr;
+	}
+	t_scoped(t_slot&& a_value) : t_value(a_value)
+	{
+		a_value.v_p = nullptr;
+	}
+	~t_scoped()
+	{
+		if (f_tag() >= e_tag__OBJECT) f_decrements()->f_push(v_p);
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_object* a_p)
+	{
+		f_assign(a_p);
+		return *this;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_value& a_value)
+	{
+		f_assign(a_value);
+		return *this;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_scoped& a_value)
+	{
+		f_assign(a_value);
+		return *this;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_scoped&& a_value)
+	{
+		f_move(std::move(a_value));
+		return *this;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_slot&& a_value)
+	{
+		f_move(std::move(a_value));
+		return *this;
 	}
 };
 
@@ -531,16 +546,6 @@ void t_value::t_queue<A_SIZE>::f_next(t_object* a_object) noexcept
 		*head = a_object;
 		v_head = v_objects;
 	}
-}
-
-inline t_scoped::t_scoped(t_slot&& a_value) : t_value(std::move(a_value))
-{
-}
-
-XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped& t_scoped::operator=(t_slot&& a_value)
-{
-	f_assign(std::move(a_value));
-	return *this;
 }
 
 typedef void (*t_scan)(t_slot&);
