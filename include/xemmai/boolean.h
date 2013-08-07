@@ -12,46 +12,11 @@ struct t_type_of<bool> : t_type
 	template<typename T0, typename T1>
 	struct t_as
 	{
-		typedef T0 t_type;
+		typedef bool t_type;
 
-		static T0 f_call(T1 a_object)
-		{
-			return a_object.f_boolean();
-		}
-	};
-	template<typename T>
-	struct t_as<T, t_object*>
-	{
-		typedef T t_type;
-
-		static T f_call(t_object* a_object)
-		{
-			return a_object->f_boolean();
-		}
-	};
-	template<typename T0, typename T1>
-	struct t_of
-	{
 		static bool f_call(T1 a_object)
 		{
-			return reinterpret_cast<size_t>(f_object(a_object)) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != nullptr;
-		}
-	};
-	template<typename T>
-	struct t_of<bool, T>
-	{
-		static bool f_call(T a_object)
-		{
-			switch (reinterpret_cast<size_t>(f_object(a_object))) {
-			case t_value::e_tag__BOOLEAN:
-				return true;
-			case t_value::e_tag__NULL:
-			case t_value::e_tag__INTEGER:
-			case t_value::e_tag__FLOAT:
-				return false;
-			default:
-				return dynamic_cast<t_type_of<bool>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != nullptr;
-			}
+			return a_object.f_boolean();
 		}
 	};
 	template<typename T0, typename T1>
@@ -59,7 +24,7 @@ struct t_type_of<bool> : t_type
 	{
 		static bool f_call(T1 a_object)
 		{
-			return t_of<typename t_fundamental<T0>::t_type, T1>::f_call(a_object);
+			return reinterpret_cast<size_t>(f_object(a_object)) == t_value::e_tag__BOOLEAN;
 		}
 	};
 

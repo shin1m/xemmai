@@ -504,16 +504,6 @@ inline t_global* f_global()
 }
 #endif
 
-inline bool t_value::f_boolean() const
-{
-	return f_tag() < e_tag__OBJECT ? v_boolean : v_p->f_boolean();
-}
-
-inline void t_value::f_boolean__(bool a_value)
-{
-	v_p->v_type.v_boolean = a_value;
-}
-
 inline ptrdiff_t t_value::f_integer() const
 {
 	return f_tag() < e_tag__OBJECT ? v_integer : v_p->f_integer();

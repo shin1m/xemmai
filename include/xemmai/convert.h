@@ -182,7 +182,7 @@ struct t_construct
 	}
 
 	template<typename T_self>
-	using t_bind = t_call_construct<t_scoped (*)(t_object*, T_an...), f_default<T_self>>;
+	using t_bind = t_call_construct<t_scoped (*)(t_object*, T_an&&...), f_default<T_self>>;
 };
 
 template<typename T_function, T_function A_function>

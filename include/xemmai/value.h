@@ -296,8 +296,10 @@ public:
 	{
 		return reinterpret_cast<size_t>(v_p);
 	}
-	bool f_boolean() const;
-	void f_boolean__(bool a_value);
+	bool f_boolean() const
+	{
+		return v_boolean;
+	}
 	ptrdiff_t f_integer() const;
 	void f_integer__(ptrdiff_t a_value);
 	double f_float() const;

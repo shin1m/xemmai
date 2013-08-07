@@ -18,9 +18,9 @@ struct t_type_of<double> : t_type
 	template<typename T0, typename T1>
 	struct t_as
 	{
-		typedef T0 t_type;
+		typedef typename t_fundamental<T0>::t_type t_type;
 
-		static T0 f_call(T1 a_object)
+		static t_type f_call(T1 a_object)
 		{
 			switch (reinterpret_cast<size_t>(f_object(a_object))) {
 			case t_value::e_tag__INTEGER:
@@ -35,9 +35,9 @@ struct t_type_of<double> : t_type
 	template<typename T>
 	struct t_as<T, t_object*>
 	{
-		typedef T t_type;
+		typedef typename t_fundamental<T>::t_type t_type;
 
-		static T f_call(t_object* a_object)
+		static t_type f_call(t_object* a_object)
 		{
 			return a_object->f_float();
 		}

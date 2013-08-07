@@ -49,21 +49,21 @@ struct t_type_of<ptrdiff_t> : t_type
 	template<typename T0, typename T1>
 	struct t_as
 	{
-		typedef T0 t_type;
+		typedef typename t_fundamental<T0>::t_type t_type;
 
-		static T0 f_call(T1 a_object)
+		static t_type f_call(T1 a_object)
 		{
-			return static_cast<T0>(a_object.f_integer());
+			return static_cast<t_type>(a_object.f_integer());
 		}
 	};
 	template<typename T>
 	struct t_as<T, t_object*>
 	{
-		typedef T t_type;
+		typedef typename t_fundamental<T>::t_type t_type;
 
-		static T f_call(t_object* a_object)
+		static t_type f_call(t_object* a_object)
 		{
-			return static_cast<T>(a_object->f_integer());
+			return static_cast<t_type>(a_object->f_integer());
 		}
 	};
 	template<typename T0, typename T1>

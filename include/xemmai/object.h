@@ -331,10 +331,6 @@ public:
 	{
 		return v_type;
 	}
-	bool f_boolean() const
-	{
-		return v_type.v_boolean;
-	}
 	ptrdiff_t f_integer() const
 	{
 		return v_type.v_integer;
