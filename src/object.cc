@@ -7,7 +7,7 @@
 namespace xemmai
 {
 
-XEMMAI__PORTABLE__THREAD t_object* t_object::v_roots;
+thread_local t_object* t_object::v_roots;
 
 void t_object::f_decrement(t_slot& a_slot)
 {

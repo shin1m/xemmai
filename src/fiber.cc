@@ -28,7 +28,7 @@ void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_co
 	std::putc('\n', stderr);
 }
 
-XEMMAI__PORTABLE__THREAD t_fiber::t_context* t_fiber::t_context::v_instance;
+thread_local t_fiber::t_context* t_fiber::t_context::v_instance;
 
 void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 {
@@ -84,7 +84,7 @@ void t_fiber::t_context::f_dump() const
 	}
 }
 
-XEMMAI__PORTABLE__THREAD t_object* t_fiber::v_current;
+thread_local t_object* t_fiber::v_current;
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 t_object* t_fiber::f_current()

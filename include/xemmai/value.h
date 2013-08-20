@@ -153,9 +153,9 @@ protected:
 	{
 	};
 
-	static XEMMAI__PORTABLE__THREAD t_collector* v_collector;
-	static XEMMAI__PORTABLE__THREAD t_increments* v_increments;
-	static XEMMAI__PORTABLE__THREAD t_decrements* v_decrements;
+	static thread_local t_collector* v_collector;
+	static thread_local t_increments* v_increments;
+	static thread_local t_decrements* v_decrements;
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	static t_increments* f_increments()
@@ -554,7 +554,7 @@ typedef void (*t_scan)(t_slot&);
 
 struct t_stack
 {
-	static XEMMAI__PORTABLE__THREAD t_stack* v_instance;
+	static thread_local t_stack* v_instance;
 
 	size_t v_size;
 	char* v_head;

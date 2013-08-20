@@ -92,7 +92,7 @@ void t_shared_pool<T, A_size>::f_grow()
 template<typename T>
 class t_local_pool
 {
-	static XEMMAI__PORTABLE__THREAD T* v_head;
+	static thread_local T* v_head;
 
 public:
 	template<typename T_allocate>
@@ -117,7 +117,7 @@ public:
 };
 
 template<typename T>
-XEMMAI__PORTABLE__THREAD T* t_local_pool<T>::v_head;
+thread_local T* t_local_pool<T>::v_head;
 
 }
 

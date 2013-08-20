@@ -9,7 +9,7 @@
 namespace xemmai
 {
 
-XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
+thread_local t_global* t_global::v_instance;
 
 t_global::t_global(t_object* a_module, t_scoped&& a_type_object, t_scoped&& a_type_class, t_scoped&& a_type_structure, t_scoped&& a_type_module, t_scoped&& a_type_fiber, t_scoped&& a_type_thread) :
 t_extension(a_module),

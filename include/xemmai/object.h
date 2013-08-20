@@ -45,7 +45,7 @@ class t_structure
 		ptrdiff_t v_index;
 	};
 
-	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
+	static thread_local t_cache* v_cache;
 
 	size_t v_size;
 	std::map<t_object*, t_object*>::iterator v_iterator;
@@ -236,7 +236,7 @@ class t_object
 		e_color__RED
 	};
 
-	static XEMMAI__PORTABLE__THREAD t_object* v_roots;
+	static thread_local t_object* v_roots;
 
 	XEMMAI__PORTABLE__FORCE_INLINE static void f_append(t_object*& a_list, t_object* a_p)
 	{

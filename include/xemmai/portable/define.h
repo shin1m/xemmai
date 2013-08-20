@@ -2,7 +2,6 @@
 #define XEMMAI__PORTABLE__DEFINE_H
 
 #ifdef __GNUC__
-#define XEMMAI__PORTABLE__THREAD __thread
 #define XEMMAI__PORTABLE__EXPORT
 #define XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 #define XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
@@ -13,7 +12,7 @@
 #define XEMMAI__PORTABLE__FORMAT_SIZE_T "z"
 #endif
 #ifdef _MSC_VER
-#define XEMMAI__PORTABLE__THREAD __declspec(thread)
+#define thread_local __declspec(thread)
 #ifndef XEMMAI__PORTABLE__EXPORT
 #define XEMMAI__PORTABLE__EXPORT __declspec(dllimport)
 #endif
