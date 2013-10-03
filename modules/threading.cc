@@ -132,7 +132,7 @@ void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self,
 {
 	t_thread::f_cache_release();
 	{
-		std::unique_lock<std::mutex> lock(a_mutex, std::adopt_lock);
+		std::unique_lock<std::mutex> lock(a_mutex, std::defer_lock);
 		a_self.wait(lock);
 	}
 	t_thread::f_cache_acquire();
@@ -142,7 +142,7 @@ void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self,
 {
 	t_thread::f_cache_release();
 	{
-		std::unique_lock<std::mutex> lock(a_mutex, std::adopt_lock);
+		std::unique_lock<std::mutex> lock(a_mutex, std::defer_lock);
 		a_self.wait_for(lock, std::chrono::milliseconds(a_milliseconds));
 	}
 	t_thread::f_cache_acquire();
