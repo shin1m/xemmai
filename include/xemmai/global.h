@@ -572,16 +572,16 @@ inline t_scoped t_value::f_remove(t_object* a_key) const
 	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
 }
 
-inline void t_value::f_call(const t_value& a_self, t_slot* a_stack, size_t a_n) const
+inline void t_value::f_call(t_slot* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	v_p->f_call(a_self, a_stack, a_n);
+	v_p->f_call(a_stack, a_n);
 }
 
-inline void t_value::f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n) const
+inline void t_value::f_call_and_return(t_slot* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	v_p->f_call_and_return(a_self, a_stack, a_n);
+	v_p->f_call_and_return(a_stack, a_n);
 }
 
 inline t_scoped t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
@@ -594,7 +594,7 @@ inline t_scoped t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
 		{\
 			t_scoped_stack stack(1);\
 			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
-			if (f_context()->v_native <= 0) t_code::f_loop();\
+			if (f_context()->f_native() <= 0) t_code::f_loop();\
 			return stack.f_return();\
 		}
 #define XEMMAI__VALUE__BINARY(a_method)\
@@ -602,7 +602,7 @@ inline t_scoped t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
 			t_scoped_stack stack(2);\
 			stack[1].f_construct(a_value);\
 			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
-			if (f_context()->v_native <= 0) t_code::f_loop();\
+			if (f_context()->f_native() <= 0) t_code::f_loop();\
 			return stack.f_return();\
 		}
 
@@ -626,7 +626,7 @@ template<typename... T>
 inline t_scoped t_value::operator()(T&&... a_arguments) const
 {
 	t_scoped_stack stack({a_arguments...});
-	f_call_and_return(t_value(), stack, sizeof...(a_arguments));
+	f_call_and_return(stack, sizeof...(a_arguments));
 	return stack.f_return();
 }
 
@@ -636,7 +636,7 @@ inline t_scoped t_value::f_get_at(const t_value& a_index) const
 	t_scoped_stack stack(2);
 	stack[1].f_construct(a_index);
 	f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack);
-	if (f_context()->v_native <= 0) t_code::f_loop();
+	if (f_context()->f_native() <= 0) t_code::f_loop();
 	return stack.f_return();
 }
 
@@ -647,7 +647,7 @@ inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value
 	stack[1].f_construct(a_index);
 	stack[2].f_construct(a_value);
 	f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack);
-	if (f_context()->v_native <= 0) t_code::f_loop();
+	if (f_context()->f_native() <= 0) t_code::f_loop();
 	return stack.f_return();
 }
 

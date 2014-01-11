@@ -304,6 +304,14 @@ public:
 	void f_integer__(ptrdiff_t a_value);
 	double f_float() const;
 	void f_float__(double a_value);
+	void* const& f_pointer() const
+	{
+		return v_pointer;
+	}
+	void*& f_pointer()
+	{
+		return v_pointer;
+	}
 	void f_pointer__(void* a_value);
 	t_object* f_type() const;
 	bool f_is(t_object* a_class) const;
@@ -311,8 +319,8 @@ public:
 	void f_put(t_object* a_key, t_scoped&& a_value) const;
 	bool f_has(t_object* a_key) const;
 	t_scoped f_remove(t_object* a_key) const;
-	void f_call(const t_value& a_self, t_slot* a_stack, size_t a_n) const;
-	void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n) const;
+	void f_call(t_slot* a_stack, size_t a_n) const;
+	void f_call_and_return(t_slot* a_stack, size_t a_n) const;
 	t_scoped f_call_with_same(t_slot* a_stack, size_t a_n) const;
 	t_scoped f_hash() const;
 	template<typename... T>
@@ -451,7 +459,8 @@ public:
 	void f_construct(t_object* a_p = nullptr)
 	{
 		assert(!v_p);
-		if (a_p) f_increments()->f_push(a_p);
+		if (!a_p) return;
+		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
 	void f_construct(const t_value& a_value)

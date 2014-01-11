@@ -22,7 +22,7 @@ struct t_type_of<t_type> : t_type
 	virtual t_scoped f_get(const t_value& a_this, t_object* a_key);
 	virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
 	virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
-	virtual void f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n);
+	virtual void f_call(t_object* a_this, t_slot* a_stack, size_t a_n);
 	virtual void f_send(t_object* a_this, t_slot* a_stack);
 };
 

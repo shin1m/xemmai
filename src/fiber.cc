@@ -36,13 +36,14 @@ void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	t_context* p = v_instance;
 	t_code& code = f_as<t_code&>(p->v_code);
 	++a_stack;
+	p->v_base[-1] = nullptr;
 	size_t i = 0;
 	for (; i < a_n; ++i) p->v_base[i] = std::move(a_stack[i]);
 	for (; i < code.v_privates; ++i) p->v_base[i] = nullptr;
-	stack->v_used = std::max(p->v_previous, p->v_base + a_n);
+	stack->v_used = std::max(p->f_previous(), p->v_base + a_n);
 	v_instance = p->v_next;
 	p->f_free();
-	if (v_instance->v_native > 0) --f_as<t_fiber&>(v_current).v_native;
+	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 
 void t_fiber::t_context::f_backtrace()
@@ -50,10 +51,10 @@ void t_fiber::t_context::f_backtrace()
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
 	t_context* p = v_instance;
 	v_instance = p->v_next;
-	if (v_instance->v_native > 0) --fiber.v_native;
+	if (v_instance->f_native() > 0) --fiber.v_native;
 	p->v_next = fiber.v_backtrace;
 	fiber.v_backtrace = p;
-	p->v_native = fiber.v_undone;
+	p->f_native() = fiber.v_undone;
 	fiber.v_undone = 0;
 }
 
@@ -65,7 +66,7 @@ void t_fiber::t_context::f_dump() const
 	} else {
 		std::fputs("at ", stderr);
 	}
-	if (v_native > 0) {
+	if (f_native() > 0) {
 		std::fputs("<native code>\n", stderr);
 		std::fputs("from ", stderr);
 	}
@@ -74,7 +75,7 @@ void t_fiber::t_context::f_dump() const
 	} else {
 		t_code& code = f_as<t_code&>(v_code);
 		std::fprintf(stderr, "%ls", code.v_path.c_str());
-		const t_at* at = code.f_at(v_pc);
+		const t_at* at = code.f_at(f_pc());
 		if (at) {
 			std::fprintf(stderr, ":%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d:%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", at->f_line(), at->f_column());
 			f_print_with_caret(code.v_path.c_str(), at->f_position(), at->f_column());
@@ -99,11 +100,11 @@ void t_fiber::f_throw(const t_scoped& a_value)
 	while (true) {
 		t_try* q = p.v_try;
 		if (!q) {
-			while (f_context()->v_native <= 0) t_context::f_backtrace();
+			while (f_context()->f_native() <= 0) t_context::f_backtrace();
 			throw a_value;
 		}
 		while (true) {
-			if (f_context()->v_native > 0) throw a_value;
+			if (f_context()->f_native() > 0) throw a_value;
 			if (t_context::v_instance == q->v_context) break;
 			t_context::f_backtrace();
 		}
@@ -113,8 +114,8 @@ void t_fiber::f_throw(const t_scoped& a_value)
 			p.v_stack.v_used = f_context()->v_base + code.v_size;
 			q->v_stack->f_construct(a_value);
 			q->v_state = t_try::e_state__CATCH;
-			p.v_caught = f_context()->v_pc;
-			f_context()->v_pc = q->v_catch;
+			p.v_caught = f_context()->f_pc();
+			f_context()->f_pc() = q->v_catch;
 			break;
 		} else if (q->v_state == t_try::e_state__CATCH) {
 			p.v_stack.f_clear(q->v_stack);
@@ -122,8 +123,8 @@ void t_fiber::f_throw(const t_scoped& a_value)
 			p.v_stack.v_used = f_context()->v_base + code.v_size;
 			q->v_stack->f_construct(a_value);
 			q->v_state = t_try::e_state__THROW;
-			p.v_caught = f_context()->v_pc;
-			f_context()->v_pc = q->v_finally;
+			p.v_caught = f_context()->f_pc();
+			f_context()->f_pc() = q->v_finally;
 			break;
 		} else {
 			t_try::f_pop();
@@ -164,8 +165,8 @@ void t_fiber::f_caught(const t_value& a_object)
 		t_context::f_free(p.v_context);
 		p.v_context = t_context::f_instantiate(v_backtrace, nullptr);
 		p.v_context->v_code.f_construct(t_context::v_instance->v_code);
-		p.v_context->v_pc = v_caught;
-		p.v_context->v_native = v_undone;
+		p.v_context->f_pc() = v_caught;
+		p.v_context->f_native() = v_undone;
 	} else {
 		t_context::f_free(v_backtrace);
 	}
@@ -216,7 +217,7 @@ void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_slot* a_stack, size_
 	a_stack[0].f_construct(t_fiber::f_instantiate(std::move(a0), size));
 }
 
-void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n)
+void t_type_of<t_fiber>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	t_fiber& p = f_as<t_fiber&>(a_this);
@@ -225,7 +226,7 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, const t_value& a_self, t_slot*
 	if (p.v_main) {
 		if (a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
 	} else {
-		if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || t_fiber::t_context::v_instance->v_native > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
+		if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || t_fiber::t_context::v_instance->f_native() > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
 	}
 	{
 		t_with_lock_for_write lock(a_this);

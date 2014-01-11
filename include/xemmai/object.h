@@ -383,17 +383,17 @@ public:
 	{
 		return f_type_as_type()->f_remove(this, a_key);
 	}
-	void f_call(const t_value& a_self, t_slot* a_stack, size_t a_n)
+	void f_call(t_slot* a_stack, size_t a_n)
 	{
-		f_type_as_type()->f_call(this, a_self, a_stack, a_n);
+		f_type_as_type()->f_call(this, a_stack, a_n);
 	}
-	XEMMAI__PORTABLE__EXPORT void f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT void f_call_and_return(t_slot* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT t_scoped f_call_with_same(t_slot* a_stack, size_t a_n);
 	template<typename... T>
 	t_scoped f_call(T&&... a_arguments)
 	{
 		t_scoped_stack stack({a_arguments...});
-		f_call_and_return(t_value(), stack, sizeof...(a_arguments));
+		f_call_and_return(stack, sizeof...(a_arguments));
 		return stack.f_return();
 	}
 };

@@ -385,17 +385,17 @@ void t_object::f_field_remove(size_t a_index)
 	}
 }
 
-void t_object::f_call_and_return(const t_value& a_self, t_slot* a_stack, size_t a_n)
+void t_object::f_call_and_return(t_slot* a_stack, size_t a_n)
 {
-	f_call(a_self, a_stack, a_n);
-	if (f_context()->v_native <= 0) t_code::f_loop();
+	f_call(a_stack, a_n);
+	if (f_context()->f_native() <= 0) t_code::f_loop();
 }
 
 t_scoped t_object::f_call_with_same(t_slot* a_stack, size_t a_n)
 {
 	t_scoped_stack stack(a_n + 1);
 	for (size_t i = 1; i <= a_n; ++i) stack[i].f_construct(a_stack[i]);
-	f_call_and_return(t_value(), stack, a_n);
+	f_call_and_return(stack, a_n);
 	return stack.f_return();
 }
 

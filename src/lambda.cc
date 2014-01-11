@@ -36,12 +36,12 @@ void t_type_of<t_lambda>::f_instantiate(t_object* a_class, t_slot* a_stack, size
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_lambda>::f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n)
+void t_type_of<t_lambda>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 {
 	t_lambda& p = f_as<t_lambda&>(a_this);
 	t_code& code = f_as<t_code&>(p.v_code);
 	if (a_n != code.v_arguments) t_throwable::f_throw(L"invalid number of arguments.");
-	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_self, a_stack);
+	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_stack);
 }
 
 void t_type_of<t_lambda>::f_get_at(t_object* a_this, t_slot* a_stack)
@@ -79,7 +79,7 @@ void t_type_of<t_advanced_lambda>::f_finalize(t_object* a_this)
 	delete &f_as<t_advanced_lambda&>(a_this);
 }
 
-void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n)
+void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 {
 	t_advanced_lambda& p = f_as<t_advanced_lambda&>(a_this);
 	t_code& code = f_as<t_code&>(p.v_code);
@@ -89,7 +89,7 @@ void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, const t_value& a_sel
 		--arguments;
 	else if (a_n > arguments)
 		t_throwable::f_throw(L"too many arguments.");
-	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_self, a_stack);
+	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_stack);
 	if (a_n < arguments) {
 		const t_tuple& t0 = f_as<const t_tuple&>(p.v_defaults);
 		t_slot* t1 = a_stack + code.v_minimum + 1;

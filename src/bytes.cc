@@ -65,13 +65,14 @@ void t_bytes::f_copy(ptrdiff_t a_index0, size_t a_size, t_bytes& a_other, ptrdif
 	std::copy(p, p + a_size, a_other.f_entries() + a_index1);
 }
 
-void t_type_of<t_bytes>::f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
+void t_type_of<t_bytes>::f__construct(t_object* a_module, t_slot* a_stack, size_t a_n)
 {
-	if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+	t_scoped self = std::move(a_stack[0]);
+	if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	t_scoped a0 = std::move(a_stack[1]);
 	f_check<size_t>(a0, L"argument0");
-	t_scoped p = t_object::f_allocate(a_self);
+	t_scoped p = t_object::f_allocate(std::move(self));
 	p.f_pointer__(new(f_as<size_t>(a0)) t_bytes());
 	a_stack[0].f_construct(std::move(p));
 }
@@ -91,7 +92,7 @@ bool t_type_of<t_bytes>::f_equals(const t_value& a_self, const t_value& a_other)
 void t_type_of<t_bytes>::f_define()
 {
 	t_define<t_bytes, t_object>(f_global(), L"Bytes")
-		(f_global()->f_symbol_construct(), f_construct)
+		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (t_bytes::*)() const, &t_bytes::f_string>())
 		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (t_bytes::*)() const, &t_bytes::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<ptrdiff_t (t_bytes::*)(ptrdiff_t) const, &t_bytes::f_get_at>())

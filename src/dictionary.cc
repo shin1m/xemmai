@@ -154,10 +154,11 @@ void t_type_of<t_dictionary::t_table>::f_instantiate(t_object* a_class, t_slot* 
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_dictionary>::f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n)
+void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_slot* a_stack, size_t a_n)
 {
-	if (a_self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-	t_scoped p = t_object::f_allocate(a_self);
+	t_scoped self = std::move(a_stack[0]);
+	if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+	t_scoped p = t_object::f_allocate(std::move(self));
 	t_dictionary* dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
 	for (size_t i = 1; i <= a_n; ++i) {
@@ -282,7 +283,7 @@ void t_type_of<t_dictionary>::f_define()
 {
 	f_global()->v_type_dictionary__table = t_class::f_instantiate(new t_type_of<t_dictionary::t_table>(f_global()->f_module(), f_global()->f_type<t_object>()));
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
-		(f_global()->f_symbol_construct(), f_construct)
+		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (*)(const t_value&), f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_value& (t_dictionary::*)(const t_value&) const, &t_dictionary::f_get, t_with_lock_for_read>())

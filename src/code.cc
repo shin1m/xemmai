@@ -189,7 +189,7 @@ void t_code::f_loop()
 	while (true) {
 		try {
 			base = f_context()->v_base;
-			pc = f_context()->v_pc;
+			pc = f_context()->f_pc();
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 #define XEMMAI__CODE__CASE(a_name) XEMMAI__MACRO__CONCATENATE(label__, a_name):
 #define XEMMAI__CODE__BREAK goto **pc;
@@ -220,7 +220,7 @@ void t_code::f_loop()
 						void** catch0 = static_cast<void**>(*++pc);
 						void** finally0 = static_cast<void**>(*++pc);
 						t_fiber::t_context* p = f_context();
-						p->v_pc = ++pc;
+						p->f_pc() = ++pc;
 						t_fiber::t_try::f_push(stack, p, catch0, finally0);
 					}
 					XEMMAI__CODE__BREAK
@@ -683,7 +683,7 @@ void t_code::f_loop()
 							for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
 							stack[0].f_construct(f_as<const t_scope&>(scope)[0]);
 						} else {
-							stack[0].f_construct(f_context()->v_self);
+							stack[0].f_construct(base[-1]);
 						}
 					}
 					XEMMAI__CODE__BREAK
@@ -745,12 +745,12 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(RETURN)
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						base[-1].f_construct(std::move(stack[0]));
+						base[-1] = std::move(stack[0]);
 						t_fiber::t_context::f_pop();
 						t_fiber::t_context* p = f_context();
-						if (p->v_native > 0) return;
+						if (p->f_native() > 0) return;
 						base = p->v_base;
-						pc = p->v_pc;
+						pc = p->f_pc();
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CALL)
@@ -760,13 +760,13 @@ void t_code::f_loop()
 						++pc;
 						t_scoped x = std::move(stack[0]);
 						t_fiber::t_context* p0 = f_context();
-						p0->v_pc = pc;
-						x.f_call(t_value(), stack, n);
+						p0->f_pc() = pc;
+						x.f_call(stack, n);
 						t_fiber::t_context* p1 = f_context();
 						if (p1 != p0) {
-							if (p1->v_native > 0) return;
+							if (p1->f_native() > 0) return;
 							base = p1->v_base;
-							pc = p1->v_pc;
+							pc = p1->f_pc();
 						}
 					}
 					XEMMAI__CODE__BREAK
@@ -778,13 +778,13 @@ void t_code::f_loop()
 						n = f_expand(stack, n);
 						t_scoped x = std::move(stack[0]);
 						t_fiber::t_context* p0 = f_context();
-						p0->v_pc = pc;
-						x.f_call(t_value(), stack, n);
+						p0->f_pc() = pc;
+						x.f_call(stack, n);
 						t_fiber::t_context* p1 = f_context();
 						if (p1 != p0) {
-							if (p1->v_native > 0) return;
+							if (p1->f_native() > 0) return;
 							base = p1->v_base;
-							pc = p1->v_pc;
+							pc = p1->f_pc();
 						}
 					}
 					XEMMAI__CODE__BREAK
@@ -875,9 +875,9 @@ void t_code::f_loop()
 							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, stack);\
 							t_fiber::t_context* p1 = f_context();\
 							if (p1 != p0) {\
-								p0->v_pc = pc;\
+								p0->f_pc() = pc;\
 								base = p1->v_base;\
-								pc = p1->v_pc;\
+								pc = p1->f_pc();\
 							}\
 						}
 #define XEMMAI__CODE__CASE_END\
@@ -938,11 +938,11 @@ void t_code::f_loop()
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						t_scoped x = std::move(stack[0]);
 						t_fiber::t_context::f_pop(stack, n);
-						x.f_call(t_value(), base - 1, n);
+						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();
-						if (p->v_native > 0) return;
+						if (p->f_native() > 0) return;
 						base = p->v_base;
-						pc = p->v_pc;
+						pc = p->f_pc();
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(CALL_WITH_EXPANSION_TAIL)
@@ -952,11 +952,11 @@ void t_code::f_loop()
 						n = f_expand(stack, n);
 						t_scoped x = std::move(stack[0]);
 						t_fiber::t_context::f_pop(stack, n);
-						x.f_call(t_value(), base - 1, n);
+						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();
-						if (p->v_native > 0) return;
+						if (p->f_native() > 0) return;
 						base = p->v_base;
-						pc = p->v_pc;
+						pc = p->f_pc();
 					}
 					XEMMAI__CODE__BREAK
 #undef XEMMAI__CODE__PRIMITIVE
@@ -988,21 +988,21 @@ void t_code::f_loop()
 						XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__FETCH, XEMMAI__CODE__OPERANDS)()\
 						++pc;
 #define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
-						base[-1].f_construct(a_x);\
+						base[-1] = t_value(a_x);\
 						XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PRIMITIVE, XEMMAI__CODE__OPERANDS)(a_x)\
 						t_fiber::t_context::f_pop();\
-						if (f_context()->v_native > 0) return;
+						if (f_context()->f_native() > 0) return;
 #define XEMMAI__CODE__OBJECT_CALL(a_method, a_n)\
 						{\
 							XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
 							t_fiber::t_context::f_pop(stack, a_n);\
 							t_fiber::t_context* p = f_context();\
 							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, base - 1);\
-							if (f_context() == p && p->v_native > 0) return;\
+							if (f_context() == p && p->f_native() > 0) return;\
 						}
 #define XEMMAI__CODE__CASE_END\
 						base = f_context()->v_base;\
-						pc = f_context()->v_pc;\
+						pc = f_context()->f_pc();\
 					}\
 					XEMMAI__CODE__BREAK
 #define XEMMAI__CODE__OTHERS
@@ -1057,7 +1057,7 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(FIBER_EXIT)
 					{
 						t_scoped x = std::move(base[0]);
-						f_context()->v_pc = pc;
+						f_context()->f_pc() = pc;
 						t_fiber& p = f_as<t_fiber&>(t_fiber::v_current);
 						t_thread& thread = f_as<t_thread&>(t_thread::v_current);
 						t_fiber& q = f_as<t_fiber&>(thread.v_fiber);
@@ -1082,27 +1082,27 @@ void t_code::f_loop()
 						t_fiber::t_context::v_instance = q.v_context;
 						p.v_active = false;
 						if (state == t_fiber::t_try::e_state__THROW) {
-							pc = f_context()->v_pc;
+							pc = f_context()->f_pc();
 							throw x;
 						}
 						q.v_return->f_construct(std::move(x));
-						if (f_context()->v_native > 0) return;
+						if (f_context()->f_native() > 0) return;
 						base = f_context()->v_base;
-						pc = f_context()->v_pc;
+						pc = f_context()->f_pc();
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(END)
-					f_context()->v_pc = pc;
+					f_context()->f_pc() = pc;
 					return;
 #ifndef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 				}
 			}
 #endif
 		} catch (const t_scoped& thrown) {
-			f_context()->v_pc = pc;
+			f_context()->f_pc() = pc;
 			t_fiber::f_throw(thrown);
 		} catch (...) {
-			f_context()->v_pc = pc;
+			f_context()->f_pc() = pc;
 			t_fiber::f_throw(t_throwable::f_instantiate(L"<unknown>."));
 		}
 	}

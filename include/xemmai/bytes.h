@@ -67,7 +67,7 @@ public:
 template<>
 struct t_type_of<t_bytes> : t_type
 {
-	static void f_construct(t_object* a_module, const t_value& a_self, t_slot* a_stack, size_t a_n);
+	static void f__construct(t_object* a_module, t_slot* a_stack, size_t a_n);
 	static bool f_equals(const t_value& a_self, const t_value& a_other);
 	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{

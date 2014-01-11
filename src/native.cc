@@ -33,11 +33,11 @@ void t_type_of<t_native>::f_instantiate(t_object* a_class, t_slot* a_stack, size
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_native>::f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n)
+void t_type_of<t_native>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 {
 	t_native_context context;
 	t_native& p = f_as<t_native&>(a_this);
-	p.v_function(p.v_module, a_self, a_stack, a_n);
+	p.v_function(p.v_module, a_stack, a_n);
 	context.f_done();
 }
 

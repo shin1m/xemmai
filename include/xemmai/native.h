@@ -11,7 +11,7 @@ class t_native
 	friend struct t_type_of<t_native>;
 
 public:
-	typedef void (*t_function)(t_object*, const t_value&, t_slot*, size_t);
+	typedef void (*t_function)(t_object*, t_slot*, size_t);
 
 private:
 	t_slot v_module;
@@ -37,7 +37,7 @@ struct t_type_of<t_native> : t_type
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
-	virtual void f_call(t_object* a_this, const t_value& a_self, t_slot* a_stack, size_t a_n);
+	virtual void f_call(t_object* a_this, t_slot* a_stack, size_t a_n);
 	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
 };
 
