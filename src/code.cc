@@ -188,7 +188,7 @@ void t_code::f_loop()
 	void** pc;
 	while (true) {
 		try {
-			base = f_context()->v_base;
+			base = f_context()->f_base();
 			pc = f_context()->f_pc();
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 #define XEMMAI__CODE__CASE(a_name) XEMMAI__MACRO__CONCATENATE(label__, a_name):
@@ -749,7 +749,7 @@ void t_code::f_loop()
 						t_fiber::t_context::f_pop();
 						t_fiber::t_context* p = f_context();
 						if (p->f_native() > 0) return;
-						base = p->v_base;
+						base = p->f_base();
 						pc = p->f_pc();
 					}
 					XEMMAI__CODE__BREAK
@@ -765,7 +765,7 @@ void t_code::f_loop()
 						t_fiber::t_context* p1 = f_context();
 						if (p1 != p0) {
 							if (p1->f_native() > 0) return;
-							base = p1->v_base;
+							base = p1->f_base();
 							pc = p1->f_pc();
 						}
 					}
@@ -783,7 +783,7 @@ void t_code::f_loop()
 						t_fiber::t_context* p1 = f_context();
 						if (p1 != p0) {
 							if (p1->f_native() > 0) return;
-							base = p1->v_base;
+							base = p1->f_base();
 							pc = p1->f_pc();
 						}
 					}
@@ -876,7 +876,7 @@ void t_code::f_loop()
 							t_fiber::t_context* p1 = f_context();\
 							if (p1 != p0) {\
 								p0->f_pc() = pc;\
-								base = p1->v_base;\
+								base = p1->f_base();\
 								pc = p1->f_pc();\
 							}\
 						}
@@ -941,7 +941,7 @@ void t_code::f_loop()
 						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();
 						if (p->f_native() > 0) return;
-						base = p->v_base;
+						base = p->f_base();
 						pc = p->f_pc();
 					}
 					XEMMAI__CODE__BREAK
@@ -955,7 +955,7 @@ void t_code::f_loop()
 						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();
 						if (p->f_native() > 0) return;
-						base = p->v_base;
+						base = p->f_base();
 						pc = p->f_pc();
 					}
 					XEMMAI__CODE__BREAK
@@ -1001,7 +1001,7 @@ void t_code::f_loop()
 							if (f_context() == p && p->f_native() > 0) return;\
 						}
 #define XEMMAI__CODE__CASE_END\
-						base = f_context()->v_base;\
+						base = f_context()->f_base();\
 						pc = f_context()->f_pc();\
 					}\
 					XEMMAI__CODE__BREAK
@@ -1056,25 +1056,17 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE(FIBER_EXIT)
 					{
-						t_scoped x = std::move(base[0]);
+						t_scoped x = std::move(base[sizeof(t_fiber::t_context) / sizeof(t_slot)]);
 						f_context()->f_pc() = pc;
 						t_fiber& p = f_as<t_fiber&>(t_fiber::v_current);
 						t_thread& thread = f_as<t_thread&>(t_thread::v_current);
 						t_fiber& q = f_as<t_fiber&>(thread.v_fiber);
 						t_fiber::t_try::t_state state = p.v_try->v_state;
 						t_fiber::t_try::f_pop();
-						if (state == t_fiber::t_try::e_state__THROW) {
-							t_fiber::t_context::f_free(q.v_backtrace);
-							t_fiber::t_context::v_instance->v_next = p.v_backtrace;
-							p.v_backtrace = nullptr;
-							q.v_backtrace = t_fiber::t_context::v_instance;
-							p.v_context = nullptr;
-							p.v_stack.f_clear(p.v_stack.f_head());
-							p.v_stack.v_used = p.v_stack.f_head();
-						} else {
-							p.v_stack.v_used = p.v_stack.f_head();
-							t_fiber::t_context::f_terminate();
-						}
+						if (state == t_fiber::t_try::e_state__THROW && f_is<t_throwable>(x)) t_fiber::t_backtrace::f_push(x, p.v_context->f_native(), p.v_context->v_code, pc);
+						p.v_stack.f_clear(p.v_stack.f_head());
+						p.v_stack.v_used = p.v_stack.f_head();
+						p.v_context = nullptr;
 						q.v_active = true;
 						thread.v_active = thread.v_fiber;
 						t_fiber::v_current = thread.v_fiber;
@@ -1087,7 +1079,7 @@ void t_code::f_loop()
 						}
 						q.v_return->f_construct(std::move(x));
 						if (f_context()->f_native() > 0) return;
-						base = f_context()->v_base;
+						base = f_context()->f_base();
 						pc = f_context()->f_pc();
 					}
 					XEMMAI__CODE__BREAK

@@ -19,6 +19,7 @@ class t_engine;
 class t_object;
 class t_slot;
 class t_scoped;
+struct t_fiber;
 struct t_thread;
 struct t_code;
 t_engine* f_engine();
@@ -31,6 +32,7 @@ class t_value
 	friend class t_object;
 	friend class t_slot;
 	friend class t_scoped;
+	friend struct t_fiber;
 	friend struct t_thread;
 	friend struct t_code;
 	friend t_engine* f_engine();
@@ -304,14 +306,6 @@ public:
 	void f_integer__(ptrdiff_t a_value);
 	double f_float() const;
 	void f_float__(double a_value);
-	void* const& f_pointer() const
-	{
-		return v_pointer;
-	}
-	void*& f_pointer()
-	{
-		return v_pointer;
-	}
 	void f_pointer__(void* a_value);
 	t_object* f_type() const;
 	bool f_is(t_object* a_class) const;

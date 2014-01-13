@@ -42,7 +42,6 @@ void t_engine::t_synchronizer::f_run()
 void t_engine::f_pools__return()
 {
 	f_return(v_object__pool);
-	f_return(v_fiber__context__pool);
 	f_return(v_fiber__try__pool);
 	f_return(v_dictionary__entry__pool);
 }
@@ -150,7 +149,6 @@ void t_engine::f_collector()
 		}
 		t_object::f_collect();
 		if (v_object__freed > 0) f_return(v_object__pool, v_object__freed);
-		if (v_fiber__context__freed > 0) f_return(v_fiber__context__pool, v_fiber__context__freed);
 		if (v_fiber__try__freed > 0) f_return(v_fiber__try__pool, v_fiber__try__freed);
 		if (v_dictionary__entry__freed > 0) f_return(v_dictionary__entry__pool, v_dictionary__entry__freed);
 	}
@@ -296,16 +294,17 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		v_module_system.f_put(t_symbol::f_instantiate(L"error"), std::move(writer));
 	}
 	{
-		v_code_fiber = t_code::f_instantiate(std::wstring(), false, false, 2, 0, 0, 0);
+		size_t n = sizeof(t_fiber::t_context) / sizeof(t_slot);
+		v_code_fiber = t_code::f_instantiate(std::wstring(), false, false, n + 2, 0, 0, 0);
 		t_code& code = f_as<t_code&>(v_code_fiber);
 		t_code::t_label catch0;
 		t_code::t_label finally0;
 		code.f_emit(e_instruction__TRY);
-		code.f_operand(0);
+		code.f_operand(n);
 		code.f_operand(catch0);
 		code.f_operand(finally0);
 		code.f_emit(e_instruction__CALL);
-		code.f_operand(0);
+		code.f_operand(n);
 		code.f_operand(1);
 		code.f_emit(e_instruction__FINALLY);
 		code.f_operand(t_fiber::t_try::e_state__STEP);
@@ -369,7 +368,6 @@ t_engine::~t_engine()
 	assert(!v_thread__internals);
 	v_dictionary__entry__pool.f_clear();
 	v_fiber__try__pool.f_clear();
-	v_fiber__context__pool.f_clear();
 	v_object__pool.f_clear();
 	if (v_verbose) {
 		bool b = false;

@@ -11,7 +11,7 @@ class t_throwable
 	friend struct t_fiber;
 	friend struct t_type_of<t_throwable>;
 
-	t_fiber::t_context* v_context = nullptr;
+	t_fiber::t_backtrace* v_backtrace = nullptr;
 	std::wstring v_message;
 
 protected:

@@ -35,7 +35,7 @@ void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, co
 
 t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	size_t stack = v_privates.size();
+	size_t stack = v_privates.size() + sizeof(t_fiber::t_context) / sizeof(t_slot);
 	size_t minimum = v_arguments - v_defaults.size();
 	if (v_variadic) --minimum;
 	t_scoped code = t_code::f_instantiate(a_generator.v_path, v_shared, v_variadic, stack, v_shareds, v_arguments, minimum);
@@ -599,7 +599,7 @@ t_scoped t_generator::f_generate(ast::t_module& a_module)
 {
 	v_path = a_module.f_path();
 	v_scope = &a_module;
-	size_t stack = a_module.v_privates.size();
+	size_t stack = a_module.v_privates.size() + sizeof(t_fiber::t_context) / sizeof(t_slot);
 	t_scoped code = t_code::f_instantiate(v_path, true, false, stack, a_module.v_shareds, 0, 0);
 	v_code = &f_as<t_code&>(code);
 	std::deque<t_code::t_label> labels;

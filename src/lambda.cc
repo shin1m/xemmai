@@ -89,7 +89,6 @@ void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_slot* a_stack, siz
 		--arguments;
 	else if (a_n > arguments)
 		t_throwable::f_throw(L"too many arguments.");
-	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_stack);
 	if (a_n < arguments) {
 		const t_tuple& t0 = f_as<const t_tuple&>(p.v_defaults);
 		t_slot* t1 = a_stack + code.v_minimum + 1;
@@ -103,6 +102,7 @@ void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_slot* a_stack, siz
 		for (size_t i = 0; i < n; ++i) t1[i].f_construct(std::move(t0[i]));
 		t0[0].f_construct(std::move(x));
 	}
+	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_stack);
 }
 
 }

@@ -22,7 +22,6 @@ class t_engine : public t_value::t_collector
 	friend class t_module::t_scoped_lock;
 	friend struct t_library;
 	friend struct t_fiber;
-	friend struct t_fiber::t_context;
 	friend struct t_fiber::t_try;
 	friend struct t_type_of<t_fiber>;
 	friend struct t_thread;
@@ -92,8 +91,6 @@ class t_engine : public t_value::t_collector
 	size_t v_object__release = 0;
 	size_t v_object__collect = 0;
 	t_structure* v_structure__finalizing = nullptr;
-	t_shared_pool<t_fiber::t_context, 256> v_fiber__context__pool;
-	size_t v_fiber__context__freed = 0;
 	t_shared_pool<t_fiber::t_try, 64> v_fiber__try__pool;
 	size_t v_fiber__try__freed = 0;
 	t_thread::t_internal* v_thread__internals = nullptr;
@@ -144,10 +141,6 @@ class t_engine : public t_value::t_collector
 	{
 		++v_object__collect;
 		f_free(v_object__pool, v_object__freed, a_p);
-	}
-	void f_free(t_fiber::t_context* a_p)
-	{
-		f_free(v_fiber__context__pool, v_fiber__context__freed, a_p);
 	}
 	void f_free(t_fiber::t_try* a_p)
 	{
@@ -251,20 +244,6 @@ inline t_scoped t_object::f_allocate(t_object* a_type)
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
 	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::f_increments();
 	return t_scoped(p, t_scoped::t_pass());
-}
-
-inline t_fiber::t_context* t_fiber::t_context::f_allocate()
-{
-	return f_engine()->v_fiber__context__pool.f_allocate();
-}
-
-inline void t_fiber::t_context::f_finalize(t_context* a_p)
-{
-	while (a_p) {
-		t_context* p = a_p;
-		a_p = p->v_next;
-		f_engine()->f_free(p);
-	}
 }
 
 inline t_fiber::t_try* t_fiber::t_try::f_allocate()
