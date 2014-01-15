@@ -505,7 +505,7 @@ void t_code::f_loop()
 						t_object* key = static_cast<t_object*>(*++pc);
 						++pc;
 						t_slot& top = stack[0];
-						top = t_value(top.f_has(key));
+						top = top.f_has(key);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(OBJECT_HAS_INDIRECT)
@@ -514,7 +514,7 @@ void t_code::f_loop()
 						++pc;
 						t_slot& top = stack[0];
 						t_slot& key = stack[1];
-						top = t_value(top.f_has(key));
+						top = top.f_has(key);
 						key = nullptr;
 					}
 					XEMMAI__CODE__BREAK
@@ -805,7 +805,7 @@ void t_code::f_loop()
 #define XEMMAI__CODE__FETCH_T()\
 						t_slot& a0 = stack[0];
 #define XEMMAI__CODE__PRIMITIVE_T(a_x)\
-								stack[0] = t_value(a_x);
+								stack[0] = a_x;
 #define XEMMAI__CODE__PREPARE_T() XEMMAI__CODE__PREPARE()
 #define XEMMAI__CODE__FETCH_LL()\
 						t_slot& a0 = *static_cast<t_slot*>(*++pc);\
@@ -857,7 +857,7 @@ void t_code::f_loop()
 						t_slot& a0 = stack[0];\
 						t_slot& a1 = stack[1];
 #define XEMMAI__CODE__PRIMITIVE_TT(a_x)\
-								stack[0] = t_value(a_x);\
+								stack[0] = a_x;\
 								stack[1] = nullptr;
 #define XEMMAI__CODE__PREPARE_TT() XEMMAI__CODE__PREPARE()
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\
@@ -988,7 +988,7 @@ void t_code::f_loop()
 						XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__FETCH, XEMMAI__CODE__OPERANDS)()\
 						++pc;
 #define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
-						base[-1] = t_value(a_x);\
+						base[-1] = a_x;\
 						XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PRIMITIVE, XEMMAI__CODE__OPERANDS)(a_x)\
 						t_fiber::t_context::f_pop();\
 						if (f_context()->f_native() > 0) return;

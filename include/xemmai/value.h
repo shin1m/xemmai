@@ -348,6 +348,14 @@ class t_slot : public t_value
 {
 	friend class t_object;
 
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& f__assign(ptrdiff_t a_value)
+	{
+		t_object* p = v_p;
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
+		return *this;
+	}
 	void f__construct(ptrdiff_t a_value)
 	{
 		assert(!v_p);
@@ -391,6 +399,46 @@ public:
 	t_slot(t_slot&& a_value) : t_value(t_pass())
 	{
 		f_move(std::move(a_value));
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(bool a_value)
+	{
+		t_object* p = v_p;
+		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
+		v_boolean = a_value;
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
+		return *this;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(short a_value)
+	{
+		return f__assign(a_value);
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(unsigned short a_value)
+	{
+		return f__assign(a_value);
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(int a_value)
+	{
+		return f__assign(a_value);
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(unsigned a_value)
+	{
+		return f__assign(a_value);
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(long a_value)
+	{
+		return f__assign(a_value);
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(unsigned long a_value)
+	{
+		return f__assign(a_value);
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(double a_value)
+	{
+		t_object* p = v_p;
+		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
+		v_float = a_value;
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
+		return *this;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_object* a_p)
 	{
