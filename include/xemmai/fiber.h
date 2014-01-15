@@ -34,8 +34,8 @@ struct t_fiber
 
 		t_slot v_next;
 		t_slot v_base;
-		t_slot v_outer;
 		t_slot v_scope;
+		t_slot v_outer;
 		t_slot v_code;
 
 		t_context*& f_next()
@@ -48,11 +48,11 @@ struct t_fiber
 		}
 		t_slot*& f_previous()
 		{
-			return *reinterpret_cast<t_slot**>(&v_outer.v_pointer);
+			return *reinterpret_cast<t_slot**>(&v_scope.v_pointer);
 		}
 		size_t& f_native()
 		{
-			return *reinterpret_cast<size_t*>(&v_scope.v_pointer);
+			return *reinterpret_cast<size_t*>(&v_outer.v_pointer);
 		}
 		void**& f_pc()
 		{
@@ -227,22 +227,21 @@ inline void t_fiber::t_context::f_push(const t_value& a_code, const t_value& a_s
 	t_context* p = v_instance;
 	if (p->f_native() > 0) ++f_as<t_fiber&>(v_current).v_native;
 	v_instance = p = f_instantiate(a_stack + code.v_arguments, p, a_stack);
+	if (code.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(code.v_shareds, t_scoped(a_scope)));
 	p->f_previous() = previous;
 	p->v_outer.f_construct(static_cast<t_object*>(a_scope));
-	if (code.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(code.v_shareds, t_scoped(a_scope)));
 	p->v_code.f_construct(static_cast<t_object*>(a_code));
 	p->f_pc() = &code.v_instructions[0];
 }
 
 XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_fiber::t_context::f_pop()
 {
-	t_stack* stack = f_stack();
 	t_context* p = v_instance;
-	t_code& code = f_as<t_code&>(p->v_code);
 	v_instance = p->f_next();
+	size_t n = f_as<t_code&>(p->v_code).v_privates;
 	t_slot* base = p->f_base();
-	stack->v_used = p->f_previous();
-	for (size_t i = 0; i < code.v_privates; ++i) base[i] = nullptr;
+	for (size_t i = 0; i < n; ++i) base[i] = nullptr;
+	f_stack()->v_used = p->f_previous();
 	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 

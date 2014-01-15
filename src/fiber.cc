@@ -32,17 +32,16 @@ thread_local t_fiber::t_context* t_fiber::t_context::v_instance;
 
 void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 {
-	t_stack* stack = f_stack();
-	t_context* p = v_instance;
-	t_code& code = f_as<t_code&>(p->v_code);
 	++a_stack;
+	t_context* p = v_instance;
 	v_instance = p->f_next();
 	t_slot* base = p->f_base();
-	stack->v_used = std::max(p->f_previous(), base + a_n);
+	f_stack()->v_used = std::max(p->f_previous(), base + a_n);
+	size_t n = f_as<t_code&>(p->v_code).v_privates;
 	base[-1] = nullptr;
 	size_t i = 0;
 	for (; i < a_n; ++i) base[i] = std::move(a_stack[i]);
-	for (; i < code.v_privates; ++i) base[i] = nullptr;
+	for (; i < n; ++i) base[i] = nullptr;
 	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 
