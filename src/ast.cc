@@ -381,9 +381,13 @@ t_operand t_scope_get::f_generate(t_generator& a_generator, size_t a_stack, bool
 		if (v_outer >= 3) a_generator.f_operand(v_outer);
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable.v_index);
-		a_generator.f_reserve(a_stack + 1);
-		a_generator.f_emit(e_instruction__STACK_GET);
-		a_generator.f_operand(a_stack);
+		if (a_tail) {
+			a_generator.f_emit(e_instruction__RETURN);
+		} else {
+			a_generator.f_reserve(a_stack + 1);
+			a_generator.f_emit(e_instruction__STACK_GET);
+			a_generator.f_operand(a_stack);
+		}
 	}
 	a_generator.f_operand(v_variable.v_index);
 	a_generator.f_at(this);
