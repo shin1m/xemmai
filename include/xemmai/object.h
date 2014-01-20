@@ -383,7 +383,7 @@ public:
 	{
 		return f_type_as_type()->f_remove(this, a_key);
 	}
-	void f_call(t_slot* a_stack, size_t a_n)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_slot* a_stack, size_t a_n)
 	{
 		f_type_as_type()->f_call(this, a_stack, a_n);
 	}

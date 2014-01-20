@@ -28,7 +28,8 @@ struct t_fiber
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_initiate(const t_value& a_code, const t_value& a_callable, t_scoped&& a_x);
 		static void f_terminate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(const t_value& a_code, const t_value& a_scope, t_slot* a_stack);
-		XEMMAI__PORTABLE__ALWAYS_INLINE static void f_pop();
+//		XEMMAI__PORTABLE__ALWAYS_INLINE static void f_pop();
+		static void f_pop();
 		static void f_pop(t_slot* a_stack, size_t a_n);
 		static void f_backtrace(const t_value& a_value);
 
@@ -234,6 +235,7 @@ inline void t_fiber::t_context::f_push(const t_value& a_code, const t_value& a_s
 	p->f_pc() = &code.v_instructions[0];
 }
 
+/*
 XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_fiber::t_context::f_pop()
 {
 	t_context* p = v_instance;
@@ -244,6 +246,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_fiber::t_context::f_pop()
 	f_stack()->v_used = p->f_previous();
 	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
 }
+*/
 
 inline void t_fiber::t_try::f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally)
 {

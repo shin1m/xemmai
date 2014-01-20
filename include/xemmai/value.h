@@ -362,7 +362,7 @@ class t_slot : public t_value
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
 		v_integer = a_value;
 	}
-	void f_move(t_slot&& a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_move(t_slot&& a_value)
 	{
 		t_object* p = a_value.v_p;
 		a_value.v_p = nullptr;
@@ -505,7 +505,7 @@ public:
 		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
-	void f_construct(const t_value& a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(const t_value& a_value)
 	{
 		assert(!v_p);
 		f_copy(a_value);
@@ -553,7 +553,7 @@ public:
 	{
 		a_value.v_p = nullptr;
 	}
-	~t_scoped()
+	XEMMAI__PORTABLE__ALWAYS_INLINE ~t_scoped()
 	{
 		if (f_tag() >= e_tag__OBJECT) f_decrements()->f_push(v_p);
 	}

@@ -18,6 +18,8 @@ struct t_operand
 {
 	enum t_tag
 	{
+		e_tag__INTEGER,
+		e_tag__FLOAT,
 		e_tag__LITERAL,
 		e_tag__VARIABLE,
 		e_tag__TEMPORARY
@@ -26,13 +28,19 @@ struct t_operand
 	t_tag v_tag;
 	t_scoped v_value;
 
+	t_operand(ptrdiff_t a_value) : v_tag(e_tag__INTEGER), v_value(a_value)
+	{
+	}
+	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_value(a_value)
+	{
+	}
+	t_operand(t_scoped&& a_value) : v_tag(e_tag__LITERAL), v_value(std::move(a_value))
+	{
+	}
 	t_operand(size_t a_value) : v_tag(e_tag__TEMPORARY), v_value(a_value)
 	{
 	}
 	t_operand(t_tag a_tag, size_t a_value) : v_tag(a_tag), v_value(a_value)
-	{
-	}
-	t_operand(t_scoped&& a_value) : v_tag(e_tag__LITERAL), v_value(std::move(a_value))
 	{
 	}
 };
@@ -41,6 +49,7 @@ class t_node
 {
 	friend struct xemmai::t_generator;
 
+protected:
 	t_at v_at;
 
 public:

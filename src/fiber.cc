@@ -30,6 +30,17 @@ void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_co
 
 thread_local t_fiber::t_context* t_fiber::t_context::v_instance;
 
+void t_fiber::t_context::f_pop()
+{
+	t_context* p = v_instance;
+	v_instance = p->f_next();
+	size_t n = f_as<t_code&>(p->v_code).v_privates;
+	t_slot* base = p->f_base();
+	for (size_t i = 0; i < n; ++i) base[i] = nullptr;
+	f_stack()->v_used = p->f_previous();
+	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
+}
+
 void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 {
 	++a_stack;

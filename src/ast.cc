@@ -458,7 +458,7 @@ t_operand t_boolean::f_generate(t_generator& a_generator, size_t a_stack, bool a
 
 t_operand t_integer::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (a_operand) return t_scoped(v_value);
+	if (a_operand) return v_value;
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(e_instruction__INTEGER);
 	a_generator.f_operand(a_stack);
@@ -469,7 +469,7 @@ t_operand t_integer::f_generate(t_generator& a_generator, size_t a_stack, bool a
 
 t_operand t_float::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (a_operand) return t_scoped(v_value);
+	if (a_operand) return v_value;
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit(e_instruction__FLOAT);
 	a_generator.f_operand(a_stack);
@@ -523,8 +523,143 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	bool operand = instruction != e_instruction__SEND;
 	t_operand left = v_left->f_generate(a_generator, a_stack, false, operand);
 	t_operand right = v_right->f_generate(a_generator, left.v_tag == t_operand::e_tag__TEMPORARY ? a_stack + 1 : a_stack, false, operand);
+	if (left.v_tag == t_operand::e_tag__INTEGER) {
+		if (right.v_tag == t_operand::e_tag__INTEGER) {
+			switch (v_instruction) {
+			case e_instruction__MULTIPLY_TT:
+				return t_integer(v_at, left.v_value.f_integer() * right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__DIVIDE_TT:
+				return t_integer(v_at, left.v_value.f_integer() / right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__MODULUS_TT:
+				return t_integer(v_at, left.v_value.f_integer() % right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__ADD_TT:
+				return t_integer(v_at, left.v_value.f_integer() + right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__SUBTRACT_TT:
+				return t_integer(v_at, left.v_value.f_integer() - right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LEFT_SHIFT_TT:
+				return t_integer(v_at, left.v_value.f_integer() << right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__RIGHT_SHIFT_TT:
+				return t_integer(v_at, left.v_value.f_integer() >> right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_TT:
+				return t_boolean(v_at, left.v_value.f_integer() < right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_integer() <= right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_TT:
+				return t_boolean(v_at, left.v_value.f_integer() > right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_integer() >= right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__EQUALS_TT:
+			case e_instruction__IDENTICAL_TT:
+				return t_boolean(v_at, left.v_value.f_integer() == right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__NOT_EQUALS_TT:
+			case e_instruction__NOT_IDENTICAL_TT:
+				return t_boolean(v_at, left.v_value.f_integer() != right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__AND_TT:
+				return t_integer(v_at, left.v_value.f_integer() & right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__XOR_TT:
+				return t_integer(v_at, left.v_value.f_integer() ^ right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__OR_TT:
+				return t_integer(v_at, left.v_value.f_integer() | right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			default:
+				t_throwable::f_throw(L"not supported");
+			}
+		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
+			switch (v_instruction) {
+			case e_instruction__MULTIPLY_TT:
+				return t_float(v_at, left.v_value.f_integer() * right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__DIVIDE_TT:
+				return t_float(v_at, left.v_value.f_integer() / right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__ADD_TT:
+				return t_float(v_at, left.v_value.f_integer() + right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__SUBTRACT_TT:
+				return t_float(v_at, left.v_value.f_integer() - right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_TT:
+				return t_boolean(v_at, left.v_value.f_integer() < right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_integer() <= right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_TT:
+				return t_boolean(v_at, left.v_value.f_integer() > right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_integer() >= right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__EQUALS_TT:
+				return t_boolean(v_at, left.v_value.f_integer() == right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__NOT_EQUALS_TT:
+				return t_boolean(v_at, left.v_value.f_integer() != right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__IDENTICAL_TT:
+				return t_boolean(v_at, false).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__NOT_IDENTICAL_TT:
+				return t_boolean(v_at, true).f_generate(a_generator, a_stack, a_tail, a_operand);
+			default:
+				t_throwable::f_throw(L"not supported");
+			}
+		}
+	} else if (left.v_tag == t_operand::e_tag__FLOAT) {
+		if (right.v_tag == t_operand::e_tag__INTEGER) {
+			switch (v_instruction) {
+			case e_instruction__MULTIPLY_TT:
+				return t_float(v_at, left.v_value.f_float() * right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__DIVIDE_TT:
+				return t_float(v_at, left.v_value.f_float() / right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__ADD_TT:
+				return t_float(v_at, left.v_value.f_float() + right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__SUBTRACT_TT:
+				return t_float(v_at, left.v_value.f_float() - right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_TT:
+				return t_boolean(v_at, left.v_value.f_float() < right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_float() <= right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_TT:
+				return t_boolean(v_at, left.v_value.f_float() > right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_float() >= right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__EQUALS_TT:
+				return t_boolean(v_at, left.v_value.f_float() == right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__NOT_EQUALS_TT:
+				return t_boolean(v_at, left.v_value.f_float() != right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__IDENTICAL_TT:
+				return t_boolean(v_at, false).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__NOT_IDENTICAL_TT:
+				return t_boolean(v_at, true).f_generate(a_generator, a_stack, a_tail, a_operand);
+			default:
+				t_throwable::f_throw(L"not supported");
+			}
+		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
+			switch (v_instruction) {
+			case e_instruction__MULTIPLY_TT:
+				return t_float(v_at, left.v_value.f_float() * right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__DIVIDE_TT:
+				return t_float(v_at, left.v_value.f_float() / right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__ADD_TT:
+				return t_float(v_at, left.v_value.f_float() + right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__SUBTRACT_TT:
+				return t_float(v_at, left.v_value.f_float() - right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_TT:
+				return t_boolean(v_at, left.v_value.f_float() < right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__LESS_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_float() <= right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_TT:
+				return t_boolean(v_at, left.v_value.f_float() > right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__GREATER_EQUAL_TT:
+				return t_boolean(v_at, left.v_value.f_float() >= right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__EQUALS_TT:
+			case e_instruction__IDENTICAL_TT:
+				return t_boolean(v_at, left.v_value.f_float() == right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			case e_instruction__NOT_EQUALS_TT:
+			case e_instruction__NOT_IDENTICAL_TT:
+				return t_boolean(v_at, left.v_value.f_float() != right.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+			default:
+				t_throwable::f_throw(L"not supported");
+			}
+		}
+	}
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	switch (left.v_tag) {
+	case t_operand::e_tag__INTEGER:
+		instruction += e_instruction__MULTIPLY_IT - e_instruction__MULTIPLY_TT;
+		break;
+	case t_operand::e_tag__FLOAT:
+		instruction += e_instruction__MULTIPLY_FT - e_instruction__MULTIPLY_TT;
+		break;
 	case t_operand::e_tag__LITERAL:
 		instruction += e_instruction__MULTIPLY_LT - e_instruction__MULTIPLY_TT;
 		break;
@@ -533,6 +668,12 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 		break;
 	}
 	switch (right.v_tag) {
+	case t_operand::e_tag__INTEGER:
+		instruction += e_instruction__MULTIPLY_TI - e_instruction__MULTIPLY_TT;
+		break;
+	case t_operand::e_tag__FLOAT:
+		instruction += e_instruction__MULTIPLY_TF - e_instruction__MULTIPLY_TT;
+		break;
 	case t_operand::e_tag__LITERAL:
 		instruction += e_instruction__MULTIPLY_TL - e_instruction__MULTIPLY_TT;
 		break;
@@ -544,6 +685,12 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	switch (left.v_tag) {
+	case t_operand::e_tag__INTEGER:
+		a_generator.f_operand(left.v_value.f_integer());
+		break;
+	case t_operand::e_tag__FLOAT:
+		a_generator.f_operand(left.v_value.f_float());
+		break;
 	case t_operand::e_tag__LITERAL:
 		a_generator.f_operand(std::move(left.v_value));
 		break;
@@ -552,6 +699,12 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 		break;
 	}
 	switch (right.v_tag) {
+	case t_operand::e_tag__INTEGER:
+		a_generator.f_operand(right.v_value.f_integer());
+		break;
+	case t_operand::e_tag__FLOAT:
+		a_generator.f_operand(right.v_value.f_float());
+		break;
 	case t_operand::e_tag__LITERAL:
 		a_generator.f_operand(std::move(right.v_value));
 		break;

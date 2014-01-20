@@ -66,12 +66,28 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_UNARY(NOT)
 	XEMMAI__CODE__INSTRUCTION_UNARY(COMPLEMENT)
 #define XEMMAI__CODE__INSTRUCTION_BINARY(a_name)\
+	e_instruction__##a_name##_II,\
+	e_instruction__##a_name##_FI,\
+	e_instruction__##a_name##_LI,\
+	e_instruction__##a_name##_VI,\
+	e_instruction__##a_name##_TI,\
+	e_instruction__##a_name##_IF,\
+	e_instruction__##a_name##_FF,\
+	e_instruction__##a_name##_LF,\
+	e_instruction__##a_name##_VF,\
+	e_instruction__##a_name##_TF,\
+	e_instruction__##a_name##_IL,\
+	e_instruction__##a_name##_FL,\
 	e_instruction__##a_name##_LL,\
 	e_instruction__##a_name##_VL,\
 	e_instruction__##a_name##_TL,\
+	e_instruction__##a_name##_IV,\
+	e_instruction__##a_name##_FV,\
 	e_instruction__##a_name##_LV,\
 	e_instruction__##a_name##_VV,\
 	e_instruction__##a_name##_TV,\
+	e_instruction__##a_name##_IT,\
+	e_instruction__##a_name##_FT,\
 	e_instruction__##a_name##_LT,\
 	e_instruction__##a_name##_VT,\
 	e_instruction__##a_name##_TT,
