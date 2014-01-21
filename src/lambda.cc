@@ -41,7 +41,7 @@ void t_type_of<t_lambda>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 	t_lambda& p = f_as<t_lambda&>(a_this);
 	t_code& code = f_as<t_code&>(p.v_code);
 	if (a_n != code.v_arguments) t_throwable::f_throw(L"invalid number of arguments.");
-	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_stack);
+	t_fiber::t_context::f_push(a_this, a_stack);
 }
 
 void t_type_of<t_lambda>::f_get_at(t_object* a_this, t_slot* a_stack)
@@ -102,7 +102,7 @@ void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_slot* a_stack, siz
 		for (size_t i = 0; i < n; ++i) t1[i].f_construct(std::move(t0[i]));
 		t0[0].f_construct(std::move(x));
 	}
-	t_fiber::t_context::f_push(p.v_code, p.v_scope, a_stack);
+	t_fiber::t_context::f_push(a_this, a_stack);
 }
 
 }

@@ -295,8 +295,8 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	}
 	{
 		size_t n = sizeof(t_fiber::t_context) / sizeof(t_slot);
-		v_code_fiber = t_code::f_instantiate(std::wstring(), false, false, n + 2, 0, 0, 0);
-		t_code& code = f_as<t_code&>(v_code_fiber);
+		t_scoped p = t_code::f_instantiate(std::wstring(), false, false, n + 2, 0, 0, 0);
+		t_code& code = f_as<t_code&>(p);
 		t_code::t_label catch0;
 		t_code::t_label finally0;
 		code.f_emit(e_instruction__TRY);
@@ -315,6 +315,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		code.f_emit(e_instruction__FIBER_EXIT);
 		code.f_resolve(catch0);
 		code.f_resolve(finally0);
+		v_lambda_fiber = t_lambda::f_instantiate(nullptr, std::move(p));
 	}
 }
 
@@ -325,7 +326,7 @@ t_engine::~t_engine()
 	v_module_global = nullptr;
 	v_module_system = nullptr;
 	v_module_io = nullptr;
-	v_code_fiber = nullptr;
+	v_lambda_fiber = nullptr;
 	{
 		t_thread& thread = f_as<t_thread&>(v_thread);
 		thread.v_active = nullptr;

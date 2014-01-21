@@ -64,9 +64,10 @@ t_library* t_module::f_load_library(const std::wstring& a_path)
 
 void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
+	t_scoped lambda = t_lambda::f_instantiate(nullptr, a_code);
 	t_scoped_stack stack(1);
 	stack[0].f_construct(a_this);
-	t_fiber::t_context::f_push(a_code, nullptr, stack);
+	t_fiber::t_context::f_push(lambda, stack);
 	t_code::f_loop();
 	t_fiber::t_context::f_pop();
 }

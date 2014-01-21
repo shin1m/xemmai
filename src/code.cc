@@ -592,7 +592,7 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = f_context()->v_outer;
+						t_object* scope = f_as<t_lambda&>(f_context()->v_lambda).v_scope;
 						t_with_lock_for_read lock(scope);
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
@@ -602,7 +602,7 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_object* scope = f_as<const t_scope&>(f_context()->v_outer).v_outer;
+						t_object* scope = f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope).v_outer;
 						t_with_lock_for_read lock(scope);
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
@@ -614,7 +614,7 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						assert(outer >= 3);
-						t_object* scope = f_as<const t_scope&>(f_as<const t_scope&>(f_context()->v_outer).v_outer).v_outer;
+						t_object* scope = f_as<const t_scope&>(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope).v_outer).v_outer;
 						for (size_t i = 3; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
 						t_with_lock_for_read lock(scope);
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
@@ -633,7 +633,7 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						stack[0].f_construct(f_as<const t_scope&>(f_context()->v_outer)[index]);
+						stack[0].f_construct(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope)[index]);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_GET2_WITHOUT_LOCK)
@@ -641,7 +641,7 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						stack[0].f_construct(f_as<const t_scope&>(f_as<const t_scope&>(f_context()->v_outer).v_outer)[index]);
+						stack[0].f_construct(f_as<const t_scope&>(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope).v_outer)[index]);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_GET_WITHOUT_LOCK)
@@ -651,7 +651,7 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						assert(outer >= 3);
-						t_object* scope = f_as<const t_scope&>(f_as<const t_scope&>(f_context()->v_outer).v_outer).v_outer;
+						t_object* scope = f_as<const t_scope&>(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope).v_outer).v_outer;
 						for (size_t i = 3; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}
@@ -664,7 +664,7 @@ void t_code::f_loop()
 						++pc;
 						t_object* scope;
 						if (outer > 0) {
-							scope = f_context()->v_outer;
+							scope = f_as<t_lambda&>(f_context()->v_lambda).v_scope;
 							for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
 						} else {
 							scope = f_context()->v_scope;
@@ -695,7 +695,7 @@ void t_code::f_loop()
 						size_t outer = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						if (outer > 0) {
-							t_object* scope = f_context()->v_outer;
+							t_object* scope = f_as<t_lambda&>(f_context()->v_lambda).v_scope;
 							for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
 							stack[0].f_construct(f_as<const t_scope&>(scope)[0]);
 						} else {
@@ -1273,13 +1273,15 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(FIBER_EXIT)
 					{
 						t_scoped x = std::move(base[sizeof(t_fiber::t_context) / sizeof(t_slot)]);
-						f_context()->f_pc() = pc;
 						t_fiber& p = f_as<t_fiber&>(t_fiber::v_current);
 						t_thread& thread = f_as<t_thread&>(t_thread::v_current);
 						t_fiber& q = f_as<t_fiber&>(thread.v_fiber);
 						t_fiber::t_try::t_state state = p.v_try->v_state;
 						t_fiber::t_try::f_pop();
-						if (state == t_fiber::t_try::e_state__THROW && f_is<t_throwable>(x)) t_fiber::t_backtrace::f_push(x, p.v_context->f_native(), p.v_context->v_code, pc);
+						if (state == t_fiber::t_try::e_state__THROW && f_is<t_throwable>(x)) {
+							t_fiber::t_context* context = f_context();
+							t_fiber::t_backtrace::f_push(x, context->f_native(), context->v_lambda, pc);
+						}
 						p.v_stack.f_clear(p.v_stack.f_head());
 						p.v_stack.v_used = p.v_stack.f_head();
 						p.v_context = nullptr;

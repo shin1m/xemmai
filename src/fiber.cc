@@ -34,7 +34,7 @@ void t_fiber::t_context::f_pop()
 {
 	t_context* p = v_instance;
 	v_instance = p->f_next();
-	size_t n = f_as<t_code&>(p->v_code).v_privates;
+	size_t n = f_as<t_code&>(f_as<t_lambda&>(p->v_lambda).v_code).v_privates;
 	t_slot* base = p->f_base();
 	for (size_t i = 0; i < n; ++i) base[i] = nullptr;
 	f_stack()->v_used = p->f_previous();
@@ -48,7 +48,7 @@ void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	v_instance = p->f_next();
 	t_slot* base = p->f_base();
 	f_stack()->v_used = std::max(p->f_previous(), base + a_n);
-	size_t n = f_as<t_code&>(p->v_code).v_privates;
+	size_t n = f_as<t_code&>(f_as<t_lambda&>(p->v_lambda).v_code).v_privates;
 	base[-1] = nullptr;
 	size_t i = 0;
 	for (; i < a_n; ++i) base[i] = std::move(a_stack[i]);
@@ -62,15 +62,15 @@ void t_fiber::t_context::f_backtrace(const t_value& a_value)
 	t_context* p = v_instance;
 	v_instance = p->f_next();
 	if (v_instance->f_native() > 0) --fiber.v_native;
-	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, fiber.v_undone, p->v_code, p->f_pc());
+	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, fiber.v_undone, p->v_lambda, p->f_pc());
 	fiber.v_undone = 0;
 }
 
-void t_fiber::t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_slot& a_code, void** a_pc)
+void t_fiber::t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_slot& a_lambda, void** a_pc)
 {
 	t_with_lock_for_write lock(a_throwable);
 	t_throwable& p = f_as<t_throwable&>(a_throwable);
-	p.v_backtrace = new t_backtrace(p.v_backtrace, a_native, a_code, a_pc);
+	p.v_backtrace = new t_backtrace(p.v_backtrace, a_native, a_lambda, a_pc);
 }
 
 void t_fiber::t_backtrace::f_dump() const
@@ -85,10 +85,10 @@ void t_fiber::t_backtrace::f_dump() const
 		std::fputs("<native code>\n", stderr);
 		std::fputs("from ", stderr);
 	}
-	if (!v_code || v_code == f_engine()->v_code_fiber) {
+	if (!v_lambda || v_lambda == f_engine()->v_lambda_fiber) {
 		std::fputs("<fiber>\n", stderr);
 	} else {
-		t_code& code = f_as<t_code&>(v_code);
+		t_code& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
 		std::fprintf(stderr, "%ls", code.v_path.c_str());
 		const t_at* at = code.f_at(f_pc());
 		if (at) {
@@ -125,7 +125,7 @@ void t_fiber::f_throw(const t_scoped& a_value)
 		}
 		if (q->v_state == t_try::e_state__TRY) {
 			p.v_stack.f_clear(q->v_stack);
-			t_code& code = f_as<t_code&>(f_context()->v_code);
+			t_code& code = f_as<t_code&>(f_as<t_lambda&>(f_context()->v_lambda).v_code);
 			p.v_stack.v_used = f_context()->f_base() + code.v_size;
 			q->v_stack->f_construct(a_value);
 			q->v_state = t_try::e_state__CATCH;
@@ -134,7 +134,7 @@ void t_fiber::f_throw(const t_scoped& a_value)
 			break;
 		} else if (q->v_state == t_try::e_state__CATCH) {
 			p.v_stack.f_clear(q->v_stack);
-			t_code& code = f_as<t_code&>(f_context()->v_code);
+			t_code& code = f_as<t_code&>(f_as<t_lambda&>(f_context()->v_lambda).v_code);
 			p.v_stack.v_used = f_context()->f_base() + code.v_size;
 			q->v_stack->f_construct(a_value);
 			q->v_state = t_try::e_state__THROW;
@@ -172,7 +172,7 @@ t_fiber::~t_fiber()
 
 void t_fiber::f_caught(const t_value& a_value)
 {
-	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_undone, t_context::v_instance->v_code, v_caught);
+	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_undone, t_context::v_instance->v_lambda, v_caught);
 	v_undone = 0;
 }
 
@@ -240,7 +240,7 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 		t_fiber::t_context::v_instance = p.v_context;
 		p.v_return->f_construct(std::move(x));
 	} else {
-		t_fiber::t_context::f_initiate(f_engine()->v_code_fiber, p.v_callable, std::move(x));
+		t_fiber::t_context::f_initiate(f_engine()->v_lambda_fiber, p.v_callable, std::move(x));
 	}
 }
 

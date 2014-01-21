@@ -118,7 +118,7 @@ class t_engine : public t_value::t_collector
 	t_slot v_module_system;
 	t_slot v_module_io;
 	t_slot v_thread;
-	t_slot v_code_fiber;
+	t_slot v_lambda_fiber;
 	size_t v_stack_size;
 	bool v_verbose;
 

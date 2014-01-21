@@ -39,7 +39,8 @@ void t_thread::f_main(t_object* a_p)
 	p.v_active = p.v_fiber;
 	t_fiber::v_current = p.v_active;
 	t_global::v_instance = f_extension<t_global>(f_engine()->f_module_global());
-	t_fiber::f_main([]{
+	t_fiber::f_main([]
+	{
 		f_as<t_fiber&>(t_fiber::v_current).v_callable();
 	});
 	f_cache_clear();
