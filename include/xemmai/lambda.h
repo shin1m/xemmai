@@ -1,7 +1,7 @@
 #ifndef XEMMAI__LAMBDA_H
 #define XEMMAI__LAMBDA_H
 
-#include "object.h"
+#include "code.h"
 
 namespace xemmai
 {
@@ -18,9 +18,23 @@ class t_lambda
 protected:
 	t_slot v_scope;
 	t_slot v_code;
+	t_scope& v_as_scope;
+	bool v_shared;
+	size_t v_size;
+	size_t v_privates;
+	size_t v_shareds;
+	size_t v_arguments;
+	void** v_instructions;
 
-	t_lambda(t_scoped&& a_scope, t_scoped&& a_code) : v_scope(std::move(a_scope)), v_code(std::move(a_code))
+	t_lambda(t_scoped&& a_scope, t_scoped&& a_code) : v_scope(std::move(a_scope)), v_code(std::move(a_code)), v_as_scope(f_as<t_scope&>(v_scope))
 	{
+		t_code& code = f_as<t_code&>(v_code);
+		v_shared = code.v_shared;
+		v_size = code.v_size;
+		v_privates = code.v_privates;
+		v_shareds = code.v_shareds;
+		v_arguments = code.v_arguments;
+		v_instructions = &code.v_instructions[0];
 	}
 	~t_lambda() = default;
 

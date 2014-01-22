@@ -34,7 +34,7 @@ void t_fiber::t_context::f_pop()
 {
 	t_context* p = v_instance;
 	v_instance = p->f_next();
-	size_t n = f_as<t_code&>(f_as<t_lambda&>(p->v_lambda).v_code).v_privates;
+	size_t n = f_as<t_lambda&>(p->v_lambda).v_privates;
 	t_slot* base = p->f_base();
 	for (size_t i = 0; i < n; ++i) base[i] = nullptr;
 	f_stack()->v_used = p->f_previous();
@@ -48,7 +48,7 @@ void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	v_instance = p->f_next();
 	t_slot* base = p->f_base();
 	f_stack()->v_used = std::max(p->f_previous(), base + a_n);
-	size_t n = f_as<t_code&>(f_as<t_lambda&>(p->v_lambda).v_code).v_privates;
+	size_t n = f_as<t_lambda&>(p->v_lambda).v_privates;
 	base[-1] = nullptr;
 	size_t i = 0;
 	for (; i < a_n; ++i) base[i] = std::move(a_stack[i]);
@@ -125,8 +125,8 @@ void t_fiber::f_throw(const t_scoped& a_value)
 		}
 		if (q->v_state == t_try::e_state__TRY) {
 			p.v_stack.f_clear(q->v_stack);
-			t_code& code = f_as<t_code&>(f_as<t_lambda&>(f_context()->v_lambda).v_code);
-			p.v_stack.v_used = f_context()->f_base() + code.v_size;
+			t_lambda& lambda = f_as<t_lambda&>(f_context()->v_lambda);
+			p.v_stack.v_used = f_context()->f_base() + lambda.v_size;
 			q->v_stack->f_construct(a_value);
 			q->v_state = t_try::e_state__CATCH;
 			p.v_caught = f_context()->f_pc();
@@ -134,8 +134,8 @@ void t_fiber::f_throw(const t_scoped& a_value)
 			break;
 		} else if (q->v_state == t_try::e_state__CATCH) {
 			p.v_stack.f_clear(q->v_stack);
-			t_code& code = f_as<t_code&>(f_as<t_lambda&>(f_context()->v_lambda).v_code);
-			p.v_stack.v_used = f_context()->f_base() + code.v_size;
+			t_lambda& lambda = f_as<t_lambda&>(f_context()->v_lambda);
+			p.v_stack.v_used = f_context()->f_base() + lambda.v_size;
 			q->v_stack->f_construct(a_value);
 			q->v_state = t_try::e_state__THROW;
 			p.v_caught = f_context()->f_pc();

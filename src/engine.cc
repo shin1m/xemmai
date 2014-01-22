@@ -315,7 +315,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		code.f_emit(e_instruction__FIBER_EXIT);
 		code.f_resolve(catch0);
 		code.f_resolve(finally0);
-		v_lambda_fiber = t_lambda::f_instantiate(nullptr, std::move(p));
+		v_lambda_fiber = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), std::move(p));
 	}
 }
 

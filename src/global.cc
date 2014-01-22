@@ -1,7 +1,6 @@
 #include <xemmai/global.h>
 
 #include <xemmai/method.h>
-#include <xemmai/lambda.h>
 #include <xemmai/array.h>
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>

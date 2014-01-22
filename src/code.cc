@@ -633,7 +633,7 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						stack[0].f_construct(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope)[index]);
+						stack[0].f_construct(f_as<t_lambda&>(f_context()->v_lambda).v_as_scope[index]);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_GET2_WITHOUT_LOCK)
@@ -641,7 +641,7 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						stack[0].f_construct(f_as<const t_scope&>(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope).v_outer)[index]);
+						stack[0].f_construct(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_as_scope.v_outer)[index]);
 					}
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(SCOPE_GET_WITHOUT_LOCK)
@@ -651,7 +651,7 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						assert(outer >= 3);
-						t_object* scope = f_as<const t_scope&>(f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_scope).v_outer).v_outer;
+						t_object* scope = f_as<const t_scope&>(f_as<t_lambda&>(f_context()->v_lambda).v_as_scope.v_outer).v_outer;
 						for (size_t i = 3; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
 						stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
 					}

@@ -14,8 +14,6 @@ namespace xemmai
 
 class t_tuple;
 class t_method;
-class t_lambda;
-class t_advanced_lambda;
 class t_array;
 class t_bytes;
 

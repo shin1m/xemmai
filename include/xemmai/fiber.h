@@ -3,7 +3,6 @@
 
 #include <cassert>
 
-#include "code.h"
 #include "lambda.h"
 
 namespace xemmai
@@ -200,14 +199,14 @@ inline void t_fiber::t_context::f_initiate(t_object* a_lambda, const t_value& a_
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
 	t_stack::v_instance = &fiber.v_stack;
-	t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).v_code);
+	t_lambda& lambda = f_as<t_lambda&>(a_lambda);
 	t_slot* stack = fiber.v_stack.f_head();
-	t_slot* used = stack + code.v_size;
+	t_slot* used = stack + lambda.v_size;
 	fiber.v_stack.f_allocate(used);
 	fiber.v_stack.v_used = used;
 	v_instance = fiber.v_context = f_instantiate(stack, nullptr, stack);
 	v_instance->v_lambda.f_construct(a_lambda);
-	v_instance->f_pc() = &code.v_instructions[0];
+	v_instance->f_pc() = lambda.v_instructions;
 	t_slot* privates = stack + sizeof(t_context) / sizeof(t_slot);
 	privates[0].f_construct(a_callable);
 	privates[1].f_construct(std::move(a_x));
@@ -224,18 +223,18 @@ inline void t_fiber::t_context::f_terminate()
 inline void t_fiber::t_context::f_push(t_object* a_lambda, t_slot* a_stack)
 {
 	t_stack* stack = f_stack();
-	t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).v_code);
+	t_lambda& lambda = f_as<t_lambda&>(a_lambda);
 	t_slot* previous = stack->v_used;
-	t_slot* used = ++a_stack + code.v_size;
+	t_slot* used = ++a_stack + lambda.v_size;
 	stack->f_allocate(used);
 	stack->v_used = used;
 	t_context* p = v_instance;
 	if (p->f_native() > 0) ++f_as<t_fiber&>(v_current).v_native;
-	v_instance = p = f_instantiate(a_stack + code.v_arguments, p, a_stack);
-	if (code.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(code.v_shareds, t_scoped(f_as<t_lambda&>(a_lambda).v_scope)));
+	v_instance = p = f_instantiate(a_stack + lambda.v_arguments, p, a_stack);
+	if (lambda.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(lambda.v_shareds, t_scoped(lambda.v_scope)));
 	p->f_previous() = previous;
 	p->v_lambda.f_construct(a_lambda);
-	p->f_pc() = &code.v_instructions[0];
+	p->f_pc() = lambda.v_instructions;
 }
 
 /*
@@ -243,7 +242,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_fiber::t_context::f_pop()
 {
 	t_context* p = v_instance;
 	v_instance = p->f_next();
-	size_t n = f_as<t_code&>(f_as<t_lambda&>(p->v_lambda).v_code).v_privates;
+	size_t n = f_as<t_lambda&>(p->v_lambda).v_privates;
 	t_slot* base = p->f_base();
 	for (size_t i = 0; i < n; ++i) base[i] = nullptr;
 	f_stack()->v_used = p->f_previous();
