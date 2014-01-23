@@ -62,9 +62,14 @@ class t_advanced_lambda : public t_lambda
 	friend struct t_type_of<t_advanced_lambda>;
 
 	t_slot v_defaults;
+	bool v_variadic;
+	size_t v_minimum;
 
 	t_advanced_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_scoped&& a_defaults) : t_lambda(std::move(a_scope), std::move(a_code)), v_defaults(std::move(a_defaults))
 	{
+		t_code& code = f_as<t_code&>(v_code);
+		v_variadic = code.v_variadic;
+		v_minimum = code.v_minimum;
 	}
 	~t_advanced_lambda() = default;
 
