@@ -30,3 +30,14 @@ try {
 	print("caught: " + e);
 	e.dump();
 }
+
+f2 = Fiber(@(x) {
+	throw Throwable(x + "Oops, sorry.\n");
+});
+
+try {
+	f2("How are you?\n");
+} catch (Throwable e) {
+	print("caught: " + e);
+	e.dump();
+}
