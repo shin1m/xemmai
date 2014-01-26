@@ -40,29 +40,21 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__BOOLEAN:
+						if (a0.f_tag() == t_value::e_tag__BOOLEAN) {
 							XEMMAI__CODE__PRIMITIVE_CALL(!a0.v_boolean)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__INTEGER:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_not, 0)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(COMPLEMENT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(~a0.v_integer)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_complement, 0)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 #endif
@@ -73,47 +65,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -126,47 +106,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -174,17 +142,13 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							f_check<ptrdiff_t>(a1, L"argument0");
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer % f_as<ptrdiff_t>(a1))
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD)
@@ -193,47 +157,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -246,47 +198,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -294,31 +234,23 @@
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							f_check<ptrdiff_t>(a1, L"argument0");
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer << f_as<ptrdiff_t>(a1))
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							f_check<ptrdiff_t>(a1, L"argument0");
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >> f_as<ptrdiff_t>(a1))
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
@@ -327,47 +259,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -380,47 +300,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -433,47 +341,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -486,47 +382,35 @@
 						case t_value::e_tag__BOOLEAN:
 							t_throwable::f_throw(L"not supported");
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= p->f_integer())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= p->f_integer())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								t_throwable::f_throw(L"not supported");
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-										XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= p->f_float())
-									} else {
-										t_throwable::f_throw(L"not supported");
-									}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= p->f_float())
+								} else {
+									t_throwable::f_throw(L"not supported");
 								}
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
 							break;
 						default:
@@ -542,41 +426,27 @@
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_p == a1.v_p && a0.v_boolean == a1.v_boolean)
 							break;
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								XEMMAI__CODE__PRIMITIVE_CALL(false)
-								break;
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer == a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer == a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_integer == p->f_integer())
-								}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_integer == p->f_integer())
+							} else {
+								XEMMAI__CODE__PRIMITIVE_CALL(false)
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								XEMMAI__CODE__PRIMITIVE_CALL(false)
-								break;
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float == a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float == a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_float == p->f_float())
-								}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float == a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_float == p->f_float())
+							} else {
+								XEMMAI__CODE__PRIMITIVE_CALL(false)
 							}
 							break;
 						default:
@@ -592,41 +462,27 @@
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_p != a1.v_p || a0.v_boolean != a1.v_boolean)
 							break;
 						case t_value::e_tag__INTEGER:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								XEMMAI__CODE__PRIMITIVE_CALL(true)
-								break;
-							case t_value::e_tag__INTEGER:
+							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer != a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer != a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_integer != p->f_integer())
-								}
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_integer != p->f_integer())
+							} else {
+								XEMMAI__CODE__PRIMITIVE_CALL(true)
 							}
 							break;
 						case t_value::e_tag__FLOAT:
-							switch (a1.f_tag()) {
-							case t_value::e_tag__NULL:
-							case t_value::e_tag__BOOLEAN:
-								XEMMAI__CODE__PRIMITIVE_CALL(true)
-								break;
-							case t_value::e_tag__INTEGER:
-								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float != a1.v_integer)
-								break;
-							case t_value::e_tag__FLOAT:
+							if (a1.f_tag() == t_value::e_tag__FLOAT) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float != a1.v_float)
-								break;
-							default:
-								{
-									t_object* p = a1;
-									XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_float != p->f_float())
-								}
+							} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float != a1.v_integer)
+							} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+								t_object* p = a1;
+								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_float != p->f_float())
+							} else {
+								XEMMAI__CODE__PRIMITIVE_CALL(true)
 							}
 							break;
 						default:
@@ -693,194 +549,140 @@
 #endif
 #ifdef XEMMAI__CODE__BINARY_XI
 				XEMMAI__CODE__CASE_BEGIN(MULTIPLY)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_multiply, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_divide, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer % a1)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_add, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_subtract, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer << a1)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >> a1)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less_equal, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater_equal, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(false)
-							break;
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer == a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float == a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_equals, 1)
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(false)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT_EQUALS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(true)
-							break;
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer != a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float != a1)
-							break;
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_not_equals, 1)
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(true)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(IDENTICAL)
@@ -890,88 +692,64 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(a0 != t_value(a1)))
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(AND)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer & a1)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(XOR)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer ^ a1)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(OR)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__INTEGER:
+						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer | a1)
-							break;
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 #endif
 #ifdef XEMMAI__CODE__BINARY_IX
 				XEMMAI__CODE__CASE_BEGIN(MULTIPLY)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 * a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 * a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 * p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 * p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 / a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 / a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 / p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 / p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
@@ -979,47 +757,35 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(a0 % f_as<ptrdiff_t>(a1))
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 + a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 + a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 + p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 + p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 - a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 - a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 - p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 - p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
@@ -1031,129 +797,91 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(a0 >> f_as<ptrdiff_t>(a1))
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 < a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 < a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 < p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 < p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 <= a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 <= a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 <= p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 <= p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 > a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 > a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 > p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 > p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 >= a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 >= a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 >= p->f_integer())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 >= p->f_integer())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(false)
-							break;
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 == a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 == a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0 == p->f_integer())
-							}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0 == p->f_integer())
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(false)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT_EQUALS)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(true)
-							break;
-						case t_value::e_tag__INTEGER:
+						if (a1.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 != a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						} else if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 != a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0 != p->f_integer())
-							}
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0 != p->f_integer())
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(true)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(IDENTICAL)
@@ -1177,188 +905,134 @@
 #endif
 #ifdef XEMMAI__CODE__BINARY_XF
 				XEMMAI__CODE__CASE_BEGIN(MULTIPLY)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_multiply, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_divide, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__INTEGER:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_add, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_subtract, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__INTEGER:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__INTEGER:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less_equal, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater_equal, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(false)
-							break;
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer == a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float == a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer == a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_equals, 1)
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(false)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT_EQUALS)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(true)
-							break;
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer != a1)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float != a1)
-							break;
-						default:
+						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer != a1)
+						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_not_equals, 1)
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(true)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(IDENTICAL)
@@ -1368,255 +1042,181 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(a0 != t_value(a1)))
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(AND)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__INTEGER:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(XOR)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__INTEGER:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(OR)
-						switch (a0.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-						case t_value::e_tag__INTEGER:
-						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
-						default:
+						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 #endif
 #ifdef XEMMAI__CODE__BINARY_FX
 				XEMMAI__CODE__CASE_BEGIN(MULTIPLY)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 * a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 * a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 * p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 * a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 * p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 / a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 / a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 / p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 / a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 / p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_NA(MODULUS)
 				XEMMAI__CODE__CASE_BEGIN(ADD)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 + a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 + a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 + p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 + a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 + p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 - a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 - a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 - p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 - a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 - p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_NA(LEFT_SHIFT)
 				XEMMAI__CODE__CASE_NA(RIGHT_SHIFT)
 				XEMMAI__CODE__CASE_BEGIN(LESS)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 < a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 < a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 < p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 < a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 < p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 <= a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 <= a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 <= p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 <= a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 <= p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 > a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 > a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 > p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 > a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 > p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 >= a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 >= a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
-									XEMMAI__CODE__PRIMITIVE_CALL(a0 >= p->f_float())
-								} else {
-									t_throwable::f_throw(L"not supported");
-								}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 >= a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+								XEMMAI__CODE__PRIMITIVE_CALL(a0 >= p->f_float())
+							} else {
+								t_throwable::f_throw(L"not supported");
 							}
+						} else {
+							t_throwable::f_throw(L"not supported");
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(false)
-							break;
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 == a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 == a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0 == p->f_float())
-							}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 == a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0 == p->f_float())
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(false)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT_EQUALS)
-						switch (a1.f_tag()) {
-						case t_value::e_tag__NULL:
-						case t_value::e_tag__BOOLEAN:
-							XEMMAI__CODE__PRIMITIVE_CALL(true)
-							break;
-						case t_value::e_tag__INTEGER:
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 != a1.v_integer)
-							break;
-						case t_value::e_tag__FLOAT:
+						if (a1.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0 != a1.v_float)
-							break;
-						default:
-							{
-								t_object* p = a1;
-								XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0 != p->f_float())
-							}
+						} else if (a1.f_tag() == t_value::e_tag__INTEGER) {
+							XEMMAI__CODE__PRIMITIVE_CALL(a0 != a1.v_integer)
+						} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
+							t_object* p = a1;
+							XEMMAI__CODE__PRIMITIVE_CALL(dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0 != p->f_float())
+						} else {
+							XEMMAI__CODE__PRIMITIVE_CALL(true)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(IDENTICAL)
