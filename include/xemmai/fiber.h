@@ -231,10 +231,10 @@ inline void t_fiber::t_context::f_push(t_object* a_lambda, t_slot* a_stack)
 	t_context* p = v_instance;
 	if (p->f_native() > 0) ++f_as<t_fiber&>(v_current).v_native;
 	v_instance = p = f_instantiate(a_stack + lambda.v_arguments, p, a_stack);
-	if (lambda.v_shared) p->v_scope.f_construct(t_scope::f_instantiate(lambda.v_shareds, t_scoped(lambda.v_scope)));
 	p->f_previous() = previous;
-	p->v_lambda.f_construct(a_lambda);
 	p->f_pc() = lambda.v_instructions;
+	if (lambda.v_shared) p->v_scope.f_construct_nonnull(t_scope::f_instantiate(lambda.v_shareds, t_scoped(lambda.v_scope)));
+	p->v_lambda.f_construct_nonnull(a_lambda);
 }
 
 /*

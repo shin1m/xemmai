@@ -505,6 +505,12 @@ public:
 		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
+	void f_construct_nonnull(t_object* a_p)
+	{
+		assert(!v_p);
+		f_increments()->f_push(a_p);
+		v_p = a_p;
+	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(const t_value& a_value)
 	{
 		assert(!v_p);
