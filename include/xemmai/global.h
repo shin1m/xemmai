@@ -806,7 +806,7 @@ inline t_scoped t_value::f_right_shift(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__INTEGER:
 		f_check<ptrdiff_t>(a_value, L"argument0");
-		return t_value(v_integer >> f_as<ptrdiff_t>(a_value));
+		return t_value(static_cast<size_t>(v_integer) >> f_as<ptrdiff_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:

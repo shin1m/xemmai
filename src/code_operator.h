@@ -246,7 +246,7 @@
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							f_check<ptrdiff_t>(a1, L"argument0");
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >> f_as<ptrdiff_t>(a1))
+							XEMMAI__CODE__PRIMITIVE_CALL(static_cast<size_t>(a0.v_integer) >> f_as<ptrdiff_t>(a1))
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
 						} else {
@@ -612,7 +612,7 @@
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
-							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >> a1)
+							XEMMAI__CODE__PRIMITIVE_CALL(static_cast<size_t>(a0.v_integer) >> a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
 						} else {
@@ -794,7 +794,7 @@
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
 						f_check<ptrdiff_t>(a1, L"argument0");
-						XEMMAI__CODE__PRIMITIVE_CALL(a0 >> f_as<ptrdiff_t>(a1))
+						XEMMAI__CODE__PRIMITIVE_CALL(static_cast<size_t>(a0) >> f_as<ptrdiff_t>(a1))
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
 						if (a1.f_tag() == t_value::e_tag__INTEGER) {

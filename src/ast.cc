@@ -539,7 +539,7 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 			case e_instruction__LEFT_SHIFT_TT:
 				return t_integer(v_at, left.v_value.f_integer() << right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
 			case e_instruction__RIGHT_SHIFT_TT:
-				return t_integer(v_at, left.v_value.f_integer() >> right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+				return t_integer(v_at, static_cast<size_t>(left.v_value.f_integer()) >> right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
 			case e_instruction__LESS_TT:
 				return t_boolean(v_at, left.v_value.f_integer() < right.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
 			case e_instruction__LESS_EQUAL_TT:

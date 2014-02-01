@@ -163,7 +163,7 @@ struct t_type_of<ptrdiff_t> : t_type
 	{
 		return a_self << a_value;
 	}
-	static ptrdiff_t f_right_shift(ptrdiff_t a_self, ptrdiff_t a_value)
+	static size_t f_right_shift(size_t a_self, ptrdiff_t a_value)
 	{
 		return a_self >> a_value;
 	}
