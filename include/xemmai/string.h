@@ -57,6 +57,10 @@ struct t_type_of<std::wstring> : t_type
 	{
 		return a_self.substr(a_i, a_n);
 	}
+	static ptrdiff_t f_code_at(const std::wstring& a_self, size_t a_i)
+	{
+		return a_self[a_i];
+	}
 	static void f_define();
 
 	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))

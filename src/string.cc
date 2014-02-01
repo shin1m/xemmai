@@ -43,6 +43,7 @@ void t_type_of<std::wstring>::f_define()
 			t_member<std::wstring (*)(const std::wstring&, size_t), f_substring>(),
 			t_member<std::wstring (*)(const std::wstring&, size_t, size_t), f_substring>()
 		)
+		(L"code_at", t_member<ptrdiff_t (*)(const std::wstring&, size_t), f_code_at>())
 	;
 }
 
