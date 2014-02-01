@@ -11,6 +11,12 @@ assert(true | true == true);
 print("true ^ true = " + (true ^ true));
 assert(true ^ true == false);
 
+print("+(0 + 1) = " + +(0 + 1));
+assert(+(0 + 1) == 1);
+print("-(0 + 1) = " + -(0 + 1));
+assert(-(0 + 1) == -1);
+print("~(1 - 1) = " + ~(1 - 1));
+assert(~(1 - 1) == ~0);
 print("-10 / 9 = " + (-10 / 9));
 assert(-10 / 9 == -1);
 print("-10 % 9 = " + (-10 % 9));
@@ -24,6 +30,10 @@ assert(0x1f == 31);
 print("0x000a = " + 0x000a);
 assert(0x000a == 10);
 
+print("+(0.0 + 1.0) = " + +(0.0 + 1.0));
+assert(+(0.0 + 1.0) == 1.0);
+print("-(0.0 + 1.0) = " + -(0.0 + 1.0));
+assert(-(0.0 + 1.0) == -1.0);
 print("1 + 2.5 = " + (1 + 2.5));
 assert(1 + 2.5 == 3.5);
 print("1.5 + 2 = " + (1.5 + 2));

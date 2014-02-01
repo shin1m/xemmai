@@ -492,6 +492,27 @@ t_operand t_instance::f_generate(t_generator& a_generator, size_t a_stack, bool 
 t_operand t_unary::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	t_operand operand = v_expression->f_generate(a_generator, a_stack, false, true);
+	if (operand.v_tag == t_operand::e_tag__INTEGER) {
+		switch (v_instruction) {
+		case e_instruction__PLUS_T:
+			return t_integer(v_at, operand.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+		case e_instruction__MINUS_T:
+			return t_integer(v_at, -operand.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+		case e_instruction__COMPLEMENT_T:
+			return t_integer(v_at, ~operand.v_value.f_integer()).f_generate(a_generator, a_stack, a_tail, a_operand);
+		default:
+			t_throwable::f_throw(L"not supported");
+		}
+	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
+		switch (v_instruction) {
+		case e_instruction__PLUS_T:
+			return t_float(v_at, operand.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+		case e_instruction__MINUS_T:
+			return t_float(v_at, -operand.v_value.f_float()).f_generate(a_generator, a_stack, a_tail, a_operand);
+		default:
+			t_throwable::f_throw(L"not supported");
+		}
+	}
 	size_t instruction = v_instruction;
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	switch (operand.v_tag) {
