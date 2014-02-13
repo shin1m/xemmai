@@ -108,6 +108,7 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__RETURN,
 			&&label__CALL,
 			&&label__CALL_WITH_EXPANSION,
+			&&label__CALL_OUTER,
 			&&label__GET_AT,
 			&&label__SET_AT,
 #define XEMMAI__CODE__LABEL_UNARY(a_name)\
@@ -165,6 +166,7 @@ void t_code::f_loop(const void*** a_labels)
 			&&label__SEND,
 			&&label__CALL_TAIL,
 			&&label__CALL_WITH_EXPANSION_TAIL,
+			&&label__CALL_OUTER_TAIL,
 			&&label__GET_AT_TAIL,
 			&&label__SET_AT_TAIL,
 			XEMMAI__CODE__LABEL_UNARY(PLUS_TAIL)
@@ -806,6 +808,24 @@ void t_code::f_loop()
 						}
 					}
 					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(CALL_OUTER)
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						size_t index = reinterpret_cast<size_t>(*++pc);
+						size_t n = reinterpret_cast<size_t>(*++pc);
+						++pc;
+						t_slot& x = f_as<t_lambda&>(f_context()->v_lambda).v_as_scope[index];
+						t_fiber::t_context* p0 = f_context();
+						p0->f_pc() = pc;
+						x.f_call(stack, n);
+						t_fiber::t_context* p1 = f_context();
+						if (p1 != p0) {
+							if (p1->f_native() > 0) return;
+							base = p1->f_base();
+							pc = p1->f_pc();
+						}
+					}
+					XEMMAI__CODE__BREAK
 #define XEMMAI__CODE__FETCH()
 #define XEMMAI__CODE__PRIMITIVE(a_x)\
 								stack[0].f_construct(a_x);
@@ -1101,6 +1121,20 @@ void t_code::f_loop()
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						n = f_expand(stack, n);
 						t_scoped x = std::move(stack[0]);
+						t_fiber::t_context::f_pop(stack, n);
+						x.f_call(base - 1, n);
+						t_fiber::t_context* p = f_context();
+						if (p->f_native() > 0) return;
+						base = p->f_base();
+						pc = p->f_pc();
+					}
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(CALL_OUTER_TAIL)
+					{
+						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
+						size_t index = reinterpret_cast<size_t>(*++pc);
+						size_t n = reinterpret_cast<size_t>(*++pc);
+						t_slot& x = f_as<t_lambda&>(f_context()->v_lambda).v_as_scope[index];
 						t_fiber::t_context::f_pop(stack, n);
 						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();

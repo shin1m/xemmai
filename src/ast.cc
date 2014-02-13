@@ -739,12 +739,20 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 
 t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	v_target->f_generate(a_generator, a_stack, false, false);
-	for (size_t i = 0; i < v_arguments.size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 1 + i, false, false);
 	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
+	t_scope_get* get = v_expand ? nullptr : dynamic_cast<t_scope_get*>(v_target.get());
+	if (get && get->v_outer == 1 && !get->v_variable.v_varies) {
+		instruction = e_instruction__CALL_OUTER;
+		a_generator.f_reserve(a_stack + 1);
+	} else {
+		get = nullptr;
+		v_target->f_generate(a_generator, a_stack, false, false);
+	}
+	for (size_t i = 0; i < v_arguments.size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 1 + i, false, false);
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
+	if (get) a_generator.f_operand(get->v_variable.v_index);
 	a_generator.f_operand(v_arguments.size());
 	a_generator.f_at(this);
 	return a_stack;

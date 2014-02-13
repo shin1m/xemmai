@@ -55,6 +55,7 @@ enum t_instruction
 	e_instruction__RETURN,
 	e_instruction__CALL,
 	e_instruction__CALL_WITH_EXPANSION,
+	e_instruction__CALL_OUTER,
 	e_instruction__GET_AT,
 	e_instruction__SET_AT,
 #define XEMMAI__CODE__INSTRUCTION_UNARY(a_name)\
@@ -112,6 +113,7 @@ enum t_instruction
 	e_instruction__SEND,
 	e_instruction__CALL_TAIL,
 	e_instruction__CALL_WITH_EXPANSION_TAIL,
+	e_instruction__CALL_OUTER_TAIL,
 	e_instruction__GET_AT_TAIL,
 	e_instruction__SET_AT_TAIL,
 	XEMMAI__CODE__INSTRUCTION_UNARY(PLUS_TAIL)
