@@ -814,9 +814,9 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_slot& x = f_as<t_lambda&>(f_context()->v_lambda).v_as_scope[index];
 						t_fiber::t_context* p0 = f_context();
 						p0->f_pc() = pc;
+						t_slot& x = f_as<t_lambda&>(p0->v_lambda).v_as_scope[index];
 						x.f_call(stack, n);
 						t_fiber::t_context* p1 = f_context();
 						if (p1 != p0) {
