@@ -353,7 +353,7 @@ void t_object::f_share()
 
 void t_object::f_field_put(t_object* a_key, t_scoped&& a_value)
 {
-	ptrdiff_t index = v_structure->f_index(a_key);
+	intptr_t index = v_structure->f_index(a_key);
 	if (index < 0)
 		f_field_add(v_structure->f_append(a_key), std::move(a_value));
 	else

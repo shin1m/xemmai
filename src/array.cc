@@ -54,13 +54,13 @@ void t_array::f_shrink()
 	}
 }
 
-void t_array::f_validate(ptrdiff_t& a_index) const
+void t_array::f_validate(intptr_t& a_index) const
 {
 	if (a_index < 0) {
 		a_index += v_size;
 		if (a_index < 0) t_throwable::f_throw(L"out of range.");
 	} else {
-		if (a_index >= static_cast<ptrdiff_t>(v_size)) t_throwable::f_throw(L"out of range.");
+		if (a_index >= static_cast<intptr_t>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
 }
 
@@ -80,14 +80,14 @@ void t_array::f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size)
 	std::swap(v_size, a_size);
 }
 
-const t_slot& t_array::operator[](ptrdiff_t a_index) const
+const t_slot& t_array::operator[](intptr_t a_index) const
 {
 	f_validate(a_index);
 	const t_tuple& tuple = f_as<const t_tuple&>(v_tuple);
 	return tuple[(v_head + a_index) % tuple.f_size()];
 }
 
-t_slot& t_array::operator[](ptrdiff_t a_index)
+t_slot& t_array::operator[](intptr_t a_index)
 {
 	f_validate(a_index);
 	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
@@ -133,13 +133,13 @@ t_scoped t_array::f_shift()
 	return p;
 }
 
-void t_array::f_insert(ptrdiff_t a_index, t_scoped&& a_value)
+void t_array::f_insert(intptr_t a_index, t_scoped&& a_value)
 {
 	if (a_index < 0) {
 		a_index += v_size;
 		if (a_index < 0) t_throwable::f_throw(L"out of range.");
 	} else {
-		if (a_index > static_cast<ptrdiff_t>(v_size)) t_throwable::f_throw(L"out of range.");
+		if (a_index > static_cast<intptr_t>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
 	f_grow();
 	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
@@ -147,7 +147,7 @@ void t_array::f_insert(ptrdiff_t a_index, t_scoped&& a_value)
 	size_t j = v_head + v_size;
 	size_t n = tuple.f_size();
 	t_slot* p = &tuple[0];
-	if (a_index < static_cast<ptrdiff_t>(v_size / 2)) {
+	if (a_index < static_cast<intptr_t>(v_size / 2)) {
 		if (i >= n) {
 			*f_move_backward(p + --v_head, p + n - 1) = std::move(*p);
 			*f_move_backward(p, p + --i - n) = std::move(a_value);
@@ -173,7 +173,7 @@ void t_array::f_insert(ptrdiff_t a_index, t_scoped&& a_value)
 	++v_size;
 }
 
-t_scoped t_array::f_remove(ptrdiff_t a_index)
+t_scoped t_array::f_remove(intptr_t a_index)
 {
 	f_validate(a_index);
 	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
@@ -182,7 +182,7 @@ t_scoped t_array::f_remove(ptrdiff_t a_index)
 	size_t n = tuple.f_size();
 	t_slot* p = &tuple[0];
 	t_scoped q = std::move(p[i % n]);
-	if (a_index < static_cast<ptrdiff_t>(v_size / 2)) {
+	if (a_index < static_cast<intptr_t>(v_size / 2)) {
 		if (i >= n) {
 			*f_move_forward(p, p + i - n) = std::move(p[n - 1]);
 			f_move_forward(p + v_head, p + n - 1);
@@ -245,11 +245,11 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 	return L'[' + s + L']';
 }
 
-ptrdiff_t t_type_of<t_array>::f_hash(const t_value& a_self)
+intptr_t t_type_of<t_array>::f_hash(const t_value& a_self)
 {
 	f_check<t_array>(a_self, L"this");
 	const t_array& array = f_as<const t_array&>(a_self);
-	ptrdiff_t n = 0;
+	intptr_t n = 0;
 	size_t i = 0;
 	while (true) {
 		t_scoped x;
@@ -259,8 +259,8 @@ ptrdiff_t t_type_of<t_array>::f_hash(const t_value& a_self)
 			x = array[i];
 		}
 		x = x.f_hash();
-		f_check<ptrdiff_t>(x, L"value");
-		n ^= f_as<ptrdiff_t>(x);
+		f_check<intptr_t>(x, L"value");
+		n ^= f_as<intptr_t>(x);
 		++i;
 	}
 	return n;
@@ -453,9 +453,9 @@ void t_type_of<t_array>::f_define()
 	t_define<t_array, t_object>(f_global(), L"Array")
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (*)(const t_value&), f_hash>())
-		(f_global()->f_symbol_get_at(), t_member<const t_value& (t_array::*)(ptrdiff_t) const, &t_array::f_get_at, t_with_lock_for_read>())
-		(f_global()->f_symbol_set_at(), t_member<const t_value& (t_array::*)(ptrdiff_t, t_scoped&&), &t_array::f_set_at, t_with_lock_for_write>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t (*)(const t_value&), f_hash>())
+		(f_global()->f_symbol_get_at(), t_member<const t_value& (t_array::*)(intptr_t) const, &t_array::f_get_at, t_with_lock_for_read>())
+		(f_global()->f_symbol_set_at(), t_member<const t_value& (t_array::*)(intptr_t, t_scoped&&), &t_array::f_set_at, t_with_lock_for_write>())
 		(f_global()->f_symbol_less(), t_member<bool (*)(const t_value&, const t_value&), f_less>())
 		(f_global()->f_symbol_less_equal(), t_member<bool (*)(const t_value&, const t_value&), f_less_equal>())
 		(f_global()->f_symbol_greater(), t_member<bool (*)(const t_value&, const t_value&), f_greater>())
@@ -468,8 +468,8 @@ void t_type_of<t_array>::f_define()
 		(L"pop", t_member<t_scoped (t_array::*)(), &t_array::f_pop, t_with_lock_for_write>())
 		(L"unshift", t_member<void (t_array::*)(t_scoped&&), &t_array::f_unshift, t_with_lock_for_write>())
 		(L"shift", t_member<t_scoped (t_array::*)(), &t_array::f_shift, t_with_lock_for_write>())
-		(L"insert", t_member<void (t_array::*)(ptrdiff_t, t_scoped&&), &t_array::f_insert, t_with_lock_for_write>())
-		(L"remove", t_member<t_scoped (t_array::*)(ptrdiff_t), &t_array::f_remove, t_with_lock_for_write>())
+		(L"insert", t_member<void (t_array::*)(intptr_t, t_scoped&&), &t_array::f_insert, t_with_lock_for_write>())
+		(L"remove", t_member<t_scoped (t_array::*)(intptr_t), &t_array::f_remove, t_with_lock_for_write>())
 		(L"each", t_member<void (*)(const t_value&, const t_value&), f_each>())
 		(L"sort", t_member<void (*)(const t_value&, const t_value&), f_sort>())
 	;
@@ -510,9 +510,9 @@ void t_type_of<t_array>::f_get_at(t_object* a_this, t_slot* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);
-	f_check<ptrdiff_t>(a0, L"index");
+	f_check<intptr_t>(a0, L"index");
 	t_with_lock_for_read lock(a_this);
-	a_stack[0].f_construct(f_as<const t_array&>(a_this).f_get_at(f_as<ptrdiff_t>(a0)));
+	a_stack[0].f_construct(f_as<const t_array&>(a_this).f_get_at(f_as<intptr_t>(a0)));
 	context.f_done();
 }
 
@@ -521,9 +521,9 @@ void t_type_of<t_array>::f_set_at(t_object* a_this, t_slot* a_stack)
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);
 	t_scoped a1 = std::move(a_stack[2]);
-	f_check<ptrdiff_t>(a0, L"index");
+	f_check<intptr_t>(a0, L"index");
 	t_with_lock_for_write lock(a_this);
-	a_stack[0].f_construct(f_as<t_array&>(a_this).f_set_at(f_as<ptrdiff_t>(a0), std::move(a1)));
+	a_stack[0].f_construct(f_as<t_array&>(a_this).f_set_at(f_as<intptr_t>(a0), std::move(a1)));
 	context.f_done();
 }
 

@@ -147,7 +147,7 @@ struct t_type_of<t_dictionary> : t_type
 {
 	static void f__construct(t_object* a_module, t_slot* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
-	static ptrdiff_t f_hash(const t_value& a_self);
+	static intptr_t f_hash(const t_value& a_self);
 	static bool f_equals(const t_value& a_self, const t_value& a_other);
 	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{

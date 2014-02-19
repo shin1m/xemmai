@@ -37,7 +37,7 @@ struct t_type_of<bool> : t_type
 	{
 		return a_self ? L"true" : L"false";
 	}
-	static ptrdiff_t f_hash(bool a_self)
+	static intptr_t f_hash(bool a_self)
 	{
 		return a_self ? 1 : 0;
 	}

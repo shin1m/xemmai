@@ -65,7 +65,7 @@ t_scoped t_class::f_get(const t_value& a_this, t_object* a_key)
 	while (true) {
 		{
 			t_with_lock_for_read lock(type);
-			ptrdiff_t index = type->f_field_index(a_key);
+			intptr_t index = type->f_field_index(a_key);
 			if (index >= 0) {
 				const t_slot& slot = type->f_field_get(index);
 				t_object* p = slot;
@@ -98,7 +98,7 @@ t_scoped t_class::f_remove(t_object* a_this, t_object* a_key)
 	t_scoped value;
 	{
 		t_with_lock_for_write lock(a_this);
-		ptrdiff_t index = a_this->f_field_index(a_key);
+		intptr_t index = a_this->f_field_index(a_key);
 		if (index < 0) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
 		value = a_this->f_field_get(index);
 		a_this->f_field_remove(index);

@@ -35,7 +35,8 @@ scripts = \
 	psmtp.xm \
 	mandelbrot.xm \
 	fix.xm \
-	tail.xm
+	tail.xm \
+	time.xm
 TESTS = $(scripts) \
 	container/test.xm \
 	callback/test.xm \

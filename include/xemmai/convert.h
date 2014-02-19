@@ -629,7 +629,7 @@ inline void f_define(T_extension* a_extension, const std::wstring& a_name)
 }
 
 template<typename T, typename T_extension>
-struct t_enum_of : t_type_of<ptrdiff_t>
+struct t_enum_of : t_type_of<intptr_t>
 {
 	typedef T_extension t_extension;
 	typedef t_enum_of t_base;
@@ -639,7 +639,7 @@ struct t_enum_of : t_type_of<ptrdiff_t>
 		return f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
 	}
 
-	using t_type_of<ptrdiff_t>::t_type_of;
+	using t_type_of<intptr_t>::t_type_of;
 	virtual t_type* f_derive(t_object* a_this);
 };
 

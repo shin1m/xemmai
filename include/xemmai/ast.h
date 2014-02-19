@@ -28,7 +28,7 @@ struct t_operand
 	t_tag v_tag;
 	t_scoped v_value;
 
-	t_operand(ptrdiff_t a_value) : v_tag(e_tag__INTEGER), v_value(a_value)
+	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_value(a_value)
 	{
 	}
 	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_value(a_value)
@@ -359,9 +359,9 @@ struct t_boolean : t_node
 
 struct t_integer : t_node
 {
-	ptrdiff_t v_value;
+	intptr_t v_value;
 
-	t_integer(const t_at& a_at, ptrdiff_t a_value) : t_node(a_at), v_value(a_value)
+	t_integer(const t_at& a_at, intptr_t a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);

@@ -17,7 +17,7 @@ inline size_t f_atomic_increment(volatile size_t& a_n)
 
 class t_lock
 {
-	std::atomic<ptrdiff_t> v_lock{0};
+	std::atomic<intptr_t> v_lock{0};
 
 public:
 	void f_acquire_for_read()
@@ -32,7 +32,7 @@ public:
 	void f_acquire_for_write()
 	{
 		while (true) {
-			ptrdiff_t value = 0;
+			intptr_t value = 0;
 			if (v_lock.compare_exchange_weak(value, ~(~size_t(0) >> 1), std::memory_order_acquire, std::memory_order_relaxed)) break;
 			do std::this_thread::yield(); while (v_lock.load(std::memory_order_relaxed) != 0);
 		}

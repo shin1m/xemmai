@@ -234,7 +234,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		return std::unique_ptr<ast::t_node>(new ast::t_boolean(at, false));
 	case t_lexer::e_token__INTEGER:
 		{
-			ptrdiff_t value = f_integer();
+			intptr_t value = f_integer();
 			v_lexer.f_next();
 			return std::unique_ptr<ast::t_node>(new ast::t_integer(at, value));
 		}
@@ -378,7 +378,7 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__INTEGER:
 			{
-				ptrdiff_t value = f_integer();
+				intptr_t value = f_integer();
 				v_lexer.f_next();
 				return f_action(new ast::t_integer(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
@@ -392,7 +392,7 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		break;
 	case e_instruction__COMPLEMENT_T:
 		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
-			ptrdiff_t value = f_integer();
+			intptr_t value = f_integer();
 			v_lexer.f_next();
 			return f_action(new ast::t_integer(at, ~value), a_assignable);
 		}
@@ -855,7 +855,7 @@ t_scoped t_parser::t_error::f_instantiate(const std::wstring& a_message, t_lexer
 
 void t_parser::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d:%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", v_path.c_str(), v_at.f_line(), v_at.f_column());
+	std::fprintf(stderr, "at %ls:%" PRIuPTR ":%" PRIuPTR "\n", v_path.c_str(), static_cast<uintptr_t>(v_at.f_line()), static_cast<uintptr_t>(v_at.f_column()));
 	f_print_with_caret(v_path.c_str(), v_at.f_position(), v_at.f_column());
 	t_throwable::f_dump();
 }

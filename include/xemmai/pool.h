@@ -6,8 +6,6 @@
 #include <mutex>
 #include <new>
 
-#include "portable/define.h"
-
 namespace xemmai
 {
 

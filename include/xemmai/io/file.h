@@ -39,8 +39,8 @@ public:
 	}
 	XEMMAI__PORTABLE__EXPORT void f_reopen(const std::wstring& a_path, const std::wstring& a_mode);
 	XEMMAI__PORTABLE__EXPORT void f_close();
-	XEMMAI__PORTABLE__EXPORT void f_seek(ptrdiff_t a_offset, int a_whence);
-	XEMMAI__PORTABLE__EXPORT ptrdiff_t f_tell();
+	XEMMAI__PORTABLE__EXPORT void f_seek(intptr_t a_offset, int a_whence);
+	XEMMAI__PORTABLE__EXPORT intptr_t f_tell();
 	XEMMAI__PORTABLE__EXPORT size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	XEMMAI__PORTABLE__EXPORT void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	XEMMAI__PORTABLE__EXPORT void f_flush();

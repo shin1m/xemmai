@@ -16,7 +16,7 @@ struct t_type_of<std::wstring> : t_type
 		object.f_pointer__(new std::wstring(a_value));
 		return object;
 	}
-	static std::wstring f_from_code(ptrdiff_t a_code)
+	static std::wstring f_from_code(intptr_t a_code)
 	{
 		return std::wstring(1, a_code);
 	}
@@ -24,9 +24,9 @@ struct t_type_of<std::wstring> : t_type
 	{
 		return a_self;
 	}
-	static ptrdiff_t f_hash(const std::wstring& a_self)
+	static intptr_t f_hash(const std::wstring& a_self)
 	{
-		ptrdiff_t n = 0;
+		intptr_t n = 0;
 		for (auto c : a_self) n ^= c;
 		return n;
 	}
@@ -57,7 +57,7 @@ struct t_type_of<std::wstring> : t_type
 	{
 		return a_self.substr(a_i, a_n);
 	}
-	static ptrdiff_t f_code_at(const std::wstring& a_self, size_t a_i)
+	static intptr_t f_code_at(const std::wstring& a_self, size_t a_i)
 	{
 		return a_self[a_i];
 	}

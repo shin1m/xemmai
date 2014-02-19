@@ -56,16 +56,16 @@ void t_file::f_close()
 	v_stream = NULL;
 }
 
-void t_file::f_seek(ptrdiff_t a_offset, int a_whence)
+void t_file::f_seek(intptr_t a_offset, int a_whence)
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
 	if (std::fseek(v_stream, a_offset, a_whence) == -1) t_throwable::f_throw(L"failed to seek.");
 }
 
-ptrdiff_t t_file::f_tell()
+intptr_t t_file::f_tell()
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
-	ptrdiff_t n = std::ftell(v_stream);
+	intptr_t n = std::ftell(v_stream);
 	if (n == -1) t_throwable::f_throw(L"failed to tell.");
 	return n;
 }
@@ -123,8 +123,8 @@ void t_type_of<io::t_file>::f_define(t_io* a_extension)
 		(t_construct<const std::wstring&, const std::wstring&>())
 		(L"reopen", t_member<void (io::t_file::*)(const std::wstring&, const std::wstring&), &io::t_file::f_reopen, t_with_lock_for_write>())
 		(a_extension->f_symbol_close(), t_member<void (io::t_file::*)(), &io::t_file::f_close, t_with_lock_for_write>())
-		(L"seek", t_member<void (io::t_file::*)(ptrdiff_t, int), &io::t_file::f_seek, t_with_lock_for_write>())
-		(L"tell", t_member<ptrdiff_t (io::t_file::*)(), &io::t_file::f_tell, t_with_lock_for_write>())
+		(L"seek", t_member<void (io::t_file::*)(intptr_t, int), &io::t_file::f_seek, t_with_lock_for_write>())
+		(L"tell", t_member<intptr_t (io::t_file::*)(), &io::t_file::f_tell, t_with_lock_for_write>())
 		(a_extension->f_symbol_read(), t_member<size_t (io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_read, t_with_lock_for_write>())
 		(a_extension->f_symbol_write(), t_member<void (io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_write, t_with_lock_for_write>())
 		(a_extension->f_symbol_flush(), t_member<void (io::t_file::*)(), &io::t_file::f_flush, t_with_lock_for_write>())

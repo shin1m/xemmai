@@ -174,7 +174,7 @@ public:
 	{
 		return v_module_io;
 	}
-	ptrdiff_t f_run();
+	intptr_t f_run();
 	void f_synchronize()
 	{
 		std::lock_guard<std::mutex> lock(v_thread__mutex);

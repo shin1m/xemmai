@@ -216,7 +216,7 @@ void t_code::f_loop()
 #define XEMMAI__CODE__CASE(a_name) case XEMMAI__MACRO__CONCATENATE(e_instruction__, a_name):
 #define XEMMAI__CODE__BREAK break;
 			while (true) {
-				switch (static_cast<t_instruction>(reinterpret_cast<ptrdiff_t>(*pc))) {
+				switch (static_cast<t_instruction>(reinterpret_cast<intptr_t>(*pc))) {
 #endif
 				XEMMAI__CODE__CASE(JUMP)
 					pc = static_cast<void**>(*++pc);
@@ -267,7 +267,7 @@ void t_code::f_loop()
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(FINALLY)
 					{
-						t_fiber::t_try::t_state state = static_cast<t_fiber::t_try::t_state>(reinterpret_cast<ptrdiff_t>(*++pc));
+						t_fiber::t_try::t_state state = static_cast<t_fiber::t_try::t_state>(reinterpret_cast<intptr_t>(*++pc));
 						t_fiber& p = f_as<t_fiber&>(t_fiber::f_current());
 						p.v_try->v_state = state;
 						pc = p.v_try->v_finally;
@@ -329,7 +329,7 @@ void t_code::f_loop()
 						if (f_atomic_increment(count) == 2) {
 							t_object* p = static_cast<t_object*>(top);
 							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-								ptrdiff_t index = p->f_field_index(key);
+								intptr_t index = p->f_field_index(key);
 								if (index < 0) {
 									XEMMAI__CODE__REWRITE(OBJECT_GET_MEGAMORPHIC);
 									top = f_as<t_type&>(p->f_type()).f_get(top, key);
@@ -411,7 +411,7 @@ void t_code::f_loop()
 						if (f_atomic_increment(count) == 2) {
 							t_object* p = static_cast<t_object*>(top);
 							if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-								ptrdiff_t index = p->f_field_index(key);
+								intptr_t index = p->f_field_index(key);
 								if (index < 0) {
 									t_scoped structure = p->v_structure->f_append(key);
 									*static_cast<t_slot*>(pc0[5]) = static_cast<t_object*>(structure);
@@ -726,7 +726,7 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(BOOLEAN)
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						bool value = reinterpret_cast<ptrdiff_t>(*++pc) != 0;
+						bool value = reinterpret_cast<intptr_t>(*++pc) != 0;
 						++pc;
 						stack[0].f_construct(value);
 					}
@@ -734,7 +734,7 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(INTEGER)
 					{
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
-						ptrdiff_t value = reinterpret_cast<ptrdiff_t>(*++pc);
+						intptr_t value = reinterpret_cast<intptr_t>(*++pc);
 						++pc;
 						stack[0].f_construct(value);
 					}
@@ -852,30 +852,30 @@ void t_code::f_loop()
 								t_scoped x = std::move(stack[0]);\
 								stack[1].f_construct(a1);
 #define XEMMAI__CODE__FETCH_II()\
-						ptrdiff_t a0 = reinterpret_cast<ptrdiff_t>(*++pc);\
-						ptrdiff_t a1 = reinterpret_cast<ptrdiff_t>(*++pc);
+						intptr_t a0 = reinterpret_cast<intptr_t>(*++pc);\
+						intptr_t a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_II(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_FI()\
 						XEMMAI__CODE__FLOAT(a0, v0)\
-						ptrdiff_t a1 = reinterpret_cast<ptrdiff_t>(*++pc);
+						intptr_t a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_FI(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_LI()\
 						t_slot& a0 = *static_cast<t_slot*>(*++pc);\
-						ptrdiff_t a1 = reinterpret_cast<ptrdiff_t>(*++pc);
+						intptr_t a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_LI(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PREPARE_LI() XEMMAI__CODE__PREPARE_LL()
 #define XEMMAI__CODE__FETCH_VI()\
 						t_slot& a0 = base[reinterpret_cast<size_t>(*++pc)];\
-						ptrdiff_t a1 = reinterpret_cast<ptrdiff_t>(*++pc);
+						intptr_t a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_VI(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PREPARE_VI() XEMMAI__CODE__PREPARE_LL()
 #define XEMMAI__CODE__FETCH_TI()\
 						t_slot& a0 = stack[0];\
-						ptrdiff_t a1 = reinterpret_cast<ptrdiff_t>(*++pc);
+						intptr_t a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_TI(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PREPARE_TI() XEMMAI__CODE__PREPARE_TL()
 #define XEMMAI__CODE__FETCH_IF()\
-						ptrdiff_t a0 = reinterpret_cast<ptrdiff_t>(*++pc);\
+						intptr_t a0 = reinterpret_cast<intptr_t>(*++pc);\
 						XEMMAI__CODE__FLOAT(a1, v1)
 #define XEMMAI__CODE__PRIMITIVE_IF(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_FF()\
@@ -898,7 +898,7 @@ void t_code::f_loop()
 #define XEMMAI__CODE__PRIMITIVE_TF(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PREPARE_TF() XEMMAI__CODE__PREPARE_TL()
 #define XEMMAI__CODE__FETCH_IL()\
-						ptrdiff_t a0 = reinterpret_cast<ptrdiff_t>(*++pc);\
+						intptr_t a0 = reinterpret_cast<intptr_t>(*++pc);\
 						t_slot& a1 = *static_cast<t_slot*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_IL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_FL()\
@@ -919,7 +919,7 @@ void t_code::f_loop()
 						t_slot& a1 = *static_cast<t_slot*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_TL(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__FETCH_IV()\
-						ptrdiff_t a0 = reinterpret_cast<ptrdiff_t>(*++pc);\
+						intptr_t a0 = reinterpret_cast<intptr_t>(*++pc);\
 						t_slot& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__PRIMITIVE_IV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_FV()\
@@ -942,7 +942,7 @@ void t_code::f_loop()
 #define XEMMAI__CODE__PRIMITIVE_TV(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PREPARE_TV() XEMMAI__CODE__PREPARE_TL()
 #define XEMMAI__CODE__FETCH_IT()\
-						ptrdiff_t a0 = reinterpret_cast<ptrdiff_t>(*++pc);\
+						intptr_t a0 = reinterpret_cast<intptr_t>(*++pc);\
 						t_slot& a1 = stack[0];
 #define XEMMAI__CODE__PRIMITIVE_IT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__FETCH_FT()\

@@ -22,7 +22,7 @@ class t_array
 	void f_resize();
 	void f_grow();
 	void f_shrink();
-	void f_validate(ptrdiff_t& a_index) const;
+	void f_validate(intptr_t& a_index) const;
 
 public:
 	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate();
@@ -37,13 +37,13 @@ public:
 		return v_size;
 	}
 	void f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size);
-	XEMMAI__PORTABLE__EXPORT const t_slot& operator[](ptrdiff_t a_index) const;
-	XEMMAI__PORTABLE__EXPORT t_slot& operator[](ptrdiff_t a_index);
-	const t_value& f_get_at(ptrdiff_t a_index) const
+	XEMMAI__PORTABLE__EXPORT const t_slot& operator[](intptr_t a_index) const;
+	XEMMAI__PORTABLE__EXPORT t_slot& operator[](intptr_t a_index);
+	const t_value& f_get_at(intptr_t a_index) const
 	{
 		return (*this)[a_index];
 	}
-	const t_value& f_set_at(ptrdiff_t a_index, t_scoped&& a_value)
+	const t_value& f_set_at(intptr_t a_index, t_scoped&& a_value)
 	{
 		return (*this)[a_index] = std::move(a_value);
 	}
@@ -51,8 +51,8 @@ public:
 	XEMMAI__PORTABLE__EXPORT t_scoped f_pop();
 	XEMMAI__PORTABLE__EXPORT void f_unshift(t_scoped&& a_value);
 	XEMMAI__PORTABLE__EXPORT t_scoped f_shift();
-	XEMMAI__PORTABLE__EXPORT void f_insert(ptrdiff_t a_index, t_scoped&& a_value);
-	XEMMAI__PORTABLE__EXPORT t_scoped f_remove(ptrdiff_t a_index);
+	XEMMAI__PORTABLE__EXPORT void f_insert(intptr_t a_index, t_scoped&& a_value);
+	XEMMAI__PORTABLE__EXPORT t_scoped f_remove(intptr_t a_index);
 };
 
 template<>
@@ -60,7 +60,7 @@ struct t_type_of<t_array> : t_type
 {
 	static void f__construct(t_object* a_module, t_slot* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
-	static ptrdiff_t f_hash(const t_value& a_self);
+	static intptr_t f_hash(const t_value& a_self);
 	static bool f_less(const t_value& a_self, const t_value& a_other);
 	static bool f_less_equal(const t_value& a_self, const t_value& a_other);
 	static bool f_greater(const t_value& a_self, const t_value& a_other);

@@ -21,7 +21,7 @@ void t_engine::t_synchronizer::f_run()
 		affinity.f_add(v_cpu);
 		affinity.f_to_thread();
 	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d) starting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" PRIuPTR ") starting...\n", static_cast<uintptr_t>(v_cpu));
 	{
 		std::unique_lock<std::mutex> lock(v_mutex);
 		while (true) {
@@ -35,7 +35,7 @@ void t_engine::t_synchronizer::f_run()
 //			v_engine->v_synchronizer__condition.notify_one();
 		}
 	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" XEMMAI__PORTABLE__FORMAT_SIZE_T "d) quitting...\n", v_cpu);
+	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" PRIuPTR ") quitting...\n", static_cast<uintptr_t>(v_cpu));
 	v_condition.notify_one();
 }
 
@@ -376,27 +376,27 @@ t_engine::~t_engine()
 		{
 			size_t allocated = v_object__pool.f_allocated();
 			size_t freed = v_object__pool.f_freed();
-			std::fprintf(stderr, "\tobject: %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d - %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, release = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, collect = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
+			std::fprintf(stderr, "\tobject: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed), static_cast<uintptr_t>(v_object__release), static_cast<uintptr_t>(v_object__collect));
 			if (allocated > freed) b = true;
 		}
 		{
 			size_t allocated = v_dictionary__entry__pool.f_allocated();
 			size_t freed = v_dictionary__entry__pool.f_freed();
-			std::fprintf(stderr, "\tdictionary entry: %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d - %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", allocated, freed, allocated - freed);
+			std::fprintf(stderr, "\tdictionary entry: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed));
 			if (allocated > freed) b = true;
 		}
-		std::fprintf(stderr, "\tcollector: tick = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, wait = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, epoch = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, collect = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
+		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__collect));
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
-			std::fprintf(stderr, "\tfield cache: hit = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, missed = %" XEMMAI__PORTABLE__FORMAT_SIZE_T "d, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
+			std::fprintf(stderr, "\tfield cache: hit = %" PRIuPTR ", missed = %" PRIuPTR ", ratio = %.1f%%\n", static_cast<uintptr_t>(v_thread__cache_hit), static_cast<uintptr_t>(v_thread__cache_missed), base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
 		}
 		if (b) throw std::exception();
 	}
 }
 
-ptrdiff_t t_engine::f_run()
+intptr_t t_engine::f_run()
 {
-	ptrdiff_t n = t_fiber::f_main(t_module::f_main);
+	intptr_t n = t_fiber::f_main(t_module::f_main);
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
 	t_thread::t_internal*& internals = v_thread__internals;
 	t_thread::t_internal* internal = f_as<t_thread&>(t_thread::f_current()).v_internal;

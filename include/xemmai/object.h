@@ -42,7 +42,7 @@ class t_structure
 
 		t_slot v_structure;
 		t_slot v_key;
-		ptrdiff_t v_index;
+		intptr_t v_index;
 	};
 
 	static thread_local t_cache* v_cache;
@@ -123,7 +123,7 @@ public:
 	{
 		return v_size;
 	}
-	ptrdiff_t f_index(t_object* a_key) const
+	intptr_t f_index(t_object* a_key) const
 	{
 		t_cache& cache = v_cache[t_cache::f_index(v_this, a_key)];
 		if (static_cast<t_object*>(cache.v_structure) == v_this && static_cast<t_object*>(cache.v_key) == a_key) return cache.v_index;
@@ -202,7 +202,7 @@ public:
 	}
 	const t_value& f_get_at(size_t a_index) const;
 	std::wstring f_string() const;
-	ptrdiff_t f_hash() const;
+	intptr_t f_hash() const;
 	bool f_less(const t_tuple& a_other) const;
 	bool f_less_equal(const t_tuple& a_other) const;
 	bool f_greater(const t_tuple& a_other) const;
@@ -331,7 +331,7 @@ public:
 	{
 		return v_type;
 	}
-	ptrdiff_t f_integer() const
+	intptr_t f_integer() const
 	{
 		return v_type.v_integer;
 	}
@@ -357,7 +357,7 @@ public:
 	}
 	void f_own();
 	void f_share();
-	ptrdiff_t f_field_index(t_object* a_key) const
+	intptr_t f_field_index(t_object* a_key) const
 	{
 		return v_structure->f_index(a_key);
 	}

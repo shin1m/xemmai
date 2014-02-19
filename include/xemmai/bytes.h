@@ -34,21 +34,21 @@ class t_bytes
 	{
 		return const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(this + 1));
 	}
-	void f_validate(ptrdiff_t& a_index) const;
-	void f_validate(ptrdiff_t& a_index, size_t a_size) const;
+	void f_validate(intptr_t& a_index) const;
+	void f_validate(intptr_t& a_index, size_t a_size) const;
 
 public:
 	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
 
 	XEMMAI__PORTABLE__EXPORT std::wstring f_string() const;
-	ptrdiff_t f_hash() const
+	intptr_t f_hash() const
 	{
-		ptrdiff_t n = 0;
+		intptr_t n = 0;
 		for (size_t i = 1; i < v_size; ++i) n += (*this)[i];
 		return n;
 	}
-	XEMMAI__PORTABLE__EXPORT ptrdiff_t f_get_at(ptrdiff_t a_index) const;
-	XEMMAI__PORTABLE__EXPORT ptrdiff_t f_set_at(ptrdiff_t a_index, ptrdiff_t a_value);
+	XEMMAI__PORTABLE__EXPORT intptr_t f_get_at(intptr_t a_index) const;
+	XEMMAI__PORTABLE__EXPORT intptr_t f_set_at(intptr_t a_index, intptr_t a_value);
 	size_t f_size() const
 	{
 		return v_size;
@@ -61,7 +61,7 @@ public:
 	{
 		return f_entries()[a_index];
 	}
-	XEMMAI__PORTABLE__EXPORT void f_copy(ptrdiff_t a_index0, size_t a_size, t_bytes& a_other, ptrdiff_t a_index1) const;
+	XEMMAI__PORTABLE__EXPORT void f_copy(intptr_t a_index0, size_t a_size, t_bytes& a_other, intptr_t a_index1) const;
 };
 
 template<>

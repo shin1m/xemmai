@@ -39,7 +39,7 @@ void t_type::f_define(t_object* a_class)
 	t_define<t_object, t_object>(f_global(), L"Object", a_class)
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<ptrdiff_t (*)(const t_value&), f_hash>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t (*)(const t_value&), f_hash>())
 		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const t_value&, const t_value&), f_not_equals>())
 		(L"own", t_member<void (*)(const t_value&), f_own>())
@@ -79,7 +79,7 @@ t_scoped t_type::f_get(const t_value& a_this, t_object* a_key)
 	t_object* p = static_cast<t_object*>(a_this);
 	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
 		if (p->f_owned()) {
-			ptrdiff_t index = p->f_field_index(a_key);
+			intptr_t index = p->f_field_index(a_key);
 			if (index >= 0) return p->f_field_get(index);
 		} else if (!p->f_shared()) {
 			t_throwable::f_throw(L"owned by another thread.");
@@ -94,7 +94,7 @@ t_scoped t_type::f_get(const t_value& a_this, t_object* a_key)
 	}
 	++t_thread::v_cache_missed;
 	cache.v_key_revision = symbol.v_revision;
-	ptrdiff_t index = -1;
+	intptr_t index = -1;
 	t_scoped value;
 	if (a_this.f_tag() >= t_value::e_tag__OBJECT && !p->f_owned()) {
 		t_with_lock_for_read lock(a_this);
@@ -144,7 +144,7 @@ bool t_type::f_has(const t_value& a_this, t_object* a_key)
 t_scoped t_type::f_remove(t_object* a_this, t_object* a_key)
 {
 	if (a_this->f_owned()) {
-		ptrdiff_t index = a_this->f_field_index(a_key);
+		intptr_t index = a_this->f_field_index(a_key);
 		if (index < 0) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
 		t_scoped value = a_this->f_field_get(index);
 		a_this->f_field_remove(index);
@@ -155,7 +155,7 @@ t_scoped t_type::f_remove(t_object* a_this, t_object* a_key)
 		{
 			t_with_lock_for_write lock(a_this);
 			if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
-			ptrdiff_t index = a_this->f_field_index(a_key);
+			intptr_t index = a_this->f_field_index(a_key);
 			if (index < 0) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
 			value = a_this->f_field_get(index);
 			a_this->f_field_remove(index);

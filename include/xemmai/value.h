@@ -2,6 +2,7 @@
 #define XEMMAI__VALUE_H
 
 #include <cassert>
+#include <cinttypes>
 #include <cstddef>
 #include <condition_variable>
 #include <mutex>
@@ -177,7 +178,7 @@ protected:
 	union
 	{
 		bool v_boolean;
-		ptrdiff_t v_integer;
+		intptr_t v_integer;
 		double v_float;
 		void* v_pointer;
 	};
@@ -302,8 +303,8 @@ public:
 	{
 		return v_boolean;
 	}
-	ptrdiff_t f_integer() const;
-	void f_integer__(ptrdiff_t a_value);
+	intptr_t f_integer() const;
+	void f_integer__(intptr_t a_value);
 	double f_float() const;
 	void f_float__(double a_value);
 	void f_pointer__(void* a_value);
@@ -348,7 +349,7 @@ class t_slot : public t_value
 {
 	friend class t_object;
 
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& f__assign(ptrdiff_t a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& f__assign(intptr_t a_value)
 	{
 		t_object* p = v_p;
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
@@ -356,7 +357,7 @@ class t_slot : public t_value
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 		return *this;
 	}
-	void f__construct(ptrdiff_t a_value)
+	void f__construct(intptr_t a_value)
 	{
 		assert(!v_p);
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);

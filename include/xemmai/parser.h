@@ -31,9 +31,9 @@ class t_parser
 	}
 	void f_throw [[noreturn]] (const std::wstring& a_message);
 	ast::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop);
-	ptrdiff_t f_integer()
+	intptr_t f_integer()
 	{
-		return t_type_of<ptrdiff_t>::f_parse(&v_lexer.f_value()[0]);
+		return t_type_of<intptr_t>::f_parse(&v_lexer.f_value()[0]);
 	}
 	double f_float()
 	{

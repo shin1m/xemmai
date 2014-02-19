@@ -28,7 +28,7 @@ int f_system(const std::wstring& a_command)
 	return std::system(portable::f_convert(a_command).c_str());
 }
 
-void f_sleep(ptrdiff_t a_miliseconds)
+void f_sleep(intptr_t a_miliseconds)
 {
 #ifdef __unix__
 	struct timespec nano;
@@ -46,7 +46,7 @@ void f_sleep(ptrdiff_t a_miliseconds)
 t_os::t_os(t_object* a_module) : t_extension(a_module)
 {
 	f_define<int (*)(const std::wstring&), f_system>(this, L"system");
-	f_define<void (*)(ptrdiff_t), f_sleep>(this, L"sleep");
+	f_define<void (*)(intptr_t), f_sleep>(this, L"sleep");
 }
 
 void t_os::f_scan(t_scan a_scan)

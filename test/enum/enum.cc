@@ -60,7 +60,7 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 {
 	static void f_define(t_extension* a_extension)
 	{
-		t_define<t_number, ptrdiff_t>(a_extension, L"Number")
+		t_define<t_number, intptr_t>(a_extension, L"Number")
 			(L"ZERO", e_number__ZERO)
 			(L"ONE", e_number__ONE)
 		;

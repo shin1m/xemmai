@@ -8,8 +8,6 @@
 #define XEMMAI__PORTABLE__ALWAYS_INLINE __attribute__((always_inline))
 #define XEMMAI__PORTABLE__FORCE_INLINE
 #define XEMMAI__PORTABLE__DEFINE_EXPORT
-#define XEMMAI__PORTABLE__FORMAT_PTRDIFF_T "t"
-#define XEMMAI__PORTABLE__FORMAT_SIZE_T "z"
 #endif
 #ifdef _MSC_VER
 #define thread_local __declspec(thread)
@@ -19,8 +17,6 @@
 #define XEMMAI__PORTABLE__ALWAYS_INLINE
 #define XEMMAI__PORTABLE__FORCE_INLINE __forceinline
 #define XEMMAI__PORTABLE__DEFINE_EXPORT __declspec(dllexport)
-#define XEMMAI__PORTABLE__FORMAT_PTRDIFF_T "I"
-#define XEMMAI__PORTABLE__FORMAT_SIZE_T "I"
 #endif
 
 #ifdef _WIN32

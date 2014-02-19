@@ -10,41 +10,41 @@ namespace xemmai
 template<>
 struct t_fundamental<short>
 {
-	typedef ptrdiff_t t_type;
+	typedef intptr_t t_type;
 };
 
 template<>
 struct t_fundamental<unsigned short>
 {
-	typedef ptrdiff_t t_type;
+	typedef intptr_t t_type;
 };
 
 template<>
 struct t_fundamental<int>
 {
-	typedef ptrdiff_t t_type;
+	typedef intptr_t t_type;
 };
 
 template<>
 struct t_fundamental<unsigned>
 {
-	typedef ptrdiff_t t_type;
+	typedef intptr_t t_type;
 };
 
 template<>
 struct t_fundamental<long>
 {
-	typedef ptrdiff_t t_type;
+	typedef intptr_t t_type;
 };
 
 template<>
 struct t_fundamental<unsigned long>
 {
-	typedef ptrdiff_t t_type;
+	typedef intptr_t t_type;
 };
 
 template<>
-struct t_type_of<ptrdiff_t> : t_type
+struct t_type_of<intptr_t> : t_type
 {
 	template<typename T0, typename T1>
 	struct t_as
@@ -75,7 +75,7 @@ struct t_type_of<ptrdiff_t> : t_type
 		}
 	};
 	template<typename T>
-	struct t_of<ptrdiff_t, T>
+	struct t_of<intptr_t, T>
 	{
 		static bool f_call(T a_object)
 		{
@@ -87,7 +87,7 @@ struct t_type_of<ptrdiff_t> : t_type
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<ptrdiff_t>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != nullptr;
+				return dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != nullptr;
 			}
 		}
 	};
@@ -103,85 +103,85 @@ struct t_type_of<ptrdiff_t> : t_type
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T a_value)
 	{
-		return t_value(static_cast<ptrdiff_t>(a_value));
+		return t_value(static_cast<intptr_t>(a_value));
 	}
-	static t_scoped f_construct(t_object* a_class, ptrdiff_t a_value)
+	static t_scoped f_construct(t_object* a_class, intptr_t a_value)
 	{
 		return t_value(a_value);
 	}
 	static t_scoped f_construct(t_object* a_class, double a_value)
 	{
-		return f_construct(a_class, static_cast<ptrdiff_t>(a_value));
+		return f_construct(a_class, static_cast<intptr_t>(a_value));
 	}
 	static t_scoped f_construct(t_object* a_class, const std::wstring& a_value)
 	{
 		return f_construct(a_class, f_parse(a_value.c_str()));
 	}
-	static t_scoped f_construct_derived(t_object* a_class, ptrdiff_t a_value)
+	static t_scoped f_construct_derived(t_object* a_class, intptr_t a_value)
 	{
 		t_scoped object = t_object::f_allocate_uninitialized(a_class);
 		object.f_integer__(a_value);
 		return object;
 	}
-	static ptrdiff_t f_parse(const wchar_t* a_value)
+	static intptr_t f_parse(const wchar_t* a_value)
 	{
-		ptrdiff_t value;
-		std::swscanf(a_value, L"%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_SIZE_T) L"i", &value);
+		intptr_t value;
+		std::swscanf(a_value, XEMMAI__MACRO__L("%" SCNiPTR), &value);
 		return value;
 	}
-	static std::wstring f_string(ptrdiff_t a_self)
+	static std::wstring f_string(intptr_t a_self)
 	{
 		wchar_t cs[32];
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%" XEMMAI__MACRO__L(XEMMAI__PORTABLE__FORMAT_SIZE_T) L"d", a_self);
+		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%" PRIdPTR), a_self);
 		return cs;
 	}
-	static ptrdiff_t f_hash(ptrdiff_t a_self)
+	static intptr_t f_hash(intptr_t a_self)
 	{
 		return a_self;
 	}
-	static ptrdiff_t f_plus(ptrdiff_t a_self)
+	static intptr_t f_plus(intptr_t a_self)
 	{
 		return a_self;
 	}
-	static ptrdiff_t f_minus(ptrdiff_t a_self)
+	static intptr_t f_minus(intptr_t a_self)
 	{
 		return -a_self;
 	}
-	static ptrdiff_t f_complement(ptrdiff_t a_self)
+	static intptr_t f_complement(intptr_t a_self)
 	{
 		return ~a_self;
 	}
-	static t_scoped f_multiply(ptrdiff_t a_self, const t_value& a_value);
-	static t_scoped f_divide(ptrdiff_t a_self, const t_value& a_value);
-	static ptrdiff_t f_modulus(ptrdiff_t a_self, ptrdiff_t a_value)
+	static t_scoped f_multiply(intptr_t a_self, const t_value& a_value);
+	static t_scoped f_divide(intptr_t a_self, const t_value& a_value);
+	static intptr_t f_modulus(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self % a_value;
 	}
-	static t_scoped f_add(ptrdiff_t a_self, const t_value& a_value);
-	static t_scoped f_subtract(ptrdiff_t a_self, const t_value& a_value);
-	static ptrdiff_t f_left_shift(ptrdiff_t a_self, ptrdiff_t a_value)
+	static t_scoped f_add(intptr_t a_self, const t_value& a_value);
+	static t_scoped f_subtract(intptr_t a_self, const t_value& a_value);
+	static intptr_t f_left_shift(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self << a_value;
 	}
-	static size_t f_right_shift(size_t a_self, ptrdiff_t a_value)
+	static size_t f_right_shift(size_t a_self, intptr_t a_value)
 	{
 		return a_self >> a_value;
 	}
-	static bool f_less(ptrdiff_t a_self, const t_value& a_value);
-	static bool f_less_equal(ptrdiff_t a_self, const t_value& a_value);
-	static bool f_greater(ptrdiff_t a_self, const t_value& a_value);
-	static bool f_greater_equal(ptrdiff_t a_self, const t_value& a_value);
-	static bool f_equals(ptrdiff_t a_self, const t_value& a_value);
-	static bool f_not_equals(ptrdiff_t a_self, const t_value& a_value);
-	static ptrdiff_t f_and(ptrdiff_t a_self, ptrdiff_t a_value)
+	static bool f_less(intptr_t a_self, const t_value& a_value);
+	static bool f_less_equal(intptr_t a_self, const t_value& a_value);
+	static bool f_greater(intptr_t a_self, const t_value& a_value);
+	static bool f_greater_equal(intptr_t a_self, const t_value& a_value);
+	static bool f_equals(intptr_t a_self, const t_value& a_value);
+	static bool f_not_equals(intptr_t a_self, const t_value& a_value);
+	static intptr_t f_and(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self & a_value;
 	}
-	static ptrdiff_t f_xor(ptrdiff_t a_self, ptrdiff_t a_value)
+	static intptr_t f_xor(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self ^ a_value;
 	}
-	static ptrdiff_t f_or(ptrdiff_t a_self, ptrdiff_t a_value)
+	static intptr_t f_or(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self | a_value;
 	}

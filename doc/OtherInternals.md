@@ -11,7 +11,7 @@ Object references in xemmai are represented as fat values in C++:
         union
         {
             bool v_boolean;
-            ptrdiff_t v_integer;
+            intptr_t v_integer;
             double v_float;
         };
     };

@@ -85,7 +85,7 @@ struct t_type_of<double> : t_type
 	{
 		return t_value(a_value);
 	}
-	static t_scoped f_construct(t_object* a_class, ptrdiff_t a_value)
+	static t_scoped f_construct(t_object* a_class, intptr_t a_value)
 	{
 		return f_construct(a_class, static_cast<double>(a_value));
 	}
@@ -110,16 +110,16 @@ struct t_type_of<double> : t_type
 		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%g", a_self);
 		return cs;
 	}
-	static ptrdiff_t f_hash(double a_self)
+	static intptr_t f_hash(double a_self)
 	{
 		union
 		{
 			double v_d;
-			ptrdiff_t v_is[sizeof(double) / sizeof(ptrdiff_t)];
+			intptr_t v_is[sizeof(double) / sizeof(intptr_t)];
 		} u;
 		u.v_d = a_self;
-		ptrdiff_t n = 0;
-		ptrdiff_t i = sizeof(double) / sizeof(ptrdiff_t);
+		intptr_t n = 0;
+		intptr_t i = sizeof(double) / sizeof(intptr_t);
 		while (i > 0) n ^= u.v_is[--i];
 		return n;
 	}

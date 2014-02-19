@@ -1,8 +1,6 @@
 #ifndef XEMMAI__PORTABLE__LIBRARY_H
 #define XEMMAI__PORTABLE__LIBRARY_H
 
-#include "define.h"
-
 #ifdef __unix__
 #include <dlfcn.h>
 #include "convert.h"

@@ -120,7 +120,7 @@ struct t_fiber
 	static t_scoped f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main = false, bool a_active = false);
 	static void f_define(t_object* a_class);
 	template<typename T_main>
-	static ptrdiff_t f_main(T_main a_main);
+	static intptr_t f_main(T_main a_main);
 
 	t_slot v_callable;
 	t_stack v_stack;
