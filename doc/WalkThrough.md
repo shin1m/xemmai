@@ -109,7 +109,7 @@ Using `return` statement:
 An empty arguments list can be omitted:
 
     fiftyfive = @{ 55; }; # Same as @() { 55; };
-    fiftyfive(); # => 55;
+    fiftyfive(); # => 55
 
 A single expression form:
 
@@ -219,6 +219,7 @@ More verbose definition of `Foo`:
         };
     };
 
+
 ### Inheritance
 
 xemmai supports a single inheritance.
@@ -248,7 +249,7 @@ So `:$^` in an instance method refers to the super class of its defining class.
 ### Tuples
 
     a = '(0, 1, 2);
-    a.size(); # => 3;
+    a.size(); # => 3
     a[0] + a[1] + a[2]; #=> 6
 
 Tuples are immutable.
@@ -258,7 +259,7 @@ Tuples are immutable.
 
     a = [0, 1];
     a.push(2);
-    a.size(); # => 3;
+    a.size(); # => 3
     a[0] = 3;
     a[0] + a[1] + a[2]; #=> 6
 
