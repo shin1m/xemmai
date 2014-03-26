@@ -972,12 +972,13 @@ inline t_scoped t_value::f_send(const t_value& a_value) const
 template<typename T_main>
 intptr_t t_fiber::f_main(T_main a_main)
 {
+	intptr_t n = -1;
 	t_context::f_initiate(nullptr);
 	try {
 		t_native_context context;
 		try {
 			a_main();
-			return 0;
+			n = 0;
 		} catch (const t_scoped& thrown) {
 			f_as<t_fiber&>(f_current()).f_caught(thrown);
 			std::wstring s = L"<unprintable>";
@@ -993,7 +994,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 		std::fprintf(stderr, "caught <unexpected>.\n");
 	}
 	t_context::f_terminate();
-	return -1;
+	return n;
 }
 
 }
