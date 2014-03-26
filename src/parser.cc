@@ -70,7 +70,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					if (!scope) t_throwable::f_throw(L"no more outer scope.");
 					if (outer > 0) scope->v_self_shared = true;
 					std::unique_ptr<ast::t_node> target(new ast::t_self(at, outer));
-					for (auto c : v_lexer.f_value()) target = std::unique_ptr<ast::t_node>(c == L':' ? static_cast<ast::t_node*>(new ast::t_class(at, std::move(target))) : static_cast<ast::t_node*>(new ast::t_super(at, std::move(target))));
+					for (auto c : v_lexer.f_value()) target.reset(c == L':' ? static_cast<ast::t_node*>(new ast::t_class(at, std::move(target))) : static_cast<ast::t_node*>(new ast::t_super(at, std::move(target))));
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 						t_at at = v_lexer.f_at();
@@ -421,7 +421,7 @@ std::unique_ptr<ast::t_node> t_parser::f_multiplicative(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, instruction, std::move(node), f_unary(false)));
+		node.reset(new ast::t_binary(at, instruction, std::move(node), f_unary(false)));
 	}
 }
 
@@ -442,7 +442,7 @@ std::unique_ptr<ast::t_node> t_parser::f_additive(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, instruction, std::move(node), f_multiplicative(false)));
+		node.reset(new ast::t_binary(at, instruction, std::move(node), f_multiplicative(false)));
 	}
 }
 
@@ -463,7 +463,7 @@ std::unique_ptr<ast::t_node> t_parser::f_shift(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, instruction, std::move(node), f_additive(false)));
+		node.reset(new ast::t_binary(at, instruction, std::move(node), f_additive(false)));
 	}
 }
 
@@ -490,7 +490,7 @@ std::unique_ptr<ast::t_node> t_parser::f_relational(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, instruction, std::move(node), f_shift(false)));
+		node.reset(new ast::t_binary(at, instruction, std::move(node), f_shift(false)));
 	}
 }
 
@@ -517,7 +517,7 @@ std::unique_ptr<ast::t_node> t_parser::f_equality(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, instruction, std::move(node), f_relational(false)));
+		node.reset(new ast::t_binary(at, instruction, std::move(node), f_relational(false)));
 	}
 }
 
@@ -527,7 +527,7 @@ std::unique_ptr<ast::t_node> t_parser::f_and(bool a_assignable)
 	while (v_lexer.f_token() == t_lexer::e_token__AMPERSAND) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, e_instruction__AND_TT, std::move(node), f_equality(false)));
+		node.reset(new ast::t_binary(at, e_instruction__AND_TT, std::move(node), f_equality(false)));
 	}
 	return node;
 }
@@ -538,7 +538,7 @@ std::unique_ptr<ast::t_node> t_parser::f_xor(bool a_assignable)
 	while (v_lexer.f_token() == t_lexer::e_token__HAT) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, e_instruction__XOR_TT, std::move(node), f_and(false)));
+		node.reset(new ast::t_binary(at, e_instruction__XOR_TT, std::move(node), f_and(false)));
 	}
 	return node;
 }
@@ -549,7 +549,7 @@ std::unique_ptr<ast::t_node> t_parser::f_or(bool a_assignable)
 	while (v_lexer.f_token() == t_lexer::e_token__BAR) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, e_instruction__OR_TT, std::move(node), f_xor(false)));
+		node.reset(new ast::t_binary(at, e_instruction__OR_TT, std::move(node), f_xor(false)));
 	}
 	return node;
 }
@@ -588,7 +588,7 @@ std::unique_ptr<ast::t_node> t_parser::f_send(bool a_assignable)
 	while (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 2) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = std::unique_ptr<ast::t_node>(new ast::t_binary(at, e_instruction__SEND, std::move(node), f_or_else(false)));
+		node.reset(new ast::t_binary(at, e_instruction__SEND, std::move(node), f_or_else(false)));
 	}
 	return node;
 }
