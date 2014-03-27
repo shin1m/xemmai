@@ -205,12 +205,14 @@ int main(int argc, char* argv[])
 		std::fprintf(stderr, "usage: %s [options] <script> ...\n", argv[0]);
 		return -1;
 	}
+#ifdef __unix__
 	if (debug) {
 		sigset_t set;
 		sigemptyset(&set);
 		sigaddset(&set, SIGINT);
 		pthread_sigmask(SIG_BLOCK, &set, NULL);
 	}
+#endif
 	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
 #ifdef __unix__
 	if (!debug) return static_cast<int>(engine.f_run(nullptr));
