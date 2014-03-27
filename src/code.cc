@@ -193,7 +193,9 @@ void t_code::f_loop(const void*** a_labels)
 			XEMMAI__CODE__LABEL_BINARY(OR_TAIL)
 			&&label__SEND_TAIL,
 			&&label__FIBER_EXIT,
-			&&label__END
+			&&label__END,
+			&&label__SAFE_POINT,
+			&&label__BREAK_POINT
 		};
 		*a_labels = labels;
 		return;
@@ -1338,6 +1340,16 @@ void t_code::f_loop()
 				XEMMAI__CODE__CASE(END)
 					f_context()->f_pc() = pc;
 					return;
+				XEMMAI__CODE__CASE(SAFE_POINT)
+					f_context()->f_pc() = ++pc;
+					f_as<t_fiber&>(t_fiber::v_current).v_context = f_context();
+					f_engine()->f_debug_safe_point();
+					XEMMAI__CODE__BREAK
+				XEMMAI__CODE__CASE(BREAK_POINT)
+					f_context()->f_pc() = ++pc;
+					f_as<t_fiber&>(t_fiber::v_current).v_context = f_context();
+					f_engine()->f_debug_break_point();
+					XEMMAI__CODE__BREAK
 #ifndef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 				}
 			}

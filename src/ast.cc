@@ -267,6 +267,7 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 t_operand t_throw::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	v_expression->f_generate(a_generator, a_stack, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__THROW);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -276,6 +277,7 @@ t_operand t_throw::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 t_operand t_object_get::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_GET);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
@@ -290,6 +292,7 @@ t_operand t_object_get_indirect::f_generate(t_generator& a_generator, size_t a_s
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_key->f_generate(a_generator, a_stack + 1, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_GET_INDIRECT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -300,6 +303,7 @@ t_operand t_object_put::f_generate(t_generator& a_generator, size_t a_stack, boo
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_value->f_generate(a_generator, a_stack + 1, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_PUT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
@@ -315,6 +319,7 @@ t_operand t_object_put_indirect::f_generate(t_generator& a_generator, size_t a_s
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_key->f_generate(a_generator, a_stack + 1, false, false);
 	v_value->f_generate(a_generator, a_stack + 2, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_PUT_INDIRECT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -324,6 +329,7 @@ t_operand t_object_put_indirect::f_generate(t_generator& a_generator, size_t a_s
 t_operand t_object_has::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_HAS);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
@@ -335,6 +341,7 @@ t_operand t_object_has_indirect::f_generate(t_generator& a_generator, size_t a_s
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_key->f_generate(a_generator, a_stack + 1, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_HAS_INDIRECT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -344,6 +351,7 @@ t_operand t_object_has_indirect::f_generate(t_generator& a_generator, size_t a_s
 t_operand t_object_remove::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_REMOVE);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
@@ -355,6 +363,7 @@ t_operand t_object_remove_indirect::f_generate(t_generator& a_generator, size_t 
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_key->f_generate(a_generator, a_stack + 1, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_REMOVE_INDIRECT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -364,6 +373,7 @@ t_operand t_object_remove_indirect::f_generate(t_generator& a_generator, size_t 
 t_operand t_global_get::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	a_generator.f_reserve(a_stack + 1);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__GLOBAL_GET);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
@@ -376,12 +386,14 @@ t_operand t_scope_get::f_generate(t_generator& a_generator, size_t a_stack, bool
 	if (v_variable.v_shared) {
 		size_t instruction = (v_variable.v_varies ? e_instruction__SCOPE_GET0 : e_instruction__SCOPE_GET0_WITHOUT_LOCK) + (v_outer < 3 ? v_outer : 3);
 		a_generator.f_reserve(a_stack + 1);
+		if (a_tail) a_generator.f_emit_safe_point(this);
 		a_generator.f_emit(static_cast<t_instruction>(instruction));
 		a_generator.f_operand(a_stack);
 		if (v_outer >= 3) a_generator.f_operand(v_outer);
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable.v_index);
 		if (a_tail) {
+			a_generator.f_emit_safe_point(this);
 			a_generator.f_emit(e_instruction__RETURN);
 		} else {
 			a_generator.f_reserve(a_stack + 1);
@@ -413,6 +425,7 @@ t_operand t_scope_put::f_generate(t_generator& a_generator, size_t a_stack, bool
 t_operand t_self::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	a_generator.f_reserve(a_stack + 1);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__SELF);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(v_outer);
@@ -423,6 +436,7 @@ t_operand t_self::f_generate(t_generator& a_generator, size_t a_stack, bool a_ta
 t_operand t_class::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__CLASS);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -432,6 +446,7 @@ t_operand t_class::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 t_operand t_super::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__SUPER);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -449,6 +464,7 @@ t_operand t_boolean::f_generate(t_generator& a_generator, size_t a_stack, bool a
 {
 	if (a_operand) return t_scoped(v_value);
 	a_generator.f_reserve(a_stack + 1);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__BOOLEAN);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(v_value);
@@ -460,6 +476,7 @@ t_operand t_integer::f_generate(t_generator& a_generator, size_t a_stack, bool a
 {
 	if (a_operand) return v_value;
 	a_generator.f_reserve(a_stack + 1);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__INTEGER);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(v_value);
@@ -471,6 +488,7 @@ t_operand t_float::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 {
 	if (a_operand) return v_value;
 	a_generator.f_reserve(a_stack + 1);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__FLOAT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(v_value);
@@ -482,6 +500,7 @@ t_operand t_instance::f_generate(t_generator& a_generator, size_t a_stack, bool 
 {
 	if (a_operand) return t_scoped(v_value);
 	a_generator.f_reserve(a_stack + 1);
+	if (a_tail) a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__INSTANCE);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(t_scoped(v_value));
@@ -524,6 +543,7 @@ t_operand t_unary::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 		break;
 	}
 	a_generator.f_reserve(a_stack + 1);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	switch (operand.v_tag) {
@@ -703,6 +723,7 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 		break;
 	}
 	a_generator.f_reserve(a_stack + 2);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	switch (left.v_tag) {
@@ -750,6 +771,7 @@ t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_ta
 	}
 	for (size_t i = 0; i < v_arguments.size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 1 + i, false, false);
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	if (get) a_generator.f_operand(get->v_variable.v_index);
@@ -762,6 +784,7 @@ t_operand t_get_at::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 {
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_index->f_generate(a_generator, a_stack + 1, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -773,6 +796,7 @@ t_operand t_set_at::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_index->f_generate(a_generator, a_stack + 1, false, false);
 	v_value->f_generate(a_generator, a_stack + 2, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -783,6 +807,7 @@ t_operand t_set_at::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 
 t_scoped t_generator::f_generate(ast::t_module& a_module)
 {
+	v_debug = f_engine()->v_debugger;
 	v_path = a_module.f_path();
 	v_scope = &a_module;
 	size_t stack = a_module.v_privates.size() + sizeof(t_fiber::t_context) / sizeof(t_slot);

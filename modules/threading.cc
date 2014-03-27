@@ -95,6 +95,7 @@ inline t_object* t_threading::f_type<std::condition_variable>() const
 
 void t_type_of<std::mutex>::f_acquire(std::mutex& a_self)
 {
+	t_safe_region region;
 	a_self.lock();
 	t_thread::f_cache_acquire();
 }
@@ -130,6 +131,7 @@ t_scoped t_type_of<std::mutex>::f_construct(t_object* a_class, t_slot* a_stack, 
 
 void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex)
 {
+	t_safe_region region;
 	t_thread::f_cache_release();
 	{
 		std::unique_lock<std::mutex> lock(a_mutex, std::defer_lock);
@@ -140,6 +142,7 @@ void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self,
 
 void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds)
 {
+	t_safe_region region;
 	t_thread::f_cache_release();
 	{
 		std::unique_lock<std::mutex> lock(a_mutex, std::defer_lock);

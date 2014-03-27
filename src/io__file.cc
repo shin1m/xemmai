@@ -72,6 +72,7 @@ intptr_t t_file::f_tell()
 
 size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
+	t_safe_region region;
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
 	if (a_offset + a_size > a_bytes.f_size()) t_throwable::f_throw(L"out of range.");
 	if (isatty(fileno(v_stream))) {
@@ -97,6 +98,7 @@ size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 
 void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
+	t_safe_region region;
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
 	if (a_offset + a_size > a_bytes.f_size()) t_throwable::f_throw(L"out of range.");
 	unsigned char* p = &a_bytes[0] + a_offset;

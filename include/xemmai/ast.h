@@ -478,6 +478,7 @@ struct t_generator
 		}
 	};
 
+	bool v_debug;
 	std::wstring v_path;
 	ast::t_scope* v_scope;
 	t_code* v_code;
@@ -514,6 +515,10 @@ struct t_generator
 	void f_at(ast::t_node* a_node)
 	{
 		v_code->f_at(a_node->v_at);
+	}
+	void f_emit_safe_point(ast::t_node* a_node)
+	{
+		if (v_debug) v_code->f_emit_safe_point(a_node->v_at);
 	}
 };
 

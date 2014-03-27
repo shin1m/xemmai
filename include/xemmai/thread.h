@@ -39,6 +39,7 @@ struct t_thread
 		t_cache v_cache[t_cache::V_SIZE];
 		size_t v_cache_hit = 0;
 		size_t v_cache_missed = 0;
+		t_object* v_thread;
 
 		t_internal() : v_collector(t_value::v_collector)
 		{

@@ -1,17 +1,23 @@
 #include <xemmai/engine.h>
 
-#include <algorithm>
-#include <cassert>
-#include <cstdlib>
 #include <xemmai/portable/thread.h>
-#include <xemmai/portable/path.h>
-#include <xemmai/portable/convert.h>
 #include <xemmai/structure.h>
 #include <xemmai/array.h>
 #include <xemmai/io.h>
+#include <xemmai/convert.h>
 
 namespace xemmai
 {
+
+namespace
+{
+
+void f_debug_break()
+{
+	f_engine()->f_debug_break_point();
+}
+
+}
 
 void t_engine::t_synchronizer::f_run()
 {
@@ -154,6 +160,39 @@ void t_engine::f_collector()
 	}
 }
 
+void t_engine::f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock)
+{
+	v_debug__stopping = true;
+	size_t n = 0;
+	t_thread::t_internal* p = v_thread__internals;
+	do {
+		p = p->v_next;
+		if (p->v_done <= 0 && p->v_thread) ++n;
+	} while (p != v_thread__internals);
+	while (v_debug__safe < n) v_thread__condition.wait(a_lock);
+}
+
+void t_engine::f_debug_safe_point(std::unique_lock<std::mutex>& a_lock)
+{
+	if (v_debug__stopping) f_debug_enter_leave(a_lock);
+}
+
+void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock)
+{
+	while (v_debug__stopping) f_debug_enter_leave(a_lock);
+	++v_debug__safe;
+	f_debug_stop_and_wait(a_lock);
+	v_debugger->f_stopped(t_thread::f_current());
+	f_debug_wait_and_leave(a_lock);
+}
+
+void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
+{
+	while (v_debug__stopping) v_thread__condition.wait(a_lock);
+	assert(v_debug__safe > 0);
+	--v_debug__safe;
+}
+
 t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_stack_size(a_stack), v_verbose(a_verbose)
 {
 	v_object__pool.f_grow();
@@ -194,7 +233,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	t_scoped type_thread = t_class::f_instantiate(new t_type_of<t_thread>(t_scoped(v_module_global), t_scoped(type_object)));
 	v_thread = t_object::f_allocate(type_thread);
 	v_thread.f_pointer__(thread);
-	t_thread::v_current = v_thread;
+	thread->v_internal->v_thread = t_thread::v_current = v_thread;
 	thread->v_fiber = t_object::f_allocate(type_fiber);
 	thread->v_fiber.f_pointer__(new t_fiber(nullptr, v_stack_size, true, true));
 	thread->v_active = thread->v_fiber;
@@ -209,17 +248,13 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 			while (n > 0) {
 				if (!affinity.f_contains(--n)) continue;
 				auto p = new t_synchronizer(this, n);
-				std::thread([p]() {
-					p->f_run();
-				}).detach();
+				std::thread(&t_synchronizer::f_run, p).detach();
 			}
 		}
 	}
 	{
 		std::unique_lock<std::mutex> lock(v_collector__mutex);
-		std::thread([this]() {
-			f_collector();
-		}).detach();
+		std::thread(&t_engine::f_collector, this).detach();
 		while (v_collector__running) v_collector__done.wait(lock);
 	}
 	library->v_extension = new t_global(v_module_global, std::move(type_object), std::move(type_class), std::move(type_structure), std::move(type_module), std::move(type_fiber), std::move(type_thread));
@@ -317,6 +352,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		code.f_resolve(finally0);
 		v_lambda_fiber = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), std::move(p));
 	}
+	v_module_system.f_put(t_symbol::f_instantiate(L"debug_break"), t_native::f_instantiate(v_module_system, t_static<void (*)(), f_debug_break>::t_bind<t_extension>::f_call));
 }
 
 t_engine::~t_engine()
@@ -330,10 +366,9 @@ t_engine::~t_engine()
 	{
 		t_thread& thread = f_as<t_thread&>(v_thread);
 		thread.v_active = nullptr;
-		t_thread::t_internal* internal = thread.v_internal;
-		thread.v_internal = nullptr;
 		v_thread = nullptr;
 		std::lock_guard<std::mutex> lock(v_thread__mutex);
+		t_thread::t_internal* internal = thread.v_internal;
 		++internal->v_done;
 		internal->v_cache_hit = t_thread::v_cache_hit;
 		internal->v_cache_missed = t_thread::v_cache_missed;
@@ -394,24 +429,105 @@ t_engine::~t_engine()
 	}
 }
 
-intptr_t t_engine::f_run()
+intptr_t t_engine::f_run(t_debugger* a_debugger)
 {
+	if (a_debugger) {
+		std::unique_lock<std::mutex> lock(v_thread__mutex);
+		v_debugger = a_debugger;
+		v_debug__stopping = true;
+		++v_debug__safe;
+		v_debugger->f_stopped(v_thread);
+		f_debug_wait_and_leave(lock);
+	}
 	intptr_t n = t_fiber::f_main(t_module::f_main);
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
-	t_thread::t_internal*& internals = v_thread__internals;
-	t_thread::t_internal* internal = f_as<t_thread&>(t_thread::f_current()).v_internal;
+	if (v_debugger) {
+		if (v_debug__stepping == t_thread::f_current()) v_debug__stepping = nullptr;
+		f_debug_enter_and_notify();
+	}
+	t_thread::t_internal* internal = f_as<t_thread&>(v_thread).v_internal;
 	while (true) {
-		t_thread::t_internal* p = internals;
+		t_thread::t_internal* p = v_thread__internals;
 		do {
 			p = p->v_next;
 			if (p == internal || p->v_done > 0) continue;
 			p = nullptr;
 			break;
-		} while (p != internals);
+		} while (p != v_thread__internals);
 		if (p) break;
 		v_thread__condition.wait(lock);
 	}
+	if (v_debugger) {
+		f_debug_safe_region_leave(lock);
+		v_debugger = nullptr;
+		assert(v_debug__safe <= 0);
+	}
 	return n;
+}
+
+void t_engine::f_context_print(t_object* a_lambda, void** a_pc)
+{
+	if (!a_lambda || a_lambda == v_lambda_fiber) {
+		std::fputs("<fiber>\n", stderr);
+	} else {
+		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).v_code);
+		std::fprintf(stderr, "%ls", code.v_path.c_str());
+		const t_at* at = code.f_at(a_pc);
+		if (at) {
+			std::fprintf(stderr, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->f_line()), static_cast<uintptr_t>(at->f_column()));
+			f_print_with_caret(code.v_path.c_str(), at->f_position(), at->f_column());
+		} else {
+			std::fputc('\n', stderr);
+		}
+	}
+}
+
+void t_engine::f_debug_safe_point()
+{
+	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
+	std::unique_lock<std::mutex> lock(v_thread__mutex);
+	if (v_debug__stepping == t_thread::f_current())
+		f_debug_break_point(lock);
+	else
+		f_debug_safe_point(lock);
+}
+
+void t_engine::f_debug_break_point()
+{
+	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
+	std::unique_lock<std::mutex> lock(v_thread__mutex);
+	f_debug_break_point(lock);
+}
+
+void t_engine::f_debug_safe_region_enter()
+{
+	std::lock_guard<std::mutex> lock(v_thread__mutex);
+	f_debug_enter_and_notify();
+}
+
+void t_engine::f_debug_safe_region_leave()
+{
+	std::unique_lock<std::mutex> lock(v_thread__mutex);
+	f_debug_safe_region_leave(lock);
+}
+
+void t_engine::f_debug_stop()
+{
+	std::unique_lock<std::mutex> lock(v_thread__mutex);
+	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
+	if (v_debug__stopping) return;
+	f_debug_stop_and_wait(lock);
+	v_debugger->f_stopped(v_thread);
+}
+
+void t_engine::f_debug_continue(t_object* a_stepping)
+{
+	std::lock_guard<std::mutex> lock(v_thread__mutex);
+	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
+	if (!v_debug__stopping) t_throwable::f_throw(L"already running");
+	v_debug__stopping = false;
+	v_debug__stepping = a_stepping;
+	v_thread__condition.notify_all();
 }
 
 }

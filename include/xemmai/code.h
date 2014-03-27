@@ -1,6 +1,7 @@
 #ifndef XEMMAI__CODE_H
 #define XEMMAI__CODE_H
 
+#include <set>
 #include <vector>
 
 #include "scope.h"
@@ -140,7 +141,9 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_BINARY(OR_TAIL)
 	e_instruction__SEND_TAIL,
 	e_instruction__FIBER_EXIT,
-	e_instruction__END
+	e_instruction__END,
+	e_instruction__SAFE_POINT,
+	e_instruction__BREAK_POINT
 };
 
 class t_at
@@ -215,6 +218,7 @@ struct t_code
 	std::vector<void*> v_instructions;
 	std::vector<std::unique_ptr<t_slot>> v_objects;
 	std::vector<t_address_at> v_ats;
+	std::set<std::pair<size_t, size_t>> v_safe_points;
 
 	t_code(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_path(a_path), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
 	{
@@ -295,6 +299,12 @@ struct t_code
 	void f_at(const t_at& a_at)
 	{
 		f_at(f_last(), a_at);
+	}
+	void f_emit_safe_point(const t_at& a_at)
+	{
+		v_safe_points.insert(std::make_pair(a_at.f_position(), f_last()));
+		f_emit(e_instruction__SAFE_POINT);
+		f_at(a_at);
 	}
 };
 

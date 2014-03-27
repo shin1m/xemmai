@@ -7,4 +7,6 @@ before_script:
   - autoreconf -is
   - CXX=g++-4.8 ./configure
   - make
-script: make check
+script:
+  - make check
+  - XM_LOG_FLAGS='--debug </dev/null' make check

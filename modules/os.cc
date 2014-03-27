@@ -25,11 +25,13 @@ namespace
 
 int f_system(const std::wstring& a_command)
 {
+	t_safe_region region;
 	return std::system(portable::f_convert(a_command).c_str());
 }
 
 void f_sleep(intptr_t a_miliseconds)
 {
+	t_safe_region region;
 #ifdef __unix__
 	struct timespec nano;
 	nano.tv_sec = a_miliseconds / 1000;

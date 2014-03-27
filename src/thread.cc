@@ -1,6 +1,5 @@
 #include <xemmai/thread.h>
 
-#include <xemmai/module.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
@@ -33,9 +32,14 @@ void t_thread::f_main(t_object* a_p)
 {
 	v_current = a_p;
 	t_thread& p = f_as<t_thread&>(v_current);
-	t_thread::t_internal* internal = p.v_internal;
+	t_internal* internal = p.v_internal;
 	t_value::v_collector = internal->v_collector;
 	internal->f_initialize();
+	if (f_engine()->v_debugger) {
+		std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
+		f_engine()->f_debug_safe_point(lock);
+		internal->v_thread = v_current;
+	}
 	p.v_active = p.v_fiber;
 	t_fiber::v_current = p.v_active;
 	t_global::v_instance = f_extension<t_global>(f_engine()->f_module_global());
@@ -48,13 +52,15 @@ void t_thread::f_main(t_object* a_p)
 	p.v_internal = nullptr;
 	t_value::v_decrements->f_push(v_current);
 	f_engine()->f_pools__return();
-	{
-		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
-		++internal->v_done;
-		internal->v_cache_hit = v_cache_hit;
-		internal->v_cache_missed = v_cache_missed;
-		f_engine()->v_thread__condition.notify_all();
+	std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
+	if (f_engine()->v_debugger) {
+		if (f_engine()->v_debug__stepping == v_current) f_engine()->v_debug__stepping = nullptr;
+		f_engine()->f_debug_safe_point(lock);
 	}
+	++internal->v_done;
+	internal->v_cache_hit = v_cache_hit;
+	internal->v_cache_missed = v_cache_missed;
+	f_engine()->v_thread__condition.notify_all();
 }
 
 void t_thread::f_cache_clear()
@@ -87,21 +93,24 @@ t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 	t_thread* p = new t_thread(std::move(fiber));
 	object.f_pointer__(p);
 	t_internal* internal = p->v_internal;
+	internal->v_thread = nullptr;
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		t_internal*& internals = f_engine()->v_thread__internals;
 		internal->v_next = internals->v_next;
 		internals = internals->v_next = internal;
 	}
-	t_value::v_increments->f_push(static_cast<t_object*>(object));
+	t_value::v_increments->f_push(object);
 	f_cache_release();
 	try {
 		std::thread(f_main, static_cast<t_object*>(object)).detach();
 	} catch (std::system_error&) {
-		p->v_internal = nullptr;
-		t_value::v_decrements->f_push(static_cast<t_object*>(object));
-		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
-		++internal->v_done;
+		t_value::v_decrements->f_push(object);
+		{
+			std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
+			++internal->v_done;
+		}
+		t_throwable::f_throw(L"failed to create thread.");
 	}
 	return object;
 }
@@ -119,6 +128,7 @@ void t_thread::f_join()
 	if (this == &f_as<t_thread&>(v_current)) t_throwable::f_throw(L"current thread can not be joined.");
 	if (this == &f_as<t_thread&>(f_engine()->v_thread)) t_throwable::f_throw(L"engine thread can not be joined.");
 	{
+		t_safe_region region;
 		std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
 		while (v_internal) f_engine()->v_thread__condition.wait(lock);
 	}

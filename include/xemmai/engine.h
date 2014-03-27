@@ -11,6 +11,12 @@ namespace xemmai
 
 class t_symbol;
 class t_global;
+struct t_safe_region;
+
+struct t_debugger
+{
+	virtual void f_stopped(t_object* a_thread) = 0;
+};
 
 class t_engine : public t_value::t_collector
 {
@@ -30,7 +36,9 @@ class t_engine : public t_value::t_collector
 	friend struct t_type_of<t_symbol>;
 	friend class t_dictionary;
 	friend class t_dictionary::t_entry;
+	friend class t_generator;
 	friend class t_global;
+	friend struct t_safe_region;
 
 	struct t_synchronizer
 	{
@@ -121,6 +129,10 @@ class t_engine : public t_value::t_collector
 	t_slot v_lambda_fiber;
 	size_t v_stack_size;
 	bool v_verbose;
+	t_debugger* v_debugger = nullptr;
+	bool v_debug__stopping = false;
+	size_t v_debug__safe = 0;
+	t_object* v_debug__stepping = nullptr;
 
 	void f_pools__return();
 	t_object* f_object__pool__allocate()
@@ -153,6 +165,26 @@ class t_engine : public t_value::t_collector
 	void f_signal_synchronizers();
 	void f_wait_synchronizers();
 	void f_collector();
+	void f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock);
+	void f_debug_enter_and_notify()
+	{
+		++v_debug__safe;
+		v_thread__condition.notify_all();
+	}
+	void f_debug_wait_and_leave(std::unique_lock<std::mutex>& a_lock)
+	{
+		do v_thread__condition.wait(a_lock); while (v_debug__stopping);
+		assert(v_debug__safe > 0);
+		--v_debug__safe;
+	}
+	void f_debug_enter_leave(std::unique_lock<std::mutex>& a_lock)
+	{
+		f_debug_enter_and_notify();
+		f_debug_wait_and_leave(a_lock);
+	}
+	void f_debug_safe_point(std::unique_lock<std::mutex>& a_lock);
+	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock);
+	void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
 
 public:
 	t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments);
@@ -174,19 +206,47 @@ public:
 	{
 		return v_module_io;
 	}
-	intptr_t f_run();
+	intptr_t f_run(t_debugger* a_debugger);
 	void f_synchronize()
 	{
 		std::lock_guard<std::mutex> lock(v_thread__mutex);
 		f_signal_synchronizers();
 		f_wait_synchronizers();
 	}
+	void f_context_print(t_object* a_lambda, void** a_pc);
+	template<typename T>
+	void f_thread_list(T a_callback)
+	{
+		t_thread::t_internal* p = v_thread__internals;
+		do {
+			p = p->v_next;
+			if (p->v_done <= 0 && p->v_thread) a_callback(p->v_thread);
+		} while (p != v_thread__internals);
+	}
+	void f_debug_safe_point();
+	void f_debug_break_point();
+	void f_debug_safe_region_enter();
+	void f_debug_safe_region_leave();
+	void f_debug_stop();
+	void f_debug_continue(t_object* a_stepping = nullptr);
 };
 
 inline t_engine* f_engine()
 {
 	return static_cast<t_engine*>(t_value::v_collector);
 }
+
+struct t_safe_region
+{
+	t_safe_region()
+	{
+		if (f_engine()->v_debugger) f_engine()->f_debug_safe_region_enter();
+	}
+	~t_safe_region()
+	{
+		if (f_engine()->v_debugger) f_engine()->f_debug_safe_region_leave();
+	}
+};
 
 inline t_object* t_object::f_pool__allocate()
 {

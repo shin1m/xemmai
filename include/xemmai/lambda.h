@@ -6,7 +6,6 @@
 namespace xemmai
 {
 
-struct t_code;
 struct t_fiber;
 
 class t_lambda
@@ -14,6 +13,7 @@ class t_lambda
 	friend struct t_code;
 	friend struct t_fiber;
 	friend struct t_type_of<t_lambda>;
+	friend class t_engine;
 
 protected:
 	t_slot v_scope;

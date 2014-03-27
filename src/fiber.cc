@@ -1,6 +1,5 @@
 #include <xemmai/fiber.h>
 
-#include <cctype>
 #include <xemmai/convert.h>
 #include <xemmai/io/file.h>
 
@@ -85,19 +84,7 @@ void t_fiber::t_backtrace::f_dump() const
 		std::fputs("<native code>\n", stderr);
 		std::fputs("from ", stderr);
 	}
-	if (!v_lambda || v_lambda == f_engine()->v_lambda_fiber) {
-		std::fputs("<fiber>\n", stderr);
-	} else {
-		t_code& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
-		std::fprintf(stderr, "%ls", code.v_path.c_str());
-		const t_at* at = code.f_at(f_pc());
-		if (at) {
-			std::fprintf(stderr, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->f_line()), static_cast<uintptr_t>(at->f_column()));
-			f_print_with_caret(code.v_path.c_str(), at->f_position(), at->f_column());
-		} else {
-			std::fputc('\n', stderr);
-		}
-	}
+	f_engine()->f_context_print(v_lambda, f_pc());
 }
 
 thread_local t_object* t_fiber::v_current;
