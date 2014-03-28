@@ -66,12 +66,10 @@ public:
 		void f_tick()
 		{
 			if (v_collector__running) return;
-			{
-				std::lock_guard<std::mutex> lock(v_collector__mutex);
-				++v_collector__tick;
-				if (v_collector__running) return;
-				v_collector__running = true;
-			}
+			std::lock_guard<std::mutex> lock(v_collector__mutex);
+			++v_collector__tick;
+			if (v_collector__running) return;
+			v_collector__running = true;
 			v_collector__wake.notify_one();
 		}
 		void f_wait()
@@ -84,12 +82,10 @@ public:
 					return;
 				}
 				v_collector__running = true;
+				v_collector__wake.notify_one();
 			}
-			v_collector__wake.notify_one();
-			{
-				std::unique_lock<std::mutex> lock(v_collector__mutex);
-				if (v_collector__running) v_collector__done.wait(lock);
-			}
+			std::unique_lock<std::mutex> lock(v_collector__mutex);
+			if (v_collector__running) v_collector__done.wait(lock);
 		}
 	};
 	enum t_tag
