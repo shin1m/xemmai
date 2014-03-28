@@ -13,12 +13,7 @@ size_t t_thread::t_cache::f_revise(size_t a_i)
 	if (revision != 0) return revision;
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
-		t_internal* internals = f_engine()->v_thread__internals;
-		t_internal* p = internals;
-		do {
-			p = p->v_next;
-			p->v_cache[a_i].v_revision = 0;
-		} while (p != internals);
+		for (auto p = f_engine()->v_thread__internals; p; p = p->v_next) p->v_cache[a_i].v_revision = 0;
 	}
 	return v_revisions[a_i] = 1;
 }
@@ -96,9 +91,8 @@ t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 	internal->v_thread = nullptr;
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
-		t_internal*& internals = f_engine()->v_thread__internals;
-		internal->v_next = internals->v_next;
-		internals = internals->v_next = internal;
+		internal->v_next = f_engine()->v_thread__internals;
+		f_engine()->v_thread__internals = internal;
 	}
 	t_value::v_increments->f_push(object);
 	f_cache_release();

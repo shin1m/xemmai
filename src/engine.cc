@@ -106,50 +106,37 @@ void t_engine::f_collector()
 		}
 		{
 			std::lock_guard<std::mutex> lock(v_thread__mutex);
-			t_thread::t_internal* p = v_thread__internals;
-			if (p) {
-				do {
-					p = p->v_next;
-					p->v_increments.f_epoch();
-					p->v_decrements.f_epoch();
-				} while (p != v_thread__internals);
-				f_signal_synchronizers();
-				{
-					std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
-					do {
-						p = p->v_next;
-						if (p->v_done > 0) ++p->v_done;
-						if (p->v_reviving) {
-							t_object* volatile* tail = p->v_increments.v_tail + 1;
-							size_t epoch = (p->v_increments.v_epoch + t_value::t_increments::V_SIZE - tail) % t_value::t_increments::V_SIZE;
-							size_t reviving = (p->v_reviving + t_value::t_increments::V_SIZE - tail) % t_value::t_increments::V_SIZE;
-							if (epoch > reviving)
-								p->v_reviving = nullptr;
-							else
-								v_object__reviving = true;
-						}
-					} while (p != v_thread__internals);
+			for (auto p = v_thread__internals; p; p = p->v_next) {
+				p->v_increments.f_epoch();
+				p->v_decrements.f_epoch();
+			}
+			f_signal_synchronizers();
+			{
+				std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
+				for (auto p = v_thread__internals; p; p = p->v_next) {
+					if (p->v_done > 0) ++p->v_done;
+					if (!p->v_reviving) continue;
+					t_object* volatile* tail = p->v_increments.v_tail + 1;
+					size_t epoch = (p->v_increments.v_epoch + t_value::t_increments::V_SIZE - tail) % t_value::t_increments::V_SIZE;
+					size_t reviving = (p->v_reviving + t_value::t_increments::V_SIZE - tail) % t_value::t_increments::V_SIZE;
+					if (epoch > reviving)
+						p->v_reviving = nullptr;
+					else
+						v_object__reviving = true;
 				}
-				f_wait_synchronizers();
-				while (true) {
-					t_thread::t_internal* q = p->v_next;
-					q->v_increments.f_flush();
-					q->v_decrements.f_flush();
-					if (q->v_done < 3) {
-						if (q == v_thread__internals) break;
-						p = q;
-					} else {
-						p->v_next = q->v_next;
-						v_thread__cache_hit += q->v_cache_hit;
-						v_thread__cache_missed += q->v_cache_missed;
-						if (q == v_thread__internals) {
-							if (p == q) p = nullptr;
-							v_thread__internals = p;
-							delete q;
-							break;
-						}
-						delete q;
-					}
+			}
+			f_wait_synchronizers();
+			for (auto p = &v_thread__internals; *p;) {
+				auto q = *p;
+				q->v_increments.f_flush();
+				q->v_decrements.f_flush();
+				if (q->v_done < 3) {
+					p = &(*p)->v_next;
+				} else {
+					*p = q->v_next;
+					v_thread__cache_hit += q->v_cache_hit;
+					v_thread__cache_missed += q->v_cache_missed;
+					delete q;
 				}
 			}
 		}
@@ -164,11 +151,7 @@ void t_engine::f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock)
 {
 	v_debug__stopping = true;
 	size_t n = 0;
-	t_thread::t_internal* p = v_thread__internals;
-	do {
-		p = p->v_next;
-		if (p->v_done <= 0 && p->v_thread) ++n;
-	} while (p != v_thread__internals);
+	for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done <= 0 && p->v_thread) ++n;
 	while (v_debug__safe < n) v_thread__condition.wait(a_lock);
 }
 
@@ -198,7 +181,8 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	v_object__pool.f_grow();
 	t_thread* thread = new t_thread(nullptr);
 	thread->v_internal->f_initialize();
-	v_thread__internals = thread->v_internal->v_next = thread->v_internal;
+	thread->v_internal->v_next = v_thread__internals;
+	v_thread__internals = thread->v_internal;
 	t_scoped type_class = t_object::f_allocate_on_boot(nullptr);
 	static_cast<t_object*>(type_class)->v_type = type_class;
 	v_type_class = type_class;
@@ -368,7 +352,7 @@ t_engine::~t_engine()
 		thread.v_active = nullptr;
 		v_thread = nullptr;
 		std::lock_guard<std::mutex> lock(v_thread__mutex);
-		t_thread::t_internal* internal = thread.v_internal;
+		auto internal = thread.v_internal;
 		++internal->v_done;
 		internal->v_cache_hit = t_thread::v_cache_hit;
 		internal->v_cache_missed = t_thread::v_cache_missed;
@@ -445,16 +429,11 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		if (v_debug__stepping == t_thread::f_current()) v_debug__stepping = nullptr;
 		f_debug_enter_and_notify();
 	}
-	t_thread::t_internal* internal = f_as<t_thread&>(v_thread).v_internal;
+	auto internal = f_as<t_thread&>(v_thread).v_internal;
 	while (true) {
-		t_thread::t_internal* p = v_thread__internals;
-		do {
-			p = p->v_next;
-			if (p == internal || p->v_done > 0) continue;
-			p = nullptr;
-			break;
-		} while (p != v_thread__internals);
-		if (p) break;
+		auto p = v_thread__internals;
+		while (p == internal || p && p->v_done > 0) p = p->v_next;
+		if (!p) break;
 		v_thread__condition.wait(lock);
 	}
 	if (v_debugger) {

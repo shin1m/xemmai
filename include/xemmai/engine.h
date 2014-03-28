@@ -217,11 +217,7 @@ public:
 	template<typename T>
 	void f_thread_list(T a_callback)
 	{
-		t_thread::t_internal* p = v_thread__internals;
-		do {
-			p = p->v_next;
-			if (p->v_done <= 0 && p->v_thread) a_callback(p->v_thread);
-		} while (p != v_thread__internals);
+		for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done <= 0 && p->v_thread) a_callback(p->v_thread);
 	}
 	void f_debug_safe_point();
 	void f_debug_break_point();
