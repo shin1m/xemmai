@@ -1,10 +1,6 @@
 #include <xemmai/code.h>
 
-#include <algorithm>
-#include <xemmai/class.h>
 #include <xemmai/structure.h>
-#include <xemmai/lambda.h>
-#include <xemmai/throwable.h>
 #include <xemmai/array.h>
 #include <xemmai/convert.h>
 

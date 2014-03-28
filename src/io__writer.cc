@@ -1,6 +1,5 @@
 #include <xemmai/io/writer.h>
 
-#include <cerrno>
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>

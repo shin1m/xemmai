@@ -1,6 +1,5 @@
 #include <xemmai/scope.h>
 
-#include <xemmai/throwable.h>
 #include <xemmai/global.h>
 
 namespace xemmai

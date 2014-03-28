@@ -1,6 +1,5 @@
 #include <xemmai/symbol.h>
 
-#include <xemmai/throwable.h>
 #include <xemmai/convert.h>
 
 namespace xemmai

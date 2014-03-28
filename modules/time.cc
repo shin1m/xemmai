@@ -1,7 +1,4 @@
 #include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <cwctype>
 #ifdef __unix__
 #include <sys/time.h>
 #endif

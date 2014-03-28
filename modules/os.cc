@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <xemmai/convert.h>
 
 namespace xemmai

@@ -1,6 +1,5 @@
 #include <xemmai/io/file.h>
 
-#include <cstring>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
 #include <xemmai/io.h>

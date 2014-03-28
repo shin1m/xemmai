@@ -1,8 +1,6 @@
 #include <xemmai/type.h>
 
-#include <xemmai/thread.h>
 #include <xemmai/method.h>
-#include <xemmai/throwable.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
 

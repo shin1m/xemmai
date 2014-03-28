@@ -1,7 +1,6 @@
 #include <xemmai/portable/path.h>
 #include <xemmai/portable/convert.h>
 
-#include <cstdlib>
 #include <vector>
 #ifdef __unix__
 #include <unistd.h>

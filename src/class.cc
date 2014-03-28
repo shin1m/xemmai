@@ -1,9 +1,6 @@
 #include <xemmai/class.h>
 
-#include <xemmai/symbol.h>
 #include <xemmai/method.h>
-#include <xemmai/lambda.h>
-#include <xemmai/throwable.h>
 #include <xemmai/convert.h>
 
 namespace xemmai

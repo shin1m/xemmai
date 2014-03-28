@@ -1,4 +1,3 @@
-#include <xemmai/thread.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
