@@ -3,8 +3,8 @@
 #include <clocale>
 #include <cstring>
 #ifdef __unix__
-#include <unistd.h>
 #include <signal.h>
+#endif
 
 namespace
 {
@@ -13,31 +13,39 @@ using namespace xemmai;
 
 class t_debugger : public xemmai::t_debugger
 {
-	enum t_tag
-	{
-		e_tag__NONE,
-		e_tag__STOPPED,
-		e_tag__INTERRUPTED
-	};
+	static t_debugger* v_instance;
 
-	int v_fds[2];
+#ifdef _WIN32
+	static BOOL WINAPI f_interrupted(DWORD a_type)
+	{
+		if (a_type != CTRL_C_EVENT) return FALSE;
+		v_instance->f_interrupted();
+		return TRUE;
+	}
+#endif
+
 	std::thread v_thread;
-	bool v_done = false;
-	std::thread v_waiter;
+	std::mutex v_mutex;
+	std::condition_variable v_posted;
+	t_object* v_stopped = nullptr;
+	bool v_interrupted = false;
+#ifdef __unix__
+	std::thread v_interrupter;
 
-	template<typename T>
-	T f_read()
+	void f_interrupter()
 	{
-		T value;
-		size_t m = 0;
-		do m += read(v_fds[0], reinterpret_cast<char*>(&value) + m, sizeof(T) - m); while (m < sizeof(T));
-		return value;
+		sigset_t set;
+		sigemptyset(&set);
+		sigaddset(&set, SIGINT);
+		while (true) {
+			int no;
+			sigwait(&set, &no);
+			if (!v_instance) break;
+			f_interrupted();
+		}
 	}
-	template<typename T>
-	void f_post(T a_value)
-	{
-		write(v_fds[1], &a_value, sizeof(T));
-	}
+#endif
+
 	void f_print(t_engine* a_engine, t_fiber::t_context* a_context)
 	{
 		a_engine->f_context_print(a_context->v_lambda, a_context->f_pc());
@@ -128,57 +136,70 @@ class t_debugger : public xemmai::t_debugger
 	void f_run(t_engine* a_engine)
 	{
 		while (true) {
-			switch (f_read<t_tag>()) {
-			case e_tag__STOPPED:
-				f_stopped(a_engine, f_read<t_object*>());
-				break;
-			case e_tag__INTERRUPTED:
-				a_engine->f_debug_stop();
-				break;
-			default:
-				return;
+			t_object* stopped = nullptr;
+			bool interrupted = false;
+			{
+				std::unique_lock<std::mutex> lock(v_mutex);
+				while (true) {
+					if (!v_instance) return;
+					std::swap(stopped, v_stopped);
+					std::swap(interrupted, v_interrupted);
+					if (stopped || interrupted) break;
+					v_posted.wait(lock);
+				}
 			}
+			if (stopped)
+				f_stopped(a_engine, stopped);
+			else
+				a_engine->f_debug_stop();
 		}
 	}
-	void f_wait()
+	void f_interrupted()
 	{
-		sigset_t set;
-		sigemptyset(&set);
-		sigaddset(&set, SIGINT);
-		while (true) {
-			int no;
-			sigwait(&set, &no);
-			if (v_done) break;
-			f_post(e_tag__INTERRUPTED);
-		}
+		std::lock_guard<std::mutex> lock(v_mutex);
+		v_interrupted = true;
+		v_posted.notify_one();
 	}
 
 public:
 	t_debugger(t_engine& a_engine)
 	{
-		pipe(v_fds);
+		v_instance = this;
 		v_thread = std::thread(&t_debugger::f_run, this, &a_engine);
-		v_waiter = std::thread(&t_debugger::f_wait, this);
+#ifdef __unix__
+		v_interrupter = std::thread(&t_debugger::f_interrupter, this);
+#endif
+#ifdef _WIN32
+		SetConsoleCtrlHandler(f_interrupted, TRUE);
+#endif
 	}
 	~t_debugger()
 	{
-		v_done = true;
-		pthread_kill(v_waiter.native_handle(), SIGINT);
-		v_waiter.join();
-		f_post(e_tag__NONE);
+		{
+			std::lock_guard<std::mutex> lock(v_mutex);
+			v_instance = nullptr;
+			v_posted.notify_one();
+		}
+#ifdef __unix__
+		pthread_kill(v_interrupter.native_handle(), SIGINT);
+		v_interrupter.join();
+#endif
+#ifdef _WIN32
+		SetConsoleCtrlHandler(f_interrupted, FALSE);
+#endif
 		v_thread.join();
-		close(v_fds[0]);
-		close(v_fds[1]);
 	}
 	virtual void f_stopped(t_object* a_thread)
 	{
-		f_post(e_tag__STOPPED);
-		f_post(a_thread);
+		std::lock_guard<std::mutex> lock(v_mutex);
+		v_stopped = a_thread;
+		v_posted.notify_one();
 	}
 };
 
+t_debugger* t_debugger::v_instance;
+
 }
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -205,20 +226,16 @@ int main(int argc, char* argv[])
 		std::fprintf(stderr, "usage: %s [options] <script> ...\n", argv[0]);
 		return -1;
 	}
-#ifdef __unix__
 	if (debug) {
+#ifdef __unix__
 		sigset_t set;
 		sigemptyset(&set);
 		sigaddset(&set, SIGINT);
 		pthread_sigmask(SIG_BLOCK, &set, NULL);
-	}
 #endif
+	}
 	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
-#ifdef __unix__
 	if (!debug) return static_cast<int>(engine.f_run(nullptr));
 	::t_debugger debugger(engine);
 	return static_cast<int>(engine.f_run(&debugger));
-#else
-	return static_cast<int>(engine.f_run(nullptr));
-#endif
 }
