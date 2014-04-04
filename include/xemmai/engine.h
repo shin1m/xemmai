@@ -16,6 +16,7 @@ struct t_safe_region;
 struct t_debugger
 {
 	virtual void f_stopped(t_object* a_thread) = 0;
+	virtual void f_loaded(t_object* a_thread) = 0;
 };
 
 class t_engine : public t_value::t_collector
@@ -36,7 +37,6 @@ class t_engine : public t_value::t_collector
 	friend struct t_type_of<t_symbol>;
 	friend class t_dictionary;
 	friend class t_dictionary::t_entry;
-	friend class t_generator;
 	friend class t_global;
 	friend struct t_safe_region;
 
@@ -183,7 +183,10 @@ class t_engine : public t_value::t_collector
 		f_debug_wait_and_leave(a_lock);
 	}
 	void f_debug_safe_point(std::unique_lock<std::mutex>& a_lock);
+	template<typename T>
+	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_member);
 	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock);
+	void f_debug_script_loaded();
 	void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
 
 public:
@@ -213,12 +216,16 @@ public:
 		f_signal_synchronizers();
 		f_wait_synchronizers();
 	}
-	void f_context_print(t_object* a_lambda, void** a_pc);
 	template<typename T>
-	void f_thread_list(T a_callback)
+	void f_threads(T a_callback)
 	{
 		for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done <= 0 && p->v_thread) a_callback(p->v_thread);
 	}
+	const std::map<std::wstring, t_slot>& f_modules() const
+	{
+		return v_module__instances;
+	}
+	void f_context_print(t_object* a_lambda, void** a_pc);
 	void f_debug_safe_point();
 	void f_debug_break_point();
 	void f_debug_safe_region_enter();
@@ -226,6 +233,16 @@ public:
 	void f_debug_stop();
 	void f_debug_continue(t_object* a_stepping = nullptr);
 };
+
+template<typename T>
+void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_member)
+{
+	while (v_debug__stopping) f_debug_enter_leave(a_lock);
+	++v_debug__safe;
+	f_debug_stop_and_wait(a_lock);
+	(v_debugger->*a_member)(t_thread::f_current());
+	f_debug_wait_and_leave(a_lock);
+}
 
 inline t_engine* f_engine()
 {

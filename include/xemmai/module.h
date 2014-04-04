@@ -21,9 +21,10 @@ struct t_module
 	};
 
 	static t_scoped f_instantiate(const std::wstring& a_name, t_module* a_module);
-	static t_scoped f_load_script(const std::wstring& a_path);
+	static t_scoped f_load_script(const std::wstring& a_path, std::map<std::pair<size_t, size_t>, void**>* a_safe_points);
 	static t_library* f_load_library(const std::wstring& a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
+	static t_scoped f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path);
 	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_name);
 	static void f_main();
 
@@ -33,6 +34,19 @@ struct t_module
 	t_module(const std::wstring& a_path);
 	virtual ~t_module();
 	virtual void f_scan(t_scan a_scan);
+};
+
+struct t_debug_module : t_module
+{
+	t_slot v_code;
+	std::map<std::pair<size_t, size_t>, void**> v_safe_points;
+
+	t_debug_module(const std::wstring& a_path, const t_scoped& a_code, std::map<std::pair<size_t, size_t>, void**>&& a_safe_points) : t_module(a_path), v_code(a_code), v_safe_points(std::move(a_safe_points))
+	{
+	}
+	virtual void f_scan(t_scan a_scan);
+	std::pair<size_t, size_t> f_set_break_point(size_t a_line, size_t a_column);
+	std::pair<size_t, size_t> f_reset_break_point(size_t a_line, size_t a_column);
 };
 
 class XEMMAI__PORTABLE__EXPORT t_extension

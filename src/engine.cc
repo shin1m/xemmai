@@ -9,16 +9,6 @@
 namespace xemmai
 {
 
-namespace
-{
-
-void f_debug_break()
-{
-	f_engine()->f_debug_break_point();
-}
-
-}
-
 void t_engine::t_synchronizer::f_run()
 {
 	{
@@ -160,11 +150,13 @@ void t_engine::f_debug_safe_point(std::unique_lock<std::mutex>& a_lock)
 
 void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock)
 {
-	while (v_debug__stopping) f_debug_enter_leave(a_lock);
-	++v_debug__safe;
-	f_debug_stop_and_wait(a_lock);
-	v_debugger->f_stopped(t_thread::f_current());
-	f_debug_wait_and_leave(a_lock);
+	f_debug_break_point(a_lock, &t_debugger::f_stopped);
+}
+
+void t_engine::f_debug_script_loaded()
+{
+	std::unique_lock<std::mutex> lock(v_thread__mutex);
+	f_debug_break_point(lock, &t_debugger::f_loaded);
 }
 
 void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
@@ -334,7 +326,6 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		code.f_resolve(finally0);
 		v_lambda_fiber = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), std::move(p));
 	}
-	v_module_system.f_put(t_symbol::f_instantiate(L"debug_break"), t_native::f_instantiate(v_module_system, t_static<void (*)(), f_debug_break>::t_bind<t_extension>::f_call));
 }
 
 t_engine::~t_engine()

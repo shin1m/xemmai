@@ -42,14 +42,14 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
 	return object;
 }
 
-t_scoped t_module::f_load_script(const std::wstring& a_path)
+t_scoped t_module::f_load_script(const std::wstring& a_path, std::map<std::pair<size_t, size_t>, void**>* a_safe_points)
 {
 	io::t_file stream(a_path, "r");
 	if (!stream) return t_value();
 	t_parser parser(a_path, stream);
 	ast::t_module module(a_path);
 	parser.f_parse(module);
-	t_generator generator;
+	t_generator generator(a_safe_points);
 	return generator.f_generate(module);
 }
 
@@ -70,6 +70,25 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	t_fiber::t_context::f_push(lambda, stack);
 	t_code::f_loop();
 	t_fiber::t_context::f_pop();
+}
+
+t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path)
+{
+	if (f_engine()->v_debugger) {
+		std::map<std::pair<size_t, size_t>, void**> safe_points;
+		t_scoped code = f_load_script(a_path, &safe_points);
+		if (!code) return t_value();
+		t_scoped module = f_instantiate(a_name, new t_debug_module(a_path, code, std::move(safe_points)));
+		f_engine()->f_debug_script_loaded();
+		f_execute_script(module, code);
+		return module;
+	} else {
+		t_scoped code = f_load_script(a_path, nullptr);
+		if (!code) return t_value();
+		t_scoped module = f_instantiate(a_name, new t_module(a_path));
+		f_execute_script(module, code);
+		return module;
+	}
 }
 
 t_scoped t_module::f_instantiate(const std::wstring& a_name)
@@ -97,13 +116,8 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 		t_scoped x = paths.f_get_at(f_global()->f_as(i));
 		f_check<std::wstring>(x, L"path");
 		std::wstring path = portable::t_path(f_as<const std::wstring&>(x)) / a_name;
-		std::wstring s = path + L".xm";
-		t_scoped script = f_load_script(s);
-		if (script) {
-			t_scoped module = f_instantiate(a_name, new t_module(s));
-			f_execute_script(module, script);
-			return module;
-		}
+		t_scoped script = f_load_and_execute_script(a_name, path + L".xm");
+		if (script) return script;
 		t_library* library = f_load_library(path);
 		if (library) {
 			t_scoped module = f_instantiate(a_name, library);
@@ -121,9 +135,7 @@ void t_module::f_main()
 	f_check<std::wstring>(x, L"script");
 	const std::wstring& path = f_as<const std::wstring&>(x);
 	if (path.empty()) t_throwable::f_throw(L"script path is empty.");
-	t_scoped script = f_load_script(path);
-	if (!script) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
-	f_execute_script(f_instantiate(L"__main", new t_module(path)), script);
+	if (!f_load_and_execute_script(L"__main", path)) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
 }
 
 t_module::t_module(const std::wstring& a_path) : v_path(a_path), v_iterator(f_engine()->v_module__instances__null)
@@ -140,6 +152,30 @@ t_module::~t_module()
 void t_module::f_scan(t_scan a_scan)
 {
 	a_scan(v_iterator->second);
+}
+
+void t_debug_module::f_scan(t_scan a_scan)
+{
+	t_module::f_scan(a_scan);
+	a_scan(v_code);
+}
+
+std::pair<size_t, size_t> t_debug_module::f_set_break_point(size_t a_line, size_t a_column)
+{
+	auto i = v_safe_points.lower_bound(std::make_pair(a_line, a_column));
+	if (i == v_safe_points.end()) return std::make_pair(0, 0);
+	t_code& code = f_as<t_code&>(v_code);
+	if (*i->second == code.f_p(e_instruction__SAFE_POINT)) *i->second = code.f_p(e_instruction__BREAK_POINT);
+	return i->first;
+}
+
+std::pair<size_t, size_t> t_debug_module::f_reset_break_point(size_t a_line, size_t a_column)
+{
+	auto i = v_safe_points.lower_bound(std::make_pair(a_line, a_column));
+	if (i == v_safe_points.end()) return std::make_pair(0, 0);
+	t_code& code = f_as<t_code&>(v_code);
+	if (*i->second == code.f_p(e_instruction__BREAK_POINT)) *i->second = code.f_p(e_instruction__SAFE_POINT);
+	return i->first;
 }
 
 t_extension::~t_extension()

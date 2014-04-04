@@ -1,7 +1,6 @@
 #ifndef XEMMAI__LEXER_H
 #define XEMMAI__LEXER_H
 
-#include <vector>
 #include <cwchar>
 #include <cwctype>
 

@@ -50,6 +50,9 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	t_code::t_label& return0 = a_generator.f_label();
 	t_generator::t_targets targets1(nullptr, false, nullptr, &return0, true);
 	a_generator.v_targets = &targets1;
+	auto safe_positions0 = a_generator.v_safe_positions;
+	std::map<std::pair<size_t, size_t>, size_t> safe_positions1;
+	a_generator.v_safe_positions = &safe_positions1;
 	if (v_self_shared) {
 		a_generator.f_reserve(stack + 1);
 		a_generator.f_emit(e_instruction__SELF);
@@ -84,6 +87,11 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	a_generator.v_code = code0;
 	a_generator.v_labels = labels0;
 	a_generator.v_targets = targets0;
+	a_generator.v_safe_positions = safe_positions0;
+	if (a_generator.v_safe_points) {
+		auto& instructions = f_as<t_code&>(code).v_instructions;
+		for (auto& pair : safe_positions1) a_generator.v_safe_points->emplace(pair.first, &instructions[pair.second]);
+	}
 	a_generator.f_reserve(a_stack + 1);
 	if (v_variadic || v_defaults.size() > 0) {
 		for (size_t i = 0; i < v_defaults.size(); ++i) v_defaults[i]->f_generate(a_generator, a_stack + i, false, false);
@@ -807,7 +815,6 @@ t_operand t_set_at::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 
 t_scoped t_generator::f_generate(ast::t_module& a_module)
 {
-	v_debug = f_engine()->v_debugger;
 	v_path = a_module.f_path();
 	v_scope = &a_module;
 	size_t stack = a_module.v_privates.size() + sizeof(t_fiber::t_context) / sizeof(t_slot);
@@ -817,6 +824,8 @@ t_scoped t_generator::f_generate(ast::t_module& a_module)
 	v_labels = &labels;
 	t_targets targets(nullptr, false, nullptr, nullptr, false);
 	v_targets = &targets;
+	std::map<std::pair<size_t, size_t>, size_t> safe_positions;
+	v_safe_positions = &safe_positions;
 	f_reserve(stack + 1);
 	if (a_module.v_self_shared) {
 		f_emit(e_instruction__STACK_GET);
@@ -832,6 +841,7 @@ t_scoped t_generator::f_generate(ast::t_module& a_module)
 	f_generate_block_without_value(*this, stack, a_module.v_block);
 	f_emit(e_instruction__END);
 	f_resolve();
+	if (v_safe_points) for (auto& pair : safe_positions) v_safe_points->emplace(pair.first, &v_code->v_instructions[pair.second]);
 	return code;
 }
 
