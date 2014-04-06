@@ -1,0 +1,11 @@
+#!/bin/bash
+RESULT=$($1 --debug $2 2>&1 >/dev/null <$2i)
+IFS='' read -r -d '' EXPECTED <$2e
+echo "$RESULT"
+NL='
+'
+if [[ $RESULT$NL =~ $EXPECTED ]]; then
+	exit 0
+else
+	exit 1
+fi

@@ -1,10 +1,11 @@
-TEST_EXTENSIONS = .xm
+TEST_EXTENSIONS = .xm .xmd
 if AUTOMAKE_OLDER_THAN_1_13
 TESTS_ENVIRONMENT = XEMMAI_MODULE_PATH=$(top_builddir)/modules $(top_builddir)/src/xemmai --verbose
 else
 AM_TESTS_ENVIRONMENT = export XEMMAI_MODULE_PATH=$(top_builddir)/modules;
 XM_LOG_COMPILER = $(top_builddir)/src/xemmai
 AM_XM_LOG_FLAGS = --verbose
+XMD_LOG_COMPILER = ./run-xmd $(top_builddir)/src/xemmai
 endif
 scripts = \
 	field.xm \
@@ -40,8 +41,15 @@ scripts = \
 TESTS = $(scripts) \
 	container/test.xm \
 	callback/test.xm \
-	enum/test.xm
-EXTRA_DIST = $(scripts) list.xm
+	enum/test.xm \
+	hanoi3.xmd
+EXTRA_DIST = $(scripts) \
+	list.xm \
+	run-xmd \
+	hanoi3.xmd \
+	hanoi3.xmdi \
+	hanoi3.xmde \
+	test.proj
 CLEANFILES = \
 	file.xm.test \
 	text.xm.test

@@ -1,0 +1,23 @@
+^debugger stopped: 0x[0-9a-f]+
+debugger> debugger> debugger> debugger stopped: 0x[0-9a-f]+
+.*/hanoi3\.xmd:19:1
+	do_hanoi = @\(n, move\) \{
+	\^
+debugger> .*/hanoi3\.xmd
+	19
+	28
+debugger> debugger stopped: 0x[0-9a-f]+
+.*/hanoi3\.xmd:28:10
+		do_hanoi\(3, @\(from, to\) \{
+		        \^
+debugger> debugger stopped: 0x[0-9a-f]+
+.*/hanoi3\.xmd:28:14
+		do_hanoi\(3, @\(from, to\) \{
+		            \^
+debugger> \[0\]: 0x[0-9a-f]+
+.*/hanoi3\.xmd:28:14
+		do_hanoi\(3, @\(from, to\) \{
+		            \^
+\[1\]: 0x[0-9a-f]+
+debugger> \[1\]: 0x[0-9a-f]+
+debugger> $
