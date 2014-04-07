@@ -1,6 +1,7 @@
 #include <xemmai/engine.h>
 
 #include <xemmai/portable/path.h>
+#include <xemmai/io/file.h>
 
 #include <clocale>
 #include <cstring>
@@ -29,6 +30,7 @@ class t_debugger : public xemmai::t_debugger
 #endif
 
 	t_engine& v_engine;
+	std::FILE* v_out;
 	std::thread v_thread;
 	std::mutex v_mutex;
 	std::condition_variable v_posted;
@@ -79,8 +81,8 @@ class t_debugger : public xemmai::t_debugger
 	void f_print_break_points()
 	{
 		for (auto& pair : v_break_points) {
-			std::fprintf(stderr, "%ls\n", pair.first.c_str());
-			for (auto line : pair.second) std::fprintf(stderr, "\t%d\n", line);
+			std::fprintf(v_out, "%ls\n", pair.first.c_str());
+			for (auto line : pair.second) std::fprintf(v_out, "\t%" PRIuPTR "\n", static_cast<uintptr_t>(line));
 		}
 	}
 	t_debug_module* f_find_module(const std::wstring& a_path)
@@ -137,7 +139,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print(t_fiber::t_context* a_context)
 	{
-		v_engine.f_context_print(a_context->v_lambda, a_context->f_pc());
+		v_engine.f_context_print(v_out, a_context->v_lambda, a_context->f_pc());
 	}
 	void f_print(t_object* a_thread)
 	{
@@ -147,13 +149,13 @@ class t_debugger : public xemmai::t_debugger
 	void f_print_stack(t_object* a_thread)
 	{
 		for (auto context = f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context; context; context = context->f_next()) {
-			if (context->f_native() > 0) std::fputs("<native code>\n", stderr);
+			if (context->f_native() > 0) std::fputs("<native code>\n", v_out);
 			f_print(context);
 		}
 	}
 	void f_print_thread(size_t a_i, t_object* a_thread)
 	{
-		std::fprintf(stderr, "[%d]: %p\n", a_i, a_thread);
+		std::fprintf(v_out, "[%" PRIuPTR "]: %p\n", static_cast<uintptr_t>(a_i), a_thread);
 		f_print(a_thread);
 	}
 	void f_print_threads(const std::vector<t_object*>& a_threads)
@@ -168,10 +170,10 @@ class t_debugger : public xemmai::t_debugger
 		{
 			threads.push_back(a_thread);
 		});
-		std::fprintf(stderr, "debugger stopped: %p\n", a_thread);
+		std::fprintf(v_out, "debugger stopped: %p\n", a_thread);
 		f_print(a_thread);
 		while (true) {
-			std::fprintf(stderr, "debugger> ");
+			std::fprintf(v_out, "debugger> ");
 			wint_t c = std::getwchar();
 			switch (c) {
 			case WEOF:
@@ -277,7 +279,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 
 public:
-	t_debugger(t_engine& a_engine) : v_engine(a_engine)
+	t_debugger(t_engine& a_engine, std::FILE* a_out) : v_engine(a_engine), v_out(a_out)
 	{
 		v_instance = this;
 		v_thread = std::thread(&t_debugger::f_run, this);
@@ -326,17 +328,19 @@ int main(int argc, char* argv[])
 {
 	std::setlocale(LC_ALL, "");
 	bool verbose = false;
-	bool debug = false;
+	int debug = -1;
 	{
 		char** end = argv + argc;
 		char** q = argv;
 		for (char** p = argv; p < end; ++p) {
 			if ((*p)[0] == '-' && (*p)[1] == '-') {
 				const char* v = *p + 2;
-				if (std::strcmp(v, "verbose") == 0)
+				if (std::strcmp(v, "verbose") == 0) {
 					verbose = true;
-				else if (std::strcmp(v, "debug") == 0)
-					debug = true;
+				} else if (std::strncmp(v, "debug", 5) == 0) {
+					debug = 2;
+					if (v[5] == '=') std::sscanf(v + 6, "%u", &debug);
+				}
 			} else {
 				*q++ = *p;
 			}
@@ -347,7 +351,7 @@ int main(int argc, char* argv[])
 		std::fprintf(stderr, "usage: %s [options] <script> ...\n", argv[0]);
 		return -1;
 	}
-	if (debug) {
+	if (debug >= 0) {
 #ifdef __unix__
 		sigset_t set;
 		sigemptyset(&set);
@@ -356,7 +360,8 @@ int main(int argc, char* argv[])
 #endif
 	}
 	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
-	if (!debug) return static_cast<int>(engine.f_run(nullptr));
-	::t_debugger debugger(engine);
+	if (debug < 0) return static_cast<int>(engine.f_run(nullptr));
+	io::t_file out(debug, "w");
+	::t_debugger debugger(engine, out);
 	return static_cast<int>(engine.f_run(&debugger));
 }

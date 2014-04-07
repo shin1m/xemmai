@@ -6,25 +6,25 @@
 namespace xemmai
 {
 
-void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_column)
+void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_position, size_t a_column)
 {
 	io::t_file file(a_path, "r");
 	std::fseek(file, a_position, SEEK_SET);
-	std::putc('\t', stderr);
+	std::putc('\t', a_out);
 	while (true) {
 		int c = std::getc(file);
 		if (c == EOF) break;
-		std::putc(c, stderr);
+		std::putc(c, a_out);
 		if (c == '\n') break;
 	}
 	std::fseek(file, a_position, SEEK_SET);
-	std::putc('\t', stderr);
+	std::putc('\t', a_out);
 	for (size_t i = 1; i < a_column; ++i) {
 		int c = std::getc(file);
-		std::putc(std::isspace(c) ? c : ' ', stderr);
+		std::putc(std::isspace(c) ? c : ' ', a_out);
 	}
-	std::putc('^', stderr);
-	std::putc('\n', stderr);
+	std::putc('^', a_out);
+	std::putc('\n', a_out);
 }
 
 thread_local t_fiber::t_context* t_fiber::t_context::v_instance;
@@ -84,7 +84,7 @@ void t_fiber::t_backtrace::f_dump() const
 		std::fputs("<native code>\n", stderr);
 		std::fputs("from ", stderr);
 	}
-	f_engine()->f_context_print(v_lambda, f_pc());
+	f_engine()->f_context_print(stderr, v_lambda, f_pc());
 }
 
 thread_local t_object* t_fiber::v_current;

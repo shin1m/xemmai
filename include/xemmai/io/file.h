@@ -17,23 +17,26 @@ class t_file
 {
 	friend struct t_type_of<t_file>;
 
-	FILE* v_stream;
+	std::FILE* v_stream;
 	bool v_own = false;
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(FILE* a_stream);
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(std::FILE* a_stream);
 	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(const std::wstring& a_path, const std::wstring& a_mode);
 
-	t_file(FILE* a_stream) : v_stream(a_stream)
+	t_file(std::FILE* a_stream) : v_stream(a_stream)
 	{
 	}
 	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const char* a_mode);
 	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const std::wstring& a_mode);
+	t_file(int a_fd, const char* a_mode) : v_stream(fdopen(a_fd, a_mode)), v_own(true)
+	{
+	}
 	~t_file()
 	{
 		if (v_stream != NULL && v_own) std::fclose(v_stream);
 	}
-	operator FILE*() const
+	operator std::FILE*() const
 	{
 		return v_stream;
 	}

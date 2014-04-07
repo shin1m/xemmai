@@ -80,7 +80,7 @@ public:
 		virtual void f_dump() const;
 	};
 
-	t_parser(const std::wstring& a_path, FILE* a_stream) : v_lexer(a_path, a_stream)
+	t_parser(const std::wstring& a_path, std::FILE* a_stream) : v_lexer(a_path, a_stream)
 	{
 	}
 	void f_parse(ast::t_module& a_module);

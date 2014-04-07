@@ -16,7 +16,7 @@ namespace xemmai
 namespace io
 {
 
-t_scoped t_file::f_instantiate(FILE* a_stream)
+t_scoped t_file::f_instantiate(std::FILE* a_stream)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
 	t_scoped object = t_object::f_allocate(extension->f_type<t_file>());

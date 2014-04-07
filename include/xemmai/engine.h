@@ -225,7 +225,7 @@ public:
 	{
 		return v_module__instances;
 	}
-	void f_context_print(t_object* a_lambda, void** a_pc);
+	void f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc);
 	void f_debug_safe_point();
 	void f_debug_break_point();
 	void f_debug_safe_region_enter();

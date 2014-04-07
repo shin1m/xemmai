@@ -8,7 +8,7 @@
 namespace xemmai
 {
 
-void f_print_with_caret(const std::wstring& a_path, long a_position, size_t a_column);
+void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_position, size_t a_column);
 
 struct t_fiber
 {

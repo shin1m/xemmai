@@ -80,7 +80,7 @@ private:
 	}
 
 	std::wstring v_path;
-	FILE* v_stream;
+	std::FILE* v_stream;
 	long v_p = 0;
 	long v_position = 0;
 	size_t v_line = 1;
@@ -107,7 +107,7 @@ public:
 		virtual void f_dump() const;
 	};
 
-	t_lexer(const std::wstring& a_path, FILE* a_stream) : v_path(a_path), v_stream(a_stream), v_c(std::getwc(v_stream))
+	t_lexer(const std::wstring& a_path, std::FILE* a_stream) : v_path(a_path), v_stream(a_stream), v_c(std::getwc(v_stream))
 	{
 		f_next();
 	}

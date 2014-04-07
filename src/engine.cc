@@ -433,19 +433,19 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 	return n;
 }
 
-void t_engine::f_context_print(t_object* a_lambda, void** a_pc)
+void t_engine::f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc)
 {
 	if (!a_lambda || a_lambda == v_lambda_fiber) {
-		std::fputs("<fiber>\n", stderr);
+		std::fputs("<fiber>\n", a_out);
 	} else {
 		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).v_code);
-		std::fprintf(stderr, "%ls", code.v_path.c_str());
+		std::fprintf(a_out, "%ls", code.v_path.c_str());
 		const t_at* at = code.f_at(a_pc);
 		if (at) {
-			std::fprintf(stderr, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->f_line()), static_cast<uintptr_t>(at->f_column()));
-			f_print_with_caret(code.v_path.c_str(), at->f_position(), at->f_column());
+			std::fprintf(a_out, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->f_line()), static_cast<uintptr_t>(at->f_column()));
+			f_print_with_caret(a_out, code.v_path.c_str(), at->f_position(), at->f_column());
 		} else {
-			std::fputc('\n', stderr);
+			std::fputc('\n', a_out);
 		}
 	}
 }
