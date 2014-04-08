@@ -276,10 +276,6 @@ class t_object
 	t_lock v_lock;
 	t_value::t_increments* v_owner;
 
-	t_type* f_type_as_type() const
-	{
-		return static_cast<t_type*>(f_type()->f_pointer());
-	}
 	XEMMAI__PORTABLE__FORCE_INLINE void f_increment()
 	{
 		++v_count;
@@ -330,6 +326,10 @@ public:
 	t_object* f_type() const
 	{
 		return v_type;
+	}
+	t_type* f_type_as_type() const
+	{
+		return static_cast<t_type*>(f_type()->f_pointer());
 	}
 	intptr_t f_integer() const
 	{

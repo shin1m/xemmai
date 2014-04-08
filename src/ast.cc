@@ -89,8 +89,9 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	a_generator.v_targets = targets0;
 	a_generator.v_safe_positions = safe_positions0;
 	if (a_generator.v_safe_points) {
-		auto& instructions = f_as<t_code&>(code).v_instructions;
-		for (auto& pair : safe_positions1) a_generator.v_safe_points->emplace(pair.first, &instructions[pair.second]);
+		t_code& p = f_as<t_code&>(code);
+		for (auto& pair : v_variables) p.v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
+		for (auto& pair : safe_positions1) a_generator.v_safe_points->emplace(pair.first, &p.v_instructions[pair.second]);
 	}
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit_safe_point(this);
@@ -843,7 +844,10 @@ t_scoped t_generator::f_generate(ast::t_module& a_module)
 	f_generate_block_without_value(*this, stack, a_module.v_block);
 	f_emit(e_instruction__END);
 	f_resolve();
-	if (v_safe_points) for (auto& pair : safe_positions) v_safe_points->emplace(pair.first, &v_code->v_instructions[pair.second]);
+	if (v_safe_points) {
+		for (auto& pair : a_module.v_variables) v_code->v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
+		for (auto& pair : safe_positions) v_safe_points->emplace(pair.first, &v_code->v_instructions[pair.second]);
+	}
 	return code;
 }
 

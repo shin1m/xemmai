@@ -62,21 +62,14 @@ public:
 void f_generate_block(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail);
 void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes);
 
-struct t_variable
-{
-	bool v_shared = false;
-	bool v_varies = false;
-	size_t v_index;
-};
-
 struct t_scope
 {
 	t_scope* v_outer;
 	std::vector<std::unique_ptr<t_node>> v_block;
 	bool v_shared = false;
 	bool v_self_shared = false;
-	std::map<t_scoped, t_variable> v_variables;
-	std::vector<t_variable*> v_privates;
+	std::map<t_scoped, t_code::t_variable> v_variables;
+	std::vector<t_code::t_variable*> v_privates;
 	size_t v_shareds = 0;
 
 	t_scope(t_scope* a_outer) : v_outer(a_outer)
@@ -161,10 +154,10 @@ struct t_try : t_node
 	struct t_catch
 	{
 		std::unique_ptr<t_node> v_expression;
-		const t_variable& v_variable;
+		const t_code::t_variable& v_variable;
 		std::vector<std::unique_ptr<t_node>> v_block;
 
-		t_catch(std::unique_ptr<t_node>&& a_expression, const t_variable& a_variable) : v_expression(std::move(a_expression)), v_variable(a_variable)
+		t_catch(std::unique_ptr<t_node>&& a_expression, const t_code::t_variable& a_variable) : v_expression(std::move(a_expression)), v_variable(a_variable)
 		{
 		}
 	};
@@ -290,9 +283,9 @@ struct t_global_get : t_node
 struct t_scope_get : t_node
 {
 	size_t v_outer;
-	const t_variable& v_variable;
+	const t_code::t_variable& v_variable;
 
-	t_scope_get(const t_at& a_at, size_t a_outer, const t_variable& a_variable) : t_node(a_at), v_outer(a_outer), v_variable(a_variable)
+	t_scope_get(const t_at& a_at, size_t a_outer, const t_code::t_variable& a_variable) : t_node(a_at), v_outer(a_outer), v_variable(a_variable)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
@@ -301,10 +294,10 @@ struct t_scope_get : t_node
 struct t_scope_put : t_node
 {
 	size_t v_outer;
-	const t_variable& v_variable;
+	const t_code::t_variable& v_variable;
 	std::unique_ptr<t_node> v_value;
 
-	t_scope_put(const t_at& a_at, size_t a_outer, const t_variable& a_variable, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_outer(a_outer), v_variable(a_variable), v_value(std::move(a_value))
+	t_scope_put(const t_at& a_at, size_t a_outer, const t_code::t_variable& a_variable, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_outer(a_outer), v_variable(a_variable), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);

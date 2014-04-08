@@ -1,6 +1,8 @@
 #include <xemmai/engine.h>
 
 #include <xemmai/portable/path.h>
+#include <xemmai/string.h>
+#include <xemmai/array.h>
 #include <xemmai/io/file.h>
 
 #include <clocale>
@@ -8,6 +10,7 @@
 #include <cwctype>
 #include <set>
 #ifdef __unix__
+#include <unistd.h>
 #include <signal.h>
 #endif
 
@@ -64,19 +67,24 @@ class t_debugger : public xemmai::t_debugger
 		}
 		return i;
 	}
-	std::pair<std::wstring, size_t> f_read_path(wint_t& a_c)
+	std::wstring f_read_string(wint_t& a_c, wchar_t a_terminator)
 	{
-		std::vector<wchar_t> path;
-		while (a_c != WEOF && a_c != L'\n' && a_c != L':') {
-			path.push_back(a_c);
+		std::vector<wchar_t> cs;
+		while (a_c != WEOF && a_c != a_terminator) {
+			cs.push_back(a_c);
 			a_c = std::getwchar();
 		}
+		return std::wstring(cs.begin(), cs.end());
+	}
+	std::pair<std::wstring, size_t> f_read_path(wint_t& a_c)
+	{
+		std::wstring path = f_read_string(a_c, L':');
 		size_t i = 0;
 		if (a_c == L':') {
 			a_c = std::getwchar();
 			i = f_read_integer(a_c);
 		}
-		return std::make_pair(portable::t_path(std::wstring(path.begin(), path.end())), i);
+		return std::make_pair(portable::t_path(path), i);
 	}
 	void f_print_break_points()
 	{
@@ -123,7 +131,7 @@ class t_debugger : public xemmai::t_debugger
 			else
 				i->second = std::move(lines);
 		}
-		v_engine.f_debug_continue();
+		v_engine.f_debug_continue(v_engine.f_debug_stepping());
 	}
 	void f_reset_break_point(const std::wstring& a_path, size_t a_line)
 	{
@@ -162,6 +170,92 @@ class t_debugger : public xemmai::t_debugger
 	{
 		size_t i = 0;
 		for (auto p : a_threads) f_print_thread(i++, p);
+	}
+	template<typename T>
+	bool f_is(t_object* a_object)
+	{
+		return dynamic_cast<t_type_of<T>*>(a_object->f_type_as_type()) != nullptr;
+	}
+	void f_print_value(const t_value& a_value)
+	{
+		switch (a_value.f_tag()) {
+		case t_value::e_tag__NULL:
+			std::fprintf(v_out, "null");
+			break;
+		case t_value::e_tag__BOOLEAN:
+			std::fprintf(v_out, a_value.f_boolean() ? "true" : "false");
+			break;
+		case t_value::e_tag__INTEGER:
+			std::fprintf(v_out, "%" PRIdPTR, a_value.f_integer());
+			break;
+		case t_value::e_tag__FLOAT:
+			std::fprintf(v_out, "%g", a_value.f_float());
+			break;
+		default:
+			std::fprintf(v_out, "@%p", static_cast<t_object*>(a_value));
+			if (f_is<std::wstring>(a_value)) {
+				std::fprintf(v_out, " %ls", f_as<std::wstring&>(a_value).c_str());
+			} else if (f_is<t_tuple>(a_value)) {
+				t_tuple& tuple = f_as<t_tuple&>(a_value);
+				std::fprintf(v_out, " '(");
+				if (tuple.f_size() > 0) {
+					f_print_value(tuple[0]);
+					for (size_t i = 1; i < tuple.f_size(); ++i) {
+						std::fprintf(v_out, ", ");
+						f_print_value(tuple[i]);
+					}
+				}
+				std::fprintf(v_out, ")");
+			} else if (f_is<t_array>(a_value)) {
+				t_array& array = f_as<t_array&>(a_value);
+				std::fprintf(v_out, " [");
+				if (array.f_size() > 0) {
+					f_print_value(array[0]);
+					for (size_t i = 1; i < array.f_size(); ++i) {
+						std::fprintf(v_out, ", ");
+						f_print_value(array[i]);
+					}
+				}
+				std::fprintf(v_out, "]");
+			} else if (f_is<t_dictionary>(a_value)) {
+				t_dictionary& dictionary = f_as<t_dictionary&>(a_value);
+				std::fprintf(v_out, " {");
+				t_dictionary::t_iterator i(dictionary);
+				if (i.f_entry()) {
+					while (true) {
+						f_print_value(i.f_entry()->f_key());
+						std::fprintf(v_out, ": ");
+						f_print_value(i.f_entry()->v_value);
+						i.f_next();
+						if (!i.f_entry()) break;
+						std::fprintf(v_out, ", ");
+					}
+				}
+				std::fprintf(v_out, "}");
+			}
+		}
+	}
+	void f_print_variable(t_fiber::t_context* a_context, const std::wstring& a_name)
+	{
+		const t_slot* variable = a_context->f_variable(a_name);
+		if (!variable) return;
+		f_print_value(*variable);
+		std::fprintf(v_out, "\n");
+	}
+	void f_print_variable(t_object* a_thread, const std::wstring& a_name)
+	{
+		auto context = f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
+		if (context) f_print_variable(context, a_name);
+	}
+	void f_print_variables(t_fiber::t_context* a_context)
+	{
+		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_context->v_lambda).f_code());
+		for (auto& pair : code.v_variables) std::fprintf(v_out, "%ls\n", pair.first.c_str());
+	}
+	void f_print_variables(t_object* a_thread)
+	{
+		auto context = f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
+		if (context) f_print_variables(context);
 	}
 	void f_prompt(t_object* a_thread)
 	{
@@ -240,6 +334,22 @@ class t_debugger : public xemmai::t_debugger
 							f_print_thread(i, a_thread);
 						}
 					}
+				}
+				break;
+			case L'v':
+				c = std::getwchar();
+				switch (c) {
+				case L'l':
+					c = std::getwchar();
+					if (c == L'\n') f_print_variables(a_thread);
+					break;
+				case L'p':
+					{
+						c = std::getwchar();
+						std::wstring name = f_read_string(c, L'\n');
+						if (c == L'\n') f_print_variable(a_thread, name);
+					}
+					break;
 				}
 				break;
 			}
@@ -361,7 +471,8 @@ int main(int argc, char* argv[])
 	}
 	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
 	if (debug < 0) return static_cast<int>(engine.f_run(nullptr));
-	io::t_file out(debug, "w");
+	io::t_file out(debug == 2 ? dup(2) : debug, "w");
+	std::setbuf(out, NULL);
 	::t_debugger debugger(engine, out);
 	return static_cast<int>(engine.f_run(&debugger));
 }

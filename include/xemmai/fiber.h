@@ -46,6 +46,10 @@ struct t_fiber
 		{
 			return *reinterpret_cast<t_slot**>(&v_base.v_pointer);
 		}
+		t_slot* const& f_base() const
+		{
+			return *reinterpret_cast<t_slot* const*>(&v_base.v_pointer);
+		}
 		size_t& f_native()
 		{
 			return *reinterpret_cast<size_t*>(&v_native.v_pointer);
@@ -58,6 +62,7 @@ struct t_fiber
 		{
 			return *reinterpret_cast<void***>(&v_lambda.v_pointer);
 		}
+		const t_slot* f_variable(const std::wstring& a_name) const;
 	};
 	struct t_backtrace
 	{

@@ -30,7 +30,7 @@ class t_parser
 		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1;
 	}
 	void f_throw [[noreturn]] (const std::wstring& a_message);
-	ast::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop);
+	t_code::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop);
 	intptr_t f_integer()
 	{
 		return t_type_of<intptr_t>::f_parse(&v_lexer.f_value()[0]);

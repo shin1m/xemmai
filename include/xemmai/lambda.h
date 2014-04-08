@@ -13,7 +13,6 @@ class t_lambda
 	friend struct t_code;
 	friend struct t_fiber;
 	friend struct t_type_of<t_lambda>;
-	friend class t_engine;
 
 protected:
 	t_slot v_scope;
@@ -40,6 +39,11 @@ protected:
 
 public:
 	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code);
+
+	const t_slot& f_code() const
+	{
+		return v_code;
+	}
 };
 
 template<>

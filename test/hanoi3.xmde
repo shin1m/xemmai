@@ -14,10 +14,18 @@ debugger> debugger stopped: 0x[0-9a-f]+
 .*/hanoi3\.xmd:28:14
 		do_hanoi\(3, @\(from, to\) \{
 		            \^
+debugger> debugger stopped: 0x[0-9a-f]+
+.*/hanoi3\.xmd:20:2
+		towers = \[tower\(n\), tower\(0\), tower\(0\)\];
+		\^
+debugger> move
+n
+towers
+debugger> 3
 debugger> \[0\]: 0x[0-9a-f]+
-.*/hanoi3\.xmd:28:14
-		do_hanoi\(3, @\(from, to\) \{
-		            \^
+.*/hanoi3\.xmd:20:2
+		towers = \[tower\(n\), tower\(0\), tower\(0\)\];
+		\^
 \[1\]: 0x[0-9a-f]+
 debugger> \[1\]: 0x[0-9a-f]+
 debugger> $

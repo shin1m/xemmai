@@ -231,6 +231,10 @@ public:
 	void f_debug_safe_region_enter();
 	void f_debug_safe_region_leave();
 	void f_debug_stop();
+	t_object* f_debug_stepping() const
+	{
+		return v_debug__stepping;
+	}
 	void f_debug_continue(t_object* a_stepping = nullptr);
 };
 

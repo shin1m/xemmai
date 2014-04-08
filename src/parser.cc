@@ -10,11 +10,11 @@ void t_parser::f_throw(const std::wstring& a_message)
 	throw t_error::f_instantiate(a_message, v_lexer);
 }
 
-ast::t_variable& t_parser::f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop)
+t_code::t_variable& t_parser::f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop)
 {
 	auto i = a_scope->v_variables.find(a_symbol);
 	if (i == a_scope->v_variables.end()) {
-		i = a_scope->v_variables.emplace_hint(i, a_symbol, ast::t_variable());
+		i = a_scope->v_variables.emplace_hint(i, a_symbol, t_code::t_variable());
 		a_scope->v_privates.push_back(&i->second);
 		if (a_loop) i->second.v_varies = true;
 	} else {
@@ -50,7 +50,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						if (!a_assignable) t_throwable::f_throw(L"can not assign to expression.");
 						if (!scope) t_throwable::f_throw(L"no more outer scope.");
 						v_lexer.f_next();
-						ast::t_variable& variable = f_variable(scope, symbol, outer > 0 || v_targets->v_loop);
+						t_code::t_variable& variable = f_variable(scope, symbol, outer > 0 || v_targets->v_loop);
 						if (outer > 0) variable.v_shared = true;
 						return std::unique_ptr<ast::t_node>(new ast::t_scope_put(at, outer, variable, f_expression()));
 					}
@@ -130,7 +130,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					while (true) {
 						switch (v_lexer.f_token()) {
 						case t_lexer::e_token__SYMBOL:
-							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable()).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), t_code::t_variable()).first->second);
 							v_lexer.f_next();
 							if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 								v_lexer.f_next();
@@ -146,7 +146,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						case t_lexer::e_token__ASTERISK:
 							v_lexer.f_next();
 							if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol.");
-							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), ast::t_variable()).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.emplace(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())), t_code::t_variable()).first->second);
 							lambda->v_variadic = true;
 							v_lexer.f_next();
 							break;
@@ -171,17 +171,17 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				lambda->v_block.push_back(f_expression());
 			v_scope = lambda->v_outer;
 			v_targets = targets0;
-			std::vector<ast::t_variable*> variables;
+			std::vector<t_code::t_variable*> variables;
 			variables.swap(lambda->v_privates);
 			if (lambda->v_self_shared) ++lambda->v_shareds;
 			auto i = variables.begin();
 			for (auto j = i + lambda->v_arguments; i != j; ++i) {
-				ast::t_variable* p = *i;
+				t_code::t_variable* p = *i;
 				p->v_index = p->v_shared ? lambda->v_shareds++ : lambda->v_privates.size();
 				lambda->v_privates.push_back(p);
 			}
 			for (; i != variables.end(); ++i) {
-				ast::t_variable* p = *i;
+				t_code::t_variable* p = *i;
 				if (p->v_shared) {
 					p->v_index = lambda->v_shareds++;
 				} else {
@@ -833,7 +833,7 @@ void t_parser::f_parse(ast::t_module& a_module)
 	t_targets targets(false, false);
 	v_targets = &targets;
 	f_statements(a_module.v_block, t_lexer::e_token__EOF);
-	std::vector<ast::t_variable*> variables;
+	std::vector<t_code::t_variable*> variables;
 	variables.swap(a_module.v_privates);
 	if (a_module.v_self_shared) ++a_module.v_shareds;
 	for (auto p : variables) {

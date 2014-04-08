@@ -438,7 +438,7 @@ void t_engine::f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc
 	if (!a_lambda || a_lambda == v_lambda_fiber) {
 		std::fputs("<fiber>\n", a_out);
 	} else {
-		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).v_code);
+		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).f_code());
 		std::fprintf(a_out, "%ls", code.v_path.c_str());
 		const t_at* at = code.f_at(a_pc);
 		if (at) {

@@ -65,6 +65,16 @@ void t_fiber::t_context::f_backtrace(const t_value& a_value)
 	fiber.v_undone = 0;
 }
 
+const t_slot* t_fiber::t_context::f_variable(const std::wstring& a_name) const
+{
+	if (a_name == L"$") return f_base() - 1;
+	t_code& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
+	auto i = code.v_variables.find(a_name);
+	if (i == code.v_variables.end()) return nullptr;
+	size_t index = i->second.v_index;
+	return i->second.v_shared ? &f_as<t_scope&>(v_scope)[index] : f_base() + index;
+}
+
 void t_fiber::t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_slot& a_lambda, void** a_pc)
 {
 	t_with_lock_for_write lock(a_throwable);
