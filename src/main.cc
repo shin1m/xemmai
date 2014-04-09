@@ -1,8 +1,8 @@
 #include <xemmai/engine.h>
 
 #include <xemmai/portable/path.h>
-#include <xemmai/string.h>
 #include <xemmai/array.h>
+#include <xemmai/global.h>
 #include <xemmai/io/file.h>
 
 #include <clocale>
@@ -145,26 +145,27 @@ class t_debugger : public xemmai::t_debugger
 		}
 		if (i->second.empty()) v_break_points.erase(i);
 	}
+	t_fiber::t_context* f_context(t_object* a_thread)
+	{
+		return f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
+	}
 	void f_print(t_fiber::t_context* a_context)
 	{
 		v_engine.f_context_print(v_out, a_context->v_lambda, a_context->f_pc());
 	}
-	void f_print(t_object* a_thread)
+	void f_print_contexts(t_fiber::t_context* a_context, t_fiber::t_context* a_current)
 	{
-		auto context = f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
-		if (context) f_print(context);
-	}
-	void f_print_stack(t_object* a_thread)
-	{
-		for (auto context = f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context; context; context = context->f_next()) {
-			if (context->f_native() > 0) std::fputs("<native code>\n", v_out);
-			f_print(context);
+		for (; a_context; a_context = a_context->f_next()) {
+			if (a_context->f_native() > 0) std::fputs("<native code>\n", v_out);
+			if (a_context == a_current) std::fputs("* ", v_out);
+			f_print(a_context);
 		}
 	}
 	void f_print_thread(size_t a_i, t_object* a_thread)
 	{
 		std::fprintf(v_out, "[%" PRIuPTR "]: %p\n", static_cast<uintptr_t>(a_i), a_thread);
-		f_print(a_thread);
+		auto context = f_context(a_thread);
+		if (context) f_print(context);
 	}
 	void f_print_threads(const std::vector<t_object*>& a_threads)
 	{
@@ -176,86 +177,99 @@ class t_debugger : public xemmai::t_debugger
 	{
 		return dynamic_cast<t_type_of<T>*>(a_object->f_type_as_type()) != nullptr;
 	}
-	void f_print_value(const t_value& a_value)
+	void f_print_value(const t_value& a_value, size_t a_depth)
 	{
 		switch (a_value.f_tag()) {
 		case t_value::e_tag__NULL:
-			std::fprintf(v_out, "null");
+			std::fputs("null", v_out);
 			break;
 		case t_value::e_tag__BOOLEAN:
-			std::fprintf(v_out, a_value.f_boolean() ? "true" : "false");
+			std::fputs(f_as<bool>(a_value) ? "true" : "false", v_out);
 			break;
 		case t_value::e_tag__INTEGER:
-			std::fprintf(v_out, "%" PRIdPTR, a_value.f_integer());
+			std::fprintf(v_out, "%" PRIdPTR, f_as<intptr_t>(a_value));
 			break;
 		case t_value::e_tag__FLOAT:
-			std::fprintf(v_out, "%g", a_value.f_float());
+			std::fprintf(v_out, "%g", f_as<double>(a_value));
 			break;
 		default:
 			std::fprintf(v_out, "@%p", static_cast<t_object*>(a_value));
+			if (--a_depth > 0) {
+				std::fputc('(', v_out);
+				auto p = static_cast<t_object*>(a_value);
+				size_t n = p->f_field_size();
+				if (n > 0) {
+					size_t i = 0;
+					while (true) {
+						std::fprintf(v_out, "%ls: ", f_as<t_symbol&>(p->f_field_key(i)).f_string().c_str());
+						f_print_value(p->f_field_get(i), a_depth);
+						if (++i >= n) break;
+						std::fputs(", ", v_out);
+					}
+				}
+				std::fputc(')', v_out);
+			}
 			if (f_is<std::wstring>(a_value)) {
-				std::fprintf(v_out, " %ls", f_as<std::wstring&>(a_value).c_str());
+				std::fprintf(v_out, " \"%ls\"", f_as<std::wstring&>(a_value).c_str());
 			} else if (f_is<t_tuple>(a_value)) {
 				t_tuple& tuple = f_as<t_tuple&>(a_value);
-				std::fprintf(v_out, " '(");
-				if (tuple.f_size() > 0) {
-					f_print_value(tuple[0]);
+				std::fputs(" '(", v_out);
+				if (a_depth <= 0) {
+					std::fputs("...", v_out);
+				} else if (tuple.f_size() > 0) {
+					f_print_value(tuple[0], a_depth);
 					for (size_t i = 1; i < tuple.f_size(); ++i) {
-						std::fprintf(v_out, ", ");
-						f_print_value(tuple[i]);
+						std::fputs(", ", v_out);
+						f_print_value(tuple[i], a_depth);
 					}
 				}
-				std::fprintf(v_out, ")");
+				std::fputc(')', v_out);
 			} else if (f_is<t_array>(a_value)) {
 				t_array& array = f_as<t_array&>(a_value);
-				std::fprintf(v_out, " [");
-				if (array.f_size() > 0) {
-					f_print_value(array[0]);
+				std::fputs(" [", v_out);
+				if (a_depth <= 0) {
+					std::fputs("...", v_out);
+				} else if (array.f_size() > 0) {
+					f_print_value(array[0], a_depth);
 					for (size_t i = 1; i < array.f_size(); ++i) {
-						std::fprintf(v_out, ", ");
-						f_print_value(array[i]);
+						std::fputs(", ", v_out);
+						f_print_value(array[i], a_depth);
 					}
 				}
-				std::fprintf(v_out, "]");
+				std::fputc(']', v_out);
 			} else if (f_is<t_dictionary>(a_value)) {
 				t_dictionary& dictionary = f_as<t_dictionary&>(a_value);
-				std::fprintf(v_out, " {");
-				t_dictionary::t_iterator i(dictionary);
-				if (i.f_entry()) {
-					while (true) {
-						f_print_value(i.f_entry()->f_key());
-						std::fprintf(v_out, ": ");
-						f_print_value(i.f_entry()->v_value);
-						i.f_next();
-						if (!i.f_entry()) break;
-						std::fprintf(v_out, ", ");
+				std::fputs(" {", v_out);
+				if (a_depth <= 0) {
+					std::fputs("...", v_out);
+				} else {
+					t_dictionary::t_iterator i(dictionary);
+					if (i.f_entry()) {
+						while (true) {
+							f_print_value(i.f_entry()->f_key(), a_depth);
+							std::fputs(": ", v_out);
+							f_print_value(i.f_entry()->v_value, a_depth);
+							i.f_next();
+							if (!i.f_entry()) break;
+							std::fputs(", ", v_out);
+						}
 					}
 				}
-				std::fprintf(v_out, "}");
+				std::fputc('}', v_out);
 			}
 		}
 	}
-	void f_print_variable(t_fiber::t_context* a_context, const std::wstring& a_name)
+	void f_print_variable(t_fiber::t_context* a_context, const std::wstring& a_name, size_t a_depth)
 	{
 		const t_slot* variable = a_context->f_variable(a_name);
 		if (!variable) return;
-		f_print_value(*variable);
-		std::fprintf(v_out, "\n");
-	}
-	void f_print_variable(t_object* a_thread, const std::wstring& a_name)
-	{
-		auto context = f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
-		if (context) f_print_variable(context, a_name);
+		f_print_value(*variable, a_depth);
+		std::fputc('\n', v_out);
 	}
 	void f_print_variables(t_fiber::t_context* a_context)
 	{
 		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_context->v_lambda).f_code());
 		for (auto& pair : code.v_variables) std::fprintf(v_out, "%ls\n", pair.first.c_str());
-	}
-	void f_print_variables(t_object* a_thread)
-	{
-		auto context = f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
-		if (context) f_print_variables(context);
 	}
 	void f_prompt(t_object* a_thread)
 	{
@@ -265,7 +279,8 @@ class t_debugger : public xemmai::t_debugger
 			threads.push_back(a_thread);
 		});
 		std::fprintf(v_out, "debugger stopped: %p\n", a_thread);
-		f_print(a_thread);
+		auto context = f_context(a_thread);
+		if (context) f_print(context);
 		while (true) {
 			std::fprintf(v_out, "debugger> ");
 			wint_t c = std::getwchar();
@@ -303,13 +318,28 @@ class t_debugger : public xemmai::t_debugger
 					return;
 				}
 				break;
-			case L'p':
+			case L'd':
 				c = std::getwchar();
-				switch (c) {
-				case L's':
+				if (c == L'\n') {
+					auto p = f_context(a_thread);
+					if (p != context) {
+						while (p->f_next() != context) p = p->f_next();
+						context = p;
+					}
+					if (context) f_print(context);
+				}
+				break;
+			case L'l':
+				c = std::getwchar();
+				if (c == L'\n' && context) f_print_variables(context);
+				break;
+			case L'p':
+				{
 					c = std::getwchar();
-					if (c == L'\n') f_print_stack(a_thread);
-					break;
+					size_t depth = 2;
+					if (std::iswdigit(c)) depth = f_read_integer(c);
+					std::wstring name = f_read_string(c, L'\n');
+					if (c == L'\n' && context) f_print_variable(context, name, depth);
 				}
 				break;
 			case L's':
@@ -322,6 +352,10 @@ class t_debugger : public xemmai::t_debugger
 			case L't':
 				c = std::getwchar();
 				switch (c) {
+				case L'c':
+					c = std::getwchar();
+					if (c == L'\n') f_print_contexts(f_context(a_thread), context);
+					break;
 				case L'l':
 					c = std::getwchar();
 					if (c == L'\n') f_print_threads(threads);
@@ -331,25 +365,17 @@ class t_debugger : public xemmai::t_debugger
 						size_t i = f_read_integer(c);
 						if (c == L'\n' && i < threads.size()) {
 							a_thread = threads[i];
+							context = f_context(a_thread);
 							f_print_thread(i, a_thread);
 						}
 					}
 				}
 				break;
-			case L'v':
+			case L'u':
 				c = std::getwchar();
-				switch (c) {
-				case L'l':
-					c = std::getwchar();
-					if (c == L'\n') f_print_variables(a_thread);
-					break;
-				case L'p':
-					{
-						c = std::getwchar();
-						std::wstring name = f_read_string(c, L'\n');
-						if (c == L'\n') f_print_variable(a_thread, name);
-					}
-					break;
+				if (c == L'\n') {
+					if (context) context = context->f_next();
+					if (context) f_print(context);
 				}
 				break;
 			}

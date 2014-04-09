@@ -357,9 +357,17 @@ public:
 	}
 	void f_own();
 	void f_share();
+	size_t f_field_size() const
+	{
+		return v_structure->f_size();
+	}
 	intptr_t f_field_index(t_object* a_key) const
 	{
 		return v_structure->f_index(a_key);
+	}
+	t_object* f_field_key(size_t a_index) const
+	{
+		return v_structure->f_fields()[a_index];
 	}
 	t_slot& f_field_get(size_t a_index) const
 	{
