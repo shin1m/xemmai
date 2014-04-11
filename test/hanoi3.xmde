@@ -18,7 +18,12 @@ debugger> debugger stopped: 0x[0-9a-f]+
 .*/hanoi3\.xmd:20:2
 		towers = \[tower\(n\), tower\(0\), tower\(0\)\];
 		\^
-debugger> move
+debugger> \$
+:do_hanoi
+:hanoi
+:print
+:tower
+move
 n
 towers
 debugger> 3

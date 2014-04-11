@@ -90,7 +90,19 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	a_generator.v_safe_positions = safe_positions0;
 	if (a_generator.v_safe_points) {
 		t_code& p = f_as<t_code&>(code);
+		t_code::t_variable self;
+		self.v_shared = v_self_shared;
+		self.v_index = v_self_shared ? 0 : -1;
+		p.v_variables.emplace(L"$", self);
 		for (auto& pair : v_variables) p.v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
+		std::wstring prefix;
+		self.v_shared = true;
+		self.v_index = 0;
+		for (auto scope = v_outer; scope; scope = scope->v_outer) {
+			prefix += L':';
+			if (scope->v_self_shared) p.v_variables.emplace(prefix + L'$', self);
+			for (auto& pair : scope->v_variables) if (pair.second.v_shared) p.v_variables.emplace(prefix + f_as<t_symbol&>(pair.first).f_string(), pair.second);
+		}
 		for (auto& pair : safe_positions1) a_generator.v_safe_points->emplace(pair.first, &p.v_instructions[pair.second]);
 	}
 	a_generator.f_reserve(a_stack + 1);
@@ -845,6 +857,10 @@ t_scoped t_generator::f_generate(ast::t_module& a_module)
 	f_emit(e_instruction__END);
 	f_resolve();
 	if (v_safe_points) {
+		t_code::t_variable self;
+		self.v_shared = a_module.v_self_shared;
+		self.v_index = a_module.v_self_shared ? 0 : -1;
+		v_code->v_variables.emplace(L"$", self);
 		for (auto& pair : a_module.v_variables) v_code->v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
 		for (auto& pair : safe_positions) v_safe_points->emplace(pair.first, &v_code->v_instructions[pair.second]);
 	}

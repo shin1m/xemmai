@@ -67,12 +67,16 @@ void t_fiber::t_context::f_backtrace(const t_value& a_value)
 
 const t_slot* t_fiber::t_context::f_variable(const std::wstring& a_name) const
 {
-	if (a_name == L"$") return f_base() - 1;
 	t_code& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
 	auto i = code.v_variables.find(a_name);
 	if (i == code.v_variables.end()) return nullptr;
+	size_t outer = 0;
+	for (auto i = a_name.begin(); i != a_name.end() && *i == L':'; ++i) ++outer;
 	size_t index = i->second.v_index;
-	return i->second.v_shared ? &f_as<t_scope&>(v_scope)[index] : f_base() + index;
+	if (outer <= 0) return i->second.v_shared ? &f_as<const t_scope&>(v_scope)[index] : f_base() + index;
+	t_object* scope = f_as<t_lambda&>(v_lambda).v_scope;
+	for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
+	return &f_as<const t_scope&>(scope)[index];
 }
 
 void t_fiber::t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_slot& a_lambda, void** a_pc)
