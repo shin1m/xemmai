@@ -7,7 +7,6 @@
 
 #include <clocale>
 #include <cstring>
-#include <cwctype>
 #include <set>
 #ifdef __unix__
 #include <unistd.h>
@@ -177,6 +176,20 @@ class t_debugger : public xemmai::t_debugger
 	{
 		return dynamic_cast<t_type_of<T>*>(a_object->f_type_as_type()) != nullptr;
 	}
+	template<typename T>
+	void f_print_sequence(t_object* a_value, size_t a_depth)
+	{
+		auto& sequence = f_as<const T&>(a_value);
+		if (a_depth <= 0) {
+			std::fputs("...", v_out);
+		} else if (sequence.f_size() > 0) {
+			f_print_value(sequence[0], a_depth);
+			for (size_t i = 1; i < sequence.f_size(); ++i) {
+				std::fputs(", ", v_out);
+				f_print_value(sequence[i], a_depth);
+			}
+		}
+	}
 	void f_print_value(const t_value& a_value, size_t a_depth)
 	{
 		switch (a_value.f_tag()) {
@@ -212,30 +225,12 @@ class t_debugger : public xemmai::t_debugger
 			if (f_is<std::wstring>(a_value)) {
 				std::fprintf(v_out, " \"%ls\"", f_as<std::wstring&>(a_value).c_str());
 			} else if (f_is<t_tuple>(a_value)) {
-				t_tuple& tuple = f_as<t_tuple&>(a_value);
 				std::fputs(" '(", v_out);
-				if (a_depth <= 0) {
-					std::fputs("...", v_out);
-				} else if (tuple.f_size() > 0) {
-					f_print_value(tuple[0], a_depth);
-					for (size_t i = 1; i < tuple.f_size(); ++i) {
-						std::fputs(", ", v_out);
-						f_print_value(tuple[i], a_depth);
-					}
-				}
+				f_print_sequence<t_tuple>(a_value, a_depth);
 				std::fputc(')', v_out);
 			} else if (f_is<t_array>(a_value)) {
-				t_array& array = f_as<t_array&>(a_value);
 				std::fputs(" [", v_out);
-				if (a_depth <= 0) {
-					std::fputs("...", v_out);
-				} else if (array.f_size() > 0) {
-					f_print_value(array[0], a_depth);
-					for (size_t i = 1; i < array.f_size(); ++i) {
-						std::fputs(", ", v_out);
-						f_print_value(array[i], a_depth);
-					}
-				}
+				f_print_sequence<t_array>(a_value, a_depth);
 				std::fputc(']', v_out);
 			} else if (f_is<t_dictionary>(a_value)) {
 				t_dictionary& dictionary = f_as<t_dictionary&>(a_value);
