@@ -1,26 +1,26 @@
 Pair = Class() :: @{
-	$__initialize = @(a_first, a_second) {
-		$v_first = a_first;
-		$v_second = a_second;
+	$__initialize = @(first, second) {
+		$first = first;
+		$second = second;
 	};
 	$__string = @{
-		$v_second === null ? $v_first.__string() : $v_first.__string() + " " + $v_second;
+		$second === null ? $first.__string() : $first.__string() + " " + $second;
 	};
 };
 
 List = Class() :: @{
 	$__initialize = @{
-		$v_list = null;
+		$list = null;
 	};
 	$__string = @{
-		$v_list === null ? "()" : "(" + $v_list + ")";
+		$list === null ? "()" : "(" + $list + ")";
 	};
-	$push = @(a_value) {
-		$v_list = Pair(a_value, $v_list);
+	$push = @(value) {
+		$list = Pair(value, $list);
 	};
 	$pop = @{
-		value = $v_list.v_first;
-		$v_list = $v_list.v_second;
+		value = $list.first;
+		$list = $list.second;
 		value;
 	};
 };

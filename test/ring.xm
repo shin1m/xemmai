@@ -2,56 +2,56 @@ system = Module("system");
 print = system.out.write_line;
 
 Cell = Class() :: @{
-	$__initialize = @(a_value) {
-		$v_value = a_value;
+	$__initialize = @(value) {
+		$value = value;
 	};
 };
 
 Ring = Class() :: @{
 	$__initialize = @{
-		$v_ring = null;
+		$ring = null;
 	};
 	$__string = @{
-		if ($v_ring === null) {
+		if ($ring === null) {
 			return "()";
 		} else {
-			return "(" + $string($v_ring.v_next) + ")";
+			return "(" + $string($ring.next) + ")";
 		}
 	};
-	$string = @(a_cell) {
-		if (a_cell == $v_ring) return a_cell.v_value.__string();
-		return a_cell.v_value.__string() + " " + $string(a_cell.v_next);
+	$string = @(cell) {
+		if (cell == $ring) return cell.value.__string();
+		return cell.value.__string() + " " + $string(cell.next);
 	};
-	$push = @(a_value) {
-		cell = Cell(a_value);
-		if ($v_ring === null) {
-			cell.v_next = cell;
+	$push = @(value) {
+		cell = Cell(value);
+		if ($ring === null) {
+			cell.next = cell;
 		} else {
-			cell.v_next = $v_ring.v_next;
-			$v_ring.v_next = cell;
+			cell.next = $ring.next;
+			$ring.next = cell;
 		}
-		$v_ring = cell;
+		$ring = cell;
 	};
 	$pop = @{
-		cell = $v_ring.v_next;
-		$v_ring.v_next = cell.v_next;
-		return cell.v_value;
+		cell = $ring.next;
+		$ring.next = cell.next;
+		return cell.value;
 	};
 };
 
-ring = @(a_n) {
-	if (a_n > 0) {
-		r = ring(a_n - 1);
-		r.push(a_n);
+ring = @(n) {
+	if (n > 0) {
+		r = ring(n - 1);
+		r.push(n);
 		return r;
 	} else {
 		return Ring();
 	}
 };
 
-rings = @(a_n) {
-	if (a_n > 0) rings(a_n - 1);
-	print(ring(a_n));
+rings = @(n) {
+	if (n > 0) rings(n - 1);
+	print(ring(n));
 };
 
 rings(10);
