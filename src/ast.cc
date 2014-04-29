@@ -51,7 +51,7 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 	t_generator::t_targets targets1(nullptr, false, nullptr, &return0, true);
 	a_generator.v_targets = &targets1;
 	auto safe_positions0 = a_generator.v_safe_positions;
-	std::map<std::pair<size_t, size_t>, size_t> safe_positions1;
+	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions1;
 	a_generator.v_safe_positions = &safe_positions1;
 	if (v_self_shared) {
 		a_generator.f_reserve(stack + 1);
@@ -103,7 +103,7 @@ t_operand t_lambda::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 			if (scope->v_self_shared) p.v_variables.emplace(prefix + L'$', self);
 			for (auto& pair : scope->v_variables) if (pair.second.v_shared) p.v_variables.emplace(prefix + f_as<t_symbol&>(pair.first).f_string(), pair.second);
 		}
-		for (auto& pair : safe_positions1) a_generator.v_safe_points->emplace(pair.first, &p.v_instructions[pair.second]);
+		for (auto& x : safe_positions1) a_generator.v_safe_points->emplace(std::make_pair(std::get<0>(x), &p.v_instructions[std::get<1>(x)]), std::get<2>(x));
 	}
 	a_generator.f_reserve(a_stack + 1);
 	a_generator.f_emit_safe_point(this);
@@ -323,9 +323,9 @@ t_operand t_object_get_indirect::f_generate(t_generator& a_generator, size_t a_s
 
 t_operand t_object_put::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	a_generator.f_emit_safe_point(this);
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_value->f_generate(a_generator, a_stack + 1, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_PUT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_operand(static_cast<t_object*>(v_key));
@@ -338,10 +338,10 @@ t_operand t_object_put::f_generate(t_generator& a_generator, size_t a_stack, boo
 
 t_operand t_object_put_indirect::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	a_generator.f_emit_safe_point(this);
 	v_target->f_generate(a_generator, a_stack, false, false);
 	v_key->f_generate(a_generator, a_stack + 1, false, false);
 	v_value->f_generate(a_generator, a_stack + 2, false, false);
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(e_instruction__OBJECT_PUT_INDIRECT);
 	a_generator.f_operand(a_stack);
 	a_generator.f_at(this);
@@ -430,8 +430,8 @@ t_operand t_scope_get::f_generate(t_generator& a_generator, size_t a_stack, bool
 
 t_operand t_scope_put::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	a_generator.f_emit_safe_point(this);
 	v_value->f_generate(a_generator, a_stack, false, false);
+	a_generator.f_emit_safe_point(this);
 	if (v_variable.v_shared) {
 		a_generator.f_emit(e_instruction__SCOPE_PUT);
 		a_generator.f_operand(a_stack);
@@ -783,7 +783,6 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 
 t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	a_generator.f_emit_safe_point(this);
 	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
 	t_scope_get* get = v_expand ? nullptr : dynamic_cast<t_scope_get*>(v_target.get());
 	if (get && get->v_outer == 1 && !get->v_variable.v_varies) {
@@ -795,6 +794,7 @@ t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_ta
 	}
 	for (size_t i = 0; i < v_arguments.size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 1 + i, false, false);
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
+	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
 	if (get) a_generator.f_operand(get->v_variable.v_index);
@@ -839,7 +839,7 @@ t_scoped t_generator::f_generate(ast::t_module& a_module)
 	v_labels = &labels;
 	t_targets targets(nullptr, false, nullptr, nullptr, false);
 	v_targets = &targets;
-	std::map<std::pair<size_t, size_t>, size_t> safe_positions;
+	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions;
 	v_safe_positions = &safe_positions;
 	f_reserve(stack + 1);
 	if (a_module.v_self_shared) {
@@ -862,7 +862,7 @@ t_scoped t_generator::f_generate(ast::t_module& a_module)
 		self.v_index = a_module.v_self_shared ? 0 : -1;
 		v_code->v_variables.emplace(L"$", self);
 		for (auto& pair : a_module.v_variables) v_code->v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
-		for (auto& pair : safe_positions) v_safe_points->emplace(pair.first, &v_code->v_instructions[pair.second]);
+		for (auto& x : safe_positions) v_safe_points->emplace(std::make_pair(std::get<0>(x), &v_code->v_instructions[std::get<1>(x)]), std::get<2>(x));
 	}
 	return code;
 }

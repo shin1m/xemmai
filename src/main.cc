@@ -105,7 +105,7 @@ class t_debugger : public xemmai::t_debugger
 	{
 		auto debug = f_find_module(a_path);
 		if (debug) {
-			a_line = debug->f_set_break_point(a_line, 1).first;
+			a_line = debug->f_set_break_point(a_line).first;
 			if (a_line <= 0) return;
 		}
 		auto i = v_break_points.lower_bound(a_path);
@@ -122,7 +122,7 @@ class t_debugger : public xemmai::t_debugger
 			if (i == v_break_points.end()) continue;
 			std::set<size_t> lines;
 			for (auto line : i->second) {
-				line = debug->f_set_break_point(line, 1).first;
+				line = debug->f_set_break_point(line).first;
 				if (line > 0) lines.insert(line);
 			}
 			if (lines.empty())

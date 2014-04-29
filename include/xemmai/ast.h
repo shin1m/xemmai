@@ -470,15 +470,15 @@ struct t_generator
 		}
 	};
 
-	std::map<std::pair<size_t, size_t>, void**>* v_safe_points;
+	std::map<std::pair<size_t, void**>, size_t>* v_safe_points;
 	std::wstring v_path;
 	ast::t_scope* v_scope;
 	t_code* v_code;
 	std::deque<t_code::t_label>* v_labels;
 	t_targets* v_targets;
-	std::map<std::pair<size_t, size_t>, size_t>* v_safe_positions;
+	std::vector<std::tuple<size_t, size_t, size_t>>* v_safe_positions;
 
-	t_generator(std::map<std::pair<size_t, size_t>, void**>* safe_points) : v_safe_points(safe_points)
+	t_generator(std::map<std::pair<size_t, void**>, size_t>* safe_points) : v_safe_points(safe_points)
 	{
 	}
 	t_scoped f_generate(ast::t_module& a_module);
@@ -515,7 +515,7 @@ struct t_generator
 	void f_emit_safe_point(ast::t_node* a_node)
 	{
 		if (!v_safe_points) return;
-		v_safe_positions->emplace(std::make_pair(a_node->v_at.f_line(), a_node->v_at.f_column()), v_code->f_last());
+		v_safe_positions->push_back(std::make_tuple(a_node->v_at.f_line(), v_code->f_last(), a_node->v_at.f_column()));
 		f_emit(e_instruction__SAFE_POINT);
 		f_at(a_node);
 	}

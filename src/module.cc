@@ -42,7 +42,7 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
 	return object;
 }
 
-t_scoped t_module::f_load_script(const std::wstring& a_path, std::map<std::pair<size_t, size_t>, void**>* a_safe_points)
+t_scoped t_module::f_load_script(const std::wstring& a_path, std::map<std::pair<size_t, void**>, size_t>* a_safe_points)
 {
 	io::t_file stream(a_path, "r");
 	if (!stream) return t_value();
@@ -75,7 +75,7 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path)
 {
 	if (f_engine()->v_debugger) {
-		std::map<std::pair<size_t, size_t>, void**> safe_points;
+		std::map<std::pair<size_t, void**>, size_t> safe_points;
 		t_scoped code = f_load_script(a_path, &safe_points);
 		if (!code) return t_value();
 		t_scoped module = f_instantiate(a_name, new t_debug_module(a_path, code, std::move(safe_points)));
@@ -160,22 +160,20 @@ void t_debug_module::f_scan(t_scan a_scan)
 	a_scan(v_code);
 }
 
-std::pair<size_t, size_t> t_debug_module::f_set_break_point(size_t a_line, size_t a_column)
+std::pair<size_t, size_t> t_debug_module::f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new)
 {
-	auto i = v_safe_points.lower_bound(std::make_pair(a_line, a_column));
+	auto i = v_safe_points.lower_bound(std::make_pair(a_line, nullptr));
 	if (i == v_safe_points.end()) return std::make_pair(0, 0);
+	if (a_column > 0) {
+		while (true) {
+			if (i->first.first != a_line) return std::make_pair(0, 0);
+			if (i->second == a_column) break;
+			if (++i == v_safe_points.end()) return std::make_pair(0, 0);
+		}
+	}
 	t_code& code = f_as<t_code&>(v_code);
-	if (*i->second == code.f_p(e_instruction__SAFE_POINT)) *i->second = code.f_p(e_instruction__BREAK_POINT);
-	return i->first;
-}
-
-std::pair<size_t, size_t> t_debug_module::f_reset_break_point(size_t a_line, size_t a_column)
-{
-	auto i = v_safe_points.lower_bound(std::make_pair(a_line, a_column));
-	if (i == v_safe_points.end()) return std::make_pair(0, 0);
-	t_code& code = f_as<t_code&>(v_code);
-	if (*i->second == code.f_p(e_instruction__BREAK_POINT)) *i->second = code.f_p(e_instruction__SAFE_POINT);
-	return i->first;
+	if (*i->first.second == code.f_p(a_old)) *i->first.second = code.f_p(a_new);
+	return std::make_pair(i->first.first, i->second);
 }
 
 t_extension::~t_extension()
