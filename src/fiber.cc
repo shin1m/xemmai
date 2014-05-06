@@ -40,7 +40,7 @@ void t_fiber::t_context::f_pop()
 	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 
-void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
+void** t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 {
 	++a_stack;
 	t_context* p = v_instance;
@@ -53,6 +53,7 @@ void t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	for (; i < a_n; ++i) base[i] = std::move(a_stack[i]);
 	for (; i < n; ++i) base[i] = nullptr;
 	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
+	return v_instance->f_pc();
 }
 
 void t_fiber::t_context::f_backtrace(const t_value& a_value)
@@ -94,10 +95,7 @@ void t_fiber::t_backtrace::f_dump() const
 	} else {
 		std::fputs("at ", stderr);
 	}
-	if (v_native > 0) {
-		std::fputs("<native code>\n", stderr);
-		std::fputs("from ", stderr);
-	}
+	if (v_native > 0) std::fputs("<native code>\nfrom ", stderr);
 	f_engine()->f_context_print(stderr, v_lambda, f_pc());
 }
 

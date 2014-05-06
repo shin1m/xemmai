@@ -29,7 +29,7 @@ struct t_fiber
 		static void f_terminate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(t_object* a_lambda, t_slot* a_stack);
 		static void f_pop();
-		static void f_pop(t_slot* a_stack, size_t a_n);
+		static void** f_pop(t_slot* a_stack, size_t a_n);
 		static void f_backtrace(const t_value& a_value);
 
 		t_slot v_next;

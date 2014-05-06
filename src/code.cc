@@ -1105,7 +1105,7 @@ void t_code::f_loop()
 						t_slot* stack = base + reinterpret_cast<size_t>(*++pc);
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						t_scoped x = std::move(stack[0]);
-						t_fiber::t_context::f_pop(stack, n);
+						pc = t_fiber::t_context::f_pop(stack, n);
 						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();
 						if (p->f_native() > 0) return;
@@ -1119,7 +1119,7 @@ void t_code::f_loop()
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						n = f_expand(stack, n);
 						t_scoped x = std::move(stack[0]);
-						t_fiber::t_context::f_pop(stack, n);
+						pc = t_fiber::t_context::f_pop(stack, n);
 						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();
 						if (p->f_native() > 0) return;
@@ -1133,7 +1133,7 @@ void t_code::f_loop()
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						size_t n = reinterpret_cast<size_t>(*++pc);
 						t_slot& x = f_as<t_lambda&>(f_context()->v_lambda).v_as_scope[index];
-						t_fiber::t_context::f_pop(stack, n);
+						pc = t_fiber::t_context::f_pop(stack, n);
 						x.f_call(base - 1, n);
 						t_fiber::t_context* p = f_context();
 						if (p->f_native() > 0) return;
@@ -1181,7 +1181,7 @@ void t_code::f_loop()
 #define XEMMAI__CODE__OBJECT_CALL(a_method, a_n)\
 						{\
 							XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
-							t_fiber::t_context::f_pop(stack, a_n);\
+							pc = t_fiber::t_context::f_pop(stack, a_n);\
 							t_fiber::t_context* p = f_context();\
 							f_as<t_type&>(x.v_p->f_type()).a_method(x.v_p, base - 1);\
 							if (f_context() == p && p->f_native() > 0) return;\
