@@ -178,8 +178,9 @@ struct t_construct
 	template<typename T_self>
 	static t_scoped f_default(t_object* a_class, T_an&&... a_an)
 	{
+		auto p = new T_self(std::forward<T_an>(a_an)...);
 		t_scoped object = t_object::f_allocate(a_class);
-		object.f_pointer__(new T_self(std::forward<T_an>(a_an)...));
+		object.f_pointer__(p);
 		return object;
 	}
 
