@@ -57,10 +57,10 @@ struct t_thread
 		}
 	};
 
-	static thread_local t_object* v_current;
-	static thread_local t_cache* v_cache;
-	static thread_local size_t v_cache_hit;
-	static thread_local size_t v_cache_missed;
+	static XEMMAI__PORTABLE__THREAD t_object* v_current;
+	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
+	static XEMMAI__PORTABLE__THREAD size_t v_cache_hit;
+	static XEMMAI__PORTABLE__THREAD size_t v_cache_missed;
 
 	static void f_main(t_object* a_p);
 	static t_object* f_current()

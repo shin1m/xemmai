@@ -34,7 +34,7 @@ class t_global : public t_extension
 	friend XEMMAI__PORTABLE__EXPORT t_global* f_global();
 #endif
 
-	static thread_local t_global* v_instance;
+	static XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
 	t_slot v_type_object;
 	t_slot v_type_class;

@@ -5,7 +5,7 @@
 namespace xemmai
 {
 
-thread_local t_structure::t_cache* t_structure::v_cache;
+XEMMAI__PORTABLE__THREAD t_structure::t_cache* t_structure::v_cache;
 
 t_scoped t_structure::f_append(t_object* a_key)
 {

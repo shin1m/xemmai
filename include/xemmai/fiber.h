@@ -14,7 +14,7 @@ struct t_fiber
 {
 	struct t_context
 	{
-		static thread_local t_context* v_instance;
+		static XEMMAI__PORTABLE__THREAD t_context* v_instance;
 
 		static t_context* f_instantiate(t_slot* a_p, t_context* a_next, t_slot* a_base)
 		{
@@ -111,7 +111,7 @@ struct t_fiber
 		void** v_finally;
 	};
 
-	static thread_local t_object* v_current;
+	static XEMMAI__PORTABLE__THREAD t_object* v_current;
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	static t_object* f_current()

@@ -18,10 +18,10 @@ size_t t_thread::t_cache::f_revise(size_t a_i)
 	return v_revisions[a_i] = 1;
 }
 
-thread_local t_object* t_thread::v_current;
-thread_local t_thread::t_cache* t_thread::v_cache;
-thread_local size_t t_thread::v_cache_hit;
-thread_local size_t t_thread::v_cache_missed;
+XEMMAI__PORTABLE__THREAD t_object* t_thread::v_current;
+XEMMAI__PORTABLE__THREAD t_thread::t_cache* t_thread::v_cache;
+XEMMAI__PORTABLE__THREAD size_t t_thread::v_cache_hit;
+XEMMAI__PORTABLE__THREAD size_t t_thread::v_cache_missed;
 
 void t_thread::f_main(t_object* a_p)
 {

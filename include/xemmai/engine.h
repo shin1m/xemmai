@@ -270,32 +270,38 @@ inline t_object* t_object::f_pool__allocate()
 	return f_engine()->f_object__pool__allocate();
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_object::f_decrement()
+inline void t_object::f_decrement_step()
 {
-	assert(v_count > 0);
-	if (--v_count > 0) {
-#ifdef XEMMAI__OBJECT__CALL_SCAN_BLACK
-		f_scan_black();
-#endif
-		v_color = e_color__PURPLE;
-		if (!v_next) f_append(v_roots, this);
-	} else {
-		static_cast<t_object*>(v_structure->v_this)->f_decrement_member();
-		if (v_fields) {
-			v_fields->f_scan(f_decrement);
-			delete v_fields;
-			v_fields = nullptr;
-		}
-		t_type* type = f_type_as_type();
-		if (!type->v_primitive) {
-			type->f_scan(this, f_decrement);
-			type->f_finalize(this);
-		}
-		f_type()->f_decrement_member();
-		v_type.v_p = nullptr;
-		v_color = e_color__BLACK;
-		if (!v_next) f_engine()->f_free_as_release(this);
+	static_cast<t_object*>(v_structure->v_this)->f_decrement_push();
+	if (v_fields) {
+		v_fields->f_scan(f_push_and_clear<&t_object::f_decrement_push>);
+		delete v_fields;
+		v_fields = nullptr;
 	}
+	t_type* type = f_type_as_type();
+	if (!type->v_primitive) {
+		type->f_scan(this, f_push_and_clear<&t_object::f_decrement_push>);
+		type->f_finalize(this);
+	}
+	f_type()->f_decrement_push();
+	v_type.v_p = nullptr;
+	v_color = e_color__BLACK;
+	if (!v_next) f_engine()->f_free_as_release(this);
+}
+
+inline void t_object::f_collect_white_push()
+{
+	if (v_color != e_color__WHITE) return;
+	v_color = e_color__ORANGE;
+	f_append(f_engine()->v_object__cycle, this);
+	f_push(this);
+}
+
+inline void t_object::f_collect_white()
+{
+	v_color = e_color__ORANGE;
+	f_append(f_engine()->v_object__cycle, this);
+	f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
 }
 
 inline t_scoped t_object::f_allocate_uninitialized(t_object* a_type)

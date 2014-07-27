@@ -105,7 +105,7 @@ class t_with_lock_for_read
 	t_scoped_lock_for_read v_lock;
 
 public:
-	t_with_lock_for_read(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_with_lock_for_read(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)
 	{
 	}
 };
@@ -115,7 +115,7 @@ class t_with_lock_for_write
 	t_scoped_lock_for_write v_lock;
 
 public:
-	t_with_lock_for_write(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_with_lock_for_write(const t_value& a_self) : v_lock(static_cast<t_object*>(a_self)->v_lock)
 	{
 	}
 };

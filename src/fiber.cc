@@ -27,7 +27,7 @@ void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_pos
 	std::putc('\n', a_out);
 }
 
-thread_local t_fiber::t_context* t_fiber::t_context::v_instance;
+XEMMAI__PORTABLE__THREAD t_fiber::t_context* t_fiber::t_context::v_instance;
 
 void t_fiber::t_context::f_pop()
 {
@@ -99,7 +99,7 @@ void t_fiber::t_backtrace::f_dump() const
 	f_engine()->f_context_print(stderr, v_lambda, f_pc());
 }
 
-thread_local t_object* t_fiber::v_current;
+XEMMAI__PORTABLE__THREAD t_object* t_fiber::v_current;
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 t_object* t_fiber::f_current()

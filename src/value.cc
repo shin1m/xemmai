@@ -59,9 +59,9 @@ void t_value::t_decrements::f_flush()
 	v_last = v_epoch;
 }
 
-thread_local t_value::t_collector* t_value::v_collector;
-thread_local t_value::t_increments* t_value::v_increments;
-thread_local t_value::t_decrements* t_value::v_decrements;
+XEMMAI__PORTABLE__THREAD t_value::t_collector* t_value::v_collector;
+XEMMAI__PORTABLE__THREAD t_value::t_increments* t_value::v_increments;
+XEMMAI__PORTABLE__THREAD t_value::t_decrements* t_value::v_decrements;
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 t_increments* t_value::f_increments()
@@ -75,7 +75,7 @@ t_decrements* t_value::f_decrements()
 }
 #endif
 
-thread_local t_stack* t_stack::v_instance;
+XEMMAI__PORTABLE__THREAD t_stack* t_stack::v_instance;
 
 void t_stack::f_expand(t_slot* a_p)
 {

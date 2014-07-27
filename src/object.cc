@@ -7,66 +7,8 @@
 namespace xemmai
 {
 
-thread_local t_object* t_object::v_roots;
-
-void t_object::f_decrement(t_slot& a_slot)
-{
-	t_object* p = a_slot.v_p;
-	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	p->f_decrement();
-	a_slot.v_p = nullptr;
-}
-
-void t_object::f_mark_gray(t_slot& a_slot)
-{
-	t_object* p = a_slot.v_p;
-	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	p->f_mark_gray();
-	--p->v_cyclic;
-}
-
-void t_object::f_scan_gray(t_slot& a_slot)
-{
-	t_object* p = a_slot.v_p;
-	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	p->f_scan_gray();
-}
-
-void t_object::f_scan_black(t_slot& a_slot)
-{
-	t_object* p = a_slot.v_p;
-	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	p->f_scan_black();
-}
-
-void t_object::f_collect_white(t_slot& a_slot)
-{
-	t_object* p = a_slot.v_p;
-	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	p->f_collect_white();
-}
-
-void t_object::f_scan_red(t_slot& a_slot)
-{
-	t_object* p = a_slot.v_p;
-	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	p->f_scan_red();
-}
-
-void t_object::f_cyclic_decrement(t_slot& a_slot)
-{
-	t_object* p = a_slot.v_p;
-	if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
-	if (p->v_color != e_color__RED) {
-		if (p->v_color == e_color__ORANGE) {
-			--p->v_count;
-			--p->v_cyclic;
-		} else {
-			p->f_decrement();
-		}
-	}
-	a_slot.v_p = nullptr;
-}
+XEMMAI__PORTABLE__THREAD t_object* t_object::v_roots;
+XEMMAI__PORTABLE__THREAD t_object* t_object::v_scan_stack;
 
 void t_object::f_collect()
 {
@@ -142,6 +84,8 @@ void t_object::f_collect()
 		if (b) {
 			f_engine()->v_collector__skip = 0;
 			++f_engine()->v_collector__collect;
+		} else if (f_engine()->v_collector__skip % 8 != 0) {
+			return;
 		}
 		t_object* p = v_roots;
 		while (true) {
@@ -196,10 +140,7 @@ void t_object::f_collect()
 		} while (p != cycle);
 		do {
 			p = p->v_next;
-			static_cast<t_object*>(p->v_structure->v_this)->f_scan_red();
-			if (p->v_fields) p->v_fields->f_scan(f_scan_red);
-			p->f_type_as_type()->f_scan(p, f_scan_red);
-			f_scan_red(p->v_type);
+			p->f_step<&t_object::f_scan_red>();
 		} while (p != cycle);
 		do {
 			p = p->v_next;
@@ -215,85 +156,23 @@ t_object* t_object::f_local_pool__allocate()
 }
 #endif
 
-void t_object::f_decrement_tree()
-{
-	static_cast<t_object*>(v_structure->v_this)->f_decrement();
-	if (v_fields) {
-		v_fields->f_scan(f_decrement);
-		delete v_fields;
-		v_fields = nullptr;
-	}
-	t_type* type = f_type_as_type();
-	type->f_scan(this, f_decrement);
-	type->f_finalize(this);
-	f_decrement(v_type);
-	v_color = e_color__BLACK;
-	if (!v_next) f_engine()->f_free_as_release(this);
-}
-
-void t_object::f_mark_gray()
-{
-	if (v_color == e_color__GRAY) return;
-	v_color = e_color__GRAY;
-	v_cyclic = v_count;
-	{
-		t_object* p = v_structure->v_this;
-		p->f_mark_gray();
-		--p->v_cyclic;
-	}
-	if (v_fields) v_fields->f_scan(f_mark_gray);
-	f_type_as_type()->f_scan(this, f_mark_gray);
-	f_mark_gray(v_type);
-}
-
-void t_object::f_scan_gray()
-{
-	if (v_color == e_color__GRAY && v_cyclic <= 0) {
-		v_color = e_color__WHITE;
-		static_cast<t_object*>(v_structure->v_this)->f_scan_gray();
-		if (v_fields) v_fields->f_scan(f_scan_gray);
-		f_type_as_type()->f_scan(this, f_scan_gray);
-		f_scan_gray(v_type);
-	} else if (v_color != e_color__WHITE) {
-		f_scan_black();
-	}
-}
-
-void t_object::f_collect_white()
-{
-	if (v_color != e_color__WHITE) return;
-	v_color = e_color__ORANGE;
-	f_append(f_engine()->v_object__cycle, this);
-	static_cast<t_object*>(v_structure->v_this)->f_collect_white();
-	if (v_fields) v_fields->f_scan(f_collect_white);
-	f_type_as_type()->f_scan(this, f_collect_white);
-	f_collect_white(v_type);
-}
-
 void t_object::f_cyclic_decrement()
 {
 	{
 		t_object* p = v_structure->v_this;
-		if (p && p->v_color != e_color__RED) {
-			if (p->v_color == e_color__ORANGE) {
-				--p->v_count;
-				--p->v_cyclic;
-			} else {
-				p->f_decrement();
-			}
-		}
+		if (p) p->f_cyclic_decrement_push();
 	}
 	if (v_fields) {
-		v_fields->f_scan(f_cyclic_decrement);
+		v_fields->f_scan(f_push_and_clear<&t_object::f_cyclic_decrement_push>);
 		delete v_fields;
 		v_fields = nullptr;
 	}
-	f_type_as_type()->f_scan(this, f_cyclic_decrement);
+	f_type_as_type()->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
 	if (static_cast<t_object*>(v_type) != f_engine()->v_type_class) {
 		f_type_as_type()->f_finalize(this);
 		v_type.v_pointer = nullptr;
 	}
-	f_cyclic_decrement(v_type);
+	f_push_and_clear<&t_object::f_cyclic_decrement_push>(v_type);
 }
 
 void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
