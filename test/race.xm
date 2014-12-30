@@ -3,19 +3,19 @@ print = system.out.write_line;
 
 counter = 0;
 
-hello = @(a_name, a_n) {
-	while (a_n > 0) {
-		a_n = a_n - 1;
+hello = @(name, n) {
+	while (n > 0) {
+		n = n - 1;
 		i = :counter;
 		:counter = i + 1;
-		print(a_name + ": " + i);
+		print(name + ": " + i);
 	}
 	print("done.");
 };
 
-good_bye = @(a_name, a_n) {
+good_bye = @(name, n) {
 	return @{
-		hello(a_name, a_n);
+		hello(name, n);
 	};
 };
 

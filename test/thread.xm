@@ -1,17 +1,17 @@
 system = Module("system");
 print = system.out.write_line;
 
-hello = @(a_name, a_n) {
-	if (a_n > 0) {
-		print("Hello, " + a_name + ": " + a_n);
-		hello(a_name, a_n - 1);
-		print("Good bye, " + a_name + ": " + a_n);
+hello = @(name, n) {
+	if (n > 0) {
+		print("Hello, " + name + ": " + n);
+		hello(name, n - 1);
+		print("Good bye, " + name + ": " + n);
 	}
 };
 
-good_bye = @(a_name, a_n) {
+good_bye = @(name, n) {
 	return @{
-		hello(a_name, a_n);
+		hello(name, n);
 	};
 };
 

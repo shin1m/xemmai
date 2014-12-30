@@ -6,8 +6,8 @@ symbol = @{
 	print('Good.__string() + " " + 'bye + ", " + 'World + "!!");
 };
 
-symbols = @(a_n) {
-	if (a_n > 0) symbols(a_n - 1);
+symbols = @(n) {
+	if (n > 0) symbols(n - 1);
 	symbol();
 };
 
