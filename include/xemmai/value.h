@@ -355,7 +355,7 @@ class t_slot : public t_value
 	}
 	void f__construct(intptr_t a_value)
 	{
-		assert(!v_p);
+		assert(reinterpret_cast<size_t>(v_p) < t_value::e_tag__OBJECT);
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
 		v_integer = a_value;
 	}
@@ -461,7 +461,7 @@ public:
 	}
 	void f_construct(bool a_value)
 	{
-		assert(!v_p);
+		assert(reinterpret_cast<size_t>(v_p) < t_value::e_tag__OBJECT);
 		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
 		v_boolean = a_value;
 	}
@@ -491,32 +491,32 @@ public:
 	}
 	void f_construct(double a_value)
 	{
-		assert(!v_p);
+		assert(reinterpret_cast<size_t>(v_p) < t_value::e_tag__OBJECT);
 		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
 		v_float = a_value;
 	}
 	void f_construct(t_object* a_p = nullptr)
 	{
-		assert(!v_p);
+		assert(reinterpret_cast<size_t>(v_p) < t_value::e_tag__OBJECT);
 		if (!a_p) return;
 		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
 	void f_construct_nonnull(t_object* a_p)
 	{
-		assert(!v_p);
+		assert(reinterpret_cast<size_t>(v_p) < t_value::e_tag__OBJECT);
 		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(const t_value& a_value)
 	{
-		assert(!v_p);
+		assert(reinterpret_cast<size_t>(v_p) < t_value::e_tag__OBJECT);
 		f_copy(a_value);
 		v_p = a_value.v_p;
 	}
 	void f_construct(t_slot&& a_value)
 	{
-		assert(!v_p);
+		assert(reinterpret_cast<size_t>(v_p) < t_value::e_tag__OBJECT);
 		f_move(std::move(a_value));
 	}
 };
