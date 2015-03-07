@@ -25,7 +25,7 @@ void t_dictionary::t_table::f_scan(t_scan a_scan)
 	t_entry** entries = f_entries();
 	for (size_t i = 0; i < v_capacity; ++i) {
 		for (t_entry* p = entries[i]; p; p = p->v_next) {
-			if (!p->v_key) return;
+			if (!p->v_live) return;
 			a_scan(p->v_key);
 			a_scan(p->v_value);
 		}
@@ -40,6 +40,7 @@ void t_dictionary::t_table::f_clear()
 		entries[i] = nullptr;
 		while (p) {
 			t_entry* q = p->v_next;
+			p->v_live = false;
 			p->v_key = nullptr;
 			p->v_value = nullptr;
 			t_local_pool<t_entry>::f_free(p);
@@ -107,6 +108,7 @@ t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 	t_entry** bucket = table.f_bucket(f_as<size_t>(a_key.f_hash()));
 	p = t_local_pool<t_entry>::f_allocate(t_entry::f_allocate);
 	p->v_next = *bucket;
+	p->v_live = true;
 	p->v_key.f_construct(a_key);
 	p->v_value.f_construct(std::move(a_value));
 	*bucket = p;
@@ -126,6 +128,7 @@ t_scoped t_dictionary::f_remove(const t_value& a_key)
 	}
 	t_entry* p = *bucket;
 	*bucket = p->v_next;
+	p->v_live = false;
 	p->v_key = nullptr;
 	t_scoped value = std::move(p->v_value);
 	t_local_pool<t_entry>::f_free(p);

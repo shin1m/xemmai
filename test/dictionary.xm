@@ -50,3 +50,5 @@ assert(foo["zero"] == 0);
 assert(foo[1] == "one");
 assert(foo["two"] == 2);
 assert(foo[3] == "three");
+
+{null: ""};
