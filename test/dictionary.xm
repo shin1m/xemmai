@@ -52,3 +52,4 @@ assert(foo["two"] == 2);
 assert(foo[3] == "three");
 
 {null: ""};
+print({null: "", null: ""});

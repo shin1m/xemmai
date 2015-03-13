@@ -25,7 +25,6 @@ public:
 		static t_entry* f_allocate();
 
 		t_entry* v_next;
-		bool v_live = false;
 		t_slot v_key;
 
 	public:

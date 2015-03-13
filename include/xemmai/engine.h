@@ -346,7 +346,6 @@ inline t_dictionary::t_table::~t_table()
 		t_entry* p = entries[i];
 		while (p) {
 			t_entry* q = p->v_next;
-			p->v_live = false;
 			f_engine()->f_free(p);
 			p = q;
 		}
