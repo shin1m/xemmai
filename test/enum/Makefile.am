@@ -16,5 +16,5 @@ enum_so_SOURCES = enum.cc
 
 check_SCRIPTS = test.xm
 CLEANFILES = test.xm
-test.xm: $(srcdir)/test.xm.in
+test.xm: test.xm.in
 	cp $< $@

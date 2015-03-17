@@ -14,7 +14,7 @@ AM_LDFLAGS += -pg
 endif
 callback_so_SOURCES = callback.h callback.cc extension.cc
 
-check_SCRIPTS = test.xm
-CLEANFILES = test.xm
-test.xm: $(srcdir)/test.xm.in
+check_SCRIPTS = test.xm fiber.xm fiber2.xm
+CLEANFILES = test.xm fiber.xm fiber2.xm
+%.xm: %.xm.in
 	cp $< $@

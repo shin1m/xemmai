@@ -42,6 +42,8 @@ scripts = \
 TESTS = $(scripts) \
 	container/test.xm \
 	callback/test.xm \
+	callback/fiber.xm \
+	callback/fiber2.xm \
 	enum/test.xm \
 	hanoi3.xmd \
 	tail2.xmo

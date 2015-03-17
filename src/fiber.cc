@@ -217,11 +217,8 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 	t_fiber& p = f_as<t_fiber&>(a_this);
 	t_fiber& q = f_as<t_fiber&>(t_fiber::v_current);
 	t_thread& thread = f_as<t_thread&>(t_thread::v_current);
-	if (p.v_main) {
-		if (a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
-	} else {
-		if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || t_fiber::t_context::v_instance->f_native() > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
-	}
+	if (p.v_main && a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
+	if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || t_fiber::t_context::v_instance->f_native() > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
 	{
 		t_with_lock_for_write lock(a_this);
 		if (p.v_active) t_throwable::f_throw(L"already active.");
