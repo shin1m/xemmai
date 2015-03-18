@@ -24,7 +24,7 @@ struct t_fiber
 			p->f_native() = 0;
 			return p;
 		}
-		static void f_initiate(void** a_pc);
+		static void f_initiate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_initiate(t_object* a_lambda, const t_value& a_callable, t_scoped&& a_x);
 		static void f_terminate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(t_object* a_lambda, t_slot* a_stack);
@@ -187,7 +187,7 @@ public:
 	}
 };
 
-inline void t_fiber::t_context::f_initiate(void** a_pc)
+inline void t_fiber::t_context::f_initiate()
 {
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
 	t_stack::v_instance = &fiber.v_stack;
@@ -196,7 +196,7 @@ inline void t_fiber::t_context::f_initiate(void** a_pc)
 	fiber.v_stack.f_allocate(used);
 	fiber.v_stack.v_used = used;
 	v_instance = f_instantiate(stack, nullptr, stack);
-	v_instance->f_pc() = a_pc;
+	v_instance->f_pc() = nullptr;
 }
 
 inline void t_fiber::t_context::f_initiate(t_object* a_lambda, const t_value& a_callable, t_scoped&& a_x)
@@ -208,7 +208,7 @@ inline void t_fiber::t_context::f_initiate(t_object* a_lambda, const t_value& a_
 	t_slot* used = stack + lambda.v_size;
 	fiber.v_stack.f_allocate(used);
 	fiber.v_stack.v_used = used;
-	v_instance = fiber.v_context = f_instantiate(stack, nullptr, stack);
+	v_instance = f_instantiate(stack, nullptr, stack);
 	v_instance->v_lambda.f_construct(a_lambda);
 	v_instance->f_pc() = lambda.v_instructions;
 	t_slot* privates = stack + sizeof(t_context) / sizeof(t_slot);
@@ -221,7 +221,7 @@ inline void t_fiber::t_context::f_terminate()
 	assert(!v_instance->f_next());
 	t_fiber& fiber = f_as<t_fiber&>(v_current);
 	assert(fiber.v_stack.v_used == fiber.v_stack.f_head() + sizeof(t_context) / sizeof(t_slot));
-	v_instance = f_as<t_fiber&>(v_current).v_context = nullptr;
+	v_instance = fiber.v_context = nullptr;
 }
 
 inline void t_fiber::t_context::f_push(t_object* a_lambda, t_slot* a_stack)
