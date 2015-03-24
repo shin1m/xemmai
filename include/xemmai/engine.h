@@ -35,6 +35,7 @@ class t_engine : public t_value::t_collector
 	friend struct t_type_of<t_thread>;
 	friend class t_symbol;
 	friend struct t_type_of<t_symbol>;
+	friend class t_code;
 	friend class t_dictionary;
 	friend class t_dictionary::t_entry;
 	friend class t_global;
@@ -101,6 +102,8 @@ class t_engine : public t_value::t_collector
 	t_structure* v_structure__finalizing = nullptr;
 	t_shared_pool<t_fiber::t_try, 64> v_fiber__try__pool;
 	size_t v_fiber__try__freed = 0;
+	std::list<t_object*> v_fiber__runnings;
+	std::mutex v_fiber__mutex;
 	t_thread::t_internal* v_thread__internals = nullptr;
 	size_t v_thread__cache_hit = 0;
 	size_t v_thread__cache_missed = 0;
@@ -125,8 +128,8 @@ class t_engine : public t_value::t_collector
 	t_slot v_module_global;
 	t_slot v_module_system;
 	t_slot v_module_io;
+	t_slot v_fiber_exit;
 	t_slot v_thread;
-	t_slot v_lambda_fiber;
 	size_t v_stack_size;
 	bool v_verbose;
 	t_debugger* v_debugger = nullptr;
@@ -329,10 +332,76 @@ inline t_scoped t_object::f_allocate(t_object* a_type)
 	return t_scoped(p, t_scoped::t_pass());
 }
 
+inline t_object* t_fiber::f_current()
+{
+	return f_as<t_thread&>(t_thread::v_current).v_active;
+}
+
+inline void t_fiber::t_context::f_initiate()
+{
+	t_stack* stack = t_stack::v_instance = &f_as<t_fiber&>(f_current()).v_stack;
+	t_slot* head = stack->f_head();
+	t_slot* used = head + sizeof(t_context) / sizeof(t_slot);
+	stack->f_allocate(used);
+	stack->v_used = used;
+	v_instance = f_instantiate(head, nullptr, head);
+	v_instance->f_pc() = nullptr;
+}
+
+inline void t_fiber::t_context::f_terminate()
+{
+	assert(!v_instance->f_next());
+	t_fiber& fiber = f_as<t_fiber&>(f_current());
+	assert(fiber.v_stack.v_used == fiber.v_stack.f_head() + sizeof(t_context) / sizeof(t_slot));
+	v_instance = fiber.v_context = nullptr;
+}
+
 inline t_fiber::t_try* t_fiber::t_try::f_allocate()
 {
 	return f_engine()->v_fiber__try__pool.f_allocate();
 }
+
+inline void t_fiber::t_try::f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally)
+{
+	t_fiber& fiber = f_as<t_fiber&>(f_current());
+	t_try* p = t_local_pool<t_try>::f_allocate(f_allocate);
+	p->v_next = fiber.v_try;
+	p->v_stack = a_stack;
+	p->v_context = a_context;
+	p->v_state = e_state__TRY;
+	p->v_catch = a_catch;
+	p->v_finally = a_finally;
+	fiber.v_try = p;
+}
+
+inline void t_fiber::t_try::f_pop()
+{
+	t_fiber& fiber = f_as<t_fiber&>(f_current());
+	t_try* p = fiber.v_try;
+	fiber.v_try = p->v_next;
+	t_local_pool<t_try>::f_free(p);
+}
+
+class t_native_context
+{
+	size_t& v_native;
+	bool v_done = false;
+
+public:
+	t_native_context() : v_native(f_context()->f_native())
+	{
+		++v_native;
+	}
+	~t_native_context()
+	{
+		--v_native;
+		if (!v_done) ++f_as<t_fiber&>(t_fiber::f_current()).v_undone;
+	}
+	void f_done()
+	{
+		v_done = true;
+	}
+};
 
 inline t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
 {

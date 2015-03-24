@@ -37,7 +37,6 @@ void t_fiber::t_context::f_pop()
 	t_slot* base = p->f_base();
 	for (size_t i = 0; i < n; ++i) base[i] = nullptr;
 	f_stack()->v_used = p->f_previous();
-	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
 }
 
 void** t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
@@ -52,16 +51,14 @@ void** t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
 	size_t i = 0;
 	for (; i < a_n; ++i) base[i] = std::move(a_stack[i]);
 	for (; i < n; ++i) base[i] = nullptr;
-	if (v_instance->f_native() > 0) --f_as<t_fiber&>(v_current).v_native;
 	return v_instance->f_pc();
 }
 
 void t_fiber::t_context::f_backtrace(const t_value& a_value)
 {
-	t_fiber& fiber = f_as<t_fiber&>(v_current);
+	t_fiber& fiber = f_as<t_fiber&>(f_current());
 	t_context* p = v_instance;
 	v_instance = p->f_next();
-	if (v_instance->f_native() > 0) --fiber.v_native;
 	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, fiber.v_undone, p->v_lambda, p->f_pc());
 	fiber.v_undone = 0;
 }
@@ -99,18 +96,9 @@ void t_fiber::t_backtrace::f_dump() const
 	f_engine()->f_context_print(stderr, v_lambda, f_pc());
 }
 
-XEMMAI__PORTABLE__THREAD t_object* t_fiber::v_current;
-
-#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_object* t_fiber::f_current()
-{
-	return v_current;
-}
-#endif
-
 void t_fiber::f_throw(const t_scoped& a_value)
 {
-	t_fiber& p = f_as<t_fiber&>(v_current);
+	t_fiber& p = f_as<t_fiber&>(f_current());
 	while (true) {
 		t_try* q = p.v_try;
 		if (!q) {
@@ -160,6 +148,46 @@ void t_fiber::f_define(t_object* a_class)
 	;
 }
 
+void t_fiber::f_run()
+{
+	std::list<t_object*>::iterator i;
+	{
+		std::unique_lock<std::mutex> lock(f_engine()->v_fiber__mutex);
+		i = f_engine()->v_fiber__runnings.insert(f_engine()->v_fiber__runnings.end(), f_current());
+	}
+	t_fiber& q = f_as<t_fiber&>(f_current());
+	t_scoped x = std::move(*--q.v_stack.v_used);
+	t_context::f_initiate();
+	bool b = false;
+	try {
+		t_native_context context;
+		x = q.v_callable(std::move(x));
+	} catch (const t_scoped& thrown) {
+		q.f_caught(thrown);
+		b = true;
+		x = thrown;
+	} catch (...) {
+		b = true;
+		x = std::move(t_throwable::f_instantiate(L"<unexpected>."));
+	}
+	t_context::f_terminate();
+	{
+		std::unique_lock<std::mutex> lock(f_engine()->v_fiber__mutex);
+		f_engine()->v_fiber__runnings.erase(i);
+	}
+	t_thread& thread = f_as<t_thread&>(t_thread::v_current);
+	t_fiber& p = f_as<t_fiber&>(thread.v_fiber);
+	p.v_active = true;
+	q.v_active = false;
+	thread.v_active = thread.v_fiber;
+	t_stack::v_instance = &p.v_stack;
+	t_context::v_instance = p.v_context;
+	p.v_throw = b;
+	p.v_return->f_construct(std::move(x));
+	x = nullptr;
+	p.v_fiber.f_set();
+}
+
 t_fiber::~t_fiber()
 {
 	while (v_try) {
@@ -182,15 +210,7 @@ t_type* t_type_of<t_fiber>::f_derive(t_object* a_this)
 
 void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_fiber& p = f_as<t_fiber&>(a_this);
-	a_scan(p.v_callable);
-	if (p.v_main) return;
-	t_slot* used = p.v_used;
-	{
-		t_with_lock_for_read lock(a_this);
-		if (p.v_active) return;
-	}
-	for (t_slot* q = p.v_stack.f_head(); q < used; ++q) a_scan(*q);
+	a_scan(f_as<t_fiber&>(a_this).v_callable);
 }
 
 void t_type_of<t_fiber>::f_finalize(t_object* a_this)
@@ -215,29 +235,35 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	t_fiber& p = f_as<t_fiber&>(a_this);
-	t_fiber& q = f_as<t_fiber&>(t_fiber::v_current);
 	t_thread& thread = f_as<t_thread&>(t_thread::v_current);
+	t_fiber& q = f_as<t_fiber&>(thread.v_active);
 	if (p.v_main && a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
-	if (t_fiber::v_current != static_cast<t_object*>(thread.v_fiber) && (q.v_native > 0 || t_fiber::t_context::v_instance->f_native() > 0)) t_throwable::f_throw(L"can not yield beyond native context.");
 	{
 		t_with_lock_for_write lock(a_this);
 		if (p.v_active) t_throwable::f_throw(L"already active.");
 		p.v_active = true;
-		q.v_active = false;
 	}
 	t_scoped x = std::move(a_stack[1]);
 	q.v_context = t_fiber::t_context::v_instance;
 	q.v_used = q.v_stack.v_used;
 	q.v_return = a_stack;
 	thread.v_active = a_this;
-	t_fiber::v_current = a_this;
 	if (p.v_context) {
 		t_stack::v_instance = &p.v_stack;
 		t_fiber::t_context::v_instance = p.v_context;
 		p.v_return->f_construct(std::move(x));
 	} else {
-		t_fiber::t_context::f_initiate(f_engine()->v_lambda_fiber, p.v_callable, std::move(x));
+		t_slot* head = p.v_stack.f_head();
+		p.v_stack.f_allocate(head + 1);
+		p.v_stack.v_used = head + 1;
+		*head = std::move(x);
+		p.v_fiber.f_make(t_fiber::f_run);
 	}
+	q.v_active = false;
+	p.v_fiber.f_swap(q.v_fiber);
+	if (!q.v_throw) return;
+	q.v_throw = false;
+	throw t_scoped(std::move(*q.v_return));
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT

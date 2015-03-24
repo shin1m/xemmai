@@ -139,7 +139,6 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_BINARY(XOR_TAIL)
 	XEMMAI__CODE__INSTRUCTION_BINARY(OR_TAIL)
 	e_instruction__SEND_TAIL,
-	e_instruction__FIBER_EXIT,
 	e_instruction__END,
 	e_instruction__SAFE_POINT,
 	e_instruction__BREAK_POINT

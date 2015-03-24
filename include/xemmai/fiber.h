@@ -3,6 +3,7 @@
 
 #include <cassert>
 
+#include "portable/fiber.h"
 #include "lambda.h"
 
 namespace xemmai
@@ -25,7 +26,6 @@ struct t_fiber
 			return p;
 		}
 		static void f_initiate();
-		XEMMAI__PORTABLE__FORCE_INLINE static void f_initiate(t_object* a_lambda, const t_value& a_callable, t_scoped&& a_x);
 		static void f_terminate();
 		XEMMAI__PORTABLE__FORCE_INLINE static void f_push(t_object* a_lambda, t_slot* a_stack);
 		static void f_pop();
@@ -111,35 +111,28 @@ struct t_fiber
 		void** v_finally;
 	};
 
-	static XEMMAI__PORTABLE__THREAD t_object* v_current;
-
-#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	static t_object* f_current()
-	{
-		return v_current;
-	}
-#else
-	static XEMMAI__PORTABLE__EXPORT t_object* f_current();
-#endif
+	static t_object* f_current();
 	static void f_throw(const t_scoped& a_value);
 	static t_scoped f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main = false, bool a_active = false);
 	static void f_define(t_object* a_class);
 	template<typename T_main>
 	static intptr_t f_main(T_main a_main);
+	static void f_run();
 
 	t_slot v_callable;
 	t_stack v_stack;
 	t_context* v_context = nullptr;
 	t_try* v_try = nullptr;
-	size_t v_native = 0;
 	size_t v_undone = 0;
 	void** v_caught;
+	bool v_throw = false;
 	bool v_main;
 	bool v_active;
 	t_slot* v_used;
 	t_slot* v_return;
+	portable::t_fiber v_fiber;
 
-	t_fiber(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(std::move(a_callable)), v_stack(a_stack), v_main(a_main), v_active(a_active), v_used(v_stack.v_used)
+	t_fiber(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(std::move(a_callable)), v_stack(a_stack), v_main(a_main), v_active(a_active), v_used(v_stack.v_used), v_fiber(v_main)
 	{
 	}
 	~t_fiber();
@@ -166,64 +159,6 @@ inline t_fiber::t_context* f_context()
 XEMMAI__PORTABLE__EXPORT t_fiber::t_context* f_context();
 #endif
 
-class t_native_context
-{
-	size_t& v_native;
-	bool v_done = false;
-
-public:
-	t_native_context() : v_native(f_context()->f_native())
-	{
-		++v_native;
-	}
-	~t_native_context()
-	{
-		--v_native;
-		if (!v_done) ++f_as<t_fiber&>(t_fiber::f_current()).v_undone;
-	}
-	void f_done()
-	{
-		v_done = true;
-	}
-};
-
-inline void t_fiber::t_context::f_initiate()
-{
-	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	t_stack::v_instance = &fiber.v_stack;
-	t_slot* stack = fiber.v_stack.f_head();
-	t_slot* used = stack + sizeof(t_context) / sizeof(t_slot);
-	fiber.v_stack.f_allocate(used);
-	fiber.v_stack.v_used = used;
-	v_instance = f_instantiate(stack, nullptr, stack);
-	v_instance->f_pc() = nullptr;
-}
-
-inline void t_fiber::t_context::f_initiate(t_object* a_lambda, const t_value& a_callable, t_scoped&& a_x)
-{
-	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	t_stack::v_instance = &fiber.v_stack;
-	t_lambda& lambda = f_as<t_lambda&>(a_lambda);
-	t_slot* stack = fiber.v_stack.f_head();
-	t_slot* used = stack + lambda.v_size;
-	fiber.v_stack.f_allocate(used);
-	fiber.v_stack.v_used = used;
-	v_instance = f_instantiate(stack, nullptr, stack);
-	v_instance->v_lambda.f_construct(a_lambda);
-	v_instance->f_pc() = lambda.v_instructions;
-	t_slot* privates = stack + sizeof(t_context) / sizeof(t_slot);
-	privates[0].f_construct(a_callable);
-	privates[1].f_construct(std::move(a_x));
-}
-
-inline void t_fiber::t_context::f_terminate()
-{
-	assert(!v_instance->f_next());
-	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	assert(fiber.v_stack.v_used == fiber.v_stack.f_head() + sizeof(t_context) / sizeof(t_slot));
-	v_instance = fiber.v_context = nullptr;
-}
-
 inline void t_fiber::t_context::f_push(t_object* a_lambda, t_slot* a_stack)
 {
 	t_stack* stack = f_stack();
@@ -232,34 +167,11 @@ inline void t_fiber::t_context::f_push(t_object* a_lambda, t_slot* a_stack)
 	t_slot* used = ++a_stack + lambda.v_size;
 	stack->f_allocate(used);
 	stack->v_used = used;
-	t_context* p = v_instance;
-	if (p->f_native() > 0) ++f_as<t_fiber&>(v_current).v_native;
-	v_instance = p = f_instantiate(a_stack + lambda.v_arguments, p, a_stack);
+	t_context* p = v_instance = f_instantiate(a_stack + lambda.v_arguments, v_instance, a_stack);
 	p->f_previous() = previous;
 	p->f_pc() = lambda.v_instructions;
 	if (lambda.v_shared) p->v_scope.f_construct_nonnull(t_scope::f_instantiate(lambda.v_shareds, t_scoped(lambda.v_scope)));
 	p->v_lambda.f_construct_nonnull(a_lambda);
-}
-
-inline void t_fiber::t_try::f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally)
-{
-	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	t_try* p = t_local_pool<t_try>::f_allocate(f_allocate);
-	p->v_next = fiber.v_try;
-	p->v_stack = a_stack;
-	p->v_context = a_context;
-	p->v_state = e_state__TRY;
-	p->v_catch = a_catch;
-	p->v_finally = a_finally;
-	fiber.v_try = p;
-}
-
-inline void t_fiber::t_try::f_pop()
-{
-	t_fiber& fiber = f_as<t_fiber&>(v_current);
-	t_try* p = fiber.v_try;
-	fiber.v_try = p->v_next;
-	t_local_pool<t_try>::f_free(p);
 }
 
 }

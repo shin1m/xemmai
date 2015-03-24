@@ -975,12 +975,12 @@ intptr_t t_fiber::f_main(T_main a_main)
 	intptr_t n = -1;
 	t_context::f_initiate();
 	try {
-		t_native_context context;
 		try {
+			t_native_context context;
 			a_main();
 			n = 0;
 		} catch (const t_scoped& thrown) {
-			f_as<t_fiber&>(v_current).f_caught(thrown);
+			f_as<t_fiber&>(f_current()).f_caught(thrown);
 			std::wstring s = L"<unprintable>";
 			try {
 				t_scoped p = thrown.f_get(f_global()->f_symbol_string())();

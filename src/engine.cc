@@ -204,6 +204,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	f_as<t_type&>(type_structure).v_module = v_module_global;
 	f_as<t_type&>(type_module).v_module = v_module_global;
 	t_scoped type_fiber = t_class::f_instantiate(new t_type_of<t_fiber>(t_scoped(v_module_global), t_scoped(type_object)));
+	v_fiber_exit = t_object::f_allocate(type_object);
 	t_scoped type_thread = t_class::f_instantiate(new t_type_of<t_thread>(t_scoped(v_module_global), t_scoped(type_object)));
 	v_thread = t_object::f_allocate(type_thread);
 	v_thread.f_pointer__(thread);
@@ -211,7 +212,6 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	thread->v_fiber = t_object::f_allocate(type_fiber);
 	thread->v_fiber.f_pointer__(new t_fiber(nullptr, v_stack_size, true, true));
 	thread->v_active = thread->v_fiber;
-	t_fiber::v_current = thread->v_active;
 	{
 		portable::t_affinity affinity;
 		affinity.f_from_thread();
@@ -302,30 +302,6 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		static_cast<t_object*>(writer)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"error"), std::move(writer));
 	}
-	{
-		size_t n = sizeof(t_fiber::t_context) / sizeof(t_slot);
-		t_scoped p = t_code::f_instantiate(std::wstring(), false, false, n + 2, 0, 0, 0);
-		t_code& code = f_as<t_code&>(p);
-		t_code::t_label catch0;
-		t_code::t_label finally0;
-		code.f_emit(e_instruction__TRY);
-		code.f_operand(n);
-		code.f_operand(catch0);
-		code.f_operand(finally0);
-		code.f_emit(e_instruction__CALL);
-		code.f_operand(n);
-		code.f_operand(1);
-		code.f_emit(e_instruction__FINALLY);
-		code.f_operand(t_fiber::t_try::e_state__STEP);
-		code.f_target(catch0);
-		code.f_emit(e_instruction__FINALLY);
-		code.f_operand(t_fiber::t_try::e_state__THROW);
-		code.f_target(finally0);
-		code.f_emit(e_instruction__FIBER_EXIT);
-		code.f_resolve(catch0);
-		code.f_resolve(finally0);
-		v_lambda_fiber = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), std::move(p));
-	}
 }
 
 t_engine::~t_engine()
@@ -335,7 +311,7 @@ t_engine::~t_engine()
 	v_module_global = nullptr;
 	v_module_system = nullptr;
 	v_module_io = nullptr;
-	v_lambda_fiber = nullptr;
+	v_fiber_exit = nullptr;
 	{
 		t_thread& thread = f_as<t_thread&>(v_thread);
 		thread.v_active = nullptr;
@@ -418,12 +394,30 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		if (v_debug__stepping == t_thread::f_current()) v_debug__stepping = nullptr;
 		f_debug_enter_and_notify();
 	}
-	auto internal = f_as<t_thread&>(v_thread).v_internal;
+	t_thread& thread = f_as<t_thread&>(v_thread);
+	auto internal = thread.v_internal;
 	while (true) {
 		auto p = v_thread__internals;
 		while (p == internal || p && p->v_done > 0) p = p->v_next;
 		if (!p) break;
 		v_thread__condition.wait(lock);
+	}
+	t_fiber& fiber = f_as<t_fiber&>(thread.v_fiber);
+	fiber.v_context = t_fiber::t_context::v_instance;
+	fiber.v_used = ++fiber.v_stack.v_used;
+	fiber.v_return = fiber.v_used;
+	while (!v_fiber__runnings.empty()) {
+		t_object* x = v_fiber__runnings.front();
+		t_fiber& p = f_as<t_fiber&>(x);
+		p.v_active = true;
+		fiber.v_active = false;
+		thread.v_active = x;
+		t_stack::v_instance = &p.v_stack;
+		t_fiber::t_context::v_instance = p.v_context;
+		p.v_throw = true;
+		p.v_return->f_construct(v_fiber_exit);
+		p.v_fiber.f_swap(fiber.v_fiber);
+		*fiber.v_return = nullptr;
 	}
 	if (v_debugger) {
 		f_debug_safe_region_leave(lock);
@@ -435,9 +429,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 
 void t_engine::f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc)
 {
-	if (!a_lambda || a_lambda == v_lambda_fiber) {
-		std::fputs("<fiber>\n", a_out);
-	} else {
+	if (a_lambda) {
 		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).f_code());
 		std::fprintf(a_out, "%ls", code.v_path.c_str());
 		const t_at* at = code.f_at(a_pc);
@@ -447,6 +439,8 @@ void t_engine::f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc
 		} else {
 			std::fputc('\n', a_out);
 		}
+	} else {
+		std::fputs("<fiber>\n", a_out);
 	}
 }
 

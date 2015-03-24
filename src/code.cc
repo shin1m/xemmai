@@ -188,7 +188,6 @@ void t_code::f_loop(const void*** a_labels)
 			XEMMAI__CODE__LABEL_BINARY(XOR_TAIL)
 			XEMMAI__CODE__LABEL_BINARY(OR_TAIL)
 			&&label__SEND_TAIL,
-			&&label__FIBER_EXIT,
 			&&label__END,
 			&&label__SAFE_POINT,
 			&&label__BREAK_POINT
@@ -246,7 +245,7 @@ void t_code::f_loop()
 						++pc;
 						t_slot& value = stack[0];
 						t_slot& type = stack[1];
-						if (value.f_is(type)) {
+						if (value != f_engine()->v_fiber_exit && value.f_is(type)) {
 							size_t index = reinterpret_cast<size_t>(*++pc);
 							++pc;
 							f_as<t_fiber&>(t_fiber::f_current()).f_caught(value);
@@ -1302,48 +1301,17 @@ void t_code::f_loop()
 #undef XEMMAI__CODE__OBJECT_CALL
 #undef XEMMAI__CODE__CASE_END
 #undef XEMMAI__CODE__CASE_NA
-				XEMMAI__CODE__CASE(FIBER_EXIT)
-					{
-						t_scoped x = std::move(base[sizeof(t_fiber::t_context) / sizeof(t_slot)]);
-						t_fiber& p = f_as<t_fiber&>(t_fiber::v_current);
-						t_thread& thread = f_as<t_thread&>(t_thread::v_current);
-						t_fiber& q = f_as<t_fiber&>(thread.v_fiber);
-						t_fiber::t_try::t_state state = p.v_try->v_state;
-						t_fiber::t_try::f_pop();
-						if (state == t_fiber::t_try::e_state__THROW && f_is<t_throwable>(x)) {
-							t_fiber::t_context* context = f_context();
-							t_fiber::t_backtrace::f_push(x, context->f_native(), context->v_lambda, pc);
-						}
-						p.v_stack.f_clear(p.v_stack.f_head());
-						p.v_stack.v_used = p.v_stack.f_head();
-						p.v_context = nullptr;
-						q.v_active = true;
-						thread.v_active = thread.v_fiber;
-						t_fiber::v_current = thread.v_fiber;
-						t_stack::v_instance = &q.v_stack;
-						t_fiber::t_context::v_instance = q.v_context;
-						p.v_active = false;
-						if (state == t_fiber::t_try::e_state__THROW) {
-							pc = f_context()->f_pc();
-							throw x;
-						}
-						q.v_return->f_construct(std::move(x));
-						if (f_context()->f_native() > 0) return;
-						base = f_context()->f_base();
-						pc = f_context()->f_pc();
-					}
-					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(END)
 					f_context()->f_pc() = pc;
 					return;
 				XEMMAI__CODE__CASE(SAFE_POINT)
 					f_context()->f_pc() = ++pc;
-					f_as<t_fiber&>(t_fiber::v_current).v_context = f_context();
+					f_as<t_fiber&>(t_fiber::f_current()).v_context = f_context();
 					f_engine()->f_debug_safe_point();
 					XEMMAI__CODE__BREAK
 				XEMMAI__CODE__CASE(BREAK_POINT)
 					f_context()->f_pc() = ++pc;
-					f_as<t_fiber&>(t_fiber::v_current).v_context = f_context();
+					f_as<t_fiber&>(t_fiber::f_current()).v_context = f_context();
 					f_engine()->f_debug_break_point();
 					XEMMAI__CODE__BREAK
 #ifndef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
