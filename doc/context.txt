@@ -1,0 +1,8 @@
+[-1] = self & return value
+[0...n] = arguments...
+[n] = pointer to upper context
+[n + 1] = pointer to base ([0])
+[n + 2] = native count
+[n + 3] = this scope & previous value of stack used
+[n + 4] = lambda & program counter
+[n + 5...] = variables...
