@@ -9,4 +9,4 @@ try {
 	e.dump();
 }
 
-throw Throwable("b");
+#throw Throwable("b");
