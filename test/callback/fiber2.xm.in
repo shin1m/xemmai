@@ -7,20 +7,14 @@ fm = Fiber.current();
 
 Derived = Class(callback.Client) :: @{
 	$on_message = @(message) {
-		fm(message);
+		print("fc: " + message);
+		fm("Good bye.");
 	};
 };
 
-client = Derived();
-
 server = callback.Server();
-server.add(client);
-fc = Fiber(@(x) {
-	server.post("Hello.");
-});
-try {
-	fc("Hello.");
-	assert(false);
-} catch (Throwable e) {
-	assert(e.__string() == "can not yield beyond native context.");
-}
+server.add(Derived());
+
+fc = Fiber(@(x) server.post(x));
+
+print("fm: " + fc("Hello."));

@@ -5,3 +5,8 @@ from <native code>
 from .*/tail2\.xmo:7:3
 		f\(\);
 		 \^
+caught: b
+at .*/tail2\.xmo:12:1
+	throw Throwable\("b"\);
+	\^
+from <fiber>

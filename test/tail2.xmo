@@ -8,3 +8,5 @@ try {
 } catch (Throwable e) {
 	e.dump();
 }
+
+throw Throwable("b");
