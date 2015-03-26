@@ -1,13 +1,9 @@
 TEST_EXTENSIONS = .xm .xmd .xmo
-if AUTOMAKE_OLDER_THAN_1_13
-TESTS_ENVIRONMENT = XEMMAI_MODULE_PATH=$(top_builddir)/modules $(top_builddir)/src/xemmai --verbose
-else
 AM_TESTS_ENVIRONMENT = export XEMMAI_MODULE_PATH=$(top_builddir)/modules;
 XM_LOG_COMPILER = $(top_builddir)/src/xemmai
 AM_XM_LOG_FLAGS = --verbose
 XMD_LOG_COMPILER = ./run-xmd $(top_builddir)/src/xemmai
 XMO_LOG_COMPILER = ./run-xmo $(top_builddir)/src/xemmai
-endif
 scripts = \
 	field.xm \
 	flow.xm \
@@ -50,6 +46,7 @@ TESTS = $(scripts) \
 EXTRA_DIST = $(scripts) \
 	list.xm \
 	run-xmd \
+	run-xmo \
 	hanoi3.xmd \
 	hanoi3.xmdi \
 	hanoi3.xmde \
