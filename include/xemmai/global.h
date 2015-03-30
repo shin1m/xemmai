@@ -570,19 +570,19 @@ inline t_scoped t_value::f_remove(t_object* a_key) const
 	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_slot* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_scoped* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	v_p->f_call(a_stack, a_n);
 }
 
-inline void t_value::f_call_and_return(t_slot* a_stack, size_t a_n) const
+inline void t_value::f_call_and_return(t_scoped* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	v_p->f_call_and_return(a_stack, a_n);
 }
 
-inline t_scoped t_value::f_call_with_same(t_slot* a_stack, size_t a_n) const
+inline t_scoped t_value::f_call_with_same(t_scoped* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	return v_p->f_call_with_same(a_stack, a_n);

@@ -60,7 +60,7 @@ void t_type_of<t_symbol>::f_finalize(t_object* a_this)
 	delete &p;
 }
 
-void t_type_of<t_symbol>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
+void t_type_of<t_symbol>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	t_scoped a0 = std::move(a_stack[1]);

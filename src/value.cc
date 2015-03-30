@@ -77,10 +77,10 @@ t_decrements* t_value::f_decrements()
 
 XEMMAI__PORTABLE__THREAD t_stack* t_stack::v_instance;
 
-void t_stack::f_expand(t_slot* a_p)
+void t_stack::f_expand(t_scoped* a_p)
 {
 	if (a_p > f_head() + v_size) t_throwable::f_throw(L"stack overflow.");
-	while (v_tail < a_p) new(v_tail++) t_slot();
+	while (v_tail < a_p) new(v_tail++) t_scoped();
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT

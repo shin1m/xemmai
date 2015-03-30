@@ -19,7 +19,7 @@ struct t_type_of<t_client> : t_type
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
 };
 
 template<>
@@ -32,7 +32,7 @@ struct t_type_of<t_server> : t_type
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
 };
 
 }
@@ -144,7 +144,7 @@ void t_type_of<t_client>::f_finalize(t_object* a_this)
 	delete dynamic_cast<t_client_wrapper*>(&f_as<t_client&>(a_this));
 }
 
-t_scoped t_type_of<t_client>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<t_client>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	return t_construct_with<t_scoped (*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(a_class, a_stack, a_n);
 }
@@ -168,7 +168,7 @@ void t_type_of<t_server>::f_finalize(t_object* a_this)
 	delete &f_as<t_server&>(a_this);
 }
 
-t_scoped t_type_of<t_server>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<t_server>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<t_server>::f_do(a_class, a_stack, a_n);
 }

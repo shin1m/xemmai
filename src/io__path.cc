@@ -26,12 +26,12 @@ void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
 	delete &f_as<portable::t_path&>(a_this);
 }
 
-t_scoped t_type_of<portable::t_path>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<portable::t_path>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	return t_construct<const std::wstring&>::t_bind<portable::t_path>::f_do(a_class, a_stack, a_n);
 }
 
-void t_type_of<portable::t_path>::f_divide(t_object* a_this, t_slot* a_stack)
+void t_type_of<portable::t_path>::f_divide(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);

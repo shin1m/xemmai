@@ -47,47 +47,47 @@ template<typename... T_an>
 struct t_signature
 {
 	template<size_t A_i>
-	static void f_check__(t_slot* a_stack)
+	static void f_check__(t_scoped* a_stack)
 	{
 	}
 	template<size_t A_i, typename T_a0, typename... T_am>
-	static void f_check__(t_slot* a_stack)
+	static void f_check__(t_scoped* a_stack)
 	{
 		xemmai::f_check<T_a0>(*++a_stack, t_cs<L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't'>() + typename t_n2s<A_i>::t());
 		f_check__<A_i + 1, T_am...>(a_stack);
 	}
-	static void f_check(t_slot* a_stack, size_t a_n)
+	static void f_check(t_scoped* a_stack, size_t a_n)
 	{
 		if (a_n != sizeof...(T_an)) t_throwable::f_throw((t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>()).v);
 		f_check__<0, T_an...>(a_stack);
 	}
 	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...)>
-	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_slot* a_stack, T_an&&... a_n)
+	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_scoped* a_stack, T_an&&... a_n)
 	{
 		return A_function(a_module, a_self, std::forward<T_an>(a_n)...);
 	}
 	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...), typename T_a0, typename... T_am, typename... T_ak>
-	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_slot* a_stack, T_ak&&... a_k)
+	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_scoped* a_stack, T_ak&&... a_k)
 	{
 		t_scoped a0 = std::move(*++a_stack);
 		return f__call<A_function, T_am...>(a_module, a_self, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(a0));
 	}
 	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...)>
-	static void f_call(t_object* a_module, const t_value& a_self, t_slot* a_stack)
+	static void f_call(t_object* a_module, const t_value& a_self, t_scoped* a_stack)
 	{
 		a_stack[0].f_construct(f__call<A_function, T_an...>(a_module, a_self, a_stack));
 	}
 	template<bool>
-	static bool f__match(t_slot* a_stack)
+	static bool f__match(t_scoped* a_stack)
 	{
 		return true;
 	}
 	template<bool, typename T_a0, typename... T_am>
-	static bool f__match(t_slot* a_stack)
+	static bool f__match(t_scoped* a_stack)
 	{
 		return f_is<T_a0>(*++a_stack) && f__match<false, T_am...>(a_stack);
 	}
-	static bool f_match(t_slot* a_stack, size_t a_n)
+	static bool f_match(t_scoped* a_stack, size_t a_n)
 	{
 		return a_n == sizeof...(T_an) && f__match<false, T_an...>(a_stack);
 	}
@@ -130,43 +130,43 @@ struct t_call_construct<t_scoped (*)(t_object*, T_an...), A_function>
 	{
 		return A_function(a_self, std::forward<T_an>(a_n)...);
 	}
-	static void f_call(t_object* a_module, t_slot* a_stack, size_t a_n)
+	static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 	{
 		t_scoped self = std::move(a_stack[0]);
 		if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 		t_signature<T_an...>::f_check(a_stack, a_n);
 		t_signature<T_an...>::template f_call<f_function>(a_module, self, a_stack);
 	}
-	static void f_call(t_object* a_module, t_slot* a_stack)
+	static void f_call(t_object* a_module, t_scoped* a_stack)
 	{
 		t_scoped self = std::move(a_stack[0]);
 		t_signature<T_an...>::template f_call<f_function>(a_module, self, a_stack);
 	}
 	template<typename...>
-	static t_scoped f__do(t_object* a_class, t_slot* a_stack, T_an&&... a_n)
+	static t_scoped f__do(t_object* a_class, t_scoped* a_stack, T_an&&... a_n)
 	{
 		return A_function(a_class, std::forward<T_an>(a_n)...);
 	}
 	template<typename T_a0, typename... T_am, typename... T_ak>
-	static t_scoped f__do(t_object* a_class, t_slot* a_stack, T_ak&&... a_k)
+	static t_scoped f__do(t_object* a_class, t_scoped* a_stack, T_ak&&... a_k)
 	{
 		++a_stack;
 		return f__do<T_am...>(a_class, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(*a_stack));
 	}
-	static t_scoped f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
+	static t_scoped f_do(t_object* a_class, t_scoped* a_stack, size_t a_n)
 	{
 		t_signature<T_an...>::f_check(a_stack, a_n);
 		return f__do<T_an...>(a_class, a_stack);
 	}
-	static t_scoped f_do(t_object* a_class, t_slot* a_stack)
+	static t_scoped f_do(t_object* a_class, t_scoped* a_stack)
 	{
 		return f__do<T_an...>(a_class, a_stack);
 	}
-	static bool f__match(t_slot* a_stack, size_t a_n)
+	static bool f__match(t_scoped* a_stack, size_t a_n)
 	{
 		return t_signature<T_an...>::f_match(a_stack, a_n);
 	}
-	static bool f_match(t_slot* a_stack, size_t a_n)
+	static bool f_match(t_scoped* a_stack, size_t a_n)
 	{
 		return a_stack[0].f_type() == f_global()->f_type<t_class>() && f__match(a_stack, a_n);
 	}
@@ -349,19 +349,19 @@ struct t_member
 			T_with with(a_self);
 			return t_call_member<T_extension, T_function>::template f_call<A_function>(a_module, a_self, std::forward<T_an>(a_n)...);
 		}
-		static void f_call(t_object* a_module, t_slot* a_stack, size_t a_n)
+		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
 			t_scoped self = std::move(a_stack[0]);
 			f_check<t_self>(self, L"this");
 			t_signature::f_check(a_stack, a_n);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
-		static void f_call(t_object* a_module, t_slot* a_stack)
+		static void f_call(t_object* a_module, t_scoped* a_stack)
 		{
 			t_scoped self = std::move(a_stack[0]);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
-		static bool f_match(t_slot* a_stack, size_t a_n)
+		static bool f_match(t_scoped* a_stack, size_t a_n)
 		{
 			return f_is<t_self>(a_stack[0]) && t_signature::f_match(a_stack, a_n);
 		}
@@ -434,18 +434,18 @@ struct t_static
 		{
 			return t_call_static<T_extension, T_function>::template f_call<A_function>(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
 		}
-		static void f_call(t_object* a_module, t_slot* a_stack, size_t a_n)
+		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
 			t_scoped self = std::move(a_stack[0]);
 			t_signature::f_check(a_stack, a_n);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
-		static void f_call(t_object* a_module, t_slot* a_stack)
+		static void f_call(t_object* a_module, t_scoped* a_stack)
 		{
 			t_scoped self = std::move(a_stack[0]);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
-		static bool f_match(t_slot* a_stack, size_t a_n)
+		static bool f_match(t_scoped* a_stack, size_t a_n)
 		{
 			return t_signature::f_match(a_stack, a_n);
 		}
@@ -461,11 +461,11 @@ struct t_overload<>
 	template<typename T>
 	struct t_bind
 	{
-		static void f_call(t_object* a_module, t_slot* a_stack, size_t a_n)
+		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
 			t_throwable::f_throw(L"no method matching signature is found.");
 		}
-		static t_scoped f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
+		static t_scoped f_do(t_object* a_class, t_scoped* a_stack, size_t a_n)
 		{
 			t_throwable::f_throw(L"no method matching signature is found.");
 		}
@@ -480,14 +480,14 @@ struct t_overload<T, T_next...>
 	{
 		typedef typename T::template t_bind<T_self> t_bound;
 
-		static void f_call(t_object* a_module, t_slot* a_stack, size_t a_n)
+		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
 			if (t_bound::f_match(a_stack, a_n))
 				t_bound::f_call(a_module, a_stack);
 			else
 				t_overload<T_next...>::template t_bind<T_self>::f_call(a_module, a_stack, a_n);
 		}
-		static t_scoped f_do(t_object* a_class, t_slot* a_stack, size_t a_n)
+		static t_scoped f_do(t_object* a_class, t_scoped* a_stack, size_t a_n)
 		{
 			return t_bound::f__match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : t_overload<T_next...>::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
 		}
@@ -502,7 +502,7 @@ struct t_overload<t_member<T_function, A_function, T_with>, T_next...>
 	{
 		typedef typename t_member<T_function, A_function, T_with>::template t_bind<T_extension> t_bound;
 
-		static void f_call(t_object* a_module, t_slot* a_stack, size_t a_n)
+		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
 			if (t_bound::f_match(a_stack, a_n))
 				t_bound::f_call(a_module, a_stack);
@@ -520,7 +520,7 @@ struct t_overload<t_static<T_function, A_function>, T_next...>
 	{
 		typedef typename t_static<T_function, A_function>::template t_bind<T_extension> t_bound;
 
-		static void f_call(t_object* a_module, t_slot* a_stack, size_t a_n)
+		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
 			if (t_bound::f_match(a_stack, a_n))
 				t_bound::f_call(a_module, a_stack);

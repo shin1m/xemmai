@@ -154,12 +154,12 @@ void t_type_of<t_dictionary::t_table>::f_finalize(t_object* a_this)
 	delete &f_as<t_dictionary::t_table&>(a_this);
 }
 
-void t_type_of<t_dictionary::t_table>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
+void t_type_of<t_dictionary::t_table>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_slot* a_stack, size_t a_n)
+void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_scoped* a_stack, size_t a_n)
 {
 	t_scoped self = std::move(a_stack[0]);
 	if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
@@ -318,30 +318,30 @@ void t_type_of<t_dictionary>::f_finalize(t_object* a_this)
 	delete &f_as<t_dictionary&>(a_this);
 }
 
-t_scoped t_type_of<t_dictionary>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<t_dictionary>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	t_scoped p = t_object::f_allocate(a_class);
 	t_dictionary* dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
 	for (size_t i = 1; i <= a_n; ++i) {
-		const t_slot& x = a_stack[i];
+		const t_scoped& x = a_stack[i];
 		if (++i > a_n) {
 			dictionary->f_put(x, t_value());
 			break;
 		}
-		dictionary->f_put(x, t_scoped(a_stack[i]));
+		dictionary->f_put(x, std::move(a_stack[i]));
 	}
 	return p;
 }
 
-void t_type_of<t_dictionary>::f_hash(t_object* a_this, t_slot* a_stack)
+void t_type_of<t_dictionary>::f_hash(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	a_stack[0].f_construct(f_hash(t_value(a_this)));
 	context.f_done();
 }
 
-void t_type_of<t_dictionary>::f_get_at(t_object* a_this, t_slot* a_stack)
+void t_type_of<t_dictionary>::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);
@@ -350,7 +350,7 @@ void t_type_of<t_dictionary>::f_get_at(t_object* a_this, t_slot* a_stack)
 	context.f_done();
 }
 
-void t_type_of<t_dictionary>::f_set_at(t_object* a_this, t_slot* a_stack)
+void t_type_of<t_dictionary>::f_set_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);
@@ -360,7 +360,7 @@ void t_type_of<t_dictionary>::f_set_at(t_object* a_this, t_slot* a_stack)
 	context.f_done();
 }
 
-void t_type_of<t_dictionary>::f_equals(t_object* a_this, t_slot* a_stack)
+void t_type_of<t_dictionary>::f_equals(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);
@@ -368,7 +368,7 @@ void t_type_of<t_dictionary>::f_equals(t_object* a_this, t_slot* a_stack)
 	context.f_done();
 }
 
-void t_type_of<t_dictionary>::f_not_equals(t_object* a_this, t_slot* a_stack)
+void t_type_of<t_dictionary>::f_not_equals(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);

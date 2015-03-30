@@ -31,7 +31,7 @@ void t_class::f_finalize(t_object* a_this)
 	delete &f_as<t_type&>(a_this);
 }
 
-void t_class::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
+void t_class::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	if (a_n > 1) t_throwable::f_throw(L"must be called with or without an argument.");
 	t_scoped x;
@@ -104,14 +104,14 @@ t_scoped t_class::f_remove(t_object* a_this, t_object* a_key)
 	return value;
 }
 
-void t_class::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
+void t_class::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	t_native_context context;
 	f_as<t_type&>(a_this).f_instantiate(a_this, a_stack, a_n);
 	context.f_done();
 }
 
-void t_class::f_send(t_object* a_this, t_slot* a_stack)
+void t_class::f_send(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	a_stack[0].f_construct(a_this);

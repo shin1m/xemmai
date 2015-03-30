@@ -256,7 +256,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print_variable(t_fiber::t_context* a_context, const std::wstring& a_name, size_t a_depth)
 	{
-		const t_slot* variable = a_context->f_variable(a_name);
+		const t_value* variable = a_context->f_variable(a_name);
 		if (!variable) return;
 		f_print_value(*variable, a_depth);
 		std::fputc('\n', v_out);

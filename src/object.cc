@@ -186,7 +186,7 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 		v_fields = &fields;
 	}
 	t_object* structure0 = v_structure->v_this;
-	t_slot structure1 = std::move(a_structure);
+	t_slot structure1(std::move(a_structure));
 	v_structure = &f_as<t_structure&>(structure1);
 	t_value::v_decrements->f_push(structure0);
 	(*v_fields)[index] = std::move(a_value);
@@ -242,7 +242,7 @@ void t_object::f_field_put(t_object* a_key, t_scoped&& a_value)
 void t_object::f_field_remove(size_t a_index)
 {
 	t_object* structure0 = v_structure->v_this;
-	t_slot structure1 = v_structure->f_remove(a_index);
+	t_slot structure1(v_structure->f_remove(a_index));
 	v_structure = &f_as<t_structure&>(structure1);
 	t_value::v_decrements->f_push(structure0);
 	size_t size = v_structure->f_size();
@@ -264,13 +264,13 @@ void t_object::f_field_remove(size_t a_index)
 	}
 }
 
-void t_object::f_call_and_return(t_slot* a_stack, size_t a_n)
+void t_object::f_call_and_return(t_scoped* a_stack, size_t a_n)
 {
 	f_call(a_stack, a_n);
 	if (f_context()->f_native() <= 0) t_code::f_loop();
 }
 
-t_scoped t_object::f_call_with_same(t_slot* a_stack, size_t a_n)
+t_scoped t_object::f_call_with_same(t_scoped* a_stack, size_t a_n)
 {
 	t_scoped_stack stack(a_n + 1);
 	for (size_t i = 1; i <= a_n; ++i) stack[i].f_construct(a_stack[i]);

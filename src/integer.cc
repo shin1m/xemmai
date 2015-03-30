@@ -227,7 +227,7 @@ t_type* t_type_of<intptr_t>::f_derive(t_object* a_this)
 	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
 }
 
-t_scoped t_type_of<intptr_t>::f_construct(t_object* a_class, t_slot* a_stack, size_t a_n)
+t_scoped t_type_of<intptr_t>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct_with<t_scoped (*)(t_object*, intptr_t), f_construct>,

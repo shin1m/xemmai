@@ -67,7 +67,7 @@ public:
 template<>
 struct t_type_of<t_bytes> : t_type
 {
-	static void f__construct(t_object* a_module, t_slot* a_stack, size_t a_n);
+	static void f__construct(t_object* a_module, t_scoped* a_stack, size_t a_n);
 	static bool f_equals(const t_value& a_self, const t_value& a_other);
 	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{
@@ -78,12 +78,12 @@ struct t_type_of<t_bytes> : t_type
 	using t_type::t_type;
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
-	virtual void f_hash(t_object* a_this, t_slot* a_stack);
-	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
-	virtual void f_set_at(t_object* a_this, t_slot* a_stack);
-	virtual void f_equals(t_object* a_this, t_slot* a_stack);
-	virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
+	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
+	virtual void f_hash(t_object* a_this, t_scoped* a_stack);
+	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
+	virtual void f_set_at(t_object* a_this, t_scoped* a_stack);
+	virtual void f_equals(t_object* a_this, t_scoped* a_stack);
+	virtual void f_not_equals(t_object* a_this, t_scoped* a_stack);
 };
 
 }

@@ -56,9 +56,9 @@ struct t_type_of<t_lambda> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
-	virtual void f_call(t_object* a_this, t_slot* a_stack, size_t a_n);
-	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
+	virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
+	virtual void f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
 };
 
 class t_advanced_lambda : public t_lambda
@@ -78,7 +78,7 @@ class t_advanced_lambda : public t_lambda
 	~t_advanced_lambda() = default;
 
 public:
-	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code, t_slot* a_stack);
+	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code, t_scoped* a_stack);
 };
 
 template<>
@@ -87,7 +87,7 @@ struct t_type_of<t_advanced_lambda> : t_type_of<t_lambda>
 	using t_type_of<t_lambda>::t_type_of;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_call(t_object* a_this, t_slot* a_stack, size_t a_n);
+	virtual void f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
 };
 
 }

@@ -34,17 +34,17 @@ void t_fiber::t_context::f_pop()
 	t_context* p = v_instance;
 	v_instance = p->f_next();
 	size_t n = f_as<t_lambda&>(p->v_lambda).v_privates;
-	t_slot* base = p->f_base();
+	t_scoped* base = p->f_base();
 	for (size_t i = 0; i < n; ++i) base[i] = nullptr;
 	f_stack()->v_used = p->f_previous();
 }
 
-void** t_fiber::t_context::f_pop(t_slot* a_stack, size_t a_n)
+void** t_fiber::t_context::f_pop(t_scoped* a_stack, size_t a_n)
 {
 	++a_stack;
 	t_context* p = v_instance;
 	v_instance = p->f_next();
-	t_slot* base = p->f_base();
+	t_scoped* base = p->f_base();
 	f_stack()->v_used = std::max(p->f_previous(), base + a_n);
 	size_t n = f_as<t_lambda&>(p->v_lambda).v_privates;
 	base[-1] = nullptr;
@@ -63,7 +63,7 @@ void t_fiber::t_context::f_backtrace(const t_value& a_value)
 	fiber.v_undone = 0;
 }
 
-const t_slot* t_fiber::t_context::f_variable(const std::wstring& a_name) const
+const t_value* t_fiber::t_context::f_variable(const std::wstring& a_name) const
 {
 	t_code& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
 	auto i = code.v_variables.find(a_name);
@@ -71,13 +71,13 @@ const t_slot* t_fiber::t_context::f_variable(const std::wstring& a_name) const
 	size_t outer = 0;
 	for (auto i = a_name.begin(); i != a_name.end() && *i == L':'; ++i) ++outer;
 	size_t index = i->second.v_index;
-	if (outer <= 0) return i->second.v_shared ? &f_as<const t_scope&>(v_scope)[index] : f_base() + index;
+	if (outer <= 0) return i->second.v_shared ? static_cast<const t_value*>(&f_as<const t_scope&>(v_scope)[index]) : static_cast<const t_value*>(f_base() + index);
 	t_object* scope = f_as<t_lambda&>(v_lambda).v_scope;
 	for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
 	return &f_as<const t_scope&>(scope)[index];
 }
 
-void t_fiber::t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_slot& a_lambda, void** a_pc)
+void t_fiber::t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_scoped& a_lambda, void** a_pc)
 {
 	t_with_lock_for_write lock(a_throwable);
 	t_throwable& p = f_as<t_throwable&>(a_throwable);
@@ -218,7 +218,7 @@ void t_type_of<t_fiber>::f_finalize(t_object* a_this)
 	delete &f_as<t_fiber&>(a_this);
 }
 
-void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
+void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(L"must be called with 1 or 2 argument(s).");
 	t_scoped a0 = std::move(a_stack[1]);
@@ -231,7 +231,7 @@ void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_slot* a_stack, size_
 	a_stack[0].f_construct(t_fiber::f_instantiate(std::move(a0), size));
 }
 
-void t_type_of<t_fiber>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
+void t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
 	t_fiber& p = f_as<t_fiber&>(a_this);
@@ -253,7 +253,7 @@ void t_type_of<t_fiber>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
 		t_fiber::t_context::v_instance = p.v_context;
 		p.v_return->f_construct(std::move(x));
 	} else {
-		t_slot* head = p.v_stack.f_head();
+		t_scoped* head = p.v_stack.f_head();
 		p.v_stack.f_allocate(head + 1);
 		p.v_stack.v_used = head + 1;
 		*head = std::move(x);

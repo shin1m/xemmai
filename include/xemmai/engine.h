@@ -124,12 +124,12 @@ class t_engine : public t_value::t_collector
 	std::mutex v_symbol__instantiate__mutex;
 	t_shared_pool<t_dictionary::t_entry, 1024> v_dictionary__entry__pool;
 	size_t v_dictionary__entry__freed = 0;
-	t_slot v_structure_root;
-	t_slot v_module_global;
-	t_slot v_module_system;
-	t_slot v_module_io;
-	t_slot v_fiber_exit;
-	t_slot v_thread;
+	t_scoped v_structure_root;
+	t_scoped v_module_global;
+	t_scoped v_module_system;
+	t_scoped v_module_io;
+	t_scoped v_fiber_exit;
+	t_scoped v_thread;
 	size_t v_stack_size;
 	bool v_verbose;
 	t_debugger* v_debugger = nullptr;
@@ -340,8 +340,8 @@ inline t_object* t_fiber::f_current()
 inline void t_fiber::t_context::f_initiate()
 {
 	t_stack* stack = t_stack::v_instance = &f_as<t_fiber&>(f_current()).v_stack;
-	t_slot* head = stack->f_head();
-	t_slot* used = head + sizeof(t_context) / sizeof(t_slot);
+	t_scoped* head = stack->f_head();
+	t_scoped* used = head + sizeof(t_context) / sizeof(t_scoped);
 	stack->f_allocate(used);
 	stack->v_used = used;
 	v_instance = f_instantiate(head, nullptr, head);
@@ -352,7 +352,7 @@ inline void t_fiber::t_context::f_terminate()
 {
 	assert(!v_instance->f_next());
 	t_fiber& fiber = f_as<t_fiber&>(f_current());
-	assert(fiber.v_stack.v_used == fiber.v_stack.f_head() + sizeof(t_context) / sizeof(t_slot));
+	assert(fiber.v_stack.v_used == fiber.v_stack.f_head() + sizeof(t_context) / sizeof(t_scoped));
 	v_instance = fiber.v_context = nullptr;
 }
 
@@ -361,7 +361,7 @@ inline t_fiber::t_try* t_fiber::t_try::f_allocate()
 	return f_engine()->v_fiber__try__pool.f_allocate();
 }
 
-inline void t_fiber::t_try::f_push(t_slot* a_stack, t_context* a_context, void** a_catch, void** a_finally)
+inline void t_fiber::t_try::f_push(t_scoped* a_stack, t_context* a_context, void** a_catch, void** a_finally)
 {
 	t_fiber& fiber = f_as<t_fiber&>(f_current());
 	t_try* p = t_local_pool<t_try>::f_allocate(f_allocate);

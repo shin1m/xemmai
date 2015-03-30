@@ -40,7 +40,7 @@ struct t_type_of<t_throwable> : t_type
 	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
 };
 
 }

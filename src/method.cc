@@ -29,19 +29,19 @@ void t_type_of<t_method>::f_finalize(t_object* a_this)
 	delete &f_as<t_method&>(a_this);
 }
 
-void t_type_of<t_method>::f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n)
+void t_type_of<t_method>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_method>::f_call(t_object* a_this, t_slot* a_stack, size_t a_n)
+void t_type_of<t_method>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	t_method& p = f_as<t_method&>(a_this);
 	a_stack[0].f_construct(p.v_self);
 	p.v_function.f_call(a_stack, a_n);
 }
 
-void t_type_of<t_method>::f_get_at(t_object* a_this, t_slot* a_stack)
+void t_type_of<t_method>::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[1]);

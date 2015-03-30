@@ -139,13 +139,13 @@ struct t_type_of<t_dictionary::t_table> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
+	virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
 };
 
 template<>
 struct t_type_of<t_dictionary> : t_type
 {
-	static void f__construct(t_object* a_module, t_slot* a_stack, size_t a_n);
+	static void f__construct(t_object* a_module, t_scoped* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
 	static intptr_t f_hash(const t_value& a_self);
 	static bool f_equals(const t_value& a_self, const t_value& a_other);
@@ -160,12 +160,12 @@ struct t_type_of<t_dictionary> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
-	virtual void f_hash(t_object* a_this, t_slot* a_stack);
-	virtual void f_get_at(t_object* a_this, t_slot* a_stack);
-	virtual void f_set_at(t_object* a_this, t_slot* a_stack);
-	virtual void f_equals(t_object* a_this, t_slot* a_stack);
-	virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
+	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
+	virtual void f_hash(t_object* a_this, t_scoped* a_stack);
+	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
+	virtual void f_set_at(t_object* a_this, t_scoped* a_stack);
+	virtual void f_equals(t_object* a_this, t_scoped* a_stack);
+	virtual void f_not_equals(t_object* a_this, t_scoped* a_stack);
 };
 
 inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(f_as<const t_table&>(a_dictionary.v_table)), v_i(0), v_entry(nullptr)

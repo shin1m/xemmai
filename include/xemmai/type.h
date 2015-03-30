@@ -220,7 +220,7 @@ struct t_type_of<t_object>
 		return a_value;
 	}
 	XEMMAI__PORTABLE__EXPORT static bool f_derives(t_object* a_this, t_object* a_type);
-	static void f_initialize(t_object* a_module, t_slot* a_stack, size_t a_n);
+	static void f_initialize(t_object* a_module, t_scoped* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT static std::wstring f_string(const t_value& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];
@@ -250,37 +250,37 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT virtual t_type_of* f_derive(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_slot* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_object* a_class, t_slot* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_get(const t_value& a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
 	XEMMAI__PORTABLE__EXPORT virtual bool f_has(const t_value& a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
-	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_call(t_object* a_this, t_slot* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT virtual void f_get_at(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_set_at(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_plus(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_minus(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_not(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_complement(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_multiply(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_divide(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_modulus(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_add(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_subtract(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_left_shift(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_right_shift(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_less(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_less_equal(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_greater(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_greater_equal(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_equals(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_not_equals(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_and(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_xor(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_or(t_object* a_this, t_slot* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_send(t_object* a_this, t_slot* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_set_at(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_plus(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_minus(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_not(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_complement(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_multiply(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_divide(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_modulus(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_add(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_subtract(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_left_shift(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_right_shift(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_less(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_less_equal(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_greater(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_greater_equal(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_equals(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_not_equals(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_and(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_xor(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_or(t_object* a_this, t_scoped* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_send(t_object* a_this, t_scoped* a_stack);
 };
 
 template<>
