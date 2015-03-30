@@ -5,6 +5,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/portable/define.h \
 	xemmai/portable/library.h \
 	xemmai/portable/path.h \
+	xemmai/portable/fiber.h \
 	xemmai/portable/thread.h \
 	xemmai/array.h \
 	xemmai/ast.h \
