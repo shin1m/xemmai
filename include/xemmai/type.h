@@ -257,7 +257,7 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT virtual bool f_has(const t_value& a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_scoped* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_set_at(t_object* a_this, t_scoped* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual void f_plus(t_object* a_this, t_scoped* a_stack);

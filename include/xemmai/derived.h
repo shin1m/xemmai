@@ -13,7 +13,7 @@ struct t_derived : T
 	virtual t_type* f_derive(t_object* a_this);
 	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_scoped* a_stack);
-	virtual void f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
 	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
 	virtual void f_set_at(t_object* a_this, t_scoped* a_stack);
 	virtual void f_plus(t_object* a_this, t_scoped* a_stack);
@@ -58,9 +58,9 @@ void t_derived<T>::f_hash(t_object* a_this, t_scoped* a_stack)
 }
 
 template<typename T>
-void t_derived<T>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_derived<T>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
-	a_this->f_get(f_global()->f_symbol_call()).f_call(a_stack, a_n);
+	return a_this->f_get(f_global()->f_symbol_call()).f_call_without_loop(a_stack, a_n);
 }
 
 template<typename T>

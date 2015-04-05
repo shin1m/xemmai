@@ -185,7 +185,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				if (p->v_shared) {
 					p->v_index = lambda->v_shareds++;
 				} else {
-					p->v_index = sizeof(t_fiber::t_context) / sizeof(t_scoped) + lambda->v_privates.size();
+					p->v_index = lambda->v_privates.size();
 					lambda->v_privates.push_back(p);
 				}
 			}
@@ -840,7 +840,7 @@ void t_parser::f_parse(ast::t_module& a_module)
 		if (p->v_shared) {
 			p->v_index = a_module.v_shareds++;
 		} else {
-			p->v_index = sizeof(t_fiber::t_context) / sizeof(t_scoped) + a_module.v_privates.size();
+			p->v_index = a_module.v_privates.size();
 			a_module.v_privates.push_back(p);
 		}
 	}

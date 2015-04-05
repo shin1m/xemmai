@@ -199,15 +199,15 @@ struct t_code
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static const void** v_labels;
 
-	static void f_loop(const void*** a_labels = 0);
+	static size_t f_loop(t_object* a_lambda, t_scoped* a_stack, const void*** a_labels = nullptr);
 	static const void** f_labels()
 	{
 		const void** labels;
-		f_loop(&labels);
+		f_loop(nullptr, nullptr, &labels);
 		return labels;
 	}
 #else
-	static XEMMAI__PORTABLE__EXPORT void f_loop();
+	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_object* a_lambda, t_scoped* a_stack);
 #endif
 	static t_scoped f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 

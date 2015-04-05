@@ -570,29 +570,33 @@ inline t_scoped t_value::f_remove(t_object* a_key) const
 	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_scoped* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_scoped* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	v_p->f_call(a_stack, a_n);
+	return v_p->f_call_without_loop(a_stack, a_n);
 }
 
-inline void t_value::f_call_and_return(t_scoped* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_scoped* a_stack, size_t a_n) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	v_p->f_call_and_return(a_stack, a_n);
+	a_n = f_call_without_loop(a_stack, a_n);
+	while (a_n != size_t(-1)) {
+		t_scoped x = std::move(a_stack[0]);
+		a_n = x.f_call_without_loop(a_stack, a_n);
+	}
 }
 
 inline t_scoped t_value::f_call_with_same(t_scoped* a_stack, size_t a_n) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	return v_p->f_call_with_same(a_stack, a_n);
+	t_scoped_stack stack(a_n + 1);
+	for (size_t i = 1; i <= a_n; ++i) stack[i].f_construct(a_stack[i]);
+	f_call(stack, a_n);
+	return stack.f_return();
 }
 
 #define XEMMAI__VALUE__UNARY(a_method)\
 		{\
 			t_scoped_stack stack(1);\
 			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
-			if (f_context()->f_native() <= 0) t_code::f_loop();\
 			return stack.f_return();\
 		}
 #define XEMMAI__VALUE__BINARY(a_method)\
@@ -600,7 +604,6 @@ inline t_scoped t_value::f_call_with_same(t_scoped* a_stack, size_t a_n) const
 			t_scoped_stack stack(2);\
 			stack[1].f_construct(a_value);\
 			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
-			if (f_context()->f_native() <= 0) t_code::f_loop();\
 			return stack.f_return();\
 		}
 
@@ -624,7 +627,7 @@ template<typename... T>
 inline t_scoped t_value::operator()(T&&... a_arguments) const
 {
 	t_scoped_stack stack({a_arguments...});
-	f_call_and_return(stack, sizeof...(a_arguments));
+	f_call(stack, sizeof...(a_arguments));
 	return stack.f_return();
 }
 
@@ -634,7 +637,6 @@ inline t_scoped t_value::f_get_at(const t_value& a_index) const
 	t_scoped_stack stack(2);
 	stack[1].f_construct(a_index);
 	f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack);
-	if (f_context()->f_native() <= 0) t_code::f_loop();
 	return stack.f_return();
 }
 
@@ -645,7 +647,6 @@ inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value
 	stack[1].f_construct(a_index);
 	stack[2].f_construct(a_value);
 	f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack);
-	if (f_context()->f_native() <= 0) t_code::f_loop();
 	return stack.f_return();
 }
 
@@ -973,7 +974,7 @@ template<typename T_main>
 intptr_t t_fiber::f_main(T_main a_main)
 {
 	intptr_t n = -1;
-	t_context::f_initiate();
+	t_context context;
 	try {
 		t_native_context context;
 		try {
@@ -993,7 +994,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 	} catch (...) {
 		std::fprintf(stderr, "caught <unexpected>.\n");
 	}
-	t_context::f_terminate();
+	context.f_terminate();
 	return n;
 }
 

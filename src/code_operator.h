@@ -1,10 +1,10 @@
 #ifdef XEMMAI__CODE__OTHERS
 				XEMMAI__CODE__CASE_BEGIN(GET_AT)
-						if (stack[0].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+						if (stack[0].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
 						XEMMAI__CODE__OBJECT_CALL(f_get_at, 1)
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SET_AT)
-						if (stack[0].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+						if (stack[0].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
 						XEMMAI__CODE__OBJECT_CALL(f_set_at, 2)
 				XEMMAI__CODE__CASE_END
 #endif
@@ -13,7 +13,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer)
 							break;
@@ -28,7 +28,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							XEMMAI__CODE__PRIMITIVE_CALL(-a0.v_integer)
 							break;
@@ -45,7 +45,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_not, 0)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(COMPLEMENT)
@@ -54,7 +54,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_complement, 0)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 #endif
@@ -63,7 +63,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1.v_integer)
@@ -74,10 +74,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -90,10 +90,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -104,7 +104,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1.v_integer)
@@ -115,10 +115,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -131,10 +131,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -148,14 +148,14 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD)
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1.v_integer)
@@ -166,10 +166,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -182,10 +182,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -196,7 +196,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1.v_integer)
@@ -207,10 +207,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -223,10 +223,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -240,7 +240,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
@@ -250,14 +250,14 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1.v_integer)
@@ -268,10 +268,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -284,10 +284,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -298,7 +298,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1.v_integer)
@@ -309,10 +309,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -325,10 +325,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -339,7 +339,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1.v_integer)
@@ -350,10 +350,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -366,10 +366,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -380,7 +380,7 @@
 						switch (a0.f_tag()) {
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__BOOLEAN:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						case t_value::e_tag__INTEGER:
 							if (a1.f_tag() == t_value::e_tag__INTEGER) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1.v_integer)
@@ -391,10 +391,10 @@
 								if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= p->f_integer())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						case t_value::e_tag__FLOAT:
@@ -407,10 +407,10 @@
 								if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 									XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= p->f_float())
 								} else {
-									t_throwable::f_throw(L"not supported");
+									goto label__THROW_NOT_SUPPORTED;
 								}
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 							break;
 						default:
@@ -507,7 +507,7 @@
 							break;
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
 						}
@@ -524,7 +524,7 @@
 							break;
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
 						}
@@ -541,7 +541,7 @@
 							break;
 						case t_value::e_tag__NULL:
 						case t_value::e_tag__FLOAT:
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						default:
 							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
 						}
@@ -556,7 +556,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_multiply, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
@@ -567,7 +567,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_divide, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
@@ -576,7 +576,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD)
@@ -587,7 +587,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_add, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
@@ -598,7 +598,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_subtract, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
@@ -607,7 +607,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
@@ -616,7 +616,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
@@ -627,7 +627,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
@@ -638,7 +638,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less_equal, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
@@ -649,7 +649,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
@@ -660,7 +660,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater_equal, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
@@ -697,7 +697,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(XOR)
@@ -706,7 +706,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(OR)
@@ -715,7 +715,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 #endif
@@ -730,10 +730,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 * p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
@@ -746,10 +746,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 / p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
@@ -766,10 +766,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 + p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
@@ -782,10 +782,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 - p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
@@ -806,10 +806,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 < p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
@@ -822,10 +822,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 <= p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
@@ -838,10 +838,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 > p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
@@ -854,10 +854,10 @@
 							if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 >= p->f_integer())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
@@ -912,7 +912,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_multiply, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
@@ -923,14 +923,14 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_divide, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(ADD)
@@ -941,7 +941,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_add, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
@@ -952,21 +952,21 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_subtract, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS)
@@ -977,7 +977,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
@@ -988,7 +988,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_less_equal, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
@@ -999,7 +999,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
@@ -1010,7 +1010,7 @@
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_greater_equal, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
@@ -1045,21 +1045,21 @@
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(XOR)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(OR)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
 							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 #endif
@@ -1074,10 +1074,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 * p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
@@ -1090,10 +1090,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 / p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_NA(MODULUS)
@@ -1107,10 +1107,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 + p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
@@ -1123,10 +1123,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 - p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_NA(LEFT_SHIFT)
@@ -1141,10 +1141,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 < p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
@@ -1157,10 +1157,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 <= p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
@@ -1173,10 +1173,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 > p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
@@ -1189,10 +1189,10 @@
 							if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
 								XEMMAI__CODE__PRIMITIVE_CALL(a0 >= p->f_float())
 							} else {
-								t_throwable::f_throw(L"not supported");
+								goto label__THROW_NOT_SUPPORTED;
 							}
 						} else {
-							t_throwable::f_throw(L"not supported");
+							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
@@ -1251,7 +1251,7 @@
 #endif
 #ifdef XEMMAI__CODE__OTHERS
 				XEMMAI__CODE__CASE_BEGIN(SEND)
-						if (stack[0].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+						if (stack[0].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
 						XEMMAI__CODE__OBJECT_CALL(f_send, 1)
 				XEMMAI__CODE__CASE_END
 #endif

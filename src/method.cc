@@ -34,11 +34,11 @@ void t_type_of<t_method>::f_instantiate(t_object* a_class, t_scoped* a_stack, si
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_method>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_type_of<t_method>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	t_method& p = f_as<t_method&>(a_this);
 	a_stack[0].f_construct(p.v_self);
-	p.v_function.f_call(a_stack, a_n);
+	return p.v_function.f_call_without_loop(a_stack, a_n);
 }
 
 void t_type_of<t_method>::f_get_at(t_object* a_this, t_scoped* a_stack)

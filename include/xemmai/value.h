@@ -310,8 +310,8 @@ public:
 	void f_put(t_object* a_key, t_scoped&& a_value) const;
 	bool f_has(t_object* a_key) const;
 	t_scoped f_remove(t_object* a_key) const;
+	size_t f_call_without_loop(t_scoped* a_stack, size_t a_n) const;
 	void f_call(t_scoped* a_stack, size_t a_n) const;
-	void f_call_and_return(t_scoped* a_stack, size_t a_n) const;
 	t_scoped f_call_with_same(t_scoped* a_stack, size_t a_n) const;
 	t_scoped f_hash() const;
 	template<typename... T>

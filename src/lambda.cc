@@ -36,11 +36,11 @@ void t_type_of<t_lambda>::f_instantiate(t_object* a_class, t_scoped* a_stack, si
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
-void t_type_of<t_lambda>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_type_of<t_lambda>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	t_lambda& p = f_as<t_lambda&>(a_this);
 	if (a_n != p.v_arguments) t_throwable::f_throw(L"invalid number of arguments.");
-	t_fiber::t_context::f_push(a_this, a_stack);
+	return t_code::f_loop(a_this, a_stack);
 }
 
 void t_type_of<t_lambda>::f_get_at(t_object* a_this, t_scoped* a_stack)
@@ -78,7 +78,7 @@ void t_type_of<t_advanced_lambda>::f_finalize(t_object* a_this)
 	delete &f_as<t_advanced_lambda&>(a_this);
 }
 
-void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	t_advanced_lambda& p = f_as<t_advanced_lambda&>(a_this);
 	if (a_n < p.v_minimum) t_throwable::f_throw(L"too few arguments.");
@@ -100,7 +100,7 @@ void t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_scoped* a_stack, s
 		for (size_t i = 0; i < n; ++i) t1[i].f_construct(std::move(t0[i]));
 		t0[0].f_construct(std::move(x));
 	}
-	t_fiber::t_context::f_push(a_this, a_stack);
+	return t_code::f_loop(a_this, a_stack);
 }
 
 }

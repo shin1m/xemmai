@@ -68,7 +68,7 @@ t_scoped t_type::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 void t_type::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	t_scoped object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
-	object.f_get(f_global()->f_symbol_initialize()).f_call_and_return(a_stack, a_n);
+	object.f_get(f_global()->f_symbol_initialize()).f_call(a_stack, a_n);
 	a_stack[0] = std::move(object);
 }
 
@@ -172,9 +172,9 @@ void t_type::f_hash(t_object* a_this, t_scoped* a_stack)
 	a_this->f_get(f_global()->f_symbol_hash()).f_call(a_stack, 0);
 }
 
-void t_type::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_type::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
-	a_this->f_get(f_global()->f_symbol_call()).f_call(a_stack, a_n);
+	return a_this->f_get(f_global()->f_symbol_call()).f_call_without_loop(a_stack, a_n);
 }
 
 void t_type::f_get_at(t_object* a_this, t_scoped* a_stack)

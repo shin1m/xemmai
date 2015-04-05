@@ -104,11 +104,12 @@ t_scoped t_class::f_remove(t_object* a_this, t_object* a_key)
 	return value;
 }
 
-void t_class::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_class::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	t_native_context context;
 	f_as<t_type&>(a_this).f_instantiate(a_this, a_stack, a_n);
 	context.f_done();
+	return -1;
 }
 
 void t_class::f_send(t_object* a_this, t_scoped* a_stack)
@@ -116,7 +117,7 @@ void t_class::f_send(t_object* a_this, t_scoped* a_stack)
 	t_native_context context;
 	a_stack[0].f_construct(a_this);
 	t_scoped a0 = std::move(a_stack[1]);
-	a0.f_call_and_return(a_stack, 0);
+	a0.f_call(a_stack, 0);
 	a_stack[0] = a_this;
 	context.f_done();
 }

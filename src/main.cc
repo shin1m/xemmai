@@ -154,8 +154,8 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print_contexts(t_fiber::t_context* a_context, t_fiber::t_context* a_current)
 	{
-		for (; a_context; a_context = a_context->f_next()) {
-			if (a_context->f_native() > 0) std::fputs("<native code>\n", v_out);
+		for (; a_context; a_context = a_context->v_next) {
+			if (a_context->v_native > 0) std::fputs("<native code>\n", v_out);
 			if (a_context == a_current) std::fputs("* ", v_out);
 			f_print(a_context);
 		}
@@ -318,7 +318,7 @@ class t_debugger : public xemmai::t_debugger
 				if (c == L'\n') {
 					auto p = f_context(a_thread);
 					if (p != context) {
-						while (p->f_next() != context) p = p->f_next();
+						while (p->v_next != context) p = p->v_next;
 						context = p;
 					}
 					if (context) f_print(context);
@@ -369,7 +369,7 @@ class t_debugger : public xemmai::t_debugger
 			case L'u':
 				c = std::getwchar();
 				if (c == L'\n') {
-					if (context) context = context->f_next();
+					if (context) context = context->v_next;
 					if (context) f_print(context);
 				}
 				break;

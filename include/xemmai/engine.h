@@ -337,23 +337,20 @@ inline t_object* t_fiber::f_current()
 	return f_as<t_thread&>(t_thread::v_current).v_active;
 }
 
-inline void t_fiber::t_context::f_initiate()
+inline t_fiber::t_context::t_context() : v_next(nullptr)
 {
 	t_stack* stack = t_stack::v_instance = &f_as<t_fiber&>(f_current()).v_stack;
-	t_scoped* head = stack->f_head();
-	t_scoped* used = head + sizeof(t_context) / sizeof(t_scoped);
-	stack->f_allocate(used);
-	stack->v_used = used;
-	v_instance = f_instantiate(head, nullptr, head);
-	v_instance->f_pc() = nullptr;
+	v_base = stack->f_head();
+	f_pc() = nullptr;
+	v_instance = this;
 }
 
 inline void t_fiber::t_context::f_terminate()
 {
-	assert(!v_instance->f_next());
+	assert(!v_next);
 	t_fiber& fiber = f_as<t_fiber&>(f_current());
-	assert(fiber.v_stack.v_used == fiber.v_stack.f_head() + sizeof(t_context) / sizeof(t_scoped));
-	v_instance = fiber.v_context = nullptr;
+	assert(fiber.v_stack.v_used == fiber.v_stack.f_head());
+	fiber.v_context = nullptr;
 }
 
 inline t_fiber::t_try* t_fiber::t_try::f_allocate()
@@ -388,7 +385,7 @@ class t_native_context
 	bool v_done = false;
 
 public:
-	t_native_context() : v_native(f_context()->f_native())
+	t_native_context() : v_native(f_context()->v_native)
 	{
 		++v_native;
 	}

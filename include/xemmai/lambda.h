@@ -57,7 +57,7 @@ struct t_type_of<t_lambda> : t_type
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
-	virtual void f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
 	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
 };
 
@@ -87,7 +87,7 @@ struct t_type_of<t_advanced_lambda> : t_type_of<t_lambda>
 	using t_type_of<t_lambda>::t_type_of;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
 };
 
 }
