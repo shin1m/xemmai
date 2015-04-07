@@ -527,7 +527,7 @@ inline void t_value::f_pointer__(void* a_value)
 	v_p->v_type.v_pointer = a_value;
 }
 
-inline t_object* t_value::f_type() const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline t_object* t_value::f_type() const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
@@ -548,7 +548,7 @@ inline bool t_value::f_is(t_object* a_class) const
 	return t_type::f_derives(f_type(), a_class);
 }
 
-inline t_scoped t_value::f_get(t_object* a_key) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_value::f_get(t_object* a_key) const
 {
 	return f_as<t_type&>(f_type()).f_get(*this, a_key);
 }

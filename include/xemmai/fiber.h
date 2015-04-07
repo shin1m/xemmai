@@ -42,7 +42,7 @@ struct t_fiber
 			v_instance = v_next;
 		}
 		void f_terminate();
-		void f_pop()
+		XEMMAI__PORTABLE__ALWAYS_INLINE void f_pop()
 		{
 			size_t n = f_as<t_lambda&>(v_lambda).v_privates;
 			for (size_t i = 0; i < n; ++i) v_base[i] = nullptr;

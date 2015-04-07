@@ -38,7 +38,7 @@ size_t t_type_of<t_method>::f_call(t_object* a_this, t_scoped* a_stack, size_t a
 {
 	t_method& p = f_as<t_method&>(a_this);
 	a_stack[0].f_construct(p.v_self);
-	return p.v_function.f_call_without_loop(a_stack, a_n);
+	return static_cast<t_object*>(p.v_function)->f_call_without_loop(a_stack, a_n);
 }
 
 void t_type_of<t_method>::f_get_at(t_object* a_this, t_scoped* a_stack)
