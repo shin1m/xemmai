@@ -22,20 +22,12 @@ class t_path
 
 public:
 	t_path(const std::wstring& a_path);
-	t_path(const t_path& a_path) : v_path(a_path.v_path)
-	{
-	}
-	t_path& operator=(const t_path& a_path)
-	{
-		v_path = a_path.v_path;
-		return *this;
-	}
+	t_path(const t_path& a_path) = default;
+	t_path& operator=(const t_path& a_path) = default;
 	t_path& operator/=(const std::wstring& a_path);
 	t_path operator/(const std::wstring& a_path) const
 	{
-		t_path path = *this;
-		path /= a_path;
-		return path;
+		return t_path(*this) /= a_path;
 	}
 	operator const std::wstring&() const
 	{
