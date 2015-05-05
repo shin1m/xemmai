@@ -23,7 +23,7 @@ class t_fiber
 	char* v_stack;
 
 public:
-	static const size_t V_SIZE = SIGSTKSZ * 64;
+	static const size_t V_SIZE = 8192 * 1024;
 
 	t_fiber(bool a_main) : v_stack(a_main ? nullptr : new char[V_SIZE])
 	{
