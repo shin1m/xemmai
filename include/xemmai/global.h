@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "class.h"
 #include "symbol.h"
+#include "method.h"
 #include "null.h"
 #include "boolean.h"
 #include "string.h"
@@ -13,7 +14,6 @@ namespace xemmai
 {
 
 class t_tuple;
-class t_method;
 class t_array;
 class t_bytes;
 
@@ -576,34 +576,86 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_sco
 	return v_p->f_call_without_loop(a_stack, a_n);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_scoped* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_loop(t_scoped* a_stack, size_t a_n)
 {
-	a_n = f_call_without_loop(a_stack, a_n);
 	while (a_n != size_t(-1)) {
 		t_scoped x = std::move(a_stack[0]);
 		a_n = x.f_call_without_loop(a_stack, a_n);
 	}
 }
 
+inline void t_value::f_call(t_object* a_key, t_scoped* a_stack, size_t a_n) const
+{
+	if (f_tag() >= e_tag__OBJECT && v_p->f_owned()) {
+		intptr_t index = v_p->f_field_index(a_key);
+		if (index < 0) {
+			t_scoped value = v_p->f_type()->f_get(a_key);
+			if (value.f_type() == f_global()->f_type<t_method>()) {
+				a_stack[1].f_construct(v_p);
+				f_as<t_method&>(value).v_function.f_call(a_stack, a_n);
+			} else {
+				value.f_call(a_stack, a_n);
+			}
+		} else {
+			v_p->f_field_get(index).f_call(a_stack, a_n);
+		}
+	} else {
+		f_get(a_key).f_call(a_stack, a_n);
+	}
+}
+
+inline void t_object::f_get_owned(t_object* a_key, t_scoped* a_stack)
+{
+	intptr_t index = f_field_index(a_key);
+	if (index < 0) {
+		t_scoped value = f_type()->f_get(a_key);
+		if (value.f_type() == f_global()->f_type<t_method>()) {
+			a_stack[0].f_construct(f_as<t_method&>(value).v_function);
+			a_stack[1].f_construct(this);
+		} else {
+			a_stack[0].f_construct(std::move(value));
+		}
+	} else {
+		a_stack[0].f_construct(f_field_get(index));
+	}
+}
+
+inline void t_object::f_get(t_object* a_key, t_scoped* a_stack)
+{
+	if (f_owned())
+		f_get_owned(a_key, a_stack);
+	else
+		a_stack[0].f_construct(f_get(a_key));
+}
+
+inline void t_value::f_get(t_object* a_key, t_scoped* a_stack) const
+{
+	if (f_tag() >= e_tag__OBJECT && v_p->f_owned())
+		v_p->f_get_owned(a_key, a_stack);
+	else
+		a_stack[0].f_construct(f_get(a_key));
+}
+
 inline t_scoped t_value::f_call_with_same(t_scoped* a_stack, size_t a_n) const
 {
-	t_scoped_stack stack(a_n + 1);
-	for (size_t i = 1; i <= a_n; ++i) stack[i].f_construct(a_stack[i]);
+	size_t n = a_n + 2;
+	t_scoped_stack stack(n);
+	for (size_t i = 2; i < n; ++i) stack[i].f_construct(a_stack[i]);
 	f_call(stack, a_n);
 	return stack.f_return();
 }
 
 #define XEMMAI__VALUE__UNARY(a_method)\
 		{\
-			t_scoped_stack stack(1);\
-			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
+			t_scoped_stack stack(2);\
+			f_loop(stack, f_as<t_type&>(v_p->f_type()).a_method(v_p, stack));\
 			return stack.f_return();\
 		}
 #define XEMMAI__VALUE__BINARY(a_method)\
 		{\
-			t_scoped_stack stack(2);\
-			stack[1].f_construct(a_value);\
-			f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
+			t_scoped_stack stack(3);\
+			stack[2].f_construct(a_value);\
+			f_loop(stack, f_as<t_type&>(v_p->f_type()).a_method(v_p, stack));\
 			return stack.f_return();\
 		}
 
@@ -619,7 +671,11 @@ inline t_scoped t_value::f_hash() const
 	case e_tag__FLOAT:
 		return t_value(t_type_of<double>::f_hash(v_float));
 	default:
-		XEMMAI__VALUE__UNARY(f_hash)
+		{
+			t_scoped_stack stack(2);
+			f_as<t_type&>(v_p->f_type()).f_hash(v_p, stack);
+			return stack.f_return();
+		}
 	}
 }
 
@@ -634,19 +690,19 @@ inline t_scoped t_value::operator()(T&&... a_arguments) const
 inline t_scoped t_value::f_get_at(const t_value& a_index) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	t_scoped_stack stack(2);
-	stack[1].f_construct(a_index);
-	f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack);
+	t_scoped_stack stack(3);
+	stack[2].f_construct(a_index);
+	f_loop(stack, f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack));
 	return stack.f_return();
 }
 
 inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
-	t_scoped_stack stack(3);
-	stack[1].f_construct(a_index);
-	stack[2].f_construct(a_value);
-	f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack);
+	t_scoped_stack stack(4);
+	stack[2].f_construct(a_index);
+	stack[3].f_construct(a_value);
+	f_loop(stack, f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack));
 	return stack.f_return();
 }
 

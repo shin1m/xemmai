@@ -1,11 +1,11 @@
 #ifdef XEMMAI__CODE__OTHERS
 				XEMMAI__CODE__CASE_BEGIN(GET_AT)
-						if (stack[0].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
-						XEMMAI__CODE__OBJECT_CALL(f_get_at, 1)
+						if (stack[1].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
+						XEMMAI__CODE__OBJECT_CALL(f_get_at)
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SET_AT)
-						if (stack[0].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
-						XEMMAI__CODE__OBJECT_CALL(f_set_at, 2)
+						if (stack[1].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
+						XEMMAI__CODE__OBJECT_CALL(f_set_at)
 				XEMMAI__CODE__CASE_END
 #endif
 #ifdef XEMMAI__CODE__UNARY
@@ -21,7 +21,7 @@
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float)
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_plus, 0)
+							XEMMAI__CODE__OBJECT_CALL(f_plus)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MINUS)
@@ -36,14 +36,14 @@
 							XEMMAI__CODE__PRIMITIVE_CALL(-a0.v_float)
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_minus, 0)
+							XEMMAI__CODE__OBJECT_CALL(f_minus)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT)
 						if (a0.f_tag() == t_value::e_tag__BOOLEAN) {
 							XEMMAI__CODE__PRIMITIVE_CALL(!a0.v_boolean)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_not, 0)
+							XEMMAI__CODE__OBJECT_CALL(f_not)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -52,7 +52,7 @@
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(~a0.v_integer)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_complement, 0)
+							XEMMAI__CODE__OBJECT_CALL(f_complement)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -97,7 +97,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_multiply, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_multiply)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(DIVIDE)
@@ -138,7 +138,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_divide, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_divide)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
@@ -146,7 +146,7 @@
 							f_check<intptr_t>(a1, L"argument0");
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer % f_as<intptr_t>(a1))
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_modulus)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -189,7 +189,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_add, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_add)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(SUBTRACT)
@@ -230,7 +230,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_subtract, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_subtract)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
@@ -238,7 +238,7 @@
 							f_check<intptr_t>(a1, L"argument0");
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer << f_as<intptr_t>(a1))
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_left_shift)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -248,7 +248,7 @@
 							f_check<intptr_t>(a1, L"argument0");
 							XEMMAI__CODE__PRIMITIVE_CALL(static_cast<size_t>(a0.v_integer) >> f_as<intptr_t>(a1))
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_right_shift)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -291,7 +291,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_less, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_less)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LESS_EQUAL)
@@ -332,7 +332,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_less_equal, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_less_equal)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER)
@@ -373,7 +373,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_greater, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_greater)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(GREATER_EQUAL)
@@ -414,7 +414,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_greater_equal, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_greater_equal)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(EQUALS)
@@ -450,7 +450,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_equals, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_equals)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(NOT_EQUALS)
@@ -486,7 +486,7 @@
 							}
 							break;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_not_equals, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_not_equals)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(IDENTICAL)
@@ -509,7 +509,7 @@
 						case t_value::e_tag__FLOAT:
 							goto label__THROW_NOT_SUPPORTED;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_and)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(XOR)
@@ -526,7 +526,7 @@
 						case t_value::e_tag__FLOAT:
 							goto label__THROW_NOT_SUPPORTED;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_xor)
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(OR)
@@ -543,7 +543,7 @@
 						case t_value::e_tag__FLOAT:
 							goto label__THROW_NOT_SUPPORTED;
 						default:
-							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_or)
 						}
 				XEMMAI__CODE__CASE_END
 #endif
@@ -554,7 +554,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float * a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_multiply, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_multiply)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -565,7 +565,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float / a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_divide, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_divide)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -574,7 +574,7 @@
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer % a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_modulus)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -585,7 +585,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float + a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_add, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_add)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -596,7 +596,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float - a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_subtract, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_subtract)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -605,7 +605,7 @@
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer << a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_left_shift)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -614,7 +614,7 @@
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(static_cast<size_t>(a0.v_integer) >> a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_right_shift)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -625,7 +625,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float < a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_less, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_less)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -636,7 +636,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float <= a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_less_equal, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_less_equal)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -647,7 +647,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float > a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_greater, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_greater)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -658,7 +658,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float >= a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_greater_equal, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_greater_equal)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -669,7 +669,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float == a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_equals, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_equals)
 						} else {
 							XEMMAI__CODE__PRIMITIVE_CALL(false)
 						}
@@ -680,7 +680,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__FLOAT) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float != a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_not_equals, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_not_equals)
 						} else {
 							XEMMAI__CODE__PRIMITIVE_CALL(true)
 						}
@@ -695,7 +695,7 @@
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer & a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_and)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -704,7 +704,7 @@
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer ^ a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_xor)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -713,7 +713,7 @@
 						if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer | a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_or)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -910,7 +910,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer * a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_multiply, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_multiply)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -921,14 +921,14 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer / a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_divide, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_divide)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(MODULUS)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_modulus, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_modulus)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -939,7 +939,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer + a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_add, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_add)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -950,21 +950,21 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer - a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_subtract, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_subtract)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(LEFT_SHIFT)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_left_shift, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_left_shift)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(RIGHT_SHIFT)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_right_shift, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_right_shift)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -975,7 +975,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer < a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_less, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_less)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -986,7 +986,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer <= a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_less_equal, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_less_equal)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -997,7 +997,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer > a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_greater, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_greater)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -1008,7 +1008,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer >= a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_greater_equal, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_greater_equal)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -1019,7 +1019,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer == a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_equals, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_equals)
 						} else {
 							XEMMAI__CODE__PRIMITIVE_CALL(false)
 						}
@@ -1030,7 +1030,7 @@
 						} else if (a0.f_tag() == t_value::e_tag__INTEGER) {
 							XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer != a1)
 						} else if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_not_equals, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_not_equals)
 						} else {
 							XEMMAI__CODE__PRIMITIVE_CALL(true)
 						}
@@ -1043,21 +1043,21 @@
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(AND)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_and, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_and)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(XOR)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_xor, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_xor)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
 				XEMMAI__CODE__CASE_END
 				XEMMAI__CODE__CASE_BEGIN(OR)
 						if (a0.f_tag() >= t_value::e_tag__OBJECT) {
-							XEMMAI__CODE__OBJECT_CALL(f_or, 1)
+							XEMMAI__CODE__OBJECT_CALL(f_or)
 						} else {
 							goto label__THROW_NOT_SUPPORTED;
 						}
@@ -1251,7 +1251,7 @@
 #endif
 #ifdef XEMMAI__CODE__OTHERS
 				XEMMAI__CODE__CASE_BEGIN(SEND)
-						if (stack[0].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
-						XEMMAI__CODE__OBJECT_CALL(f_send, 1)
+						if (stack[1].f_tag() < t_value::e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
+						XEMMAI__CODE__OBJECT_CALL(f_send)
 				XEMMAI__CODE__CASE_END
 #endif

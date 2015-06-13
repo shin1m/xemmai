@@ -1,6 +1,5 @@
 #include <xemmai/class.h>
 
-#include <xemmai/method.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
@@ -36,7 +35,7 @@ void t_class::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 	if (a_n > 1) t_throwable::f_throw(L"must be called with or without an argument.");
 	t_scoped x;
 	if (a_n > 0) {
-		x = std::move(a_stack[1]);
+		x = std::move(a_stack[2]);
 		if (x.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	} else {
 		x = f_global()->f_type<t_object>();
@@ -112,14 +111,15 @@ size_t t_class::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 	return -1;
 }
 
-void t_class::f_send(t_object* a_this, t_scoped* a_stack)
+size_t t_class::f_send(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	a_stack[0].f_construct(a_this);
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
+	a_stack[1].f_construct(a_this);
 	a0.f_call(a_stack, 0);
 	a_stack[0] = a_this;
 	context.f_done();
+	return -1;
 }
 
 }

@@ -23,7 +23,7 @@ struct t_type_of<t_type> : t_type
 	virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
 	virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
 	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
-	virtual void f_send(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_send(t_object* a_this, t_scoped* a_stack);
 };
 
 typedef t_type_of<t_type> t_class;

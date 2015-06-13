@@ -188,6 +188,7 @@ struct t_object_get : t_node
 	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
+	void f_generate(t_generator& a_generator, size_t a_stack, t_instruction a_instruction);
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
 };
 
@@ -423,6 +424,7 @@ struct t_get_at : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand);
+	void f_bind(t_generator& a_generator, size_t a_stack);
 };
 
 struct t_set_at : t_node

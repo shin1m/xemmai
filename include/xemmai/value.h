@@ -311,7 +311,13 @@ public:
 	bool f_has(t_object* a_key) const;
 	t_scoped f_remove(t_object* a_key) const;
 	size_t f_call_without_loop(t_scoped* a_stack, size_t a_n) const;
-	void f_call(t_scoped* a_stack, size_t a_n) const;
+	static void f_loop(t_scoped* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_scoped* a_stack, size_t a_n) const
+	{
+		f_loop(a_stack, f_call_without_loop(a_stack, a_n));
+	}
+	void f_call(t_object* a_key, t_scoped* a_stack, size_t a_n) const;
+	void f_get(t_object* a_key, t_scoped* a_stack) const;
 	t_scoped f_call_with_same(t_scoped* a_stack, size_t a_n) const;
 	t_scoped f_hash() const;
 	template<typename... T>
@@ -658,9 +664,9 @@ public:
 		stack->f_allocate(used);
 		stack->v_used = used;
 	}
-	t_scoped_stack(std::initializer_list<t_scoped> a_xs) : t_scoped_stack(a_xs.size() + 1)
+	t_scoped_stack(std::initializer_list<t_scoped> a_xs) : t_scoped_stack(a_xs.size() + 2)
 	{
-		t_scoped* p = v_p;
+		t_scoped* p = v_p + 1;
 		for (auto& x : a_xs) (++p)->f_construct(std::move(x));
 	}
 	~t_scoped_stack()

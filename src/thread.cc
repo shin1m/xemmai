@@ -147,9 +147,9 @@ void t_type_of<t_thread>::f_instantiate(t_object* a_class, t_scoped* a_stack, si
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(L"must be called with 1 or 2 argument(s).");
 	size_t size = f_engine()->v_stack_size;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	if (a_n == 2) {
-		t_scoped a1 = std::move(a_stack[2]);
+		t_scoped a1 = std::move(a_stack[3]);
 		f_check<size_t>(a1, L"argument1");
 		size = f_as<size_t>(a1);
 	}

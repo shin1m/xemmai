@@ -9,6 +9,7 @@ scripts = \
 	flow.xm \
 	flow2.xm \
 	primitives.xm \
+	operators.xm \
 	race.xm \
 	ring.xm \
 	symbol.xm \

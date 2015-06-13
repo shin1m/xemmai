@@ -24,7 +24,7 @@ struct t_fiber
 		t_scoped v_lambda;
 
 		t_context();
-		t_context(t_object* a_lambda, t_scoped* a_stack) : v_next(v_instance), v_base(a_stack + 1)
+		t_context(t_object* a_lambda, t_scoped* a_stack) : v_next(v_instance), v_base(a_stack + 2)
 		{
 			t_stack* stack = f_stack();
 			f_previous() = stack->v_used;
@@ -45,6 +45,7 @@ struct t_fiber
 		XEMMAI__PORTABLE__ALWAYS_INLINE void f_pop()
 		{
 			size_t n = f_as<t_lambda&>(v_lambda).v_privates;
+			v_base[-1] = nullptr;
 			for (size_t i = 0; i < n; ++i) v_base[i] = nullptr;
 			f_stack()->v_used = f_previous();
 		}

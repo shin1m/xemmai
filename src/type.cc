@@ -1,6 +1,5 @@
 #include <xemmai/type.h>
 
-#include <xemmai/method.h>
 #include <xemmai/convert.h>
 #include <xemmai/derived.h>
 
@@ -19,7 +18,8 @@ bool t_type::f_derives(t_object* a_this, t_object* a_type)
 
 void t_type::f_initialize(t_object* a_module, t_scoped* a_stack, size_t a_n)
 {
-	for (size_t i = 1; i <= a_n; ++i) a_stack[i] = nullptr;
+	a_n += 2;
+	for (size_t i = 1; i < a_n; ++i) a_stack[i] = nullptr;
 }
 
 void t_type::f_own(const t_value& a_self)
@@ -68,7 +68,7 @@ t_scoped t_type::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 void t_type::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	t_scoped object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
-	object.f_get(f_global()->f_symbol_initialize()).f_call(a_stack, a_n);
+	object.f_call(f_global()->f_symbol_initialize(), a_stack, a_n);
 	a_stack[0] = std::move(object);
 }
 
@@ -79,9 +79,10 @@ t_scoped t_type::f_get(const t_value& a_this, t_object* a_key)
 		if (p->f_owned()) {
 			intptr_t index = p->f_field_index(a_key);
 			if (index >= 0) return p->f_field_get(index);
-		} else if (!p->f_shared()) {
-			t_throwable::f_throw(L"owned by another thread.");
+			t_scoped value = a_this.f_type()->f_get(a_key);
+			return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(a_this)) : value;
 		}
+		if (!p->f_shared()) t_throwable::f_throw(L"owned by another thread.");
 	}
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	t_thread::t_cache& cache = t_thread::v_cache[i];
@@ -94,7 +95,7 @@ t_scoped t_type::f_get(const t_value& a_this, t_object* a_key)
 	cache.v_key_revision = symbol.v_revision;
 	intptr_t index = -1;
 	t_scoped value;
-	if (a_this.f_tag() >= t_value::e_tag__OBJECT && !p->f_owned()) {
+	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
 		t_with_lock_for_read lock(a_this);
 		if (!p->f_shared()) t_throwable::f_throw(L"owned by another thread.");
 		index = p->f_field_index(a_key);
@@ -177,119 +178,142 @@ size_t t_type::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 	return a_this->f_get(f_global()->f_symbol_call()).f_call_without_loop(a_stack, a_n);
 }
 
-void t_type::f_get_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_get_at()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_get_at(), a_stack);
+	return 1;
 }
 
-void t_type::f_set_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_set_at(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_set_at()).f_call(a_stack, 2);
+	a_this->f_get(f_global()->f_symbol_set_at(), a_stack);
+	return 2;
 }
 
-void t_type::f_plus(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_plus(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_plus()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_plus(), a_stack);
+	return 0;
 }
 
-void t_type::f_minus(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_minus(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_minus()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_minus(), a_stack);
+	return 0;
 }
 
-void t_type::f_not(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_not(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_not()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_not(), a_stack);
+	return 0;
 }
 
-void t_type::f_complement(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_complement(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_complement()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_complement(), a_stack);
+	return 0;
 }
 
-void t_type::f_multiply(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_multiply(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_multiply()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_multiply(), a_stack);
+	return 1;
 }
 
-void t_type::f_divide(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_divide(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_divide()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_divide(), a_stack);
+	return 1;
 }
 
-void t_type::f_modulus(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_modulus(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_modulus()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_modulus(), a_stack);
+	return 1;
 }
 
-void t_type::f_add(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_add(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_add()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_add(), a_stack);
+	return 1;
 }
 
-void t_type::f_subtract(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_subtract(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_subtract()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_subtract(), a_stack);
+	return 1;
 }
 
-void t_type::f_left_shift(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_left_shift(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_left_shift()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_left_shift(), a_stack);
+	return 1;
 }
 
-void t_type::f_right_shift(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_right_shift(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_right_shift()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_right_shift(), a_stack);
+	return 1;
 }
 
-void t_type::f_less(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_less(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_less()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_less(), a_stack);
+	return 1;
 }
 
-void t_type::f_less_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_less_equal(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_less_equal()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_less_equal(), a_stack);
+	return 1;
 }
 
-void t_type::f_greater(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_greater(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_greater()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_greater(), a_stack);
+	return 1;
 }
 
-void t_type::f_greater_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_greater_equal(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_greater_equal()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_greater_equal(), a_stack);
+	return 1;
 }
 
-void t_type::f_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_equals(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_equals()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_equals(), a_stack);
+	return 1;
 }
 
-void t_type::f_not_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_not_equals(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_not_equals()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_not_equals(), a_stack);
+	return 1;
 }
 
-void t_type::f_and(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_and(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_and()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_and(), a_stack);
+	return 1;
 }
 
-void t_type::f_xor(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_xor(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_xor()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_xor(), a_stack);
+	return 1;
 }
 
-void t_type::f_or(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_or(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_or()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_or(), a_stack);
+	return 1;
 }
 
-void t_type::f_send(t_object* a_this, t_scoped* a_stack)
+size_t t_type::f_send(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_send()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_send(), a_stack);
+	return 1;
 }
 
 void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name)

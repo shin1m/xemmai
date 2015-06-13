@@ -208,12 +208,13 @@ t_scoped t_array::f_remove(intptr_t a_index)
 
 void t_type_of<t_array>::f__construct(t_object* a_module, t_scoped* a_stack, size_t a_n)
 {
-	t_scoped self = std::move(a_stack[0]);
+	t_scoped self = std::move(a_stack[1]);
 	if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	t_scoped p = t_object::f_allocate(std::move(self));
 	t_array* array = new t_array();
 	p.f_pointer__(array);
-	for (size_t i = 1; i <= a_n; ++i) array->f_push(std::move(a_stack[i]));
+	a_n += 2;
+	for (size_t i = 2; i < a_n; ++i) array->f_push(std::move(a_stack[i]));
 	a_stack[0].f_construct(std::move(p));
 }
 
@@ -495,7 +496,8 @@ t_scoped t_type_of<t_array>::f_construct(t_object* a_class, t_scoped* a_stack, s
 	t_scoped p = t_object::f_allocate(a_class);
 	t_array* array = new t_array();
 	p.f_pointer__(array);
-	for (size_t i = 1; i <= a_n; ++i) array->f_push(std::move(a_stack[i]));
+	a_n += 2;
+	for (size_t i = 2; i < a_n; ++i) array->f_push(std::move(a_stack[i]));
 	return p;
 }
 
@@ -506,73 +508,81 @@ void t_type_of<t_array>::f_hash(t_object* a_this, t_scoped* a_stack)
 	context.f_done();
 }
 
-void t_type_of<t_array>::f_get_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	f_check<intptr_t>(a0, L"index");
 	t_with_lock_for_read lock(a_this);
 	a_stack[0].f_construct(f_as<const t_array&>(a_this).f_get_at(f_as<intptr_t>(a0)));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_array>::f_set_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_set_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
-	t_scoped a1 = std::move(a_stack[2]);
+	t_scoped a0 = std::move(a_stack[2]);
+	t_scoped a1 = std::move(a_stack[3]);
 	f_check<intptr_t>(a0, L"index");
 	t_with_lock_for_write lock(a_this);
 	a_stack[0].f_construct(f_as<t_array&>(a_this).f_set_at(f_as<intptr_t>(a0), std::move(a1)));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_array>::f_less(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_less(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_less(a_this, a0));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_array>::f_less_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_less_equal(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_less_equal(a_this, a0));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_array>::f_greater(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_greater(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_greater(a_this, a0));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_array>::f_greater_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_greater_equal(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_greater_equal(a_this, a0));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_array>::f_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_equals(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_equals(a_this, a0));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_array>::f_not_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_array>::f_not_equals(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_not_equals(a_this, a0));
 	context.f_done();
+	return -1;
 }
 
 }

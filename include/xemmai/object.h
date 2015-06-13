@@ -123,25 +123,11 @@ public:
 	{
 		return v_size;
 	}
+	intptr_t f_index(t_object* a_key, t_cache& a_cache) const;
 	intptr_t f_index(t_object* a_key) const
 	{
 		t_cache& cache = v_cache[t_cache::f_index(v_this, a_key)];
-		if (static_cast<t_object*>(cache.v_structure) == v_this && static_cast<t_object*>(cache.v_key) == a_key) return cache.v_index;
-		cache.v_structure = v_this;
-		cache.v_key = a_key;
-		const t_entry* p = f_entries();
-		size_t i = 0;
-		size_t j = v_size;
-		while (i < j) {
-			size_t k = (i + j) / 2;
-			const t_entry& entry = p[k];
-			if (entry.v_key == a_key) return cache.v_index = entry.v_index;
-			if (entry.v_key < a_key)
-				i = k + 1;
-			else
-				j = k;
-		}
-		return cache.v_index = -1;
+		return static_cast<t_object*>(cache.v_structure) == v_this && static_cast<t_object*>(cache.v_key) == a_key ? cache.v_index : f_index(a_key, cache);
 	}
 	t_scoped f_append(t_object* a_key);
 	t_scoped f_remove(size_t a_index);
@@ -513,6 +499,8 @@ public:
 	{
 		return f_type_as_type()->f_call(this, a_stack, a_n);
 	}
+	void f_get_owned(t_object* a_key, t_scoped* a_stack);
+	void f_get(t_object* a_key, t_scoped* a_stack);
 };
 
 }

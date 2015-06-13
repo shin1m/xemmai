@@ -19,7 +19,8 @@ enum t_instruction
 	e_instruction__THROW,
 	e_instruction__CLEAR,
 	e_instruction__OBJECT_GET,
-	e_instruction__OBJECT_GET_MONOMORPHIC,
+	e_instruction__OBJECT_GET_MONOMORPHIC_CLASS,
+	e_instruction__OBJECT_GET_MONOMORPHIC_INSTANCE,
 	e_instruction__OBJECT_GET_MEGAMORPHIC,
 	e_instruction__OBJECT_GET_INDIRECT,
 	e_instruction__OBJECT_PUT,
@@ -31,6 +32,11 @@ enum t_instruction
 	e_instruction__OBJECT_HAS_INDIRECT,
 	e_instruction__OBJECT_REMOVE,
 	e_instruction__OBJECT_REMOVE_INDIRECT,
+	e_instruction__METHOD_GET,
+	e_instruction__METHOD_GET_MONOMORPHIC_CLASS,
+	e_instruction__METHOD_GET_MONOMORPHIC_INSTANCE,
+	e_instruction__METHOD_GET_MEGAMORPHIC,
+	e_instruction__METHOD_BIND,
 	e_instruction__GLOBAL_GET,
 	e_instruction__STACK_GET,
 	e_instruction__STACK_PUT,
@@ -195,6 +201,10 @@ struct t_code
 
 		size_t v_target;
 	};
+
+	static void f_object_get(t_scoped* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
+	static void f_object_put(t_scoped* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
+	static void f_method_get(t_scoped* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static const void** v_labels;

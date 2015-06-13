@@ -8,6 +8,9 @@ namespace xemmai
 
 class t_method
 {
+	friend class t_value;
+	friend class t_object;
+	friend struct t_code;
 	friend struct t_type_of<t_method>;
 
 	t_slot v_function;
@@ -39,7 +42,7 @@ struct t_type_of<t_method> : t_type
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
 	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
-	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_get_at(t_object* a_this, t_scoped* a_stack);
 };
 
 }

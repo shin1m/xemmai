@@ -1,6 +1,5 @@
 #include <xemmai/lambda.h>
 
-#include <xemmai/method.h>
 #include <xemmai/tuple.h>
 #include <xemmai/global.h>
 
@@ -43,12 +42,13 @@ size_t t_type_of<t_lambda>::f_call(t_object* a_this, t_scoped* a_stack, size_t a
 	return t_code::f_loop(a_this, a_stack);
 }
 
-void t_type_of<t_lambda>::f_get_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_lambda>::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(t_method::f_instantiate(a_this, std::move(a0)));
 	context.f_done();
+	return -1;
 }
 
 t_scoped t_advanced_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code, t_scoped* a_stack)
@@ -89,13 +89,13 @@ size_t t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_scoped* a_stack,
 		t_throwable::f_throw(L"too many arguments.");
 	if (a_n < arguments) {
 		const t_tuple& t0 = f_as<const t_tuple&>(p.v_defaults);
-		t_scoped* t1 = a_stack + p.v_minimum + 1;
+		t_scoped* t1 = a_stack + p.v_minimum + 2;
 		for (size_t i = a_n - p.v_minimum; i < t0.f_size(); ++i) t1[i].f_construct(t0[i]);
-		if (p.v_variadic) a_stack[p.v_arguments].f_construct(t_tuple::f_instantiate(0));
+		if (p.v_variadic) a_stack[p.v_arguments + 1].f_construct(t_tuple::f_instantiate(0));
 	} else if (p.v_variadic) {
 		size_t n = a_n - arguments;
 		t_scoped x = t_tuple::f_instantiate(n);
-		t_scoped* t0 = a_stack + p.v_arguments;
+		t_scoped* t0 = a_stack + arguments + 2;
 		t_tuple& t1 = f_as<t_tuple&>(x);
 		for (size_t i = 0; i < n; ++i) t1[i].f_construct(std::move(t0[i]));
 		t0[0].f_construct(std::move(x));

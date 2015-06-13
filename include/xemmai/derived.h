@@ -14,29 +14,29 @@ struct t_derived : T
 	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_scoped* a_stack);
 	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
-	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
-	virtual void f_set_at(t_object* a_this, t_scoped* a_stack);
-	virtual void f_plus(t_object* a_this, t_scoped* a_stack);
-	virtual void f_minus(t_object* a_this, t_scoped* a_stack);
-	virtual void f_not(t_object* a_this, t_scoped* a_stack);
-	virtual void f_complement(t_object* a_this, t_scoped* a_stack);
-	virtual void f_multiply(t_object* a_this, t_scoped* a_stack);
-	virtual void f_divide(t_object* a_this, t_scoped* a_stack);
-	virtual void f_modulus(t_object* a_this, t_scoped* a_stack);
-	virtual void f_add(t_object* a_this, t_scoped* a_stack);
-	virtual void f_subtract(t_object* a_this, t_scoped* a_stack);
-	virtual void f_left_shift(t_object* a_this, t_scoped* a_stack);
-	virtual void f_right_shift(t_object* a_this, t_scoped* a_stack);
-	virtual void f_less(t_object* a_this, t_scoped* a_stack);
-	virtual void f_less_equal(t_object* a_this, t_scoped* a_stack);
-	virtual void f_greater(t_object* a_this, t_scoped* a_stack);
-	virtual void f_greater_equal(t_object* a_this, t_scoped* a_stack);
-	virtual void f_equals(t_object* a_this, t_scoped* a_stack);
-	virtual void f_not_equals(t_object* a_this, t_scoped* a_stack);
-	virtual void f_and(t_object* a_this, t_scoped* a_stack);
-	virtual void f_xor(t_object* a_this, t_scoped* a_stack);
-	virtual void f_or(t_object* a_this, t_scoped* a_stack);
-	virtual void f_send(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_get_at(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_set_at(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_plus(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_minus(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_not(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_complement(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_multiply(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_divide(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_modulus(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_add(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_subtract(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_left_shift(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_right_shift(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_less(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_less_equal(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_greater(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_greater_equal(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_equals(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_not_equals(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_and(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_xor(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_or(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_send(t_object* a_this, t_scoped* a_stack);
 };
 
 template<typename T>
@@ -64,141 +64,164 @@ size_t t_derived<T>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 }
 
 template<typename T>
-void t_derived<T>::f_get_at(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_get_at()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_get_at(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_set_at(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_set_at(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_set_at()).f_call(a_stack, 2);
+	a_this->f_get(f_global()->f_symbol_set_at(), a_stack);
+	return 2;
 }
 
 template<typename T>
-void t_derived<T>::f_plus(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_plus(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_plus()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_plus(), a_stack);
+	return 0;
 }
 
 template<typename T>
-void t_derived<T>::f_minus(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_minus(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_minus()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_minus(), a_stack);
+	return 0;
 }
 
 template<typename T>
-void t_derived<T>::f_not(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_not(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_not()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_not(), a_stack);
+	return 0;
 }
 
 template<typename T>
-void t_derived<T>::f_complement(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_complement(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_complement()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_complement(), a_stack);
+	return 0;
 }
 
 template<typename T>
-void t_derived<T>::f_multiply(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_multiply(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_multiply()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_multiply(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_divide(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_divide(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_divide()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_divide(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_modulus(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_modulus(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_modulus()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_modulus(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_add(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_add(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_add()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_add(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_subtract(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_subtract(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_subtract()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_subtract(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_left_shift(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_left_shift(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_left_shift()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_left_shift(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_right_shift(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_right_shift(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_right_shift()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_right_shift(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_less(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_less(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_less()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_less(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_less_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_less_equal(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_less_equal()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_less_equal(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_greater(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_greater(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_greater()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_greater(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_greater_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_greater_equal(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_greater_equal()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_greater_equal(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_equals(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_equals()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_equals(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_not_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_not_equals(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_not_equals()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_not_equals(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_and(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_and(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_and()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_and(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_xor(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_xor(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_xor()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_xor(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_or(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_or(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_or()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_or(), a_stack);
+	return 1;
 }
 
 template<typename T>
-void t_derived<T>::f_send(t_object* a_this, t_scoped* a_stack)
+size_t t_derived<T>::f_send(t_object* a_this, t_scoped* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_send()).f_call(a_stack, 1);
+	a_this->f_get(f_global()->f_symbol_send(), a_stack);
+	return 1;
 }
 
 }

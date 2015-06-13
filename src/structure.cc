@@ -7,6 +7,25 @@ namespace xemmai
 
 XEMMAI__PORTABLE__THREAD t_structure::t_cache* t_structure::v_cache;
 
+intptr_t t_structure::f_index(t_object* a_key, t_cache& a_cache) const
+{
+	a_cache.v_structure = v_this;
+	a_cache.v_key = a_key;
+	const t_entry* p = f_entries();
+	size_t i = 0;
+	size_t j = v_size;
+	while (i < j) {
+		size_t k = (i + j) / 2;
+		const t_entry& entry = p[k];
+		if (entry.v_key == a_key) return a_cache.v_index = entry.v_index;
+		if (entry.v_key < a_key)
+			i = k + 1;
+		else
+			j = k;
+	}
+	return a_cache.v_index = -1;
+}
+
 t_scoped t_structure::f_append(t_object* a_key)
 {
 	std::lock_guard<std::mutex> lock(v_mutex);

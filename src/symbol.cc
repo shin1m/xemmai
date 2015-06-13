@@ -63,7 +63,7 @@ void t_type_of<t_symbol>::f_finalize(t_object* a_this)
 void t_type_of<t_symbol>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack[0].f_construct(t_symbol::f_instantiate(f_as<const std::wstring&>(a0)));
 }

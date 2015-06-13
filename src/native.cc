@@ -1,6 +1,5 @@
 #include <xemmai/native.h>
 
-#include <xemmai/method.h>
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -42,12 +41,13 @@ size_t t_type_of<t_native>::f_call(t_object* a_this, t_scoped* a_stack, size_t a
 	return -1;
 }
 
-void t_type_of<t_native>::f_get_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_native>::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(t_method::f_instantiate(a_this, std::move(a0)));
 	context.f_done();
+	return -1;
 }
 
 }

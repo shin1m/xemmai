@@ -162,10 +162,10 @@ struct t_type_of<t_dictionary> : t_type
 	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_scoped* a_stack);
-	virtual void f_get_at(t_object* a_this, t_scoped* a_stack);
-	virtual void f_set_at(t_object* a_this, t_scoped* a_stack);
-	virtual void f_equals(t_object* a_this, t_scoped* a_stack);
-	virtual void f_not_equals(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_get_at(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_set_at(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_equals(t_object* a_this, t_scoped* a_stack);
+	virtual size_t f_not_equals(t_object* a_this, t_scoped* a_stack);
 };
 
 inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(f_as<const t_table&>(a_dictionary.v_table)), v_i(0), v_entry(nullptr)

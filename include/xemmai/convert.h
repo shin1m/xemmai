@@ -59,7 +59,7 @@ struct t_signature
 	static void f_check(t_scoped* a_stack, size_t a_n)
 	{
 		if (a_n != sizeof...(T_an)) t_throwable::f_throw((t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>()).v);
-		f_check__<0, T_an...>(a_stack);
+		f_check__<0, T_an...>(a_stack + 1);
 	}
 	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...)>
 	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_scoped* a_stack, T_an&&... a_n)
@@ -75,7 +75,7 @@ struct t_signature
 	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...)>
 	static void f_call(t_object* a_module, const t_value& a_self, t_scoped* a_stack)
 	{
-		a_stack[0].f_construct(f__call<A_function, T_an...>(a_module, a_self, a_stack));
+		a_stack[0].f_construct(f__call<A_function, T_an...>(a_module, a_self, a_stack + 1));
 	}
 	template<bool>
 	static bool f__match(t_scoped* a_stack)
@@ -89,7 +89,7 @@ struct t_signature
 	}
 	static bool f_match(t_scoped* a_stack, size_t a_n)
 	{
-		return a_n == sizeof...(T_an) && f__match<false, T_an...>(a_stack);
+		return a_n == sizeof...(T_an) && f__match<false, T_an...>(a_stack + 1);
 	}
 };
 
@@ -132,14 +132,14 @@ struct t_call_construct<t_scoped (*)(t_object*, T_an...), A_function>
 	}
 	static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 	{
-		t_scoped self = std::move(a_stack[0]);
+		t_scoped self = std::move(a_stack[1]);
 		if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 		t_signature<T_an...>::f_check(a_stack, a_n);
 		t_signature<T_an...>::template f_call<f_function>(a_module, self, a_stack);
 	}
 	static void f_call(t_object* a_module, t_scoped* a_stack)
 	{
-		t_scoped self = std::move(a_stack[0]);
+		t_scoped self = std::move(a_stack[1]);
 		t_signature<T_an...>::template f_call<f_function>(a_module, self, a_stack);
 	}
 	template<typename...>
@@ -156,11 +156,11 @@ struct t_call_construct<t_scoped (*)(t_object*, T_an...), A_function>
 	static t_scoped f_do(t_object* a_class, t_scoped* a_stack, size_t a_n)
 	{
 		t_signature<T_an...>::f_check(a_stack, a_n);
-		return f__do<T_an...>(a_class, a_stack);
+		return f__do<T_an...>(a_class, a_stack + 1);
 	}
 	static t_scoped f_do(t_object* a_class, t_scoped* a_stack)
 	{
-		return f__do<T_an...>(a_class, a_stack);
+		return f__do<T_an...>(a_class, a_stack + 1);
 	}
 	static bool f__match(t_scoped* a_stack, size_t a_n)
 	{
@@ -168,7 +168,7 @@ struct t_call_construct<t_scoped (*)(t_object*, T_an...), A_function>
 	}
 	static bool f_match(t_scoped* a_stack, size_t a_n)
 	{
-		return a_stack[0].f_type() == f_global()->f_type<t_class>() && f__match(a_stack, a_n);
+		return a_stack[1].f_type() == f_global()->f_type<t_class>() && f__match(a_stack, a_n);
 	}
 };
 
@@ -351,19 +351,19 @@ struct t_member
 		}
 		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
-			t_scoped self = std::move(a_stack[0]);
+			t_scoped self = std::move(a_stack[1]);
 			f_check<t_self>(self, L"this");
 			t_signature::f_check(a_stack, a_n);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
 		static void f_call(t_object* a_module, t_scoped* a_stack)
 		{
-			t_scoped self = std::move(a_stack[0]);
+			t_scoped self = std::move(a_stack[1]);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
 		static bool f_match(t_scoped* a_stack, size_t a_n)
 		{
-			return f_is<t_self>(a_stack[0]) && t_signature::f_match(a_stack, a_n);
+			return f_is<t_self>(a_stack[1]) && t_signature::f_match(a_stack, a_n);
 		}
 	};
 };
@@ -436,13 +436,13 @@ struct t_static
 		}
 		static void f_call(t_object* a_module, t_scoped* a_stack, size_t a_n)
 		{
-			t_scoped self = std::move(a_stack[0]);
+			t_scoped self = std::move(a_stack[1]);
 			t_signature::f_check(a_stack, a_n);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
 		static void f_call(t_object* a_module, t_scoped* a_stack)
 		{
-			t_scoped self = std::move(a_stack[0]);
+			t_scoped self = std::move(a_stack[1]);
 			t_signature::template f_call<f_function>(a_module, self, a_stack);
 		}
 		static bool f_match(t_scoped* a_stack, size_t a_n)

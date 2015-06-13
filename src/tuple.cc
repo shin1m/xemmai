@@ -111,12 +111,12 @@ void t_tuple::f_each(const t_value& a_callable) const
 
 void t_type_of<t_tuple>::f__construct(t_object* a_module, t_scoped* a_stack, size_t a_n)
 {
-	t_scoped self = std::move(a_stack[0]);
+	t_scoped self = std::move(a_stack[1]);
 	if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	t_scoped p = t_object::f_allocate(std::move(self));
 	t_tuple* tuple = new(a_n) t_tuple();
 	p.f_pointer__(tuple);
-	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(std::move(a_stack[i + 1]));
+	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(std::move(a_stack[i + 2]));
 	a_stack[0].f_construct(std::move(p));
 }
 
@@ -159,7 +159,7 @@ t_scoped t_type_of<t_tuple>::f_construct(t_object* a_class, t_scoped* a_stack, s
 	t_scoped p = t_object::f_allocate(a_class);
 	t_tuple* tuple = new(a_n) t_tuple();
 	p.f_pointer__(tuple);
-	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 1]);
+	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 2]);
 	return p;
 }
 
@@ -170,65 +170,72 @@ void t_type_of<t_tuple>::f_hash(t_object* a_this, t_scoped* a_stack)
 	context.f_done();
 }
 
-void t_type_of<t_tuple>::f_get_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_tuple>::f_get_at(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	f_check<size_t>(a0, L"index");
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_get_at(f_as<size_t>(a0)));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_tuple>::f_less(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_tuple>::f_less(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	f_check<t_tuple>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_less(f_as<const t_tuple&>(a0)));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_tuple>::f_less_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_tuple>::f_less_equal(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	f_check<t_tuple>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_less_equal(f_as<const t_tuple&>(a0)));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_tuple>::f_greater(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_tuple>::f_greater(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	f_check<t_tuple>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_greater(f_as<const t_tuple&>(a0)));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_tuple>::f_greater_equal(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_tuple>::f_greater_equal(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	f_check<t_tuple>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_greater_equal(f_as<const t_tuple&>(a0)));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_tuple>::f_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_tuple>::f_equals(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_equals(a0));
 	context.f_done();
+	return -1;
 }
 
-void t_type_of<t_tuple>::f_not_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_tuple>::f_not_equals(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
-	t_scoped a0 = std::move(a_stack[1]);
+	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_not_equals(a0));
 	context.f_done();
+	return -1;
 }
 
 }
