@@ -11,7 +11,7 @@ struct t_fiber;
 class t_lambda
 {
 	friend struct t_code;
-	friend struct t_fiber;
+	friend struct t_context;
 	friend struct t_type_of<t_lambda>;
 
 protected:

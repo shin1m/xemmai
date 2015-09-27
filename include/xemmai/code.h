@@ -201,6 +201,16 @@ struct t_code
 
 		size_t v_target;
 	};
+	enum t_try
+	{
+		e_try__TRY,
+		e_try__CATCH,
+		e_try__STEP,
+		e_try__BREAK,
+		e_try__CONTINUE,
+		e_try__RETURN,
+		e_try__THROW
+	};
 
 	static void f_object_get(t_scoped* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
 	static void f_object_put(t_scoped* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
@@ -209,16 +219,18 @@ struct t_code
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static const void** v_labels;
 
-	static size_t f_loop(t_object* a_lambda, t_scoped* a_stack, const void*** a_labels = nullptr);
+	static size_t f_loop(t_context* a_context, const void*** a_labels = nullptr);
 	static const void** f_labels()
 	{
 		const void** labels;
-		f_loop(nullptr, nullptr, &labels);
+		f_loop(nullptr, &labels);
 		return labels;
 	}
 #else
-	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_object* a_lambda, t_scoped* a_stack);
+	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_context* a_context);
 #endif
+	static void f_try(t_context* a_context);
+	static size_t f_loop(t_object* a_lambda, t_scoped* a_stack);
 	static t_scoped f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 
 	std::wstring v_path;

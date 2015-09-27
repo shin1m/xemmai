@@ -9,7 +9,7 @@ namespace xemmai
 t_throwable::~t_throwable()
 {
 	while (v_backtrace) {
-		t_fiber::t_backtrace* p = v_backtrace;
+		t_backtrace* p = v_backtrace;
 		v_backtrace = v_backtrace->v_next;
 		delete p;
 	}
@@ -48,7 +48,7 @@ t_type* t_type_of<t_throwable>::f_derive(t_object* a_this)
 
 void t_type_of<t_throwable>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	for (t_fiber::t_backtrace* p = f_as<t_throwable&>(a_this).v_backtrace; p; p = p->v_next) p->f_scan(a_scan);
+	for (t_backtrace* p = f_as<t_throwable&>(a_this).v_backtrace; p; p = p->v_next) p->f_scan(a_scan);
 }
 
 void t_type_of<t_throwable>::f_finalize(t_object* a_this)

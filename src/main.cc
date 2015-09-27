@@ -144,15 +144,15 @@ class t_debugger : public xemmai::t_debugger
 		}
 		if (i->second.empty()) v_break_points.erase(i);
 	}
-	t_fiber::t_context* f_context(t_object* a_thread)
+	t_context* f_context(t_object* a_thread)
 	{
 		return f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
 	}
-	void f_print(t_fiber::t_context* a_context)
+	void f_print(t_context* a_context)
 	{
 		v_engine.f_context_print(v_out, a_context->v_lambda, a_context->f_pc());
 	}
-	void f_print_contexts(t_fiber::t_context* a_context, t_fiber::t_context* a_current)
+	void f_print_contexts(t_context* a_context, t_context* a_current)
 	{
 		for (; a_context; a_context = a_context->v_next) {
 			if (a_context->v_native > 0) std::fputs("<native code>\n", v_out);
@@ -254,14 +254,14 @@ class t_debugger : public xemmai::t_debugger
 			}
 		}
 	}
-	void f_print_variable(t_fiber::t_context* a_context, const std::wstring& a_name, size_t a_depth)
+	void f_print_variable(t_context* a_context, const std::wstring& a_name, size_t a_depth)
 	{
 		const t_value* variable = a_context->f_variable(a_name);
 		if (!variable) return;
 		f_print_value(*variable, a_depth);
 		std::fputc('\n', v_out);
 	}
-	void f_print_variables(t_fiber::t_context* a_context)
+	void f_print_variables(t_context* a_context)
 	{
 		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_context->v_lambda).f_code());
 		for (auto& pair : code.v_variables) std::fprintf(v_out, "%ls\n", pair.first.c_str());

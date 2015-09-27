@@ -236,7 +236,7 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 		a_generator.v_targets = &targets1;
 		f_generate_block(a_generator, a_stack, v_block, false);
 		a_generator.f_emit(e_instruction__FINALLY);
-		a_generator.f_operand(t_fiber::t_try::e_state__STEP);
+		a_generator.f_operand(t_code::e_try__STEP);
 		a_generator.f_target(catch0);
 		for (auto& p : v_catches) {
 			p->v_expression->f_generate(a_generator, a_stack + 1, false, false);
@@ -247,20 +247,20 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 			a_generator.f_operand(p->v_variable.v_shared ? ~p->v_variable.v_index : p->v_variable.v_index);
 			f_generate_block(a_generator, a_stack, p->v_block, false);
 			a_generator.f_emit(e_instruction__FINALLY);
-			a_generator.f_operand(t_fiber::t_try::e_state__STEP);
+			a_generator.f_operand(t_code::e_try__STEP);
 			a_generator.f_target(label0);
 		}
 		a_generator.f_emit(e_instruction__FINALLY);
-		a_generator.f_operand(t_fiber::t_try::e_state__THROW);
+		a_generator.f_operand(t_code::e_try__THROW);
 		a_generator.f_target(break0);
 		a_generator.f_emit(e_instruction__FINALLY);
-		a_generator.f_operand(t_fiber::t_try::e_state__BREAK);
+		a_generator.f_operand(t_code::e_try__BREAK);
 		a_generator.f_target(continue0);
 		a_generator.f_emit(e_instruction__FINALLY);
-		a_generator.f_operand(t_fiber::t_try::e_state__CONTINUE);
+		a_generator.f_operand(t_code::e_try__CONTINUE);
 		a_generator.f_target(return0);
 		a_generator.f_emit(e_instruction__FINALLY);
-		a_generator.f_operand(t_fiber::t_try::e_state__RETURN);
+		a_generator.f_operand(t_code::e_try__RETURN);
 	}
 	a_generator.f_target(finally0);
 	{

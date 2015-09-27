@@ -38,7 +38,6 @@ void t_engine::t_synchronizer::f_run()
 void t_engine::f_pools__return()
 {
 	f_return(v_object__pool);
-	f_return(v_fiber__try__pool);
 	f_return(v_dictionary__entry__pool);
 }
 
@@ -130,7 +129,6 @@ void t_engine::f_collector()
 		}
 		t_object::f_collect();
 		if (v_object__freed > 0) f_return(v_object__pool, v_object__freed);
-		if (v_fiber__try__freed > 0) f_return(v_fiber__try__pool, v_fiber__try__freed);
 		if (v_dictionary__entry__freed > 0) f_return(v_dictionary__entry__pool, v_dictionary__entry__freed);
 	}
 }
@@ -352,7 +350,6 @@ t_engine::~t_engine()
 	}
 	assert(!v_thread__internals);
 	v_dictionary__entry__pool.f_clear();
-	v_fiber__try__pool.f_clear();
 	v_object__pool.f_clear();
 	if (v_verbose) {
 		bool b = false;
@@ -403,7 +400,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		v_thread__condition.wait(lock);
 	}
 	t_fiber& fiber = f_as<t_fiber&>(thread.v_fiber);
-	fiber.v_context = t_fiber::t_context::v_instance;
+	fiber.v_context = t_context::v_instance;
 	fiber.v_used = ++fiber.v_stack.v_used;
 	fiber.v_return = fiber.v_used;
 	while (!v_fiber__runnings.empty()) {
@@ -413,7 +410,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		fiber.v_active = false;
 		thread.v_active = x;
 		t_stack::v_instance = &p.v_stack;
-		t_fiber::t_context::v_instance = p.v_context;
+		t_context::v_instance = p.v_context;
 		p.v_throw = true;
 		p.v_return->f_construct(v_fiber_exit);
 		p.v_fiber.f_swap(fiber.v_fiber);

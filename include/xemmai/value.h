@@ -20,6 +20,8 @@ class t_engine;
 class t_object;
 struct t_slot;
 class t_scoped;
+struct t_context;
+struct t_backtrace;
 struct t_fiber;
 struct t_thread;
 struct t_code;
@@ -33,6 +35,8 @@ class t_value
 	friend class t_object;
 	friend struct t_slot;
 	friend class t_scoped;
+	friend struct t_context;
+	friend struct t_backtrace;
 	friend struct t_fiber;
 	friend struct t_thread;
 	friend struct t_code;

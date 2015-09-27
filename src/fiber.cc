@@ -27,9 +27,9 @@ void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_pos
 	std::putc('\n', a_out);
 }
 
-XEMMAI__PORTABLE__THREAD t_fiber::t_context* t_fiber::t_context::v_instance;
+XEMMAI__PORTABLE__THREAD t_context* t_context::v_instance;
 
-void t_fiber::t_context::f_tail(t_scoped* a_stack, size_t a_n)
+void t_context::f_tail(t_scoped* a_stack, size_t a_n)
 {
 	f_stack()->v_used = std::max(f_previous(), v_base + a_n);
 	v_base[-2] = std::move(*a_stack++);
@@ -40,41 +40,14 @@ void t_fiber::t_context::f_tail(t_scoped* a_stack, size_t a_n)
 	for (; i < n; ++i) v_base[i] = nullptr;
 }
 
-void t_fiber::t_context::f_backtrace(const t_value& a_value)
+void t_context::f_backtrace(const t_value& a_value)
 {
-	t_fiber& fiber = f_as<t_fiber&>(f_current());
+	t_fiber& fiber = f_as<t_fiber&>(t_fiber::f_current());
 	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, fiber.v_undone, v_lambda, f_pc());
 	fiber.v_undone = 0;
 }
 
-void t_fiber::t_context::f_throw(const t_scoped& a_value)
-{
-	t_fiber& p = f_as<t_fiber&>(f_current());
-	while (true) {
-		t_try* q = p.v_try;
-		if (!q || q->v_context != this) {
-			f_backtrace(a_value);
-			throw a_value;
-		} else if (q->v_state == t_try::e_state__TRY) {
-			q->v_state = t_try::e_state__CATCH;
-			p.v_caught = f_pc();
-			f_pc() = q->v_catch;
-		} else if (q->v_state == t_try::e_state__CATCH) {
-			q->v_state = t_try::e_state__THROW;
-			p.v_caught = f_pc();
-			f_pc() = q->v_finally;
-		} else {
-			t_try::f_pop();
-			continue;
-		}
-		p.v_stack.f_clear(q->v_stack);
-		p.v_stack.v_used = v_base + f_as<t_lambda&>(v_lambda).v_size;
-		q->v_stack->f_construct(a_value);
-		break;
-	}
-}
-
-const t_value* t_fiber::t_context::f_variable(const std::wstring& a_name) const
+const t_value* t_context::f_variable(const std::wstring& a_name) const
 {
 	t_code& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
 	auto i = code.v_variables.find(a_name);
@@ -88,14 +61,14 @@ const t_value* t_fiber::t_context::f_variable(const std::wstring& a_name) const
 	return &f_as<const t_scope&>(scope)[index];
 }
 
-void t_fiber::t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_scoped& a_lambda, void** a_pc)
+void t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_scoped& a_lambda, void** a_pc)
 {
 	t_with_lock_for_write lock(a_throwable);
 	t_throwable& p = f_as<t_throwable&>(a_throwable);
 	p.v_backtrace = new t_backtrace(p.v_backtrace, a_native, a_lambda, a_pc);
 }
 
-void t_fiber::t_backtrace::f_dump() const
+void t_backtrace::f_dump() const
 {
 	if (v_next) {
 		v_next->f_dump();
@@ -142,7 +115,7 @@ void t_fiber::f_run()
 			x = thrown;
 		} catch (...) {
 			b = true;
-			x = std::move(t_throwable::f_instantiate(L"<unexpected>."));
+			x = t_throwable::f_instantiate(L"<unexpected>.");
 		}
 		context.f_terminate();
 	}
@@ -163,18 +136,9 @@ void t_fiber::f_run()
 	p.v_fiber.f_set();
 }
 
-t_fiber::~t_fiber()
+void t_fiber::f_caught(const t_value& a_value, void** a_pc)
 {
-	while (v_try) {
-		t_try* p = v_try;
-		v_try = p->v_next;
-		f_engine()->f_free(p);
-	}
-}
-
-void t_fiber::f_caught(const t_value& a_value)
-{
-	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_undone, t_context::v_instance->v_lambda, v_caught);
+	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_undone, t_context::v_instance->v_lambda, a_pc);
 	v_undone = 0;
 }
 
@@ -219,13 +183,13 @@ size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_
 		p.v_active = true;
 	}
 	t_scoped x = std::move(a_stack[2]);
-	q.v_context = t_fiber::t_context::v_instance;
+	q.v_context = t_context::v_instance;
 	q.v_used = q.v_stack.v_used;
 	q.v_return = a_stack;
 	thread.v_active = a_this;
 	if (p.v_context) {
 		t_stack::v_instance = &p.v_stack;
-		t_fiber::t_context::v_instance = p.v_context;
+		t_context::v_instance = p.v_context;
 		p.v_return->f_construct(std::move(x));
 	} else {
 		t_scoped* head = p.v_stack.f_head();
@@ -242,9 +206,9 @@ size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_fiber::t_context* f_context()
+t_context* f_context()
 {
-	return t_fiber::t_context::v_instance;
+	return t_context::v_instance;
 }
 #endif
 
