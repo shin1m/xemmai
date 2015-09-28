@@ -239,10 +239,9 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 		a_generator.f_operand(t_code::e_try__STEP);
 		a_generator.f_target(catch0);
 		for (auto& p : v_catches) {
-			p->v_expression->f_generate(a_generator, a_stack + 1, false, false);
+			p->v_expression->f_generate(a_generator, a_stack, false, false);
 			t_code::t_label& label0 = a_generator.f_label();
 			a_generator.f_emit(e_instruction__CATCH);
-			a_generator.f_operand(a_stack);
 			a_generator.f_operand(label0);
 			a_generator.f_operand(p->v_variable.v_shared ? ~p->v_variable.v_index : p->v_variable.v_index);
 			f_generate_block(a_generator, a_stack, p->v_block, false);
@@ -269,7 +268,6 @@ t_operand t_try::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 		f_generate_block_without_value(a_generator, a_stack + 1, v_finally);
 	}
 	a_generator.f_emit(e_instruction__YRT);
-	a_generator.f_operand(a_stack);
 	if (targets0->v_break)
 		a_generator.f_operand(*targets0->v_break);
 	else

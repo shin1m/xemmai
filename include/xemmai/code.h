@@ -203,7 +203,6 @@ struct t_code
 	};
 	enum t_try
 	{
-		e_try__TRY,
 		e_try__CATCH,
 		e_try__STEP,
 		e_try__BREAK,

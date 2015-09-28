@@ -377,7 +377,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(FINALLY)
 			return static_cast<t_try>(reinterpret_cast<intptr_t>(*++pc));
 		XEMMAI__CODE__CASE(YRT)
-			return e_try__TRY;
+			return 0;
 		XEMMAI__CODE__CASE(THROW)
 			{
 				t_scoped* stack = base + reinterpret_cast<size_t>(*++pc);
@@ -1376,61 +1376,64 @@ void t_code::f_try(t_context* a_context)
 	void** catch0 = static_cast<void**>(*++pc);
 	void** finally0 = static_cast<void**>(*++pc);
 	++pc;
-	auto try0 = e_try__TRY;
-	void** caught;
-	while (true) {
+	t_try try0;
+	try {
 		try {
+			try0 = static_cast<t_try>(f_loop(a_context));
+		} catch (const t_scoped&) {
+			throw;
+		} catch (...) {
+			throw t_throwable::f_instantiate(L"<unknown>.");
+		}
+	} catch (const t_scoped& thrown) {
+		void** caught = pc;
+		t_fiber& p = f_as<t_fiber&>(t_fiber::f_current());
+		p.v_stack.f_clear(stack);
+		p.v_stack.v_used = base + f_as<t_lambda&>(a_context->v_lambda).v_size;
+		pc = catch0;
+		while (true) {
 			try {
-				auto t = static_cast<t_try>(f_loop(a_context));
-				if (t == e_try__TRY) break;
-				if (t == e_try__CATCH) {
-					t_scoped* stack = base + reinterpret_cast<size_t>(*++pc);
+				try {
+					try0 = static_cast<t_try>(f_loop(a_context));
+					if (try0 == e_try__THROW) {
+						pc = caught;
+						throw thrown;
+					}
+					if (try0 != e_try__CATCH) break;
 					++pc;
-					t_scoped& value = stack[0];
-					t_scoped& type = stack[1];
-					if (value != f_engine()->v_fiber_exit && value.f_is(type)) {
+					t_scoped type = std::move(stack[0]);
+					if (thrown != f_engine()->v_fiber_exit && thrown.f_is(type)) {
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						f_as<t_fiber&>(t_fiber::f_current()).f_caught(value, caught);
+						p.f_caught(thrown, caught);
 						if ((index & ~(~0 >> 1)) != 0) {
 							t_scoped& scope = a_context->v_scope;
 							t_with_lock_for_write lock(scope);
-							f_as<t_scope&>(scope)[~index] = std::move(value);
+							f_as<t_scope&>(scope)[~index] = thrown;
 						} else {
-							base[index] = std::move(value);
+							base[index] = thrown;
 						}
 					} else {
 						pc = static_cast<void**>(*pc);
 					}
-					type = nullptr;
-				} else {
-					try0 = t;
-					pc = finally0;
+				} catch (const t_scoped&) {
+					throw;
+				} catch (...) {
+					throw t_throwable::f_instantiate(L"<unknown>.");
 				}
-			} catch (const t_scoped&) {
-				throw;
-			} catch (...) {
-				throw t_throwable::f_instantiate(L"<unknown>.");
-			}
-		} catch (const t_scoped& thrown) {
-			if (try0 == e_try__TRY) {
-				try0 = e_try__CATCH;
+			} catch (const t_scoped& thrown) {
 				caught = pc;
-				pc = catch0;
-			} else if (try0 == e_try__CATCH) {
-				try0 = e_try__THROW;
-				caught = pc;
+				p.v_stack.f_clear(stack);
+				p.v_stack.v_used = base + f_as<t_lambda&>(a_context->v_lambda).v_size;
 				pc = finally0;
-			} else {
+				f_loop(a_context);
+				pc = caught;
 				throw thrown;
 			}
-			t_fiber& p = f_as<t_fiber&>(t_fiber::f_current());
-			p.v_stack.f_clear(stack);
-			p.v_stack.v_used = base + f_as<t_lambda&>(a_context->v_lambda).v_size;
-			stack->f_construct(thrown);
 		}
 	}
-	t_scoped* stack0 = base + reinterpret_cast<size_t>(*++pc);
+	pc = finally0;
+	f_loop(a_context);
 	void** break0 = static_cast<void**>(*++pc);
 	void** continue0 = static_cast<void**>(*++pc);
 	void** return0 = static_cast<void**>(*++pc);
@@ -1444,9 +1447,6 @@ void t_code::f_try(t_context* a_context)
 	case e_try__RETURN:
 		pc = return0;
 		break;
-	case e_try__THROW:
-		pc = caught;
-		throw t_scoped(std::move(stack0[0]));
 	default:
 		++pc;
 	}
