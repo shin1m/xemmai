@@ -6,8 +6,6 @@
 #include <cstddef>
 #include <condition_variable>
 #include <mutex>
-#include <new>
-#include <thread>
 
 #include "portable/define.h"
 
@@ -668,10 +666,10 @@ public:
 		stack->f_allocate(used);
 		stack->v_used = used;
 	}
-	t_scoped_stack(std::initializer_list<t_scoped> a_xs) : t_scoped_stack(a_xs.size() + 2)
+	template<typename T_x, typename... T>
+	t_scoped_stack(size_t a_n, T_x&& a_x, T&&... a_xs) : t_scoped_stack(a_n, std::forward<T>(a_xs)...)
 	{
-		t_scoped* p = v_p + 1;
-		for (auto& x : a_xs) (++p)->f_construct(std::move(x));
+		v_p[a_n - sizeof...(a_xs) - 1].f_construct(std::forward<T_x>(a_x));
 	}
 	~t_scoped_stack()
 	{

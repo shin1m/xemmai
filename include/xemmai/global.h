@@ -682,7 +682,7 @@ inline t_scoped t_value::f_hash() const
 template<typename... T>
 inline t_scoped t_value::operator()(T&&... a_arguments) const
 {
-	t_scoped_stack stack({a_arguments...});
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
 	f_call(stack, sizeof...(a_arguments));
 	return stack.f_return();
 }
