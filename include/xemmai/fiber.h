@@ -27,9 +27,7 @@ struct t_context
 		t_stack* stack = f_stack();
 		f_previous() = stack->v_used;
 		t_lambda& lambda = f_as<t_lambda&>(a_lambda);
-		t_scoped* used = v_base + lambda.v_size;
-		stack->f_allocate(used);
-		stack->v_used = used;
+		stack->f_allocate(v_base + lambda.v_size);
 		f_pc() = lambda.v_instructions;
 		if (lambda.v_shared) v_scope.f_construct_nonnull(t_scope::f_instantiate(lambda.v_shareds, t_scoped(lambda.v_scope)));
 		v_lambda.f_construct_nonnull(a_lambda);

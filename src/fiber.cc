@@ -194,7 +194,6 @@ size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_
 	} else {
 		t_scoped* head = p.v_stack.f_head();
 		p.v_stack.f_allocate(head + 1);
-		p.v_stack.v_used = head + 1;
 		*head = std::move(x);
 		p.v_fiber.f_make(t_fiber::f_run);
 	}

@@ -636,6 +636,7 @@ struct t_stack
 	void f_allocate(t_scoped* a_p)
 	{
 		if (a_p > v_tail) f_expand(a_p);
+		v_used = a_p;
 	}
 	void f_clear(t_scoped* a_p)
 	{

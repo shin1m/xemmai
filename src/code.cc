@@ -18,14 +18,11 @@ XEMMAI__PORTABLE__NOINLINE void f_method_bind(t_scoped* a_stack)
 	t_value::f_loop(a_stack, f_as<t_type&>(p->f_type()).f_get_at(p, a_stack));
 }
 
-void f_allocate(t_scoped* a_stack, size_t a_n)
+inline void f_allocate(t_scoped* a_stack, size_t a_n)
 {
 	t_stack* stack = f_stack();
 	t_scoped* used = a_stack + a_n;
-	if (used > stack->v_used) {
-		stack->f_allocate(used);
-		stack->v_used = used;
-	}
+	if (used > stack->v_used) stack->f_allocate(used);
 }
 
 size_t f_expand(t_scoped* a_stack, size_t a_n)
