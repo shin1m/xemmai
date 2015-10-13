@@ -663,9 +663,7 @@ public:
 	{
 		t_stack* stack = f_stack();
 		v_p = stack->v_used;
-		t_scoped* used = v_p + a_n;
-		stack->f_allocate(used);
-		stack->v_used = used;
+		stack->f_allocate(v_p + a_n);
 	}
 	template<typename T_x, typename... T>
 	t_scoped_stack(size_t a_n, T_x&& a_x, T&&... a_xs) : t_scoped_stack(a_n, std::forward<T>(a_xs)...)
