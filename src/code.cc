@@ -38,13 +38,11 @@ size_t f_expand(t_scoped* a_stack, size_t a_n)
 		f_allocate(a_stack, n);
 		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(tuple[i]);
 	} else if (f_is<t_array>(x)) {
+		t_with_lock_for_read lock(x);
 		const t_array& array = f_as<const t_array&>(x);
 		n = array.f_size();
 		f_allocate(a_stack, n);
-		for (size_t i = 0; i < n; ++i) {
-			t_with_lock_for_read lock(x);
-			a_stack[i].f_construct(array[i]);
-		}
+		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(array[i]);
 	} else {
 		t_scoped size = x.f_get(f_global()->f_symbol_size())();
 		f_check<size_t>(size, L"size");
