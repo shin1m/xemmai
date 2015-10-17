@@ -572,6 +572,11 @@ public:
 		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
+	void f_construct_null()
+	{
+		assert(f_tag() < t_value::e_tag__OBJECT);
+		v_p = nullptr;
+	}
 	void f_construct_nonnull(t_object* a_p)
 	{
 		assert(f_tag() < t_value::e_tag__OBJECT);
