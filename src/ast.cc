@@ -483,6 +483,10 @@ t_operand t_null::f_generate(t_generator& a_generator, size_t a_stack, bool a_ta
 {
 	if (a_operand) return t_scoped();
 	a_generator.f_reserve(a_stack + 1);
+	if (a_tail) a_generator.f_emit_safe_point(this);
+	a_generator.f_emit(e_instruction__NUL);
+	a_generator.f_operand(a_stack);
+	a_generator.f_at(this);
 	return a_stack;
 }
 
@@ -792,12 +796,16 @@ t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_ta
 		instruction = e_instruction__CALL_OUTER;
 	} else {
 		get = nullptr;
-		if (auto p = dynamic_cast<t_object_get*>(v_target.get()))
+		if (auto p = dynamic_cast<t_object_get*>(v_target.get())) {
 			p->f_generate(a_generator, a_stack, e_instruction__METHOD_GET);
-		else if (auto p = dynamic_cast<t_get_at*>(v_target.get()))
+		} else if (auto p = dynamic_cast<t_get_at*>(v_target.get())) {
 			p->f_bind(a_generator, a_stack);
-		else
+		} else {
 			v_target->f_generate(a_generator, a_stack, false, false);
+			a_generator.f_reserve(a_stack + 2);
+			a_generator.f_emit(e_instruction__NUL);
+			a_generator.f_operand(a_stack + 1);
+		}
 	}
 	for (size_t i = 0; i < v_arguments.size(); ++i) v_arguments[i]->f_generate(a_generator, a_stack + 2 + i, false, false);
 	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;

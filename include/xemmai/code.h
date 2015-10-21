@@ -54,6 +54,7 @@ enum t_instruction
 	e_instruction__SELF,
 	e_instruction__CLASS,
 	e_instruction__SUPER,
+	e_instruction__NUL,
 	e_instruction__BOOLEAN,
 	e_instruction__INTEGER,
 	e_instruction__FLOAT,

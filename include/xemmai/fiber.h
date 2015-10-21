@@ -41,8 +41,8 @@ struct t_context
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_pop()
 	{
 		size_t n = f_as<t_lambda&>(v_lambda).v_privates;
-		v_base[-1] = nullptr;
-		for (size_t i = 0; i < n; ++i) v_base[i] = nullptr;
+		v_base[-1].f_destruct();
+		for (size_t i = 0; i < n; ++i) v_base[i].f_destruct();
 		f_stack()->v_used = f_previous();
 	}
 	void f_tail(t_scoped* a_stack, size_t a_n);

@@ -115,7 +115,7 @@ size_t t_class::f_send(t_object* a_this, t_scoped* a_stack)
 {
 	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
-	a_stack[1].f_construct(a_this);
+	a_stack[1].f_construct_nonnull(a_this);
 	a0.f_call(a_stack, 0);
 	a_stack[0] = a_this;
 	context.f_done();

@@ -37,7 +37,7 @@ void t_context::f_tail(t_scoped* a_stack, size_t a_n)
 	size_t i = 0;
 	for (; i < a_n; ++i) v_base[i] = std::move(a_stack[i]);
 	size_t n = f_as<t_lambda&>(v_lambda).v_privates;
-	for (; i < n; ++i) v_base[i] = nullptr;
+	for (; i < n; ++i) v_base[i].f_destruct();
 }
 
 void t_context::f_backtrace(const t_value& a_value)
@@ -132,7 +132,7 @@ void t_fiber::f_run()
 	t_context::v_instance = p.v_context;
 	p.v_throw = b;
 	p.v_return->f_construct(std::move(x));
-	x = nullptr;
+	x.f_destruct();
 	p.v_fiber.f_set();
 }
 

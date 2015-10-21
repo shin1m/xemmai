@@ -305,7 +305,7 @@ inline t_scoped t_object::f_allocate_uninitialized(t_object* a_type)
 	t_object* p = f_local_pool__allocate();
 	p->v_next = nullptr;
 	p->v_count = 1;
-	p->v_type.f_construct(a_type);
+	p->v_type.f_construct_nonnull(a_type);
 	t_value::f_increments()->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
 	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::f_increments();
@@ -317,7 +317,7 @@ inline t_scoped t_object::f_allocate(t_object* a_type)
 	t_object* p = f_local_pool__allocate();
 	p->v_next = nullptr;
 	p->v_count = 1;
-	p->v_type.f_construct(a_type);
+	p->v_type.f_construct_nonnull(a_type);
 	p->v_type.v_pointer = nullptr;
 	t_value::f_increments()->f_push(f_engine()->v_structure_root);
 	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());

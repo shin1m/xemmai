@@ -591,7 +591,7 @@ inline void t_value::f_call(t_object* a_key, t_scoped* a_stack, size_t a_n) cons
 		if (index < 0) {
 			t_scoped value = v_p->f_type()->f_get(a_key);
 			if (value.f_type() == f_global()->f_type<t_method>()) {
-				a_stack[1].f_construct(v_p);
+				a_stack[1].f_construct_nonnull(v_p);
 				f_as<t_method&>(value).v_function.f_call(a_stack, a_n);
 			} else {
 				value.f_call(a_stack, a_n);
@@ -610,36 +610,43 @@ inline void t_object::f_get_owned(t_object* a_key, t_scoped* a_stack)
 	if (index < 0) {
 		t_scoped value = f_type()->f_get(a_key);
 		if (value.f_type() == f_global()->f_type<t_method>()) {
-			a_stack[0].f_construct(f_as<t_method&>(value).v_function);
-			a_stack[1].f_construct(this);
+			a_stack[0].f_construct_nonnull(f_as<t_method&>(value).v_function);
+			a_stack[1].f_construct_nonnull(this);
 		} else {
 			a_stack[0].f_construct(std::move(value));
+			a_stack[1].f_construct();
 		}
 	} else {
 		a_stack[0].f_construct(f_field_get(index));
+		a_stack[1].f_construct();
 	}
 }
 
 inline void t_object::f_get(t_object* a_key, t_scoped* a_stack)
 {
-	if (f_owned())
+	if (f_owned()) {
 		f_get_owned(a_key, a_stack);
-	else
+	} else {
 		a_stack[0].f_construct(f_get(a_key));
+		a_stack[1].f_construct();
+	}
 }
 
 inline void t_value::f_get(t_object* a_key, t_scoped* a_stack) const
 {
-	if (f_tag() >= e_tag__OBJECT && v_p->f_owned())
+	if (f_tag() >= e_tag__OBJECT && v_p->f_owned()) {
 		v_p->f_get_owned(a_key, a_stack);
-	else
+	} else {
 		a_stack[0].f_construct(f_get(a_key));
+		a_stack[1].f_construct();
+	}
 }
 
 inline t_scoped t_value::f_call_with_same(t_scoped* a_stack, size_t a_n) const
 {
 	size_t n = a_n + 2;
 	t_scoped_stack stack(n);
+	stack[1].f_construct();
 	for (size_t i = 2; i < n; ++i) stack[i].f_construct(a_stack[i]);
 	f_call(stack, a_n);
 	return stack.f_return();
@@ -683,6 +690,7 @@ template<typename... T>
 inline t_scoped t_value::operator()(T&&... a_arguments) const
 {
 	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	stack[1].f_construct();
 	f_call(stack, sizeof...(a_arguments));
 	return stack.f_return();
 }
