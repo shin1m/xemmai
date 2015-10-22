@@ -407,11 +407,10 @@ struct t_slot : t_value
 		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
-	void f_construct(t_value&& a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
 	{
-		assert(f_tag() < e_tag__OBJECT);
-		f_copy_union(a_value);
-		v_p = a_value.v_p;
+		f_construct(a_value);
+		if (a_value.f_tag() >= e_tag__OBJECT) f_decrements()->f_push(a_value.v_p);
 		a_value.v_p = nullptr;
 	}
 };
@@ -577,10 +576,11 @@ public:
 		if (a_p) f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
+	void f_construct(t_value&& a_value)
 	{
-		f_construct(a_value);
-		if (a_value.f_tag() >= e_tag__OBJECT) f_decrements()->f_push(a_value.v_p);
+		assert(f_tag() < e_tag__OBJECT);
+		f_copy_union(a_value);
+		v_p = a_value.v_p;
 		a_value.v_p = nullptr;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_destruct()
