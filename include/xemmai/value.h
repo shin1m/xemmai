@@ -344,6 +344,12 @@ public:
 	t_scoped f_xor(const t_value& a_value) const;
 	t_scoped f_or(const t_value& a_value) const;
 	t_scoped f_send(const t_value& a_value) const;
+	void f_construct(t_object* a_p = nullptr)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		if (a_p) f_increments()->f_push(a_p);
+		v_p = a_p;
+	}
 	void f_construct_nonnull(t_object* a_p)
 	{
 		assert(f_tag() < e_tag__OBJECT);
@@ -355,6 +361,18 @@ public:
 		assert(f_tag() < e_tag__OBJECT);
 		f_copy(a_value);
 		v_p = a_value.v_p;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
+	{
+		f_construct(a_value);
+		if (a_value.f_tag() >= e_tag__OBJECT) f_decrements()->f_push(a_value.v_p);
+		a_value.v_p = nullptr;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_destruct()
+	{
+		if (f_tag() < e_tag__OBJECT) return;
+		f_decrements()->f_push(v_p);
+		v_p = nullptr;
 	}
 };
 
@@ -398,20 +416,6 @@ struct t_slot : t_value
 	{
 		f_assign(a_value);
 		return *this;
-	}
-	using t_value::f_construct;
-	void f_construct(t_object* a_p = nullptr)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		if (!a_p) return;
-		f_increments()->f_push(a_p);
-		v_p = a_p;
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
-	{
-		f_construct(a_value);
-		if (a_value.f_tag() >= e_tag__OBJECT) f_decrements()->f_push(a_value.v_p);
-		a_value.v_p = nullptr;
 	}
 };
 
@@ -570,24 +574,12 @@ public:
 		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
 		v_float = a_value;
 	}
-	void f_construct(t_object* a_p = nullptr)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		if (a_p) f_increments()->f_push(a_p);
-		v_p = a_p;
-	}
 	void f_construct(t_value&& a_value)
 	{
 		assert(f_tag() < e_tag__OBJECT);
 		f_copy_union(a_value);
 		v_p = a_value.v_p;
 		a_value.v_p = nullptr;
-	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_destruct()
-	{
-		if (f_tag() < e_tag__OBJECT) return;
-		f_decrements()->f_push(v_p);
-		v_p = nullptr;
 	}
 };
 

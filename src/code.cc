@@ -979,70 +979,83 @@ size_t t_code::f_loop(t_context* a_context)
 				t_scoped& a1 = *static_cast<t_scoped*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_IL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_IL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_IL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_FL()\
 				XEMMAI__CODE__FLOAT(a0, v0)\
 				t_scoped& a1 = *static_cast<t_scoped*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_FL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_FL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_FL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_LL()\
 				t_scoped& a0 = *static_cast<t_scoped*>(*++pc);\
 				t_scoped& a1 = *static_cast<t_scoped*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_LL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_LL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_LL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_VL()\
 				t_scoped& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 				t_scoped& a1 = *static_cast<t_scoped*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_VL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_VL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_VL(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PREPARE_VL() XEMMAI__CODE__PREPARE_LL()
 #define XEMMAI__CODE__FETCH_TL()\
 				t_scoped& a0 = stack[1];\
 				t_scoped& a1 = *static_cast<t_scoped*>(*++pc);
 #define XEMMAI__CODE__PRIMITIVE_TL(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_TL(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_TL(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
 #define XEMMAI__CODE__FETCH_IV()\
 				intptr_t a0 = reinterpret_cast<intptr_t>(*++pc);\
 				t_scoped& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__PRIMITIVE_IV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_IV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_IV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_FV()\
 				XEMMAI__CODE__FLOAT(a0, v0)\
 				t_scoped& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__PRIMITIVE_FV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_FV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_FV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__FETCH_LV()\
 				t_scoped& a0 = *static_cast<t_scoped*>(*++pc);\
 				t_scoped& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__PRIMITIVE_LV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_LV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_LV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PREPARE_LV() XEMMAI__CODE__PREPARE_LL()
 #define XEMMAI__CODE__FETCH_VV()\
 				t_scoped& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 				t_scoped& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__PRIMITIVE_VV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_VV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_VV(a_x) XEMMAI__CODE__PRIMITIVE(a_x)
 #define XEMMAI__CODE__PREPARE_VV() XEMMAI__CODE__PREPARE_LL()
 #define XEMMAI__CODE__FETCH_TV()\
 				t_scoped& a0 = stack[1];\
 				t_scoped& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__PRIMITIVE_TV(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_TV(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_TV(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
 #define XEMMAI__CODE__PREPARE_TV() XEMMAI__CODE__PREPARE_TL()
 #define XEMMAI__CODE__FETCH_IT()\
 				intptr_t a0 = reinterpret_cast<intptr_t>(*++pc);\
 				t_scoped& a1 = stack[1];
 #define XEMMAI__CODE__PRIMITIVE_IT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_IT(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_IT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__FETCH_FT()\
 				XEMMAI__CODE__FLOAT(a0, v0)\
 				t_scoped& a1 = stack[1];
 #define XEMMAI__CODE__PRIMITIVE_FT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_FT(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_FT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__FETCH_LT()\
 				t_scoped& a0 = *static_cast<t_scoped*>(*++pc);\
 				t_scoped& a1 = stack[1];
 #define XEMMAI__CODE__PRIMITIVE_LT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_LT(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_LT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PREPARE_LT()\
 						t_scoped& x = a0;\
 						stack[2].f_construct(std::move(stack[1]));
@@ -1051,6 +1064,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_scoped& a1 = stack[1];
 #define XEMMAI__CODE__PRIMITIVE_VT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PRIMITIVE_PP_VT(a_x) XEMMAI__CODE__PRIMITIVE_P_T(a_x)
+#define XEMMAI__CODE__PRIMITIVE_PO_VT(a_x) XEMMAI__CODE__PRIMITIVE_T(a_x)
 #define XEMMAI__CODE__PREPARE_VT() XEMMAI__CODE__PREPARE_LT()
 #define XEMMAI__CODE__FETCH_TT()\
 				t_scoped& a0 = stack[1];\
@@ -1061,6 +1075,9 @@ size_t t_code::f_loop(t_context* a_context)
 						stack[2].f_destruct();
 #define XEMMAI__CODE__PRIMITIVE_PP_TT(a_x)\
 						stack[0].f_construct(a_x);
+#define XEMMAI__CODE__PRIMITIVE_PO_TT(a_x)\
+						stack[0].f_construct(a_x);\
+						stack[2].f_destruct();
 #define XEMMAI__CODE__PREPARE_TT() XEMMAI__CODE__PREPARE()
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\
 		XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name, XEMMAI__CODE__OPERANDS))\
@@ -1257,6 +1274,9 @@ size_t t_code::f_loop(t_context* a_context)
 						stack[2].f_destruct();
 #undef XEMMAI__CODE__PRIMITIVE_PP_TT
 #define XEMMAI__CODE__PRIMITIVE_PP_TT(a_x)
+#undef XEMMAI__CODE__PRIMITIVE_PO_TT
+#define XEMMAI__CODE__PRIMITIVE_PO_TT(a_x)\
+						stack[2].f_destruct();
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\
 		XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name##_TAIL, XEMMAI__CODE__OPERANDS))\
 			{\
