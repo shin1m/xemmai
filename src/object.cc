@@ -179,9 +179,9 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 {
 	size_t index = v_structure->f_size();
 	if (!v_fields || index >= v_fields->f_size()) {
-		t_scoped tuple = t_tuple::f_instantiate(index + 1);
+		t_scoped tuple = t_tuple::f_instantiate(index + 4);
 		t_tuple& fields = f_as<t_tuple&>(tuple);
-		for (size_t i = 0; i < index; ++i) fields[i] = std::move((*v_fields)[i]);
+		for (size_t i = 0; i < index; ++i) fields[i].f_construct(std::move((*v_fields)[i]));
 		tuple.f_pointer__(v_fields);
 		v_fields = &fields;
 	}
@@ -189,7 +189,7 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 	t_slot structure1(std::move(a_structure));
 	v_structure = &f_as<t_structure&>(structure1);
 	t_value::v_decrements->f_push(structure0);
-	(*v_fields)[index] = std::move(a_value);
+	(*v_fields)[index].f_construct(std::move(a_value));
 }
 
 t_scoped t_object::f_allocate_on_boot(t_object* a_type)
@@ -249,16 +249,17 @@ void t_object::f_field_remove(size_t a_index)
 	if (size + 4 < v_fields->f_size()) {
 		t_scoped tuple = t_tuple::f_instantiate(size);
 		t_tuple& fields = f_as<t_tuple&>(tuple);
-		for (size_t i = 0; i < a_index; ++i) fields[i] = std::move((*v_fields)[i]);
+		for (size_t i = 0; i < a_index; ++i) fields[i].f_construct(std::move((*v_fields)[i]));
 		while (a_index < size) {
-			fields[a_index] = std::move((*v_fields)[a_index + 1]);
+			fields[a_index].f_construct(std::move((*v_fields)[a_index + 1]));
 			++a_index;
 		}
 		tuple.f_pointer__(v_fields);
 		v_fields = &fields;
 	} else {
+		(*v_fields)[a_index].f_destruct();
 		while (a_index < size) {
-			(*v_fields)[a_index] = std::move((*v_fields)[a_index + 1]);
+			(*v_fields)[a_index].f_construct(std::move((*v_fields)[a_index + 1]));
 			++a_index;
 		}
 	}

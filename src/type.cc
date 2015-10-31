@@ -19,7 +19,7 @@ bool t_type::f_derives(t_object* a_this, t_object* a_type)
 void t_type::f_initialize(t_object* a_module, t_scoped* a_stack, size_t a_n)
 {
 	a_n += 2;
-	for (size_t i = 1; i < a_n; ++i) a_stack[i] = nullptr;
+	for (size_t i = 1; i < a_n; ++i) a_stack[i].f_destruct();
 }
 
 void t_type::f_own(const t_value& a_self)

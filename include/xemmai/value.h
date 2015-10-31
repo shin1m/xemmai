@@ -187,8 +187,6 @@ protected:
 		case e_tag__NULL:
 			break;
 		case e_tag__BOOLEAN:
-			v_boolean = a_value.v_boolean;
-			break;
 		case e_tag__INTEGER:
 			v_integer = a_value.v_integer;
 			break;
@@ -199,25 +197,11 @@ protected:
 			f_increments()->f_push(a_value.v_p);
 		}
 	}
-	void f_copy_union(const t_value& a_value)
-	{
-		switch (a_value.f_tag()) {
-		case e_tag__BOOLEAN:
-			v_boolean = a_value.v_boolean;
-			break;
-		case e_tag__INTEGER:
-			v_integer = a_value.v_integer;
-			break;
-		case e_tag__FLOAT:
-			v_float = a_value.v_float;
-			break;
-		}
-	}
-	t_value(t_object* a_p, const t_own&) : v_p(a_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_value(t_object* a_p, const t_own&) : v_p(a_p)
 	{
 		if (v_p) f_increments()->f_push(v_p);
 	}
-	t_value(const t_value& a_value, const t_own&) : v_p(a_value.v_p)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_value(const t_value& a_value, const t_own&) : v_p(a_value.v_p)
 	{
 		f_copy(a_value);
 	}
@@ -266,7 +250,15 @@ public:
 	}
 	t_value(const t_value& a_value) : v_p(a_value.v_p)
 	{
-		f_copy_union(a_value);
+		switch (f_tag()) {
+		case e_tag__BOOLEAN:
+		case e_tag__INTEGER:
+			v_integer = a_value.v_integer;
+			break;
+		case e_tag__FLOAT:
+			v_float = a_value.v_float;
+			break;
+		}
 	}
 	bool operator==(const t_value& a_value) const
 	{
@@ -362,17 +354,16 @@ public:
 		f_copy(a_value);
 		v_p = a_value.v_p;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
-	{
-		f_construct(a_value);
-		if (a_value.f_tag() >= e_tag__OBJECT) f_decrements()->f_push(a_value.v_p);
-		a_value.v_p = nullptr;
-	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_destruct()
 	{
 		if (f_tag() < e_tag__OBJECT) return;
 		f_decrements()->f_push(v_p);
 		v_p = nullptr;
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
+	{
+		f_construct(a_value);
+		a_value.f_destruct();
 	}
 };
 
@@ -389,8 +380,7 @@ struct t_slot : t_value
 	}
 	explicit t_slot(t_value&& a_value) : t_value(a_value, t_own())
 	{
-		if (a_value.f_tag() >= e_tag__OBJECT) f_decrements()->f_push(a_value.v_p);
-		a_value.v_p = nullptr;
+		a_value.f_destruct();
 	}
 	t_slot(const t_slot& a_value) : t_value(a_value, t_own())
 	{
@@ -408,8 +398,7 @@ struct t_slot : t_value
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_value&& a_value)
 	{
 		f_assign(a_value);
-		if (a_value.f_tag() >= e_tag__OBJECT) f_decrements()->f_push(a_value.v_p);
-		a_value.v_p = nullptr;
+		a_value.f_destruct();
 		return *this;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_slot& a_value)
@@ -440,33 +429,45 @@ class t_scoped : public t_value
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
 		v_integer = a_value;
 	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_move_union(t_value& a_value)
+	{
+		switch (f_tag()) {
+		case e_tag__BOOLEAN:
+		case e_tag__INTEGER:
+			v_integer = a_value.v_integer;
+			break;
+		case e_tag__FLOAT:
+			v_float = a_value.v_float;
+			break;
+		}
+		a_value.v_p = nullptr;
+	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_move(t_value&& a_value)
 	{
-		f_copy_union(a_value);
 		t_object* p = v_p;
 		v_p = a_value.v_p;
-		a_value.v_p = nullptr;
+		f_move_union(a_value);
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 
 public:
 	using t_value::t_value;
-	t_scoped(t_object* a_p = nullptr) : t_value(a_p, t_own())
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped(t_object* a_p = nullptr) : t_value(a_p, t_own())
 	{
 	}
-	t_scoped(const t_value& a_value) : t_value(a_value, t_own())
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped(const t_value& a_value) : t_value(a_value, t_own())
 	{
 	}
-	t_scoped(t_value&& a_value) : t_value(a_value)
+	t_scoped(t_value&& a_value) : t_value(a_value.v_p)
 	{
-		a_value.v_p = nullptr;
+		f_move_union(a_value);
 	}
-	t_scoped(const t_scoped& a_value) : t_value(a_value, t_own())
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped(const t_scoped& a_value) : t_value(a_value, t_own())
 	{
 	}
-	t_scoped(t_scoped&& a_value) : t_value(a_value)
+	t_scoped(t_scoped&& a_value) : t_value(a_value.v_p)
 	{
-		a_value.v_p = nullptr;
+		f_move_union(a_value);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE ~t_scoped()
 	{
@@ -577,9 +578,8 @@ public:
 	void f_construct(t_value&& a_value)
 	{
 		assert(f_tag() < e_tag__OBJECT);
-		f_copy_union(a_value);
 		v_p = a_value.v_p;
-		a_value.v_p = nullptr;
+		f_move_union(a_value);
 	}
 };
 
