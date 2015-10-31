@@ -14,6 +14,8 @@ void f_generate_block(t_generator& a_generator, size_t a_stack, const std::vecto
 	auto j = a_nodes.end();
 	if (i == j) {
 		a_generator.f_reserve(a_stack + 1);
+		a_generator.f_emit(e_instruction__NUL);
+		a_generator.f_operand(a_stack);
 	} else {
 		for (--j; i != j; ++i) {
 			(*i)->f_generate(a_generator, a_stack, false, false);
@@ -153,6 +155,8 @@ t_operand t_while::f_generate(t_generator& a_generator, size_t a_stack, bool a_t
 	a_generator.f_operand(continue0);
 	a_generator.f_target(label0);
 	a_generator.f_reserve(a_stack + 1);
+	a_generator.f_emit(e_instruction__NUL);
+	a_generator.f_operand(a_stack);
 	a_generator.f_target(break0);
 	a_generator.v_targets = targets0;
 	return a_stack;
@@ -184,6 +188,8 @@ t_operand t_for::f_generate(t_generator& a_generator, size_t a_stack, bool a_tai
 	a_generator.f_operand(continue0);
 	a_generator.f_target(label0);
 	a_generator.f_reserve(a_stack + 1);
+	a_generator.f_emit(e_instruction__NUL);
+	a_generator.f_operand(a_stack);
 	a_generator.f_target(break0);
 	a_generator.v_targets = targets0;
 	return a_stack;
@@ -209,10 +215,13 @@ t_operand t_continue::f_generate(t_generator& a_generator, size_t a_stack, bool 
 
 t_operand t_return::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand)
 {
-	if (v_expression)
+	if (v_expression) {
 		v_expression->f_generate(a_generator, a_stack, a_generator.v_targets->v_return_is_tail, false);
-	else
+	} else {
 		a_generator.f_reserve(a_stack + 1);
+		a_generator.f_emit(e_instruction__NUL);
+		a_generator.f_operand(a_stack);
+	}
 	a_generator.f_emit(e_instruction__JUMP);
 	a_generator.f_operand(*a_generator.v_targets->v_return);
 	return a_stack;
