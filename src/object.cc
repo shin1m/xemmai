@@ -177,19 +177,23 @@ void t_object::f_cyclic_decrement()
 
 void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 {
-	size_t index = v_structure->f_size();
-	if (!v_fields || index >= v_fields->f_size()) {
-		t_scoped tuple = t_tuple::f_instantiate(index + 4);
-		t_tuple& fields = f_as<t_tuple&>(tuple);
-		for (size_t i = 0; i < index; ++i) fields[i].f_construct(std::move((*v_fields)[i]));
-		tuple.f_pointer__(v_fields);
-		v_fields = &fields;
+	if (!v_fields) {
+		v_fields = new(4) t_tuple();
+		(*v_fields)[0].f_construct(std::move(a_value));
+	} else {
+		size_t index = v_structure->f_size();
+		if (index >= v_fields->f_size()) {
+			auto fields = new(index + 4) t_tuple();
+			for (size_t i = 0; i < index; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i]));
+			std::swap(v_fields, fields);
+			t_object::f_allocate(f_global()->f_type<t_tuple>()).f_pointer__(fields);
+		}
+		(*v_fields)[index].f_construct(std::move(a_value));
 	}
 	t_object* structure0 = v_structure->v_this;
 	t_slot structure1(std::move(a_structure));
 	v_structure = &f_as<t_structure&>(structure1);
 	t_value::v_decrements->f_push(structure0);
-	(*v_fields)[index].f_construct(std::move(a_value));
 }
 
 t_scoped t_object::f_allocate_on_boot(t_object* a_type)

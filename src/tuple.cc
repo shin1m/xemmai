@@ -145,8 +145,7 @@ t_type* t_type_of<t_tuple>::f_derive(t_object* a_this)
 
 void t_type_of<t_tuple>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_tuple* p = &f_as<t_tuple&>(a_this);
-	if (p) p->f_scan(a_scan);
+	f_as<t_tuple&>(a_this).f_scan(a_scan);
 }
 
 void t_type_of<t_tuple>::f_finalize(t_object* a_this)
