@@ -1,5 +1,6 @@
 system = Module("system");
 print = system.out.write_line;
+assert = @(x) if (!x) throw Throwable("Assertion failed.");;
 
 f = @(x) x * 2;
 if (f(1) > 0) {
@@ -13,11 +14,11 @@ if (f(-1) > 0) {
 	print("2");
 }
 
-print(f(1) > 0 ? "true" : "ng");
-print(f(-1) > 0 ? "ng" : "false");
-print(f(1) > 0 ? "true" : f(1) > 0 ? "ng" : "ng");
-print(f(-1) > 0 ? "ng" : f(1) > 0 ? "false->true" : "ng");
-print(f(-1) > 0 ? "ng" : f(-1) > 0 ? "ng" : "false->false");
+assert(f(1) > 0 ? true : false);
+assert(f(-1) > 0 ? false : true);
+assert(f(1) > 0 ? true : f(1) > 0 ? false : false);
+assert(f(-1) > 0 ? false : f(1) > 0 ? true : false);
+assert(f(-1) > 0 ? false : f(-1) > 0 ? false : true);
 
 i = 2;
 while (i > 0) {
@@ -59,32 +60,28 @@ a = @{
 		print("10");
 		i = 1;
 	}
-	print("9");
+	throw Throwable("never reach here.");
 }();
-print(a);
+assert(a == "12");
 
 j = 0;
 for (i = 0; i < 2; i = i + 1) {
-	print(i);
-	if (i != j) throw Throwable("i must be j.");
+	assert(i == j);
 	j = j + 1;
 }
 
 for (i = 0, j = 0; i < 2; i = i + 1, j = j + 1) {
-	print(i);
 	if (i == j) continue;
 	throw Throwable("never reach here.");
 }
 
 i = 0;
-for (; true;) {
+for (;;) {
 	if (i >= 2) break;
-	print(i);
 	i = i + 1;
 	continue;
 	throw Throwable("never reach here.");
 }
 
 for (i = 0; i < 2; i = i + 1);
-print(i);
-if (i != 2) throw Throwable("i must be 2.");
+assert(i == 2);
