@@ -1062,6 +1062,21 @@ intptr_t t_fiber::f_main(T_main a_main)
 	return n;
 }
 
+inline size_t t_code::f_loop(t_object* a_lambda, t_scoped* a_stack)
+{
+	t_context context(a_lambda, a_stack);
+	try {
+		return f_loop(&context);
+	} catch (const t_scoped& thrown) {
+		context.f_backtrace(thrown);
+		throw thrown;
+	} catch (...) {
+		t_scoped thrown = t_throwable::f_instantiate(L"<unknown>.");
+		context.f_backtrace(thrown);
+		throw thrown;
+	}
+}
+
 }
 
 #endif

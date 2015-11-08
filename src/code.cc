@@ -1649,21 +1649,6 @@ void t_code::f_try(t_context* a_context)
 	}
 }
 
-size_t t_code::f_loop(t_object* a_lambda, t_scoped* a_stack)
-{
-	t_context context(a_lambda, a_stack);
-	try {
-		return f_loop(&context);
-	} catch (const t_scoped& thrown) {
-		context.f_backtrace(thrown);
-		throw thrown;
-	} catch (...) {
-		t_scoped thrown = t_throwable::f_instantiate(L"<unknown>.");
-		context.f_backtrace(thrown);
-		throw thrown;
-	}
-}
-
 t_scoped t_code::f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_code>());
