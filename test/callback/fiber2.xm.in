@@ -1,20 +1,19 @@
-system = Module("system");
-callback = Module("callback");
-print = system.out.write_line;
-assert = @(x) if (!x) throw Throwable("Assertion failed.");;
+system = Module("system"
+callback = Module("callback"
+print = system.out.write_line
+assert = @(x)
+	throw Throwable("Assertion failed." if !x
 
-fm = Fiber.current();
+fm = Fiber.current(
 
-Derived = Class(callback.Client) :: @{
-	$on_message = @(message) {
-		print("fc: " + message);
-		fm("Good bye.");
-	};
-};
+Derived = Class(callback.Client) :: @
+	$on_message = @(message)
+		print("fc: " + message
+		fm("Good bye."
 
-server = callback.Server();
-server.add(Derived());
+server = callback.Server(
+server.add(Derived(
 
-fc = Fiber(@(x) server.post(x));
+fc = Fiber(@(x) server.post(x
 
-print("fm: " + fc("Hello."));
+print("fm: " + fc("Hello."

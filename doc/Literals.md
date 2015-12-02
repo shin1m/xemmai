@@ -37,17 +37,17 @@ This page explains literals.
 
 ## Tuple Literals
 
-    tuple: '\'' '(' expressions? ')' ;
-    expressions: '*' expression | expression (',' expression)* (',' '*' expression)? ;
+    tuple: '\'' '(' (indent? expressions)? ')'? ;
+    expressions: '*' expression | expression ((',' | indent) expression)* ((',' | indent) '*' expression)? ;
 
 
 ## Array Literals
 
-    array: '[' expressions? ']' ;
+    array: '[' (indent? expressions)? ']'? ;
 
 
 ## Dictionary Literals
 
-    dictionary: '{' pairs? '}' ;
-    pairs: pair (',' pair)* ;
+    dictionary: '{' (indent? pairs)? '}'? ;
+    pairs: pair ((',' | indent) pair)* ;
     pair: expression ':' expression ;

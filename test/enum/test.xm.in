@@ -1,10 +1,11 @@
-system = Module("system");
-enum = Module("enum");
-print = system.out.write_line;
-assert = @(x) if (!x) throw Throwable("Assertion failed.");;
+system = Module("system"
+enum = Module("enum"
+print = system.out.write_line
+assert = @(x)
+	throw Throwable("Assertion failed." if !x
 
-print(enum.Number.ZERO);
-assert(enum.Number.ZERO == 0);
-print(enum.Number.ONE);
-assert(enum.Number.ONE == 1);
-assert(enum.Number.ZERO != enum.Number.ONE);
+print(enum.Number.ZERO
+assert(enum.Number.ZERO == 0
+print(enum.Number.ONE
+assert(enum.Number.ONE == 1
+assert(enum.Number.ZERO != enum.Number.ONE

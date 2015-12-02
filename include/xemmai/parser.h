@@ -11,26 +11,24 @@ namespace xemmai
 
 class t_parser
 {
-	struct t_targets
-	{
-		bool v_loop;
-		bool v_return;
-
-		t_targets(bool a_loop, bool a_return) : v_loop(a_loop), v_return(a_return)
-		{
-		}
-	};
-
 	t_lexer v_lexer;
 	ast::t_scope* v_scope;
-	t_targets* v_targets;
+	ast::t_node* v_jump = nullptr;
+	bool v_can_return = false;
 
 	bool f_single_colon() const
 	{
 		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1;
 	}
-	void f_throw [[noreturn]] (const std::wstring& a_message);
-	t_code::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol, bool a_loop);
+	void f_throw [[noreturn]] (const std::wstring& a_message, const t_at& a_at)
+	{
+		throw t_error::f_instantiate(a_message, v_lexer.f_path(), a_at);
+	}
+	void f_throw [[noreturn]] (const std::wstring& a_message)
+	{
+		f_throw(a_message, v_lexer.f_at());
+	}
+	t_code::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol);
 	intptr_t f_integer()
 	{
 		return t_type_of<intptr_t>::f_parse(&v_lexer.f_value()[0]);
@@ -40,10 +38,10 @@ class t_parser
 		return t_type_of<double>::f_parse(&v_lexer.f_value()[0]);
 	}
 	std::unique_ptr<ast::t_node> f_target(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_action(std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);
-	std::unique_ptr<ast::t_node> f_action(ast::t_node* a_target, bool a_assignable)
+	std::unique_ptr<ast::t_node> f_action(size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_action(size_t a_indent, ast::t_node* a_target, bool a_assignable)
 	{
-		return f_action(std::unique_ptr<ast::t_node>(a_target), a_assignable);
+		return f_action(a_indent, std::unique_ptr<ast::t_node>(a_target), a_assignable);
 	}
 	std::unique_ptr<ast::t_node> f_unary(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_multiplicative(bool a_assignable);
@@ -59,22 +57,40 @@ class t_parser
 	std::unique_ptr<ast::t_node> f_send(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_conditional(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_expression();
-	bool f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	bool f_expressions(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
+	{
+		while (true) {
+			a_nodes.push_back(f_expression());
+			if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
+			v_lexer.f_next();
+		}
+	}
+	bool f_newline_or_postfix() const
+	{
+		if (v_lexer.f_newline()) return true;
+		switch (v_lexer.f_token()) {
+		case t_lexer::e_token__IF:
+		case t_lexer::e_token__WHILE:
+		case t_lexer::e_token__FOR:
+			return true;
+		default:
+			return false;
+		}
+	}
 	std::unique_ptr<ast::t_node> f_statement();
-	void f_statements(std::vector<std::unique_ptr<ast::t_node>>& a_nodes, t_lexer::t_token a_token);
 	void f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	void f_block_or_statement(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_newline_and_block(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
 
 public:
 	struct t_error : t_throwable
 	{
-		static t_scoped f_instantiate(const std::wstring& a_message, t_lexer& a_lexer);
+		static t_scoped f_instantiate(const std::wstring& a_message, const std::wstring& a_path, const t_at& a_at);
 
 		std::wstring v_path;
 		t_at v_at;
 
-		t_error(const std::wstring& a_message, t_lexer& a_lexer) :
-		t_throwable(L"syntax error: " + a_message), v_path(a_lexer.f_path()), v_at(a_lexer.f_at())
+		t_error(const std::wstring& a_message, const std::wstring& a_path, const t_at& a_at) : t_throwable(L"syntax error: " + a_message), v_path(a_path), v_at(a_at)
 		{
 		}
 		virtual void f_dump() const;

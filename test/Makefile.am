@@ -10,6 +10,7 @@ scripts = \
 	flow2.xm \
 	primitives.xm \
 	operators.xm \
+	indent.xm \
 	race.xm \
 	ring.xm \
 	symbol.xm \
@@ -35,7 +36,8 @@ scripts = \
 	mandelbrot.xm \
 	fix.xm \
 	tail.xm \
-	time.xm
+	time.xm \
+	totp.xm
 TESTS = $(scripts) \
 	container/test.xm \
 	callback/test.xm \
@@ -48,7 +50,6 @@ EXTRA_DIST = $(scripts) \
 	list.xm \
 	run-xmd \
 	run-xmo \
-	hanoi3.xmd \
 	hanoi3.xmdi \
 	hanoi3.xmde \
 	tail2.xmoe \

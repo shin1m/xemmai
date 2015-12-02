@@ -2,6 +2,7 @@
 #define XEMMAI__AST_H
 
 #include <deque>
+#include <set>
 
 #include "code.h"
 
@@ -48,10 +49,9 @@ class t_node
 {
 	friend struct xemmai::t_generator;
 
-protected:
+public:
 	t_at v_at;
 
-public:
 	t_node(const t_at& a_at) : v_at(a_at)
 	{
 	}
@@ -68,6 +68,8 @@ struct t_scope
 	std::vector<std::unique_ptr<t_node>> v_block;
 	bool v_shared = false;
 	bool v_self_shared = false;
+	std::set<t_scoped> v_references;
+	std::set<t_scoped> v_unresolveds;
 	std::map<t_scoped, t_code::t_variable> v_variables;
 	std::vector<t_code::t_variable*> v_privates;
 	size_t v_shareds = 0;
@@ -271,24 +273,18 @@ struct t_object_remove_indirect : t_node
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_global_get : t_node
-{
-	t_scoped v_key;
-
-	t_global_get(const t_at& a_at, t_scoped&& a_key) : t_node(a_at), v_key(std::move(a_key))
-	{
-	}
-	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
-};
-
-struct t_scope_get : t_node
+struct t_symbol_get : t_node
 {
 	size_t v_outer;
-	const t_code::t_variable& v_variable;
+	t_scope* v_scope;
+	t_scoped v_symbol;
+	size_t v_resolved = -1;
+	const t_code::t_variable* v_variable = nullptr;
 
-	t_scope_get(const t_at& a_at, size_t a_outer, const t_code::t_variable& a_variable) : t_node(a_at), v_outer(a_outer), v_variable(a_variable)
+	t_symbol_get(const t_at& a_at, size_t a_outer, t_scope* a_scope, t_scoped&& a_symbol) : t_node(a_at), v_outer(a_outer), v_scope(a_scope), v_symbol(std::move(a_symbol))
 	{
 	}
+	void f_resolve();
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
 };
 

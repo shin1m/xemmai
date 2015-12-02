@@ -25,18 +25,36 @@ void t_lexer::f_get()
 	v_c = std::getwc(v_stream);
 }
 
-void t_lexer::f_next()
+t_lexer::t_lexer(const std::wstring& a_path, std::FILE* a_stream) : v_path(a_path), v_stream(a_stream), v_c(std::getwc(v_stream))
 {
 	while (true) {
-		while (std::iswspace(v_c)) f_get();
-		if (v_c != L'#') break;
-		f_get();
-		while (v_c != WEOF) {
-			if (v_c == L'\n') {
+		f_read_indent();
+		if (v_c != L'\n' && v_c != L'#') break;
+		v_indent.clear();
+		f_skip_line();
+	}
+	f_next();
+}
+
+void t_lexer::f_next()
+{
+	while (v_c != L'\n' && std::iswspace(v_c)) f_get();
+	v_newline = v_c == L'\n' || v_c == L'#';
+	if (v_newline) {
+		while (true) {
+			f_skip_line();
+			size_t n = v_indent.size();
+			size_t i = 0;
+			for (; i < n && v_c != L'\n' && std::iswspace(v_c); ++i) {
+				if (v_c != v_indent[i]) f_throw();
 				f_get();
+			}
+			f_read_indent();
+			if (v_c != L'\n' && v_c != L'#') {
+				if (i < n) v_indent.erase(v_indent.begin() + i, v_indent.end());
 				break;
 			}
-			f_get();
+			if (v_indent.size() > n) v_indent.erase(v_indent.begin() + n, v_indent.end());
 		}
 	}
 	v_at = t_at(v_position, v_line, v_column);

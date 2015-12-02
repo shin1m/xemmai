@@ -25,54 +25,58 @@ See [TermExpressions](TermExpressions.md).
 
 ### The `if` Expression
 
-    if: 'if' '(' expression ')' block ('else' block)? ;
+    if: if-phrase block? ('else' if-phrase block?)* ('else' block?)? ;
+    if-phrase: 'if' expression ;
 
 
 ### The `while` Expression
 
-    while: 'while' '(' expression ')' block ;
+    while: while-phrase block? ;
+    while-phrase: 'while' expression ;
 
 
 ### The `for` Expression
 
-    for: 'for' '(' expression? ';' expression? ';' expression? ')' block ;
+    for: for-phrase block? ;
+    for-phrase: 'for' for-expressions? ';' expression? ';' for-expressions? ;
+    for-expressions: expression (',' expression)* ;
 
 
 ### The `try` Expression
 
-    try: 'try' '{' statement* '}' (catch+ finally? | finally) ;
-    catch: 'catch' '(' expression symbol ')' '{' statement* '}' ;
-    finally: 'finally' '{' statement* '}' ;
+    try: 'try' block? (catch+ finally? | finally) ;
+    catch: 'catch' expression symbol block? ;
+    finally: 'finally' block? ;
 
 
 ## Blocks
 
-    block: statement | '{' statement* '}' ;
+    block: indent statement+ ;
 
 
 ## Statements
 
-    statement: term ';' | assignment ';' | compound | break | continue | return | throw ;
+    statement: (term | assignment | compound | break | continue | return | throw) (if-phrase | while-phrase | for-phrase)* newline ;
 
 
 ### The `break` Statement
 
-    break: 'break' expression? ';' ;
+    break: 'break' expression? ;
 
 
 ### The `continue` Statement
 
-    continue: 'continue' ';' ;
+    continue: 'continue' ;
 
 
 ### The `return` Statement
 
-    return: 'return' expression? ';' ;
+    return: 'return' expression? ;
 
 
 ### The `throw` Statement
 
-    throw: 'throw' expression ';' ;
+    throw: 'throw' expression ;
 
 
 ## Module Definitions

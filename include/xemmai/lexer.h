@@ -87,11 +87,30 @@ private:
 	size_t v_column = 1;
 	wint_t v_c;
 	t_at v_at{0, 0, 0};
+	bool v_newline;
+	std::vector<wchar_t> v_indent;
 	t_token v_token;
 	std::vector<wchar_t> v_value;
 
 	void f_throw [[noreturn]] ();
 	void f_get();
+	void f_read_indent()
+	{
+		while (v_c != L'\n' && std::iswspace(v_c)) {
+			v_indent.push_back(v_c);
+			f_get();
+		}
+	}
+	void f_skip_line()
+	{
+		do {
+			if (v_c == L'\n') {
+				f_get();
+				break;
+			}
+			f_get();
+		} while (v_c != WEOF);
+	}
 
 public:
 	struct t_error : t_throwable
@@ -107,10 +126,7 @@ public:
 		virtual void f_dump() const;
 	};
 
-	t_lexer(const std::wstring& a_path, std::FILE* a_stream) : v_path(a_path), v_stream(a_stream), v_c(std::getwc(v_stream))
-	{
-		f_next();
-	}
+	t_lexer(const std::wstring& a_path, std::FILE* a_stream);
 	const std::wstring& f_path() const
 	{
 		return v_path;
@@ -118,6 +134,14 @@ public:
 	const t_at& f_at() const
 	{
 		return v_at;
+	}
+	bool f_newline() const
+	{
+		return v_newline;
+	}
+	size_t f_indent() const
+	{
+		v_indent.size();
 	}
 	t_token f_token() const
 	{

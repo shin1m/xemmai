@@ -1,21 +1,35 @@
-system = Module("system");
-print = system.out.write_line;
+system = Module("system"
+print = system.out.write_line
+assert = @(x)
+	throw Throwable("Assertion failed." if !x
 
-f0 = Fiber(@(co) {
-	co("Hello everyone,");
-	co("This is shin.");
-	"Good bye.";
-});
+f0 = Fiber(@(co)
+	co("Hello everyone,"
+	co("This is shin."
+	"Good bye."
 
-foo = Object();
-foo.__string = @{
-	f0(Fiber.current());
-};
+foo = Object(
+foo.__string = @
+	f0(Fiber.current(
 
-print(foo);
-print(foo);
-print(foo);
-print(foo);
-print(foo);
-print(foo);
-print(foo);
+a = "" + foo
+print(a
+assert(a == "Hello everyone,"
+a = "" + foo
+print(a
+assert(a == "This is shin."
+a = "" + foo
+print(a
+assert(a == "Good bye."
+a = "" + foo
+print(a
+assert(a == "Hello everyone,"
+a = "" + foo
+print(a
+assert(a == "This is shin."
+a = "" + foo
+print(a
+assert(a == "Good bye."
+a = "" + foo
+print(a
+assert(a == "Hello everyone,"

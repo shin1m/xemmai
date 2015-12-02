@@ -7,7 +7,6 @@
 
 #include <clocale>
 #include <cstring>
-#include <set>
 #ifdef __unix__
 #include <unistd.h>
 #include <signal.h>

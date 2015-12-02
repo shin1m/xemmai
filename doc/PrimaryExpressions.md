@@ -32,7 +32,7 @@ See [Literals](Literals.md).
 
 ## Lambda Expressions
 
-    lambda: '@' ('(' arguments? ')')? '{' statement* '}'
+    lambda: '@' ('(' arguments? ')')? (indent statement+)?
         | '@' '(' arguments? ')' expression
         ;
     arguments: '*' symbol
@@ -62,4 +62,4 @@ See [Literals](Literals.md).
 
 ## Call Expressions
 
-    call: primary '(' expressions? ')' ;
+    call: primary '(' (indent? expressions)? ')'? ;

@@ -1,12 +1,12 @@
 at .*/tail2\.xmo:3:3
-			throw Throwable\(x\);
+			throw Throwable\(x
 			\^
 from <native code>
-from .*/tail2\.xmo:7:3
-		f\(\);
+from .*/tail2\.xmo:5:3
+		f\(
 		 \^
 caught: b
-at .*/tail2\.xmo:12:1
-	throw Throwable\("b"\);
+at .*/tail2\.xmo:9:1
+	throw Throwable\("b"
 	\^
 from <fiber>

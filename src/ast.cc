@@ -408,29 +408,42 @@ t_operand t_object_remove_indirect::f_generate(t_generator& a_generator, size_t 
 	return a_stack;
 }
 
-t_operand t_global_get::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear)
+void t_symbol_get::f_resolve()
 {
-	a_generator.f_reserve(a_stack + 1);
-	if (a_tail) a_generator.f_emit_safe_point(this);
-	a_generator.f_emit(e_instruction__GLOBAL_GET);
-	a_generator.f_operand(a_stack);
-	a_generator.f_operand(static_cast<t_object*>(v_key));
-	a_generator.f_at(this);
-	if (a_clear) a_generator.f_emit_clear(a_stack);
-	return a_stack;
+	if (v_resolved != size_t(-1)) return;
+	v_resolved = v_outer;
+	for (auto scope = v_scope; scope; scope = scope->v_outer) {
+		auto i = scope->v_variables.find(v_symbol);
+		if (i != scope->v_variables.end()) {
+			v_variable = &i->second;
+			break;
+		}
+		++v_resolved;
+	}
 }
 
-t_operand t_scope_get::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_symbol_get::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear)
 {
-	if (v_variable.v_shared) {
-		size_t instruction = (v_variable.v_varies ? e_instruction__SCOPE_GET0 : e_instruction__SCOPE_GET0_WITHOUT_LOCK) + (v_outer < 3 ? v_outer : 3);
+	f_resolve();
+	if (!v_variable) {
+		a_generator.f_reserve(a_stack + 1);
+		if (a_tail) a_generator.f_emit_safe_point(this);
+		a_generator.f_emit(e_instruction__GLOBAL_GET);
+		a_generator.f_operand(a_stack);
+		a_generator.f_operand(static_cast<t_object*>(v_symbol));
+		a_generator.f_at(this);
+		if (a_clear) a_generator.f_emit_clear(a_stack);
+		return a_stack;
+	}
+	if (v_variable->v_shared) {
+		size_t instruction = (v_variable->v_varies ? e_instruction__SCOPE_GET0 : e_instruction__SCOPE_GET0_WITHOUT_LOCK) + (v_resolved < 3 ? v_resolved : 3);
 		a_generator.f_reserve(a_stack + 1);
 		if (a_tail) a_generator.f_emit_safe_point(this);
 		a_generator.f_emit(static_cast<t_instruction>(instruction));
 		a_generator.f_operand(a_stack);
-		if (v_outer >= 3) a_generator.f_operand(v_outer);
+		if (v_resolved >= 3) a_generator.f_operand(v_resolved);
 	} else {
-		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable.v_index);
+		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
 			a_generator.f_emit_safe_point(this);
 			a_generator.f_emit(e_instruction__RETURN);
@@ -440,7 +453,7 @@ t_operand t_scope_get::f_generate(t_generator& a_generator, size_t a_stack, bool
 			a_generator.f_operand(a_stack);
 		}
 	}
-	a_generator.f_operand(v_variable.v_index);
+	a_generator.f_operand(v_variable->v_index);
 	a_generator.f_at(this);
 	if (a_clear) a_generator.f_emit_clear(a_stack);
 	return a_stack;
@@ -816,11 +829,14 @@ t_operand t_binary::f_generate(t_generator& a_generator, size_t a_stack, bool a_
 t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear)
 {
 	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
-	auto get = v_expand ? nullptr : dynamic_cast<t_scope_get*>(v_target.get());
-	if (get && get->v_outer == 1 && !get->v_variable.v_varies) {
+	const t_code::t_variable* variable = nullptr;
+	if (auto get = v_expand ? nullptr : dynamic_cast<t_symbol_get*>(v_target.get())) {
+		get->f_resolve();
+		if (get->v_resolved == 1 && get->v_variable && !get->v_variable->v_varies) variable = get->v_variable;
+	}
+	if (variable) {
 		instruction = e_instruction__CALL_OUTER;
 	} else {
-		get = nullptr;
 		if (auto p = dynamic_cast<t_object_get*>(v_target.get())) {
 			p->f_generate(a_generator, a_stack, e_instruction__METHOD_GET);
 		} else if (auto p = dynamic_cast<t_get_at*>(v_target.get())) {
@@ -838,7 +854,7 @@ t_operand t_call::f_generate(t_generator& a_generator, size_t a_stack, bool a_ta
 	a_generator.f_emit_safe_point(this);
 	a_generator.f_emit(static_cast<t_instruction>(instruction));
 	a_generator.f_operand(a_stack);
-	if (get) a_generator.f_operand(get->v_variable.v_index);
+	if (variable) a_generator.f_operand(variable->v_index);
 	a_generator.f_operand(v_arguments.size());
 	a_generator.f_at(this);
 	if (a_clear) a_generator.f_emit_clear(a_stack);
