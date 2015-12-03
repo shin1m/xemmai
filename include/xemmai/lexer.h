@@ -141,7 +141,7 @@ public:
 	}
 	size_t f_indent() const
 	{
-		v_indent.size();
+		return v_indent.size();
 	}
 	t_token f_token() const
 	{
