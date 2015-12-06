@@ -1,8 +1,7 @@
 system = Module("system"
 enum = Module("enum"
 print = system.out.write_line
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 print(enum.Number.ZERO
 assert(enum.Number.ZERO == 0

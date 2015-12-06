@@ -1,7 +1,6 @@
 system = Module("system"
 print = system.out.write_line
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 d = {"one": 1, 2: "two"
 print(d
@@ -34,7 +33,7 @@ print(d
 assert(d.size() == 0
 
 d = {
-d[i] = i for i = 0; i < 1000; i = i + 1
+for i = 0; i < 1000; i = i + 1: d[i] = i
 assert(d.size() == 1000
 
 Foo = Class(Dictionary) :: @

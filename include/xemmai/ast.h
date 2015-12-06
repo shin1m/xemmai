@@ -49,9 +49,10 @@ class t_node
 {
 	friend struct xemmai::t_generator;
 
-public:
+protected:
 	t_at v_at;
 
+public:
 	t_node(const t_at& a_at) : v_at(a_at)
 	{
 	}

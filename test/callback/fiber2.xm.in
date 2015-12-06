@@ -1,8 +1,7 @@
 system = Module("system"
 callback = Module("callback"
 print = system.out.write_line
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 fm = Fiber.current(
 

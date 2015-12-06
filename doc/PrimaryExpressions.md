@@ -22,7 +22,7 @@ This page explains primary expressions.
 
 ## Self Expressions
 
-    self: ':'* '$' (':' | '^')* ;
+    self: ':'* '$' ('@' | '^')* ;
 
 
 ## Literals
@@ -42,7 +42,7 @@ See [Literals](Literals.md).
 
 ## Getter Expressions
 
-    getter: primary '.' (':' | '^' | symbol | '(' expression ')') ;
+    getter: primary '.' ('@' | '^' | symbol | '(' expression ')') ;
 
 
 ## Tester Expressions

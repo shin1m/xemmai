@@ -129,7 +129,7 @@ void t_lexer::f_next()
 	case L'$':
 		v_token = e_token__SELF;
 		f_get();
-		while (v_c == L':' || v_c == L'^') {
+		while (v_c == L'@' || v_c == L'^') {
 			v_value.push_back(v_c);
 			f_get();
 		}

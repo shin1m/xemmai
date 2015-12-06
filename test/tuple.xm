@@ -1,7 +1,6 @@
 system = Module("system"
 print = system.out.write_line
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 t = '(
 print(t

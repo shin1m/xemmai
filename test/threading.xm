@@ -1,8 +1,7 @@
 system = Module("system"
 print = system.out.write_line
 threading = Module("threading"
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 mutex = threading.Mutex(
 condition = threading.Condition(

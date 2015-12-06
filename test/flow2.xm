@@ -1,7 +1,6 @@
 system = Module("system"
 print = system.out.write_line
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 i = 0
 while true
@@ -9,12 +8,12 @@ while true
 		if i > 1
 			i = 3
 			break
-		throw 2 if i > 0
+		if i > 0: throw 2
 		i = 1
 	catch Float e
 		throw Throwable("never reach here."
 	catch Object e
-		assert(e.: === Integer
+		assert(e.@ === Integer
 		assert(e == 2
 		i = e
 	finally
@@ -62,7 +61,7 @@ assert((try
 finally
 ) === null
 assert((try
-	true if false
+	if false: true
 finally
 ) === null
 assert((try
@@ -76,11 +75,11 @@ assert((try
 finally
 ) === null
 assert((try
-	break while true
+	while true: break
 finally
 ) === null
 assert((try
-	break true while true
+	while true: break true
 finally
 ) === true
 assert((try
@@ -88,11 +87,11 @@ assert((try
 finally
 ) === null
 assert((try
-	break for ;;
+	for ;;: break
 finally
 ) === null
 assert((try
-	break true for ;;
+	for ;;: break true
 finally
 ) === true
 
@@ -108,7 +107,7 @@ catch Null e
 assert((try
 	throw null
 catch Null e
-	true if false
+	if false: true
 ) === null
 assert((try
 	throw null
@@ -125,12 +124,12 @@ catch Null e
 assert((try
 	throw null
 catch Null e
-	break while true
+	while true: break
 ) === null
 assert((try
 	throw null
 catch Null e
-	break true while true
+	while true: break true
 ) === true
 assert((try
 	throw null
@@ -140,10 +139,10 @@ catch Null e
 assert((try
 	throw null
 catch Null e
-	break for ;;
+	for ;;: break
 ) === null
 assert((try
 	throw null
 catch Null e
-	break true for ;;
+	for ;;: break true
 ) === true

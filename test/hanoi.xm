@@ -19,9 +19,9 @@ Towers = Class() :: @
 	$__string = @() "(" + $x + " " + $y + " " + $z + ")"
 
 hanoi = @(height, from, via, to, move)
-	hanoi(height - 1, from, to, via, move if height > 1
+	if height > 1: hanoi(height - 1, from, to, via, move
 	move(from, to
-	hanoi(height - 1, via, from, to, move if height > 1
+	if height > 1: hanoi(height - 1, via, from, to, move
 
 n = 5
 towers = Towers(Tower(n), Tower(0), Tower(0)

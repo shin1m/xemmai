@@ -25,38 +25,35 @@ See [TermExpressions](TermExpressions.md).
 
 ### The `if` Expression
 
-    if: if-phrase block? ('else' if-phrase block?)* ('else' block?)? ;
-    if-phrase: 'if' expression ;
+    if: 'if' expression block ('else' 'if' expression block)* ('else' block)? ;
 
 
 ### The `while` Expression
 
-    while: while-phrase block? ;
-    while-phrase: 'while' expression ;
+    while: 'while' expression block ;
 
 
 ### The `for` Expression
 
-    for: for-phrase block? ;
-    for-phrase: 'for' for-expressions? ';' expression? ';' for-expressions? ;
+    for: 'for' for-expressions? ';' expression? ';' for-expressions? block ;
     for-expressions: expression (',' expression)* ;
 
 
 ### The `try` Expression
 
-    try: 'try' block? (catch+ finally? | finally) ;
-    catch: 'catch' expression symbol block? ;
-    finally: 'finally' block? ;
+    try: 'try' block (catch+ finally? | finally) ;
+    catch: 'catch' expression symbol block ;
+    finally: 'finally' block ;
 
 
 ## Blocks
 
-    block: indent statement+ ;
+    block: ':' statement | (indent statement+)? ;
 
 
 ## Statements
 
-    statement: (term | assignment | compound | break | continue | return | throw) (if-phrase | while-phrase | for-phrase)* newline ;
+    statement: (term | assignment | compound | break | continue | return | throw) newline ;
 
 
 ### The `break` Statement

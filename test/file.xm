@@ -3,7 +3,7 @@ io = Module("io"
 print = system.out.write_line
 
 bytes = Bytes(26
-bytes[i] = 65 + i for i = 0; i < bytes.size(); i = i + 1
+for i = 0; i < bytes.size(); i = i + 1: bytes[i] = 65 + i
 
 file = io.File("file.xm.test", "w"
 try
@@ -16,7 +16,7 @@ file = io.File("file.xm.test", "r"
 try
 	while true
 		n = file.read(bytes, 0, bytes.size(
-		break if n <= 0
+		if n <= 0: break
 		print(bytes
 finally
 	file.close(

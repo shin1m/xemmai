@@ -13,7 +13,7 @@ sequence = @(n) generator(@(yield)
 sieve = @(n, ns) generator(@(yield)
 	while true
 		m = ns(
-		yield(m if m % n != 0
+		if m % n != 0: yield(m
 
 primes = generator(@(yield)
 	ns = sequence(2
@@ -22,4 +22,4 @@ primes = generator(@(yield)
 		yield(n
 		ns = sieve(n, ns
 
-print(primes() for i = 0; i < 30; i = i + 1
+for i = 0; i < 30; i = i + 1: print(primes(

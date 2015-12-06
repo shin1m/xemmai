@@ -13,7 +13,7 @@ class t_parser
 {
 	t_lexer v_lexer;
 	ast::t_scope* v_scope;
-	ast::t_node* v_jump = nullptr;
+	bool v_can_jump = false;
 	bool v_can_return = false;
 
 	bool f_single_colon() const
@@ -66,13 +66,17 @@ class t_parser
 			v_lexer.f_next();
 		}
 	}
-	bool f_newline_or_postfix() const
+	bool f_end_of_statement()
 	{
 		if (v_lexer.f_newline()) return true;
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__IF:
+		case t_lexer::e_token__ELSE:
 		case t_lexer::e_token__WHILE:
 		case t_lexer::e_token__FOR:
+		case t_lexer::e_token__TRY:
+		case t_lexer::e_token__CATCH:
+		case t_lexer::e_token__FINALLY:
 			return true;
 		default:
 			return false;
@@ -80,7 +84,7 @@ class t_parser
 	}
 	std::unique_ptr<ast::t_node> f_statement();
 	void f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	void f_newline_and_block(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_statements(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
 
 public:
 	struct t_error : t_throwable

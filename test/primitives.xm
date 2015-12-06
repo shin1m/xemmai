@@ -1,7 +1,6 @@
 system = Module("system"
 print = system.out.write_line
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 print("!true = " + (!true)
 assert(!true == false
@@ -23,7 +22,7 @@ assert(-10 / 9 == -1
 print("-10 % 9 = " + (-10 % 9)
 assert(-10 % 9 == -1
 bits = 0
-bits = bits + 1 for x = 1; x != 0; x = x << 1
+for x = 1; x != 0; x = x << 1: bits = bits + 1
 print("-1 >> 1 = " + (-1 >> 1)
 assert(-1 >> 1 == ~(1 << bits - 1)
 print("0x1f = " + 0x1f
@@ -52,8 +51,8 @@ assert(math.sqrt(2) == math.sqrt(2.0)
 
 Foo = Class(Integer
 Foo.f = @(x) $ + x
-print("Foo(1).: === Integer = " + (Foo(1).: === Integer)
-assert(Foo(1).: !== Integer
+print("Foo(1).@ === Integer = " + (Foo(1).@ === Integer)
+assert(Foo(1).@ !== Integer
 print("Foo(1).f(2) = " + Foo(1).f(2)
 assert(Foo(1).f(2) == 3
 print("Foo(1) == Foo(2) = " + (Foo(1) == Foo(2))
@@ -79,8 +78,8 @@ assert(!Foo(1).__equals(2)
 
 Bar = Class(Float
 Bar.f = @(x) $ + x
-print("Bar(1.0).: === Float = " + (Bar(1.0).: === Float)
-assert(Bar(1.0).: !== Float
+print("Bar(1.0).@ === Float = " + (Bar(1.0).@ === Float)
+assert(Bar(1.0).@ !== Float
 print("Bar(1.0).f(2.0) = " + Bar(1.0).f(2.0)
 assert(Bar(1.0).f(2.0) == 3.0
 print("Bar(1.0) == Bar(2.0) = " + (Bar(1.0) == Bar(2.0))

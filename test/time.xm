@@ -1,8 +1,7 @@
 system = Module("system"
 print = system.out.write_line
 time = Module("time"
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 t = time.compose('(1970, 1, 1, 1, 1, 0.5
 print(t

@@ -1,7 +1,6 @@
 system = Module("system"
 print = system.out.write_line
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 f = @(x) x * 2
 if f(1) > 0
@@ -45,7 +44,7 @@ print("9"
 a = (@
 	i = 0
 	while true
-		return "12" if i > 1
+		if i > 1: return "12"
 		if i > 0
 			print("11"
 			i = 2
@@ -62,12 +61,12 @@ for i = 0; i < 2; i = i + 1
 	j = j + 1
 
 for i = 0, j = 0; i < 2; i = i + 1, j = j + 1
-	continue if i == j
+	if i == j: continue
 	throw Throwable("never reach here."
 
 i = 0
 for ;;
-	break if i >= 2
+	if i >= 2: break
 	i = i + 1
 	continue
 	throw Throwable("never reach here."

@@ -2,64 +2,46 @@ system = Module("system"
 print = system.out.write_line
 
 object = Object(
-throw Throwable("Hello" if object.?hello
-throw Throwable("World" if object.?world
-try
-	print(object.hello + ", " + object.world + "!"
-catch Throwable e
-	e.dump(
+if object.?hello: throw Throwable("Hello"
+if object.?world: throw Throwable("World"
+try: print(object.hello + ", " + object.world + "!" catch Throwable e: e.dump(
 object.hello = "Hello"
 object.world = "World"
-throw Throwable("Hello" if !object.?hello
-throw Throwable("World" if !object.?world
+if !object.?hello: throw Throwable("Hello"
+if !object.?world: throw Throwable("World"
 print(object.hello + ", " + object.world + "!"
 print(object.~hello + ", " + object.~world + "!"
-throw Throwable("Hello" if object.?hello
-throw Throwable("World" if object.?world
-try
-	print(object.hello + ", " + object.world + "!"
-catch Throwable e
-	e.dump(
+if object.?hello: throw Throwable("Hello"
+if object.?world: throw Throwable("World"
+try: print(object.hello + ", " + object.world + "!" catch Throwable e: e.dump(
 object.('hello) = "Hello"
 object.('world) = "World"
-throw Throwable("Hello" if !object.?('hello)
-throw Throwable("World" if !object.?('world)
+if !object.?('hello): throw Throwable("Hello"
+if !object.?('world): throw Throwable("World"
 print(object.('hello) + ", " + object.('world) + "!"
 print(object.~('hello) + ", " + object.~('world) + "!"
-throw Throwable("Hello" if object.?('hello)
-throw Throwable("World" if object.?('world)
-try
-	print(object.('hello) + ", " + object.('world) + "!"
-catch Throwable e
-	e.dump(
+if object.?('hello): throw Throwable("Hello"
+if object.?('world): throw Throwable("World"
+try: print(object.('hello) + ", " + object.('world) + "!" catch Throwable e: e.dump(
 
-throw Throwable("Hello" if $.?hello
-throw Throwable("World" if $.?world
-try
-	print($hello + ", " + $world + "!"
-catch Throwable e
-	e.dump(
+if $.?hello: throw Throwable("Hello"
+if $.?world: throw Throwable("World"
+try: print($hello + ", " + $world + "!" catch Throwable e: e.dump(
 $hello = "Hello"
 $world = "World"
-throw Throwable("Hello" if !$.?hello
-throw Throwable("World" if !$.?world
+if !$.?hello: throw Throwable("Hello"
+if !$.?world: throw Throwable("World"
 print($hello + ", " + $world + "!"
 print($.~hello + ", " + $.~world + "!"
-throw Throwable("Hello" if $.?hello
-throw Throwable("World" if $.?world
-try
-	print($hello + ", " + $world + "!"
-catch Throwable e
-	e.dump(
+if $.?hello: throw Throwable("Hello"
+if $.?world: throw Throwable("World"
+try: print($hello + ", " + $world + "!" catch Throwable e: e.dump(
 $.('hello) = "Hello"
 $.('world) = "World"
-throw Throwable("Hello" if !$.?('hello)
-throw Throwable("World" if !$.?('world)
+if !$.?('hello): throw Throwable("Hello"
+if !$.?('world): throw Throwable("World"
 print($.('hello) + ", " + $.('world) + "!"
 print($.~('hello) + ", " + $.~('world) + "!"
-throw Throwable("Hello" if $.?('hello)
-throw Throwable("World" if $.?('world)
-try
-	print($.('hello) + ", " + $.('world) + "!"
-catch Throwable e
-	e.dump(
+if $.?('hello): throw Throwable("Hello"
+if $.?('world): throw Throwable("World"
+try: print($.('hello) + ", " + $.('world) + "!" catch Throwable e: e.dump(

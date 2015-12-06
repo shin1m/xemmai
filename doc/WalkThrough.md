@@ -35,9 +35,9 @@ This document walks through xemmai language.
         # a is less or equal to zero.
         greater = false
 
-Postfix form:
+A single line form:
 
-    greater = true if a > 0
+    if a > 0: greater = true else: greater = false
 
 
 ### `while` Statement
@@ -45,9 +45,9 @@ Postfix form:
     while a > 0
         a = a - 1
 
-Postfix form:
+A single line form:
 
-    a = a - 1 while a > 0
+    while a > 0: a = a - 1
 
 Using `break` and `continue` statements:
 
@@ -59,7 +59,7 @@ Using `break` and `continue` statements:
         if a % 3 == 0
             c = c + a
             continue
-        break if b + c >= 100
+        if b + c >= 100: break
         a = a + 1
 
 
@@ -69,10 +69,10 @@ Using `break` and `continue` statements:
     for i = 0; i < 10; i = i + 1
         n = n + i
 
-Postfix form:
+A single line form:
 
     n = 0
-    n = n + i for i = 0; i < 10; i = i + 1
+    for i = 0; i < 10; i = i + 1: n = n + i
 
 
 ## Functions
@@ -90,11 +90,11 @@ Postfix form:
 Using `return` statement:
 
     sum2 = @(n)
-        if n <= 0 return 0
+        if n <= 0: return 0
         n + sum2(n - 1) # Tail return can be omitted.
     sum2(10) # => 55
 
-An empty arguments list can be omitted when block notation is used:
+An empty arguments list can be omitted when block form is used:
 
     # Same as @() 55.
     fiftyfive = @
@@ -140,7 +140,7 @@ Assigning to an outer variable must be explicitly prefixed with `:`.
 
 ### More on Function Calls
 
-Arguments list can be written using block notation:
+Arguments list can be written using block form:
 
     # Same as foo(0, 1, 2).
     foo(
@@ -241,7 +241,7 @@ So `:$^` in an instance method refers to the super class of its defining class.
 
 Tuples are immutable.
 
-Tuple literals can be written using block notation:
+Tuple literals can be written using block form:
 
     # Same as '(0, 1, 2).
     '(
@@ -259,7 +259,7 @@ Tuple literals can be written using block notation:
     a[0] = 3
     a[0] + a[1] + a[2] #=> 6
 
-Array literals can be written using block notation:
+Array literals can be written using block form:
 
     # Same as [0, 1, 2].
     [
@@ -281,7 +281,7 @@ Array literals can be written using block notation:
     d.remove("one")
     d.remove(2)
 
-Dictionary literals can be written using block notation:
+Dictionary literals can be written using block form:
 
     # Same as {"one": 1, 2: "two"}.
     {

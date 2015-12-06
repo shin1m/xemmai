@@ -13,7 +13,7 @@ print_int32s = @(xs)
 ascii2i = {
 (@
 	asciis = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-	ascii2i[asciis.code_at(i)] = i for i = 0; i < asciis.size(); i = i + 1
+	for i = 0; i < asciis.size(); i = i + 1: ascii2i[asciis.code_at(i)] = i
 )(
 
 base32_decode = @(source)
@@ -31,7 +31,7 @@ base32_decode = @(source)
 				c = (c << 5) + d
 				j = j - 5
 		catch Throwable e
-	bs.push(c << j if j < 8
+	if j < 8: bs.push(c << j
 	bs
 
 sha1 = @
@@ -55,11 +55,11 @@ sha1 = @
 			:c = rotate_left(b, 30)
 			:b = a
 			:a = t
-		xs.push(rotate_left(xs[i] ^ xs[i - 5] ^ xs[i - 11] ^ xs[i - 13], 1 for i = 13; i < 77; i = i + 1
-		I(b & c | ~b & d, 0x5A827999, i for i = 0; i < 20; i = i + 1
-		I(b ^ c ^ d, 0x6ED9EBA1, i for ; i < 40; i = i + 1
-		I(b & c | b & d | c & d, 0x8F1BBCDC, i for ; i < 60; i = i + 1
-		I(b ^ c ^ d, 0xCA62C1D6, i for ; i < 80; i = i + 1
+		for i = 13; i < 77; i = i + 1: xs.push(rotate_left(xs[i] ^ xs[i - 5] ^ xs[i - 11] ^ xs[i - 13], 1
+		for i = 0; i < 20; i = i + 1: I(b & c | ~b & d, 0x5A827999, i
+		for ; i < 40; i = i + 1: I(b ^ c ^ d, 0x6ED9EBA1, i
+		for ; i < 60; i = i + 1: I(b & c | b & d | c & d, 0x8F1BBCDC, i
+		for ; i < 80; i = i + 1: I(b ^ c ^ d, 0xCA62C1D6, i
 		:V = V + a
 		:W = W + b
 		:X = X + c
@@ -71,9 +71,9 @@ sha1 = @
 	put = @(b)
 		:x = (x << 8) + b
 		:n = n + 1
-		return if n < 4
+		if n < 4: return
 		xs.push(x
-		step() if xs.size() >= 16
+		if xs.size() >= 16: step(
 		:x = 0
 		:n = 0
 	length = 0
@@ -83,13 +83,13 @@ sha1 = @
 		:length = length + 1
 		self
 	self.bytes = @(bs)
-		put(bs[i] for i = 0; i < bs.size(); i = i + 1
+		for i = 0; i < bs.size(); i = i + 1: put(bs[i]
 		:length = length + bs.size()
 		self
 	self.done = @
 		put(0x80
-		put(0 while n > 0
-		put(0 while xs.size() != 14
+		while n > 0: put(0
+		while xs.size() != 14: put(0
 		xs.push(0
 		xs.push(length * 8
 		step(
@@ -97,7 +97,7 @@ sha1 = @
 	self
 
 hmac = @(hash, key, text)
-	key = hash().bytes(key).done() if key.size() > 64
+	if key.size() > 64: key = hash().bytes(key).done(
 	h0 = hash(
 	h1 = hash(
 	for i = 0; i < key.size(); i = i + 1
@@ -110,7 +110,7 @@ hmac = @(hash, key, text)
 	#n = (key.size() + 3) / 4 * 4
 	#h1.byte(0 for ; i < n; i = i + 1
 	h = h0.bytes(text).done(
-	h1.byte(h[i] >> 24 & 0xFF).byte(h[i] >> 16 & 0xFF).byte(h[i] >> 8 & 0xFF).byte(h[i] & 0xFF for i = 0; i < h.size(); i = i + 1
+	for i = 0; i < h.size(); i = i + 1: h1.byte(h[i] >> 24 & 0xFF).byte(h[i] >> 16 & 0xFF).byte(h[i] >> 8 & 0xFF).byte(h[i] & 0xFF
 	h1.done(
 
 hotp = @(key, c)
@@ -120,8 +120,7 @@ hotp = @(key, c)
 	ob = o & 3
 	(s[ox] << 8 * ob | (ob != 0 ? s[ox + 1] >> 8 * (4 - ob) : 0)) & 0x7FFFFFFF
 
-assert = @(x)
-	throw Throwable("Assertion failed." if !x
+assert = @(x) if !x: throw Throwable("Assertion failed."
 
 test_base32_decode = @(input, expected)
 	x = base32_decode(input
@@ -138,7 +137,7 @@ test_base32_decode("QZXW6YUBOI======", [0x86, 0x6F, 0x6F, 0x62, 0x81, 0x72, 0x00
 
 test_sha1 = @(input, expected)
 	xs = [
-	xs.push(input.code_at(i for i = 0; i < input.size(); i = i + 1
+	for i = 0; i < input.size(); i = i + 1: xs.push(input.code_at(i
 	x = sha1().bytes(xs).done(
 	#print_int32s(x
 	#print_int32s(expected

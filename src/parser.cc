@@ -56,7 +56,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					if (!scope) t_throwable::f_throw(L"no more outer scope.");
 					if (outer > 0) scope->v_self_shared = true;
 					std::unique_ptr<ast::t_node> target(new ast::t_self(at, outer));
-					for (auto c : v_lexer.f_value()) target.reset(c == L':' ? static_cast<ast::t_node*>(new ast::t_class(at, std::move(target))) : static_cast<ast::t_node*>(new ast::t_super(at, std::move(target))));
+					for (auto c : v_lexer.f_value()) target.reset(c == L'@' ? static_cast<ast::t_node*>(new ast::t_class(at, std::move(target))) : static_cast<ast::t_node*>(new ast::t_super(at, std::move(target))));
 					v_lexer.f_next();
 					if (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 						t_at at = v_lexer.f_at();
@@ -148,8 +148,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			lambda->v_arguments = lambda->v_variables.size();
 			v_scope->v_shared = true;
 			v_scope = lambda.get();
-			auto jump = v_jump;
-			v_jump = nullptr;
+			bool can_jump = v_can_jump;
 			bool can_return = v_can_return;
 			v_can_return = true;
 			if (v_lexer.f_newline()) {
@@ -170,8 +169,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				if (i == lambda->v_variables.end()) lambda->v_outer->v_unresolveds.insert(symbol);
 			}
 			v_scope = lambda->v_outer;
-			if (v_jump) f_throw(L"expecting within loop.", v_jump->v_at);
-			v_jump = jump;
+			v_can_jump = can_jump;
 			v_can_return = can_return;
 			std::vector<t_code::t_variable*> variables;
 			variables.swap(lambda->v_privates);
@@ -308,8 +306,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					}
 					return f_action(a_indent, new ast::t_object_get(at, std::move(a_target), std::move(symbol)), a_assignable);
 				}
-			case t_lexer::e_token__COLON:
-				if (v_lexer.f_value().size() != 1) f_throw(L"expecting '(' or ':' or '?' or '^' or '~' or symbol.");
+			case t_lexer::e_token__ATMARK:
 				v_lexer.f_next();
 				return f_action(a_indent, new ast::t_class(at, std::move(a_target)), a_assignable);
 			case t_lexer::e_token__HAT:
@@ -337,7 +334,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					f_throw(L"expecting '(' or symbol.");
 				}
 			default:
-				f_throw(L"expecting '(' or ':' or '?' or '^' or '~' or symbol.");
+				f_throw(L"expecting '(' or '?' or '@' or '^' or '~' or symbol.");
 			}
 		}
 	case t_lexer::e_token__LEFT_BRACKET:
@@ -630,13 +627,26 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			std::unique_ptr<ast::t_if> node(new ast::t_if(at, f_expression()));
-			f_newline_and_block(indent, node->v_true);
-			if (v_lexer.f_indent() == indent && v_lexer.f_token() == t_lexer::e_token__ELSE) {
+			if (v_lexer.f_newline()) {
+				if (v_lexer.f_indent() > indent) f_block(node->v_true);
+			} else if (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1) {
 				v_lexer.f_next();
-				if (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::e_token__IF)
+				node->v_true.push_back(f_statement());
+			} else {
+				f_throw(L"expecting newline or ':'.");
+			}
+			if ((!v_lexer.f_newline() || v_lexer.f_indent() == indent) && v_lexer.f_token() == t_lexer::e_token__ELSE) {
+				v_lexer.f_next();
+				if (v_lexer.f_newline()) {
+					if (v_lexer.f_indent() > indent) f_block(node->v_false);
+				} else if (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1) {
+					v_lexer.f_next();
+					node->v_false.push_back(f_statement());
+				} else if (v_lexer.f_token() == t_lexer::e_token__IF) {
 					node->v_false.push_back(f_expression());
-				else
-					f_newline_and_block(indent, node->v_false);
+				} else {
+					f_throw(L"expecting newline or ':' or 'if'.");
+				}
 			}
 			return std::move(node);
 		}
@@ -645,11 +655,12 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			t_at at = v_lexer.f_at();
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto jump = v_jump;
+			bool can_jump = v_can_jump;
+			v_can_jump = true;
 			size_t varies = v_scope->v_privates.size();
 			std::unique_ptr<ast::t_while> node(new ast::t_while(at, f_expression()));
-			f_newline_and_block(indent, node->v_block);
-			v_jump = jump;
+			f_statements(indent, node->v_block);
+			v_can_jump = can_jump;
 			while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
 			return std::move(node);
 		}
@@ -662,14 +673,15 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_expressions(node->v_initialization);
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
 			v_lexer.f_next();
-			auto jump = v_jump;
+			bool can_jump = v_can_jump;
+			v_can_jump = true;
 			size_t varies = v_scope->v_privates.size();
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) node->v_condition = f_expression();
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
 			v_lexer.f_next();
-			if (!v_lexer.f_newline()) f_expressions(node->v_next);
-			f_newline_and_block(indent, node->v_block);
-			v_jump = jump;
+			if (!v_lexer.f_newline() && !(v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1)) f_expressions(node->v_next);
+			f_statements(indent, node->v_block);
+			v_can_jump = can_jump;
 			while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
 			return std::move(node);
 		}
@@ -681,7 +693,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			std::unique_ptr<ast::t_try> node(new ast::t_try(at));
 			bool catching = false;
 			{
-				f_newline_and_block(indent, node->v_block);
+				f_statements(indent, node->v_block);
 				while (v_lexer.f_indent() == indent && v_lexer.f_token() == t_lexer::e_token__CATCH) {
 					catching = true;
 					v_lexer.f_next();
@@ -690,19 +702,18 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 					t_scoped symbol = t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end()));
 					v_lexer.f_next();
 					std::unique_ptr<ast::t_try::t_catch> c(new ast::t_try::t_catch(std::move(expression), f_variable(v_scope, symbol)));
-					f_newline_and_block(indent, c->v_block);
+					f_statements(indent, c->v_block);
 					node->v_catches.push_back(std::move(c));
 				}
 			}
 			if (v_lexer.f_indent() == indent && v_lexer.f_token() == t_lexer::e_token__FINALLY) {
 				v_lexer.f_next();
-				auto jump = v_jump;
-				v_jump = nullptr;
+				bool can_jump = v_can_jump;
+				v_can_jump = false;
 				bool can_return = v_can_return;
 				v_can_return = false;
-				f_newline_and_block(indent, node->v_finally);
-				if (v_jump) f_throw(L"expecting within loop.", v_jump->v_at);
-				v_jump = jump;
+				f_statements(indent, node->v_finally);
+				v_can_jump = can_jump;
 				v_can_return = can_return;
 			} else {
 				if (!catching) f_throw(L"expecting 'finally'.");
@@ -740,91 +751,39 @@ bool t_parser::f_expressions(size_t a_indent, std::vector<std::unique_ptr<ast::t
 
 std::unique_ptr<ast::t_node> t_parser::f_statement()
 {
-	auto jump = v_jump;
-	size_t varies = v_scope->v_privates.size();
-	std::unique_ptr<ast::t_node> node;
 	switch (v_lexer.f_token()) {
 	case t_lexer::e_token__BREAK:
 		{
 			t_at at = v_lexer.f_at();
+			if (!v_can_jump) f_throw(L"expecting within loop.", at);
 			v_lexer.f_next();
-			node.reset(new ast::t_break(at, f_newline_or_postfix() ? nullptr : f_expression()));
-			if (!v_jump) v_jump = node.get();
+			std::unique_ptr<ast::t_node> node(new ast::t_break(at, f_end_of_statement() ? nullptr : f_expression()));
+			return node;
 		}
-		break;
 	case t_lexer::e_token__CONTINUE:
 		{
 			t_at at = v_lexer.f_at();
+			if (!v_can_jump) f_throw(L"expecting within loop.", at);
 			v_lexer.f_next();
-			node.reset(new ast::t_continue(at));
-			if (!v_jump) v_jump = node.get();
+			std::unique_ptr<ast::t_node> node(new ast::t_continue(at));
+			return node;
 		}
-		break;
 	case t_lexer::e_token__RETURN:
 		{
 			if (!v_can_return) f_throw(L"expecting within lambda.");
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			node.reset(new ast::t_return(at, f_newline_or_postfix() ? nullptr : f_expression()));
+			return std::unique_ptr<ast::t_node>(new ast::t_return(at, f_end_of_statement() ? nullptr : f_expression()));
 		}
-		break;
 	case t_lexer::e_token__THROW:
 		{
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			node.reset(new ast::t_throw(at, f_expression()));
+			return std::unique_ptr<ast::t_node>(new ast::t_throw(at, f_expression()));
 		}
-		break;
 	default:
-		node = f_expression();
+		return f_expression();
 	}
-	while (!v_lexer.f_newline()) {
-		switch (v_lexer.f_token()) {
-		case t_lexer::e_token__IF:
-			{
-				t_at at = v_lexer.f_at();
-				v_lexer.f_next();
-				std::unique_ptr<ast::t_if> postfix(new ast::t_if(at, f_expression()));
-				postfix->v_true.push_back(std::move(node));
-				node = std::move(postfix);
-			}
-			break;
-		case t_lexer::e_token__WHILE:
-			{
-				v_jump = jump;
-				t_at at = v_lexer.f_at();
-				v_lexer.f_next();
-				std::unique_ptr<ast::t_while> postfix(new ast::t_while(at, f_expression()));
-				while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
-				postfix->v_block.push_back(std::move(node));
-				node = std::move(postfix);
-			}
-			break;
-		case t_lexer::e_token__FOR:
-			{
-				v_jump = jump;
-				while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
-				t_at at = v_lexer.f_at();
-				v_lexer.f_next();
-				std::unique_ptr<ast::t_for> postfix(new ast::t_for(at));
-				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_expressions(postfix->v_initialization);
-				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
-				v_lexer.f_next();
-				size_t varies = v_scope->v_privates.size();
-				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) postfix->v_condition = f_expression();
-				if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'.");
-				v_lexer.f_next();
-				if (!f_newline_or_postfix()) f_expressions(postfix->v_next);
-				while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
-				postfix->v_block.push_back(std::move(node));
-				node = std::move(postfix);
-			}
-			break;
-		default:
-			f_throw(L"expected newline.");
-		}
-	}
-	return node;
 }
 
 void t_parser::f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
@@ -832,15 +791,21 @@ void t_parser::f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
 	size_t indent = v_lexer.f_indent();
 	do {
 		a_nodes.push_back(f_statement());
-		if (!v_lexer.f_newline()) f_throw(L"expected newline.");
+		if (!v_lexer.f_newline()) f_throw(L"expecting newline.");
 	} while (v_lexer.f_indent() == indent);
 	if (v_lexer.f_indent() > indent) f_throw(L"unexpected indent.");
 }
 
-void t_parser::f_newline_and_block(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
+void t_parser::f_statements(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
 {
-	if (!v_lexer.f_newline()) f_throw(L"expected newline.");
-	if (v_lexer.f_indent() > a_indent) f_block(a_nodes);
+	if (v_lexer.f_newline()) {
+		if (v_lexer.f_indent() > a_indent) f_block(a_nodes);
+	} else if (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1) {
+		v_lexer.f_next();
+		a_nodes.push_back(f_statement());
+	} else {
+		f_throw(L"expecting newline or ':'.");
+	}
 }
 
 void t_parser::f_parse(ast::t_module& a_module)
@@ -849,14 +814,13 @@ void t_parser::f_parse(ast::t_module& a_module)
 	size_t indent = v_lexer.f_indent();
 	while (v_lexer.f_token() != t_lexer::e_token__EOF) {
 		a_module.v_block.push_back(f_statement());
-		if (!v_lexer.f_newline()) f_throw(L"expected newline.");
+		if (!v_lexer.f_newline()) f_throw(L"expecting newline.");
 		if (v_lexer.f_indent() != indent) f_throw(L"unexpected indent.");
 	}
 	for (const auto& symbol : a_module.v_unresolveds) {
 		auto i = a_module.v_variables.find(symbol);
 		if (i != a_module.v_variables.end()) i->second.v_shared = true;
 	}
-	if (v_jump) f_throw(L"expecting within loop.", v_jump->v_at);
 	std::vector<t_code::t_variable*> variables;
 	variables.swap(a_module.v_privates);
 	if (a_module.v_self_shared) ++a_module.v_shareds;

@@ -41,7 +41,7 @@ server = @(co, x)
 				sender = false
 				recipients = 0
 				x = co("250 Accepted\n" + mail + "\n"
-		return "221 SMTP pseudo server closing\n" if x == "QUIT"
+		if x == "QUIT": return "221 SMTP pseudo server closing\n"
 		x = co("500 Command unrecognized: " + x + "\n"
 
 coroutine = @(f)
