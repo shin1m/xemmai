@@ -1,6 +1,27 @@
 # xemmai [![Build Status](https://secure.travis-ci.org/shin1m/xemmai.png)](http://travis-ci.org/shin1m/xemmai)
 
 xemmai is a dynamic programming language.
+Its syntax is based on the off-side rule.
+Closing parentheses, brackets, and braces can be omitted where they are not necessary in conjunction with indentation.
+
+Here is how it looks like:
+
+    system = Module("system"
+    print = system.out.write_line
+
+    hanoi = @(towers, move)
+        f = @(height, from, via, to)
+            if height > 1: f(height - 1, from, to, via
+            move(from, to
+            if height > 1: f(height - 1, via, from, to
+        f(towers[0].size(), towers[0], towers[1], towers[2]
+
+    towers = '([3, 2, 1], [], []
+    print(towers
+    hanoi(towers, @(from, to)
+        to.unshift(from.shift(
+        print(towers
+
 It has lambda closures, classes, exceptions, modules, threads, and fibers.
 
 It is implemented in C++ and has C++ friendly API to implement extension modules.
