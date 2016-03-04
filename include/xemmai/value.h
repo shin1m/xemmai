@@ -24,6 +24,9 @@ struct t_fiber;
 struct t_thread;
 struct t_code;
 t_engine* f_engine();
+#ifdef XEMMAI_ENABLE_JIT
+struct t_engine_jit;
+#endif
 
 class t_value
 {
@@ -39,6 +42,9 @@ class t_value
 	friend struct t_thread;
 	friend struct t_code;
 	friend t_engine* f_engine();
+#ifdef XEMMAI_ENABLE_JIT
+	friend struct t_engine_jit;
+#endif
 
 public:
 	class t_collector
@@ -221,6 +227,10 @@ protected:
 	}
 
 public:
+	static const t_value v_null;
+	static const t_value v_true;
+	static const t_value v_false;
+
 	explicit t_value(bool a_value) : v_p(reinterpret_cast<t_object*>(e_tag__BOOLEAN)), v_boolean(a_value)
 	{
 	}

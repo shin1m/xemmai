@@ -75,6 +75,10 @@ t_decrements* t_value::f_decrements()
 }
 #endif
 
+const t_value t_value::v_null;
+const t_value t_value::v_true(true);
+const t_value t_value::v_false(false);
+
 XEMMAI__PORTABLE__THREAD t_stack* t_stack::v_instance;
 
 void t_stack::f_expand(t_scoped* a_p)

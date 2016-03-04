@@ -5,12 +5,14 @@
 #include "float.h"
 #include "lexer.h"
 #include "ast.h"
+#include "module.h"
 
 namespace xemmai
 {
 
 class t_parser
 {
+	t_script& v_module;
 	t_lexer v_lexer;
 	ast::t_scope* v_scope;
 	bool v_can_jump = false;
@@ -28,7 +30,7 @@ class t_parser
 	{
 		f_throw(a_message, v_lexer.f_at());
 	}
-	t_code::t_variable& f_variable(ast::t_scope* a_scope, const t_value& a_symbol);
+	t_code::t_variable& f_variable(ast::t_scope* a_scope, t_object* a_symbol);
 	intptr_t f_integer()
 	{
 		return t_type_of<intptr_t>::f_parse(&v_lexer.f_value()[0]);
@@ -100,10 +102,10 @@ public:
 		virtual void f_dump() const;
 	};
 
-	t_parser(const std::wstring& a_path, std::FILE* a_stream) : v_lexer(a_path, a_stream)
+	t_parser(t_script& a_module, std::FILE* a_stream) : v_module(a_module), v_lexer(v_module.v_path, a_stream)
 	{
 	}
-	void f_parse(ast::t_module& a_module);
+	void operator()(ast::t_scope& a_scope);
 };
 
 template<>

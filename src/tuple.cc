@@ -97,7 +97,7 @@ bool t_tuple::f_greater_equal(const t_tuple& a_other) const
 bool t_tuple::f_equals(const t_value& a_other) const
 {
 	if (!f_is<t_tuple>(a_other)) return false;
-	const t_tuple& other = f_as<const t_tuple&>(a_other);
+	auto& other = f_as<const t_tuple&>(a_other);
 	if (this == &other) return true;
 	if (v_size != other.f_size()) return false;
 	for (size_t i = 0; i < v_size; ++i) if (!f_as<bool>((*this)[i].f_equals(other[i]))) return false;

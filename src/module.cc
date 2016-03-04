@@ -10,11 +10,11 @@ namespace xemmai
 
 t_module::t_scoped_lock::t_scoped_lock()
 {
-	t_object*& thread = f_engine()->v_module__thread;
-	t_object* current = t_thread::f_current();
+	auto& thread = f_engine()->v_module__thread;
+	auto current = t_thread::f_current();
 	if (thread == current) return;
-	std::mutex& mutex = f_engine()->v_module__mutex;
-	std::condition_variable& condition = f_engine()->v_module__condition;
+	auto& mutex = f_engine()->v_module__mutex;
+	auto& condition = f_engine()->v_module__condition;
 	std::unique_lock<std::mutex> lock(mutex);
 	while (thread) condition.wait(lock);
 	v_own = true;
@@ -33,7 +33,7 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_module>());
 	object.f_pointer__(a_module);
-	t_scoped second = static_cast<t_object*>(object);
+	t_scoped second = object;
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
 		a_module->v_iterator = f_engine()->v_module__instances.emplace(a_name, t_slot()).first;
@@ -42,22 +42,11 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
 	return object;
 }
 
-t_scoped t_module::f_load_script(const std::wstring& a_path, std::map<std::pair<size_t, void**>, size_t>* a_safe_points)
-{
-	io::t_file stream(a_path, "r");
-	if (!stream) return t_value();
-	t_parser parser(a_path, stream);
-	ast::t_module module(a_path);
-	parser.f_parse(module);
-	t_generator generator(a_safe_points);
-	return generator.f_generate(module);
-}
-
 t_library* t_module::f_load_library(const std::wstring& a_path)
 {
 	portable::t_library library(a_path);
 	if (!library) return nullptr;
-	t_library::t_handle* handle = new t_library::t_handle();
+	auto handle = new t_library::t_handle();
 	handle->v_library.f_swap(library);
 	return new t_library(a_path, handle);
 }
@@ -72,19 +61,22 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 
 t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path)
 {
+	io::t_file stream(a_path, "r");
+	if (!stream) return t_value();
+	ast::t_scope scope(nullptr);
 	if (f_engine()->v_debugger) {
-		std::map<std::pair<size_t, void**>, size_t> safe_points;
-		t_scoped code = f_load_script(a_path, &safe_points);
-		if (!code) return t_value();
-		t_scoped module = f_instantiate(a_name, new t_debug_module(a_path, code, std::move(safe_points)));
+		auto script = new t_debug_script(a_path);
+		t_scoped module = f_instantiate(a_name, script);
+		t_parser(*script, stream)(scope);
+		script->v_code = t_generator(module, &script->v_safe_points)(scope);
 		f_engine()->f_debug_script_loaded();
-		f_execute_script(module, code);
+		f_execute_script(module, script->v_code);
 		return module;
 	} else {
-		t_scoped code = f_load_script(a_path, nullptr);
-		if (!code) return t_value();
-		t_scoped module = f_instantiate(a_name, new t_module(a_path));
-		f_execute_script(module, code);
+		auto script = new t_script(a_path);
+		t_scoped module = f_instantiate(a_name, script);
+		t_parser(*script, stream)(scope);
+		f_execute_script(module, t_generator(module, nullptr)(scope));
 		return module;
 	}
 }
@@ -95,7 +87,7 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 	f_engine()->v_object__reviving__mutex.lock();
 	f_engine()->v_module__mutex.lock();
 	{
-		std::map<std::wstring, t_slot>& instances = f_engine()->v_module__instances;
+		auto& instances = f_engine()->v_module__instances;
 		auto i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
 			f_engine()->v_object__reviving = true;
@@ -131,7 +123,7 @@ void t_module::f_main()
 {
 	t_scoped x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
 	f_check<std::wstring>(x, L"script");
-	const std::wstring& path = f_as<const std::wstring&>(x);
+	auto& path = f_as<const std::wstring&>(x);
 	if (path.empty()) t_throwable::f_throw(L"script path is empty.");
 	if (!f_load_and_execute_script(L"__main", path)) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
 }
@@ -152,13 +144,19 @@ void t_module::f_scan(t_scan a_scan)
 	a_scan(v_iterator->second);
 }
 
-void t_debug_module::f_scan(t_scan a_scan)
+void t_script::f_scan(t_scan a_scan)
 {
 	t_module::f_scan(a_scan);
+	for (auto& p : v_slots) a_scan(*p);
+}
+
+void t_debug_script::f_scan(t_scan a_scan)
+{
+	t_script::f_scan(a_scan);
 	a_scan(v_code);
 }
 
-std::pair<size_t, size_t> t_debug_module::f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new)
+std::pair<size_t, size_t> t_debug_script::f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new)
 {
 	auto i = v_safe_points.lower_bound(std::make_pair(a_line, nullptr));
 	if (i == v_safe_points.end()) return std::make_pair(0, 0);
@@ -169,13 +167,9 @@ std::pair<size_t, size_t> t_debug_module::f_replace_break_point(size_t a_line, s
 			if (++i == v_safe_points.end()) return std::make_pair(0, 0);
 		}
 	}
-	t_code& code = f_as<t_code&>(v_code);
+	auto& code = f_as<t_code&>(v_code);
 	if (*i->first.second == code.f_p(a_old)) *i->first.second = code.f_p(a_new);
 	return std::make_pair(i->first.first, i->second);
-}
-
-t_extension::~t_extension()
-{
 }
 
 t_library::~t_library()
@@ -195,14 +189,14 @@ void t_library::f_scan(t_scan a_scan)
 
 void t_library::f_initialize(t_object* a_this)
 {
-	t_extension* (*factory)(t_object*) = v_handle->v_library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
+	auto factory = v_handle->v_library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
 	if (!factory) t_throwable::f_throw(L"f_factory not found.");
 	v_extension = factory(a_this);
 }
 
 t_type* t_type_of<t_module>::f_derive(t_object* a_this)
 {
-	return 0;
+	return nullptr;
 }
 
 void t_type_of<t_module>::f_scan(t_object* a_this, t_scan a_scan)

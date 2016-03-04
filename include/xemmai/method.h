@@ -8,9 +8,6 @@ namespace xemmai
 
 class t_method
 {
-	friend class t_value;
-	friend class t_object;
-	friend struct t_code;
 	friend struct t_type_of<t_method>;
 
 	t_slot v_function;
@@ -24,6 +21,10 @@ class t_method
 public:
 	static t_scoped f_instantiate(t_scoped&& a_function, t_scoped&& a_self);
 
+	const t_slot& f_function() const
+	{
+		return v_function;
+	}
 	t_scoped f_bind(t_scoped&& a_target) const
 	{
 		return f_instantiate(t_scoped(v_function), std::move(a_target));

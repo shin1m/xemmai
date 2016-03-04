@@ -55,9 +55,9 @@ void t_dictionary::t_table::f_clear()
 
 void t_dictionary::f_rehash(size_t a_rank)
 {
-	t_table& table0 = f_as<t_table&>(v_table);
+	auto& table0 = f_as<t_table&>(v_table);
 	t_scoped table = t_table::f_instantiate(a_rank);
-	t_table& table1 = f_as<t_table&>(table);
+	auto& table1 = f_as<t_table&>(table);
 	table1.v_size = table0.v_size;
 	t_entry** entries = table0.f_entries();
 	for (size_t i = 0; i < table0.v_capacity; ++i) {
@@ -105,10 +105,10 @@ t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 	t_entry* p = f_find(a_key);
 	if (p) return p->v_value = std::move(a_value);
 	{
-		t_table& table = f_as<t_table&>(v_table);
+		auto& table = f_as<t_table&>(v_table);
 		if (table.v_rank < sizeof(t_table::v_capacities) / sizeof(size_t) - 1 && table.v_size >= table.v_capacity) f_rehash(table.v_rank + 1);
 	}
-	t_table& table = f_as<t_table&>(v_table);
+	auto& table = f_as<t_table&>(v_table);
 	t_entry** bucket = table.f_bucket(f_as<size_t>(a_key.f_hash()));
 	p = t_local_pool<t_entry>::f_allocate(t_entry::f_allocate);
 	p->v_next = *bucket;
@@ -121,7 +121,7 @@ t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 
 t_scoped t_dictionary::f_remove(const t_value& a_key)
 {
-	t_table& table = f_as<t_table&>(v_table);
+	auto& table = f_as<t_table&>(v_table);
 	t_entry** bucket = table.f_bucket(f_as<size_t>(a_key.f_hash()));
 	while (true) {
 		t_entry* p = *bucket;
@@ -181,7 +181,7 @@ void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_scoped* a_stack
 std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	const t_dictionary& dictionary = f_as<const t_dictionary&>(a_self);
+	auto& dictionary = f_as<const t_dictionary&>(a_self);
 	t_dictionary::t_iterator i(dictionary);
 	t_scoped x;
 	t_scoped y;
@@ -216,7 +216,7 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 intptr_t t_type_of<t_dictionary>::f_hash(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	const t_dictionary& dictionary = f_as<const t_dictionary&>(a_self);
+	auto& dictionary = f_as<const t_dictionary&>(a_self);
 	intptr_t n = 0;
 	t_dictionary::t_iterator i(dictionary);
 	while (true) {
@@ -244,8 +244,8 @@ bool t_type_of<t_dictionary>::f_equals(const t_value& a_self, const t_value& a_o
 	if (a_self == a_other) return true;
 	f_check<t_dictionary>(a_self, L"this");
 	if (!f_is<t_dictionary>(a_other)) return false;
-	const t_dictionary& d0 = f_as<const t_dictionary&>(a_self);
-	const t_dictionary& d1 = f_as<const t_dictionary&>(a_other);
+	auto& d0 = f_as<const t_dictionary&>(a_self);
+	auto& d1 = f_as<const t_dictionary&>(a_other);
 	if (d0.f_size() != d1.f_size()) return false;
 	t_dictionary::t_iterator i(d0);
 	while (true) {
@@ -269,7 +269,7 @@ bool t_type_of<t_dictionary>::f_equals(const t_value& a_self, const t_value& a_o
 void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_callable)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	const t_dictionary& d0 = f_as<const t_dictionary&>(a_self);
+	auto& d0 = f_as<const t_dictionary&>(a_self);
 	t_dictionary::t_iterator i(d0);
 	while (true) {
 		t_scoped key;

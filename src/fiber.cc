@@ -42,14 +42,14 @@ void t_context::f_tail(t_scoped* a_stack, size_t a_n)
 
 void t_context::f_backtrace(const t_value& a_value)
 {
-	t_fiber& fiber = f_as<t_fiber&>(t_fiber::f_current());
+	auto& fiber = f_as<t_fiber&>(t_fiber::f_current());
 	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, fiber.v_undone, v_lambda, f_pc());
 	fiber.v_undone = 0;
 }
 
 const t_value* t_context::f_variable(const std::wstring& a_name) const
 {
-	t_code& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
+	auto& code = f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code);
 	auto i = code.v_variables.find(a_name);
 	if (i == code.v_variables.end()) return nullptr;
 	size_t outer = 0;
@@ -64,7 +64,7 @@ const t_value* t_context::f_variable(const std::wstring& a_name) const
 void t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_scoped& a_lambda, void** a_pc)
 {
 	t_with_lock_for_write lock(a_throwable);
-	t_throwable& p = f_as<t_throwable&>(a_throwable);
+	auto& p = f_as<t_throwable&>(a_throwable);
 	p.v_backtrace = new t_backtrace(p.v_backtrace, a_native, a_lambda, a_pc);
 }
 
@@ -101,7 +101,7 @@ void t_fiber::f_run()
 		std::unique_lock<std::mutex> lock(f_engine()->v_fiber__mutex);
 		i = f_engine()->v_fiber__runnings.insert(f_engine()->v_fiber__runnings.end(), f_current());
 	}
-	t_fiber& q = f_as<t_fiber&>(f_current());
+	auto& q = f_as<t_fiber&>(f_current());
 	t_scoped x = std::move(*--q.v_stack.v_used);
 	bool b = false;
 	{
@@ -123,8 +123,8 @@ void t_fiber::f_run()
 		std::unique_lock<std::mutex> lock(f_engine()->v_fiber__mutex);
 		f_engine()->v_fiber__runnings.erase(i);
 	}
-	t_thread& thread = f_as<t_thread&>(t_thread::v_current);
-	t_fiber& p = f_as<t_fiber&>(thread.v_fiber);
+	auto& thread = f_as<t_thread&>(t_thread::v_current);
+	auto& p = f_as<t_fiber&>(thread.v_fiber);
 	p.v_active = true;
 	q.v_active = false;
 	thread.v_active = thread.v_fiber;
@@ -173,9 +173,9 @@ void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_scoped* a_stack, siz
 size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_fiber& p = f_as<t_fiber&>(a_this);
-	t_thread& thread = f_as<t_thread&>(t_thread::v_current);
-	t_fiber& q = f_as<t_fiber&>(thread.v_active);
+	auto& p = f_as<t_fiber&>(a_this);
+	auto& thread = f_as<t_thread&>(t_thread::v_current);
+	auto& q = f_as<t_fiber&>(thread.v_active);
 	if (p.v_main && a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
 	{
 		t_with_lock_for_write lock(a_this);

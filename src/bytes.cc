@@ -82,8 +82,8 @@ bool t_type_of<t_bytes>::f_equals(const t_value& a_self, const t_value& a_other)
 	if (a_self == a_other) return true;
 	f_check<t_bytes>(a_self, L"this");
 	if (!f_is<t_bytes>(a_other)) return false;
-	const t_bytes& a0 = f_as<const t_bytes&>(a_self);
-	const t_bytes& a1 = f_as<const t_bytes&>(a_other);
+	auto& a0 = f_as<const t_bytes&>(a_self);
+	auto& a1 = f_as<const t_bytes&>(a_other);
 	if (a0.f_size() != a1.f_size()) return false;
 	for (size_t i = 0; i < a0.f_size(); ++i) if (a0[i] != a1[i]) return false;
 	return true;

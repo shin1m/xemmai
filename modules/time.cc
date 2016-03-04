@@ -111,7 +111,7 @@ t_scoped f_decompose(double a_value)
 	double fraction = a_value - t0;
 	std::tm* t1 = std::gmtime(&t0);
 	t_scoped p = t_tuple::f_instantiate(8);
-	t_tuple& tuple = f_as<t_tuple&>(p);
+	auto& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(t1->tm_year + 1900);
 	tuple[1] = t_value(t1->tm_mon + 1);
 	tuple[2] = t_value(t1->tm_mday);
@@ -433,7 +433,7 @@ t_scoped f_parse_rfc2822(const std::wstring& a_value)
 	else if (year < 1000)
 		year += 1900;
 	t_scoped p = t_tuple::f_instantiate(7);
-	t_tuple& tuple = f_as<t_tuple&>(p);
+	auto& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(year);
 	tuple[1] = t_value(m);
 	tuple[2] = t_value(day);
@@ -485,7 +485,7 @@ t_scoped f_parse_http(const std::wstring& a_value)
 	else if (year < 1000)
 		year += 1900;
 	t_scoped p = t_tuple::f_instantiate(6);
-	t_tuple& tuple = f_as<t_tuple&>(p);
+	auto& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(year);
 	tuple[1] = t_value(m);
 	tuple[2] = t_value(day);
@@ -522,7 +522,7 @@ t_scoped f_parse_xsd(const std::wstring& a_value)
 	int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
 	if (n < 6) t_throwable::f_throw(L"invalid format.");
 	t_scoped p = t_tuple::f_instantiate(n < 7 ? 6 : 7);
-	t_tuple& tuple = f_as<t_tuple&>(p);
+	auto& tuple = f_as<t_tuple&>(p);
 	tuple[0] = t_value(year);
 	tuple[1] = t_value(month);
 	tuple[2] = t_value(day);

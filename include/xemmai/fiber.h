@@ -18,19 +18,18 @@ struct t_context
 	t_context* v_next;
 	t_scoped* v_base;
 	size_t v_native = 0;
-	t_scoped v_scope;
 	t_scoped v_lambda;
+	t_scoped v_scope;
 
 	t_context();
 	t_context(t_object* a_lambda, t_scoped* a_stack) : v_next(v_instance), v_base(a_stack + 2)
 	{
+		v_lambda.f_construct_nonnull(a_lambda);
 		t_stack* stack = f_stack();
 		f_previous() = stack->v_used;
-		t_lambda& lambda = f_as<t_lambda&>(a_lambda);
+		auto& lambda = f_as<t_lambda&>(a_lambda);
 		stack->f_allocate(v_base + lambda.v_size);
-		f_pc() = lambda.v_instructions;
 		if (lambda.v_shared) v_scope.f_construct_nonnull(t_scope::f_instantiate(lambda.v_shareds, t_scoped(lambda.v_scope)));
-		v_lambda.f_construct_nonnull(a_lambda);
 		v_instance = this;
 	}
 	~t_context()
@@ -49,11 +48,11 @@ struct t_context
 	void f_backtrace(const t_value& a_value);
 	t_scoped*& f_previous()
 	{
-		return *reinterpret_cast<t_scoped**>(&v_scope.v_pointer);
+		return *reinterpret_cast<t_scoped**>(&v_lambda.v_pointer);
 	}
 	void**& f_pc()
 	{
-		return *reinterpret_cast<void***>(&v_lambda.v_pointer);
+		return *reinterpret_cast<void***>(&v_scope.v_pointer);
 	}
 	const t_value* f_variable(const std::wstring& a_name) const;
 };

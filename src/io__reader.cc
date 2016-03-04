@@ -13,7 +13,7 @@ namespace io
 
 size_t t_reader::f_read(t_io* a_extension)
 {
-	t_bytes& buffer = f_as<t_bytes&>(v_buffer);
+	auto& buffer = f_as<t_bytes&>(v_buffer);
 	char* p = reinterpret_cast<char*>(&buffer[0]);
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;

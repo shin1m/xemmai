@@ -1,10 +1,19 @@
 bin_PROGRAMS = xemmai
-AM_CPPFLAGS = -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai-$(VERSION)"
-AM_CXXFLAGS = -std=c++11
-AM_LDFLAGS = -rdynamic
-LDADD = -ldl -lpthread -lrt
+if JIT
+AM_CPPFLAGS = -DXEMMAI_ENABLE_JIT
+AM_LDFLAGS = $(LLVM_LDFLAGS)
+LDADD = libjit.a $(LLVM_LIBS)
+else
+AM_CPPFLAGS =
+AM_LDFLAGS =
+LDADD =
+endif
+AM_CPPFLAGS += -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai-$(VERSION)"
+AM_CXXFLAGS = -std=c++1y
+AM_LDFLAGS += -rdynamic
+LDADD += -ldl -lpthread -lrt
 if DEBUG
-AM_CXXFLAGS += -g
+AM_CXXFLAGS += -O0 -g
 else
 AM_CPPFLAGS += -DNDEBUG
 AM_CXXFLAGS += -O3
@@ -26,6 +35,7 @@ xemmai_SOURCES = \
 	tuple.cc \
 	symbol.cc \
 	scope.cc \
+	ast.cc \
 	code_operator.h \
 	code.cc \
 	method.cc \
@@ -41,7 +51,6 @@ xemmai_SOURCES = \
 	dictionary.cc \
 	bytes.cc \
 	lexer.cc \
-	ast.cc \
 	parser.cc \
 	global.cc \
 	io.cc \
@@ -51,3 +60,9 @@ xemmai_SOURCES = \
 	io__path.cc \
 	engine.cc \
 	main.cc
+if JIT
+noinst_LIBRARIES = libjit.a
+libjit_a_CPPFLAGS = $(LLVM_CPPFLAGS) $(AM_CPPFLAGS)
+libjit_a_CXXFLAGS = $(LLVM_CXXFLAGS) $(AM_CXXFLAGS) -Wno-non-virtual-dtor -Wno-switch
+libjit_a_SOURCES = jit.cc
+endif

@@ -3,7 +3,6 @@
 
 #include "engine.h"
 #include "class.h"
-#include "symbol.h"
 #include "method.h"
 #include "null.h"
 #include "boolean.h"
@@ -592,7 +591,7 @@ inline void t_value::f_call(t_object* a_key, t_scoped* a_stack, size_t a_n) cons
 			t_scoped value = v_p->f_type()->f_get(a_key);
 			if (value.f_type() == f_global()->f_type<t_method>()) {
 				a_stack[1].f_construct_nonnull(v_p);
-				f_as<t_method&>(value).v_function.f_call(a_stack, a_n);
+				f_as<t_method&>(value).f_function().f_call(a_stack, a_n);
 			} else {
 				value.f_call(a_stack, a_n);
 			}
@@ -610,7 +609,7 @@ inline void t_object::f_get_owned(t_object* a_key, t_scoped* a_stack)
 	if (index < 0) {
 		t_scoped value = f_type()->f_get(a_key);
 		if (value.f_type() == f_global()->f_type<t_method>()) {
-			a_stack[0].f_construct_nonnull(f_as<t_method&>(value).v_function);
+			a_stack[0].f_construct_nonnull(f_as<t_method&>(value).f_function());
 			a_stack[1].f_construct_nonnull(this);
 		} else {
 			a_stack[0].f_construct(std::move(value));
@@ -1062,11 +1061,36 @@ intptr_t t_fiber::f_main(T_main a_main)
 	return n;
 }
 
+template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
+XEMMAI__PORTABLE__NOINLINE void t_code::f_operator(t_object* a_this, t_scoped* a_stack)
+{
+	t_value::f_loop(a_stack, (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack));
+}
+
+template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
+XEMMAI__PORTABLE__NOINLINE size_t t_code::f_operator(t_context& a_context, t_scoped* a_base, t_object* a_this, t_scoped* a_stack)
+{
+	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack);
+	if (n == size_t(-1)) {
+		a_base[-2].f_construct(std::move(a_stack[0]));
+		a_context.f_pop();
+	} else {
+		a_context.f_tail(a_stack, n);
+	}
+	return n;
+}
+
 inline size_t t_code::f_loop(t_object* a_lambda, t_scoped* a_stack)
 {
 	t_context context(a_lambda, a_stack);
 	try {
+		auto& lambda = f_as<t_lambda&>(a_lambda);
+#ifdef XEMMAI_ENABLE_JIT
+		return lambda.v_jit_loop(&context);
+#else
+		context.f_pc() = lambda.v_instructions;
 		return f_loop(&context);
+#endif
 	} catch (const t_scoped& thrown) {
 		context.f_backtrace(thrown);
 		throw thrown;

@@ -12,7 +12,7 @@ XEMMAI__PORTABLE__THREAD t_object* t_object::v_scan_stack;
 
 void t_object::f_collect()
 {
-	std::list<t_object*>& cycles = f_engine()->v_object__cycles;
+	auto& cycles = f_engine()->v_object__cycles;
 	for (auto i = cycles.rbegin(); i != cycles.rend(); ++i) {
 		std::lock_guard<std::mutex> lock(f_engine()->v_object__reviving__mutex);
 		t_object* cycle = *i;
@@ -39,7 +39,7 @@ void t_object::f_collect()
 				delete &f_as<t_type&>(p);
 				f_engine()->f_free_as_collect(p);
 			} while (p != cycle);
-			t_structure*& q = f_engine()->v_structure__finalizing;
+			auto& q = f_engine()->v_structure__finalizing;
 			while (q) {
 				t_structure* p = q;
 				q = p->v_parent1;
@@ -71,9 +71,9 @@ void t_object::f_collect()
 	}
 	cycles.clear();
 	{
-		t_library::t_handle*& finalizing = f_engine()->v_library__handle__finalizing;
+		auto& finalizing = f_engine()->v_library__handle__finalizing;
 		while (finalizing) {
-			t_library::t_handle* p = finalizing;
+			auto p = finalizing;
 			finalizing = p->v_next;
 			delete p;
 		}
@@ -117,7 +117,7 @@ void t_object::f_collect()
 			p->f_scan_gray();
 		} while (p != v_roots);
 	}
-	t_object*& cycle = f_engine()->v_object__cycle;
+	auto& cycle = f_engine()->v_object__cycle;
 	while (true) {
 		t_object* p = v_roots->v_next;
 		v_roots->v_next = p->v_next;
@@ -219,7 +219,7 @@ void t_object::f_own()
 	for (size_t i = 0; i < v_structure->f_size(); ++i) {
 		t_object* key = p[i];
 		size_t j = t_thread::t_cache::f_index(this, key);
-		t_thread::t_cache& cache = t_thread::v_cache[j];
+		auto& cache = t_thread::v_cache[j];
 		if (static_cast<t_object*>(cache.v_object) == this && static_cast<t_object*>(cache.v_key) == key) cache.v_object = cache.v_key = cache.v_value = nullptr;
 		cache.v_revision = t_thread::t_cache::f_revise(j);
 		cache.v_key_revision = f_as<t_symbol&>(key).v_revision;
@@ -252,7 +252,7 @@ void t_object::f_field_remove(size_t a_index)
 	size_t size = v_structure->f_size();
 	if (size + 4 < v_fields->f_size()) {
 		t_scoped tuple = t_tuple::f_instantiate(size);
-		t_tuple& fields = f_as<t_tuple&>(tuple);
+		auto& fields = f_as<t_tuple&>(tuple);
 		for (size_t i = 0; i < a_index; ++i) fields[i].f_construct(std::move((*v_fields)[i]));
 		while (a_index < size) {
 			fields[a_index].f_construct(std::move((*v_fields)[a_index + 1]));

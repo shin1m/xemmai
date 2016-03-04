@@ -19,6 +19,10 @@ struct t_debugger
 	virtual void f_loaded(t_object* a_thread) = 0;
 };
 
+#ifdef XEMMAI_ENABLE_JIT
+t_engine_jit* f_jit();
+#endif
+
 class t_engine : public t_value::t_collector
 {
 	friend class t_object;
@@ -27,6 +31,7 @@ class t_engine : public t_value::t_collector
 	friend struct t_type_of<t_structure>;
 	friend struct t_module;
 	friend class t_module::t_scoped_lock;
+	friend struct t_script;
 	friend struct t_library;
 	friend struct t_fiber;
 	friend struct t_type_of<t_fiber>;
@@ -39,6 +44,10 @@ class t_engine : public t_value::t_collector
 	friend class t_dictionary::t_entry;
 	friend class t_global;
 	friend struct t_safe_region;
+#ifdef XEMMAI_ENABLE_JIT
+	friend struct t_jit_generator;
+	friend t_engine_jit* f_jit();
+#endif
 
 	struct t_synchronizer
 	{
@@ -109,7 +118,7 @@ class t_engine : public t_value::t_collector
 	t_synchronizer* v_synchronizers = nullptr;
 	volatile size_t v_synchronizer__wake = 0;
 	std::mutex v_synchronizer__mutex;
-	std::condition_variable v_synchronizer__condition;
+	//std::condition_variable v_synchronizer__condition;
 	t_object* v_type_class;
 	std::map<std::wstring, t_slot> v_module__instances;
 	std::map<std::wstring, t_slot>::iterator v_module__instances__null;
@@ -133,6 +142,12 @@ class t_engine : public t_value::t_collector
 	bool v_debug__stopping = false;
 	size_t v_debug__safe = 0;
 	t_object* v_debug__stepping = nullptr;
+#ifdef XEMMAI_ENABLE_JIT
+	t_engine_jit* v_jit = nullptr;
+
+	void f_jit_construct();
+	void f_jit_destruct();
+#endif
 
 	void f_pools__return();
 	t_object* f_object__pool__allocate()
@@ -341,7 +356,7 @@ inline t_context::t_context() : v_next(nullptr)
 inline void t_context::f_terminate()
 {
 	assert(!v_next);
-	t_fiber& fiber = f_as<t_fiber&>(t_fiber::f_current());
+	auto& fiber = f_as<t_fiber&>(t_fiber::f_current());
 	assert(fiber.v_stack.v_used == fiber.v_stack.f_head());
 	fiber.v_context = nullptr;
 }

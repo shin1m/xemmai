@@ -10,6 +10,9 @@ namespace xemmai
 {
 
 struct t_generator;
+#ifdef XEMMAI_ENABLE_JIT
+struct t_jit_generator;
+#endif
 
 namespace ast
 {
@@ -26,21 +29,27 @@ struct t_operand
 	};
 
 	t_tag v_tag;
-	t_scoped v_value;
+	union
+	{
+		intptr_t v_integer;
+		double v_float;
+		const t_value& v_value;
+		size_t v_index;
+	};
 
-	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_value(a_value)
+	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_integer(a_value)
 	{
 	}
-	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_value(a_value)
+	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_float(a_value)
 	{
 	}
-	t_operand(t_scoped&& a_value) : v_tag(e_tag__LITERAL), v_value(std::move(a_value))
+	t_operand(const t_value& a_value) : v_tag(e_tag__LITERAL), v_value(a_value)
 	{
 	}
-	t_operand(size_t a_value) : v_tag(e_tag__TEMPORARY), v_value(a_value)
+	t_operand(size_t a_value) : v_tag(e_tag__TEMPORARY), v_index(a_value)
 	{
 	}
-	t_operand(t_tag a_tag, size_t a_value) : v_tag(a_tag), v_value(a_value)
+	t_operand(t_tag a_tag, size_t a_value) : v_tag(a_tag), v_index(a_value)
 	{
 	}
 };
@@ -58,10 +67,10 @@ public:
 	}
 	virtual ~t_node() = default;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear = false) = 0;
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear = false) = 0;
+#endif
 };
-
-void f_generate_block(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail, bool a_clear);
-void f_generate_block_without_value(t_generator& a_generator, size_t a_stack, const std::vector<std::unique_ptr<t_node>>& a_nodes);
 
 struct t_scope
 {
@@ -69,9 +78,9 @@ struct t_scope
 	std::vector<std::unique_ptr<t_node>> v_block;
 	bool v_shared = false;
 	bool v_self_shared = false;
-	std::set<t_scoped> v_references;
-	std::set<t_scoped> v_unresolveds;
-	std::map<t_scoped, t_code::t_variable> v_variables;
+	std::set<t_object*> v_references;
+	std::set<t_object*> v_unresolveds;
+	std::map<t_object*, t_code::t_variable> v_variables;
 	std::vector<t_code::t_variable*> v_privates;
 	size_t v_shareds = 0;
 
@@ -86,10 +95,18 @@ struct t_lambda : t_node, t_scope
 	size_t v_arguments = 0;
 	std::vector<std::unique_ptr<t_node>> v_defaults;
 
+	t_object* f_code(t_object* a_module);
+	void f_safe_points(t_code& a_code, std::map<std::pair<size_t, void**>, size_t>& a_safe_points, const std::vector<std::tuple<size_t, size_t, size_t>>& a_safe_positions);
+
 	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	void f_jit_generate(t_generator& a_generator, t_code& a_code);
+	void f_jit_generate_with_lock(t_generator& a_generator, t_code& a_code);
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_if : t_node
@@ -102,6 +119,9 @@ struct t_if : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_while : t_node
@@ -113,6 +133,9 @@ struct t_while : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_for : t_node
@@ -124,6 +147,9 @@ struct t_for : t_node
 
 	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_break : t_node
@@ -134,12 +160,18 @@ struct t_break : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_continue : t_node
 {
 	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_return : t_node
@@ -150,6 +182,9 @@ struct t_return : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_try : t_node
@@ -171,6 +206,12 @@ struct t_try : t_node
 
 	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	void* f_jit_try(t_jit_generator& a_generator, size_t a_stack, bool a_clear);
+	void* f_jit_catch(t_jit_generator& a_generator, size_t a_stack, bool a_clear);
+	void* f_jit_finally(t_jit_generator& a_generator, size_t a_stack);
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_throw : t_node
@@ -181,18 +222,25 @@ struct t_throw : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_object_get : t_node
 {
 	std::unique_ptr<t_node> v_target;
-	t_scoped v_key;
+	t_object* v_key;
 
-	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
+	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	void f_generate(t_generator& a_generator, size_t a_stack, t_instruction a_instruction);
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+	void f_method_get(t_jit_generator& a_generator, size_t a_stack);
+#endif
 };
 
 struct t_object_get_indirect : t_node
@@ -204,18 +252,24 @@ struct t_object_get_indirect : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_object_put : t_node
 {
 	std::unique_ptr<t_node> v_target;
-	t_scoped v_key;
+	t_object* v_key;
 	std::unique_ptr<t_node> v_value;
 
-	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key)), v_value(std::move(a_value))
+	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key), v_value(std::move(a_value))
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_object_put_indirect : t_node
@@ -228,17 +282,23 @@ struct t_object_put_indirect : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_object_has : t_node
 {
 	std::unique_ptr<t_node> v_target;
-	t_scoped v_key;
+	t_object* v_key;
 
-	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
+	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_object_has_indirect : t_node
@@ -250,17 +310,23 @@ struct t_object_has_indirect : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_object_remove : t_node
 {
 	std::unique_ptr<t_node> v_target;
-	t_scoped v_key;
+	t_object* v_key;
 
-	t_object_remove(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_scoped&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
+	t_object_remove(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_object_remove_indirect : t_node
@@ -272,21 +338,27 @@ struct t_object_remove_indirect : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_symbol_get : t_node
 {
 	size_t v_outer;
 	t_scope* v_scope;
-	t_scoped v_symbol;
+	t_object* v_symbol;
 	size_t v_resolved = -1;
 	const t_code::t_variable* v_variable = nullptr;
 
-	t_symbol_get(const t_at& a_at, size_t a_outer, t_scope* a_scope, t_scoped&& a_symbol) : t_node(a_at), v_outer(a_outer), v_scope(a_scope), v_symbol(std::move(a_symbol))
+	t_symbol_get(const t_at& a_at, size_t a_outer, t_scope* a_scope, t_object* a_symbol) : t_node(a_at), v_outer(a_outer), v_scope(a_scope), v_symbol(a_symbol)
 	{
 	}
 	void f_resolve();
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_scope_put : t_node
@@ -299,6 +371,9 @@ struct t_scope_put : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_self : t_node
@@ -309,6 +384,9 @@ struct t_self : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_class : t_node
@@ -319,6 +397,9 @@ struct t_class : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_super : t_node
@@ -329,12 +410,18 @@ struct t_super : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_null : t_node
 {
 	using t_node::t_node;
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_boolean : t_node
@@ -344,7 +431,10 @@ struct t_boolean : t_node
 	t_boolean(const t_at& a_at, bool a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear = false);
+	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_integer : t_node
@@ -354,7 +444,10 @@ struct t_integer : t_node
 	t_integer(const t_at& a_at, intptr_t a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear = false);
+	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_float : t_node
@@ -364,17 +457,23 @@ struct t_float : t_node
 	t_float(const t_at& a_at, double a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear = false);
+	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_instance : t_node
 {
-	t_scoped v_value;
+	const t_value& v_value;
 
-	t_instance(const t_at& a_at, t_scoped&& a_value) : t_node(a_at), v_value(std::move(a_value))
+	t_instance(const t_at& a_at, const t_value& a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_unary : t_node
@@ -386,6 +485,9 @@ struct t_unary : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_binary : t_node
@@ -398,6 +500,9 @@ struct t_binary : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_call : t_node
@@ -410,6 +515,9 @@ struct t_call : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 struct t_get_at : t_node
@@ -422,6 +530,10 @@ struct t_get_at : t_node
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
 	void f_bind(t_generator& a_generator, size_t a_stack);
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+	void f_bind(t_jit_generator& a_generator, size_t a_stack);
+#endif
 };
 
 struct t_set_at : t_node
@@ -434,19 +546,9 @@ struct t_set_at : t_node
 	{
 	}
 	virtual t_operand f_generate(t_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
-};
-
-struct t_module : t_scope
-{
-	std::wstring v_path;
-
-	t_module(const std::wstring& a_path) : t_scope(nullptr), v_path(a_path)
-	{
-	}
-	const std::wstring& f_path() const
-	{
-		return v_path;
-	}
+#ifdef XEMMAI_ENABLE_JIT
+	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
+#endif
 };
 
 }
@@ -463,18 +565,26 @@ struct t_generator
 		bool v_return_is_tail;
 	};
 
+	t_object* v_module;
 	std::map<std::pair<size_t, void**>, size_t>* v_safe_points;
-	std::wstring v_path;
 	ast::t_scope* v_scope;
 	t_code* v_code;
 	std::deque<t_code::t_label>* v_labels;
 	t_targets* v_targets;
 	std::vector<std::tuple<size_t, size_t, size_t>>* v_safe_positions;
+#ifdef XEMMAI_ENABLE_JIT
+	void* v_jit;
 
-	t_generator(std::map<std::pair<size_t, void**>, size_t>* safe_points) : v_safe_points(safe_points)
+	t_generator(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points);
+	~t_generator();
+	void f_jit_install();
+#else
+
+	t_generator(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points) : v_module(a_module), v_safe_points(a_safe_points)
 	{
 	}
-	t_scoped f_generate(ast::t_module& a_module);
+#endif
+	t_scoped operator()(ast::t_scope& a_scope);
 	void f_emit(t_instruction a_instruction)
 	{
 		v_code->f_emit(a_instruction);

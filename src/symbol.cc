@@ -9,7 +9,7 @@ t_scoped t_symbol::f_instantiate(const std::wstring& a_value)
 {
 	std::lock_guard<std::mutex> lock(f_engine()->v_symbol__instantiate__mutex);
 	f_engine()->v_object__reviving__mutex.lock();
-	std::map<std::wstring, t_slot>& instances = f_engine()->v_symbol__instances;
+	auto& instances = f_engine()->v_symbol__instances;
 	auto i = instances.lower_bound(a_value);
 	if (i == instances.end() || i->first != a_value) {
 		i = instances.emplace_hint(i, a_value, t_slot());
@@ -37,7 +37,7 @@ void t_symbol::f_revise(t_object* a_this)
 {
 	if (f_atomic_increment(f_as<t_symbol&>(a_this).v_revision) != 0) return;
 	for (size_t i = 0; i < t_thread::t_cache::V_SIZE; ++i) {
-		t_thread::t_cache& cache = t_thread::v_cache[i];
+		auto& cache = t_thread::v_cache[i];
 		if (static_cast<t_object*>(cache.v_key) == a_this) cache.v_object = cache.v_key = cache.v_value = nullptr;
 		cache.v_revision = t_thread::t_cache::f_revise(i);
 	}
@@ -55,7 +55,7 @@ void t_type_of<t_symbol>::f_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_symbol>::f_finalize(t_object* a_this)
 {
-	t_symbol& p = f_as<t_symbol&>(a_this);
+	auto& p = f_as<t_symbol&>(a_this);
 	f_engine()->v_symbol__instances.erase(p.v_entry);
 	delete &p;
 }

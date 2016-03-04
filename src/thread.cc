@@ -26,7 +26,7 @@ XEMMAI__PORTABLE__THREAD size_t t_thread::v_cache_missed;
 void t_thread::f_main(t_object* a_p)
 {
 	v_current = a_p;
-	t_thread& p = f_as<t_thread&>(v_current);
+	auto& p = f_as<t_thread&>(v_current);
 	t_internal* internal = p.v_internal;
 	t_value::v_collector = internal->v_collector;
 	internal->f_initialize();
@@ -60,11 +60,11 @@ void t_thread::f_main(t_object* a_p)
 void t_thread::f_cache_clear()
 {
 	for (size_t i = 0; i < t_structure::t_cache::V_SIZE; ++i) {
-		t_structure::t_cache& cache = t_structure::v_cache[i];
+		auto& cache = t_structure::v_cache[i];
 		cache.v_structure = cache.v_key = nullptr;
 	}
 	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
-		t_cache& cache = v_cache[i];
+		auto& cache = v_cache[i];
 		cache.v_object = cache.v_key = cache.v_value = nullptr;
 	}
 }
@@ -72,7 +72,7 @@ void t_thread::f_cache_clear()
 void t_thread::f_cache_acquire()
 {
 	for (size_t i = 0; i < t_cache::V_SIZE; ++i) {
-		t_cache& cache = v_cache[i];
+		auto& cache = v_cache[i];
 		size_t revision = t_cache::v_revisions[i];
 		if (cache.v_revision == revision) continue;
 		cache.v_revision = revision;

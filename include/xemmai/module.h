@@ -2,6 +2,7 @@
 #define XEMMAI__MODULE_H
 
 #include "portable/library.h"
+#include "symbol.h"
 #include "code.h"
 #include "native.h"
 
@@ -22,7 +23,6 @@ struct t_module
 	};
 
 	static t_scoped f_instantiate(const std::wstring& a_name, t_module* a_module);
-	static t_scoped f_load_script(const std::wstring& a_path, std::map<std::pair<size_t, void**>, size_t>* a_safe_points);
 	static t_library* f_load_library(const std::wstring& a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
 	static t_scoped f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path);
@@ -37,14 +37,40 @@ struct t_module
 	virtual void f_scan(t_scan a_scan);
 };
 
-struct t_debug_module : t_module
+struct t_script : t_module
+{
+	std::vector<std::unique_ptr<t_slot>> v_slots;
+#ifdef XEMMAI_ENABLE_JIT
+	void* v_jit;
+
+	t_script(const std::wstring& a_path);
+	virtual ~t_script();
+	void f_jit_add(void* a_module);
+	uint64_t f_jit_find(const std::string& a_name);
+#else
+	t_script(const std::wstring& a_path) : t_module(a_path)
+	{
+	}
+#endif
+	virtual void f_scan(t_scan a_scan);
+	t_slot& f_slot(t_scoped&& a_p)
+	{
+		auto p = new t_slot(std::move(a_p));
+		v_slots.emplace_back(p);
+		return *p;
+	}
+	t_object* f_symbol(const std::wstring& a_value)
+	{
+		return f_slot(t_symbol::f_instantiate(a_value));
+	}
+};
+
+struct t_debug_script : t_script
 {
 	t_slot v_code;
 	std::map<std::pair<size_t, void**>, size_t> v_safe_points;
 
-	t_debug_module(const std::wstring& a_path, const t_scoped& a_code, std::map<std::pair<size_t, void**>, size_t>&& a_safe_points) : t_module(a_path), v_code(a_code), v_safe_points(std::move(a_safe_points))
-	{
-	}
+	using t_script::t_script;
 	virtual void f_scan(t_scan a_scan);
 	std::pair<size_t, size_t> f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new);
 	std::pair<size_t, size_t> f_set_break_point(size_t a_line, size_t a_column = 0)
@@ -65,7 +91,7 @@ public:
 	t_extension(t_object* a_module) : v_module(a_module)
 	{
 	}
-	virtual ~t_extension();
+	virtual ~t_extension() = default;
 	t_object* f_module() const
 	{
 		return v_module;

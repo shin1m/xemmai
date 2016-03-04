@@ -19,7 +19,7 @@ t_type* t_class::f_derive(t_object* a_this)
 
 void t_class::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_type& p = f_as<t_type&>(a_this);
+	auto& p = f_as<t_type&>(a_this);
 	if (p.v_builtin && f_engine()->f_module_global()) return;
 	a_scan(p.v_module);
 	a_scan(p.v_super);
@@ -48,8 +48,8 @@ void t_class::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
 t_scoped t_class::f_get(const t_value& a_this, t_object* a_key)
 {
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
-	t_thread::t_cache& cache = t_thread::v_cache[i];
-	t_symbol& symbol = f_as<t_symbol&>(a_key);
+	auto& cache = t_thread::v_cache[i];
+	auto& symbol = f_as<t_symbol&>(a_key);
 	if (cache.v_object == a_this && static_cast<t_object*>(cache.v_key) == a_key && cache.v_key_revision == symbol.v_revision) {
 		++t_thread::v_cache_hit;
 		return cache.v_value;

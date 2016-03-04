@@ -126,7 +126,7 @@ public:
 	intptr_t f_index(t_object* a_key, t_cache& a_cache) const;
 	intptr_t f_index(t_object* a_key) const
 	{
-		t_cache& cache = v_cache[t_cache::f_index(v_this, a_key)];
+		auto& cache = v_cache[t_cache::f_index(v_this, a_key)];
 		return static_cast<t_object*>(cache.v_structure) == v_this && static_cast<t_object*>(cache.v_key) == a_key ? cache.v_index : f_index(a_key, cache);
 	}
 	t_scoped f_append(t_object* a_key);

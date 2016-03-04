@@ -108,3 +108,6 @@ Bar = Class() :: @
 a = Bar(
 assert(a(10000, 0) == 10001 * 10000 / 2
 assert(a + 10000 == "zero"
+
+f = @(x) x + x
+assert(f("x") == "xx"

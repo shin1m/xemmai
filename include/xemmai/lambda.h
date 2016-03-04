@@ -18,6 +18,9 @@ protected:
 	t_slot v_scope;
 	t_slot v_code;
 	t_scope& v_as_scope;
+#ifdef XEMMAI_ENABLE_JIT
+	size_t (*v_jit_loop)(t_context*);
+#endif
 	bool v_shared;
 	size_t v_size;
 	size_t v_privates;
@@ -27,7 +30,10 @@ protected:
 
 	t_lambda(t_scoped&& a_scope, t_scoped&& a_code) : v_scope(std::move(a_scope)), v_code(std::move(a_code)), v_as_scope(f_as<t_scope&>(v_scope))
 	{
-		t_code& code = f_as<t_code&>(v_code);
+		auto& code = f_as<t_code&>(v_code);
+#ifdef XEMMAI_ENABLE_JIT
+		v_jit_loop = code.v_jit_loop;
+#endif
 		v_shared = code.v_shared;
 		v_size = code.v_size;
 		v_privates = code.v_privates;
@@ -71,7 +77,7 @@ class t_advanced_lambda : public t_lambda
 
 	t_advanced_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_scoped&& a_defaults) : t_lambda(std::move(a_scope), std::move(a_code)), v_defaults(std::move(a_defaults))
 	{
-		t_code& code = f_as<t_code&>(v_code);
+		auto& code = f_as<t_code&>(v_code);
 		v_variadic = code.v_variadic;
 		v_minimum = code.v_minimum;
 	}

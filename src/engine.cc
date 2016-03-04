@@ -265,7 +265,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 			v_module_system.f_put(f_global()->f_symbol_script(), f_global()->f_as(static_cast<const std::wstring&>(script)));
 			f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L"..")));
 			t_scoped arguments = t_array::f_instantiate();
-			t_array& p = f_as<t_array&>(arguments);
+			auto& p = f_as<t_array&>(arguments);
 			for (size_t i = 2; i < a_count; ++i) p.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
 			v_module_system.f_put(f_global()->f_symbol_arguments(), std::move(arguments));
 		}
@@ -300,6 +300,9 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		static_cast<t_object*>(writer)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"error"), std::move(writer));
 	}
+#ifdef XEMMAI_ENABLE_JIT
+	f_jit_construct();
+#endif
 }
 
 t_engine::~t_engine()
@@ -311,7 +314,7 @@ t_engine::~t_engine()
 	v_module_io = nullptr;
 	v_fiber_exit = nullptr;
 	{
-		t_thread& thread = f_as<t_thread&>(v_thread);
+		auto& thread = f_as<t_thread&>(v_thread);
 		thread.v_active = nullptr;
 		v_thread = nullptr;
 		std::lock_guard<std::mutex> lock(v_thread__mutex);
@@ -351,6 +354,9 @@ t_engine::~t_engine()
 	assert(!v_thread__internals);
 	v_dictionary__entry__pool.f_clear();
 	v_object__pool.f_clear();
+#ifdef XEMMAI_ENABLE_JIT
+	f_jit_destruct();
+#endif
 	if (v_verbose) {
 		bool b = false;
 		std::fprintf(stderr, "statistics:\n");
@@ -391,7 +397,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		if (v_debug__stepping == t_thread::f_current()) v_debug__stepping = nullptr;
 		f_debug_enter_and_notify();
 	}
-	t_thread& thread = f_as<t_thread&>(v_thread);
+	auto& thread = f_as<t_thread&>(v_thread);
 	auto internal = thread.v_internal;
 	while (true) {
 		auto p = v_thread__internals;
@@ -399,13 +405,13 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		if (!p) break;
 		v_thread__condition.wait(lock);
 	}
-	t_fiber& fiber = f_as<t_fiber&>(thread.v_fiber);
+	auto& fiber = f_as<t_fiber&>(thread.v_fiber);
 	fiber.v_context = t_context::v_instance;
 	fiber.v_used = ++fiber.v_stack.v_used;
 	fiber.v_return = fiber.v_used;
 	while (!v_fiber__runnings.empty()) {
 		t_object* x = v_fiber__runnings.front();
-		t_fiber& p = f_as<t_fiber&>(x);
+		auto& p = f_as<t_fiber&>(x);
 		p.v_active = true;
 		fiber.v_active = false;
 		thread.v_active = x;
@@ -427,12 +433,13 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 void t_engine::f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc)
 {
 	if (a_lambda) {
-		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).f_code());
-		std::fprintf(a_out, "%ls", code.v_path.c_str());
+		auto& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).f_code());
+		auto& path = f_as<t_module&>(code.v_module).v_path;
+		std::fprintf(a_out, "%ls", path.c_str());
 		const t_at* at = code.f_at(a_pc);
 		if (at) {
 			std::fprintf(a_out, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->f_line()), static_cast<uintptr_t>(at->f_column()));
-			f_print_with_caret(a_out, code.v_path.c_str(), at->f_position(), at->f_column());
+			f_print_with_caret(a_out, path.c_str(), at->f_position(), at->f_column());
 		} else {
 			std::fputc('\n', a_out);
 		}

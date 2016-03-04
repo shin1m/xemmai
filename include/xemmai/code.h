@@ -222,6 +222,12 @@ struct t_code
 	static void f_object_put(t_scoped* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
 	static void f_object_put_clear(t_scoped* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
 	static void f_method_get(t_scoped* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
+	static void f_method_bind(t_scoped* a_stack);
+	static size_t f_expand(t_scoped* a_stack, size_t a_n);
+	template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
+	static void f_operator(t_object* a_this, t_scoped* a_stack);
+	template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
+	static size_t f_operator(t_context& a_context, t_scoped* a_base, t_object* a_this, t_scoped* a_stack);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static const void** v_labels;
@@ -238,9 +244,15 @@ struct t_code
 #endif
 	static void f_try(t_context* a_context);
 	static size_t f_loop(t_object* a_lambda, t_scoped* a_stack);
-	static t_scoped f_instantiate(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
+#ifdef XEMMAI_ENABLE_JIT
+	static size_t f_jit_loop_nojit(t_context* a_context);
+	static t_try f_jit_try(t_context* a_context, t_scoped* a_stack, t_try (*a_try)(t_context*), t_try (*a_catch)(t_context*, const t_scoped&), void (*a_finally)(t_context*));
+	static bool f_jit_catch_stack(t_context* a_context, t_scoped* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
+	static bool f_jit_catch_scope(t_context* a_context, t_scoped* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
+#endif
+	static t_scoped f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 
-	std::wstring v_path;
+	t_slot v_module;
 	bool v_shared;
 	bool v_variadic;
 	size_t v_size;
@@ -249,11 +261,13 @@ struct t_code
 	size_t v_arguments;
 	size_t v_minimum;
 	std::vector<void*> v_instructions;
-	std::vector<std::unique_ptr<t_slot>> v_objects;
 	std::vector<t_address_at> v_ats;
 	std::map<std::wstring, t_variable> v_variables;
+#ifdef XEMMAI_ENABLE_JIT
+	size_t (*v_jit_loop)(t_context*);
+#endif
 
-	t_code(const std::wstring& a_path, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_path(a_path), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
+	t_code(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_module(a_module), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
 	{
 	}
 	void f_scan(t_scan a_scan);
@@ -311,13 +325,14 @@ struct t_code
 	void f_operand(t_object* a_operand)
 	{
 		v_instructions.push_back(a_operand);
-		v_objects.emplace_back(new t_slot(a_operand));
 	}
-	void f_operand(t_scoped&& a_operand)
+	void f_operand(const t_value& a_operand)
 	{
-		t_slot* p = new t_slot(std::move(a_operand));
-		v_instructions.push_back(p);
-		v_objects.emplace_back(p);
+		v_instructions.push_back(const_cast<t_value*>(&a_operand));
+	}
+	void f_operand(t_slot& a_operand)
+	{
+		v_instructions.push_back(&a_operand);
 	}
 	void f_operand(t_label& a_label)
 	{

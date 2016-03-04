@@ -13,7 +13,7 @@ namespace io
 
 void t_writer::f_write(t_io* a_extension)
 {
-	t_bytes& buffer = f_as<t_bytes&>(v_buffer);
+	auto& buffer = f_as<t_bytes&>(v_buffer);
 	char* p = reinterpret_cast<char*>(&buffer[0]);
 	v_stream.f_get(a_extension->f_symbol_write())(v_buffer, f_global()->f_as(0), f_global()->f_as(v_p - p));
 	v_p = p;
@@ -65,7 +65,7 @@ t_writer::t_writer(t_scoped&& a_stream, const std::wstring& a_encoding) : v_cd(i
 	v_stream = std::move(a_stream);
 	v_buffer = t_bytes::f_instantiate(1024);
 	static_cast<t_object*>(v_buffer)->f_share();
-	t_bytes& buffer = f_as<t_bytes&>(v_buffer);
+	auto& buffer = f_as<t_bytes&>(v_buffer);
 	v_p = reinterpret_cast<char*>(&buffer[0]);
 	v_n = buffer.f_size();
 }

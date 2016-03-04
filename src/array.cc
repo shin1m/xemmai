@@ -27,9 +27,9 @@ t_slot* t_array::f_move_backward(t_slot* a_p, t_slot* a_q)
 
 void t_array::f_resize()
 {
-	t_tuple& tuple0 = f_as<t_tuple&>(v_tuple);
+	auto& tuple0 = f_as<t_tuple&>(v_tuple);
 	t_scoped p = t_tuple::f_instantiate(v_size * 2);
-	t_tuple& tuple1 = f_as<t_tuple&>(p);
+	auto& tuple1 = f_as<t_tuple&>(p);
 	for (size_t i = 0; i < v_size; ++i) tuple1[i] = tuple0[(v_head + i) % tuple0.f_size()];
 	v_tuple = std::move(p);
 	v_head = 0;
@@ -83,21 +83,21 @@ void t_array::f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size)
 const t_slot& t_array::operator[](intptr_t a_index) const
 {
 	f_validate(a_index);
-	const t_tuple& tuple = f_as<const t_tuple&>(v_tuple);
+	auto& tuple = f_as<const t_tuple&>(v_tuple);
 	return tuple[(v_head + a_index) % tuple.f_size()];
 }
 
 t_slot& t_array::operator[](intptr_t a_index)
 {
 	f_validate(a_index);
-	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = f_as<t_tuple&>(v_tuple);
 	return tuple[(v_head + a_index) % tuple.f_size()];
 }
 
 void t_array::f_push(t_scoped&& a_value)
 {
 	f_grow();
-	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = f_as<t_tuple&>(v_tuple);
 	tuple[(v_head + v_size) % tuple.f_size()] = std::move(a_value);
 	++v_size;
 }
@@ -105,7 +105,7 @@ void t_array::f_push(t_scoped&& a_value)
 t_scoped t_array::f_pop()
 {
 	if (v_size <= 0) t_throwable::f_throw(L"empty array.");
-	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = f_as<t_tuple&>(v_tuple);
 	t_scoped p = std::move(tuple[(v_head + --v_size) % tuple.f_size()]);
 	f_shrink();
 	return p;
@@ -114,7 +114,7 @@ t_scoped t_array::f_pop()
 void t_array::f_unshift(t_scoped&& a_value)
 {
 	f_grow();
-	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = f_as<t_tuple&>(v_tuple);
 	v_head += tuple.f_size() - 1;
 	v_head %= tuple.f_size();
 	tuple[v_head] = std::move(a_value);
@@ -124,7 +124,7 @@ void t_array::f_unshift(t_scoped&& a_value)
 t_scoped t_array::f_shift()
 {
 	if (v_size <= 0) t_throwable::f_throw(L"empty array.");
-	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = f_as<t_tuple&>(v_tuple);
 	t_scoped p = std::move(tuple[v_head]);
 	++v_head;
 	v_head %= tuple.f_size();
@@ -142,7 +142,7 @@ void t_array::f_insert(intptr_t a_index, t_scoped&& a_value)
 		if (a_index > static_cast<intptr_t>(v_size)) t_throwable::f_throw(L"out of range.");
 	}
 	f_grow();
-	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = f_as<t_tuple&>(v_tuple);
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;
 	size_t n = tuple.f_size();
@@ -176,7 +176,7 @@ void t_array::f_insert(intptr_t a_index, t_scoped&& a_value)
 t_scoped t_array::f_remove(intptr_t a_index)
 {
 	f_validate(a_index);
-	t_tuple& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = f_as<t_tuple&>(v_tuple);
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;
 	size_t n = tuple.f_size();
@@ -221,7 +221,7 @@ void t_type_of<t_array>::f__construct(t_object* a_module, t_scoped* a_stack, siz
 std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 {
 	f_check<t_array>(a_self, L"this");
-	const t_array& array = f_as<const t_array&>(a_self);
+	auto& array = f_as<const t_array&>(a_self);
 	t_scoped x;
 	{
 		t_with_lock_for_read lock(a_self);
@@ -249,7 +249,7 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 intptr_t t_type_of<t_array>::f_hash(const t_value& a_self)
 {
 	f_check<t_array>(a_self, L"this");
-	const t_array& array = f_as<const t_array&>(a_self);
+	auto& array = f_as<const t_array&>(a_self);
 	intptr_t n = 0;
 	size_t i = 0;
 	while (true) {
@@ -272,8 +272,8 @@ bool t_type_of<t_array>::f_less(const t_value& a_self, const t_value& a_other)
 	if (a_self == a_other) return false;
 	f_check<t_array>(a_self, L"this");
 	f_check<t_array>(a_other, L"other");
-	const t_array& a0 = f_as<const t_array&>(a_self);
-	const t_array& a1 = f_as<const t_array&>(a_other);
+	auto& a0 = f_as<const t_array&>(a_self);
+	auto& a1 = f_as<const t_array&>(a_other);
 	size_t i = 0;
 	while (true) {
 		t_scoped x;
@@ -300,8 +300,8 @@ bool t_type_of<t_array>::f_less_equal(const t_value& a_self, const t_value& a_ot
 	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
 	f_check<t_array>(a_other, L"other");
-	const t_array& a0 = f_as<const t_array&>(a_self);
-	const t_array& a1 = f_as<const t_array&>(a_other);
+	auto& a0 = f_as<const t_array&>(a_self);
+	auto& a1 = f_as<const t_array&>(a_other);
 	size_t i = 0;
 	while (true) {
 		t_scoped x;
@@ -327,8 +327,8 @@ bool t_type_of<t_array>::f_greater(const t_value& a_self, const t_value& a_other
 	if (a_self == a_other) return false;
 	f_check<t_array>(a_self, L"this");
 	f_check<t_array>(a_other, L"other");
-	const t_array& a0 = f_as<const t_array&>(a_self);
-	const t_array& a1 = f_as<const t_array&>(a_other);
+	auto& a0 = f_as<const t_array&>(a_self);
+	auto& a1 = f_as<const t_array&>(a_other);
 	size_t i = 0;
 	while (true) {
 		t_scoped x;
@@ -354,8 +354,8 @@ bool t_type_of<t_array>::f_greater_equal(const t_value& a_self, const t_value& a
 	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
 	f_check<t_array>(a_other, L"other");
-	const t_array& a0 = f_as<const t_array&>(a_self);
-	const t_array& a1 = f_as<const t_array&>(a_other);
+	auto& a0 = f_as<const t_array&>(a_self);
+	auto& a1 = f_as<const t_array&>(a_other);
 	size_t i = 0;
 	while (true) {
 		t_scoped x;
@@ -382,8 +382,8 @@ bool t_type_of<t_array>::f_equals(const t_value& a_self, const t_value& a_other)
 	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
 	if (!f_is<t_array>(a_other)) return false;
-	const t_array& a0 = f_as<const t_array&>(a_self);
-	const t_array& a1 = f_as<const t_array&>(a_other);
+	auto& a0 = f_as<const t_array&>(a_self);
+	auto& a1 = f_as<const t_array&>(a_other);
 	if (a0.f_size() != a1.f_size()) return false;
 	size_t i = 0;
 	while (true) {
@@ -408,7 +408,7 @@ bool t_type_of<t_array>::f_equals(const t_value& a_self, const t_value& a_other)
 void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable)
 {
 	f_check<t_array>(a_self, L"this");
-	const t_array& a0 = f_as<const t_array&>(a_self);
+	auto& a0 = f_as<const t_array&>(a_self);
 	size_t i = 0;
 	while (true) {
 		t_scoped x;
@@ -425,7 +425,7 @@ void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable
 void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable)
 {
 	f_check<t_array>(a_self, L"this");
-	t_array& a0 = f_as<t_array&>(a_self);
+	auto& a0 = f_as<t_array&>(a_self);
 	t_scoped tuple;
 	size_t head = 0;
 	size_t size = 0;
@@ -434,7 +434,7 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 		a0.f_swap(tuple, head, size);
 	}
 	if (!tuple) return;
-	t_tuple& t = f_as<t_tuple&>(tuple);
+	auto& t = f_as<t_tuple&>(tuple);
 	std::vector<t_scoped> a(size);
 	for (size_t i = 0; i < size; ++i) a[i] = std::move(t[(head + i) % t.f_size()]);
 	head = 0;

@@ -91,11 +91,11 @@ class t_debugger : public xemmai::t_debugger
 			for (auto line : pair.second) std::fprintf(v_out, "\t%" PRIuPTR "\n", static_cast<uintptr_t>(line));
 		}
 	}
-	t_debug_module* f_find_module(const std::wstring& a_path)
+	t_debug_script* f_find_module(const std::wstring& a_path)
 	{
 		for (auto& pair : v_engine.f_modules()) {
 			if (!pair.second) continue;
-			auto debug = dynamic_cast<t_debug_module*>(&f_as<t_module&>(pair.second));
+			auto debug = dynamic_cast<t_debug_script*>(&f_as<t_module&>(pair.second));
 			if (debug && debug->v_path == a_path) return debug;
 		}
 		return nullptr;
@@ -115,7 +115,7 @@ class t_debugger : public xemmai::t_debugger
 	{
 		for (auto& pair : v_engine.f_modules()) {
 			if (!pair.second) continue;
-			auto debug = dynamic_cast<t_debug_module*>(&f_as<t_module&>(pair.second));
+			auto debug = dynamic_cast<t_debug_script*>(&f_as<t_module&>(pair.second));
 			if (!debug) continue;
 			auto i = v_break_points.find(debug->v_path);
 			if (i == v_break_points.end()) continue;
@@ -232,7 +232,7 @@ class t_debugger : public xemmai::t_debugger
 				f_print_sequence<t_array>(a_value, a_depth);
 				std::fputc(']', v_out);
 			} else if (f_is<t_dictionary>(a_value)) {
-				t_dictionary& dictionary = f_as<t_dictionary&>(a_value);
+				auto& dictionary = f_as<t_dictionary&>(a_value);
 				std::fputs(" {", v_out);
 				if (a_depth <= 0) {
 					std::fputs("...", v_out);
@@ -262,7 +262,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print_variables(t_context* a_context)
 	{
-		t_code& code = f_as<t_code&>(f_as<t_lambda&>(a_context->v_lambda).f_code());
+		auto& code = f_as<t_code&>(f_as<t_lambda&>(a_context->v_lambda).f_code());
 		for (auto& pair : code.v_variables) std::fprintf(v_out, "%ls\n", pair.first.c_str());
 	}
 	void f_prompt(t_object* a_thread)

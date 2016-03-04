@@ -19,7 +19,7 @@ t_type* t_type_of<t_method>::f_derive(t_object* a_this)
 
 void t_type_of<t_method>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	t_method& p = f_as<t_method&>(a_this);
+	auto& p = f_as<t_method&>(a_this);
 	a_scan(p.v_function);
 	a_scan(p.v_self);
 }
@@ -36,7 +36,7 @@ void t_type_of<t_method>::f_instantiate(t_object* a_class, t_scoped* a_stack, si
 
 size_t t_type_of<t_method>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
 {
-	t_method& p = f_as<t_method&>(a_this);
+	auto& p = f_as<t_method&>(a_this);
 	a_stack[1].f_construct(p.v_self);
 	return static_cast<t_object*>(p.v_function)->f_call_without_loop(a_stack, a_n);
 }
