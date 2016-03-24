@@ -6,6 +6,10 @@ addons:
     packages:
       - automake
       - g++-5
+before_install:
+  - sudo add-apt-repository -y ppa:dns/gnu
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install automake
 before_script:
   - autoreconf -is
   - CXX=g++-5 ./configure
