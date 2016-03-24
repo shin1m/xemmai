@@ -8,7 +8,7 @@ addons:
       - g++-5
 before_script:
   - autoreconf -is
-  - CXX=g++-5.3 ./configure
+  - CXX=g++-5 ./configure
   - make
 script:
   - make check
