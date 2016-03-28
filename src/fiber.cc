@@ -43,8 +43,7 @@ void t_context::f_tail(t_scoped* a_stack, size_t a_n)
 void t_context::f_backtrace(const t_value& a_value)
 {
 	auto& fiber = f_as<t_fiber&>(t_fiber::f_current());
-	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, fiber.v_undone, v_lambda, f_pc());
-	fiber.v_undone = 0;
+	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_lambda, f_pc());
 }
 
 const t_value* t_context::f_variable(const std::wstring& a_name) const
@@ -61,11 +60,11 @@ const t_value* t_context::f_variable(const std::wstring& a_name) const
 	return &f_as<const t_scope&>(scope)[index];
 }
 
-void t_backtrace::f_push(const t_value& a_throwable, size_t a_native, const t_scoped& a_lambda, void** a_pc)
+void t_backtrace::f_push(const t_value& a_throwable, const t_scoped& a_lambda, void** a_pc)
 {
 	t_with_lock_for_write lock(a_throwable);
 	auto& p = f_as<t_throwable&>(a_throwable);
-	p.v_backtrace = new t_backtrace(p.v_backtrace, a_native, a_lambda, a_pc);
+	p.v_backtrace = new t_backtrace(p.v_backtrace, a_lambda, a_pc);
 }
 
 void t_backtrace::f_dump() const
@@ -76,7 +75,6 @@ void t_backtrace::f_dump() const
 	} else {
 		std::fputs("at ", stderr);
 	}
-	if (v_native > 0) std::fputs("<native code>\nfrom ", stderr);
 	f_engine()->f_context_print(stderr, v_lambda, f_pc());
 }
 
@@ -107,7 +105,6 @@ void t_fiber::f_run()
 	{
 		t_context context;
 		try {
-			t_native_context context;
 			x = q.v_callable(std::move(x));
 		} catch (const t_scoped& thrown) {
 			q.f_caught(thrown);
@@ -138,8 +135,7 @@ void t_fiber::f_run()
 
 void t_fiber::f_caught(const t_value& a_value, void** a_pc)
 {
-	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_undone, t_context::v_instance->v_lambda, a_pc);
-	v_undone = 0;
+	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, t_context::v_instance->v_lambda, a_pc);
 }
 
 t_type* t_type_of<t_fiber>::f_derive(t_object* a_this)

@@ -64,75 +64,59 @@ t_scoped t_type_of<std::wstring>::f_construct(t_object* a_class, t_scoped* a_sta
 
 void t_type_of<std::wstring>::f_hash(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	a_stack[0].f_construct(f_hash(f_as<const std::wstring&>(a_this)));
-	context.f_done();
 }
 
 size_t t_type_of<std::wstring>::f_add(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_global()->f_as(f_add(f_as<const std::wstring&>(a_this), a0)));
-	context.f_done();
 	return -1;
 }
 
 size_t t_type_of<std::wstring>::f_less(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const std::wstring&>(a_this) < f_as<const std::wstring&>(a0));
-	context.f_done();
 	return -1;
 }
 
 size_t t_type_of<std::wstring>::f_less_equal(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const std::wstring&>(a_this) <= f_as<const std::wstring&>(a0));
-	context.f_done();
 	return -1;
 }
 
 size_t t_type_of<std::wstring>::f_greater(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const std::wstring&>(a_this) > f_as<const std::wstring&>(a0));
-	context.f_done();
 	return -1;
 }
 
 size_t t_type_of<std::wstring>::f_greater_equal(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
 	f_check<std::wstring>(a0, L"argument0");
 	a_stack[0].f_construct(f_as<const std::wstring&>(a_this) >= f_as<const std::wstring&>(a0));
-	context.f_done();
 	return -1;
 }
 
 size_t t_type_of<std::wstring>::f_equals(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_equals(f_as<const std::wstring&>(a_this), a0));
-	context.f_done();
 	return -1;
 }
 
 size_t t_type_of<std::wstring>::f_not_equals(t_object* a_this, t_scoped* a_stack)
 {
-	t_native_context context;
 	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(f_not_equals(f_as<const std::wstring&>(a_this), a0));
-	context.f_done();
 	return -1;
 }
 

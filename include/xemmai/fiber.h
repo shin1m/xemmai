@@ -17,7 +17,6 @@ struct t_context
 
 	t_context* v_next;
 	t_scoped* v_base;
-	size_t v_native = 0;
 	t_scoped v_lambda;
 	t_scoped v_scope;
 
@@ -59,13 +58,12 @@ struct t_context
 
 struct t_backtrace
 {
-	static void f_push(const t_value& a_throwable, size_t a_native, const t_scoped& a_lambda, void** a_pc);
+	static void f_push(const t_value& a_throwable, const t_scoped& a_lambda, void** a_pc);
 
 	t_backtrace* v_next;
-	size_t v_native;
 	t_slot v_lambda;
 
-	t_backtrace(t_backtrace* a_next, size_t a_native, const t_scoped& a_lambda, void** a_pc) : v_next(a_next), v_native(a_native), v_lambda(a_lambda)
+	t_backtrace(t_backtrace* a_next, const t_scoped& a_lambda, void** a_pc) : v_next(a_next), v_lambda(a_lambda)
 	{
 		*reinterpret_cast<void***>(&v_lambda.v_pointer) = a_pc;
 	}
@@ -92,7 +90,6 @@ struct t_fiber
 	t_slot v_callable;
 	t_stack v_stack;
 	t_context* v_context = nullptr;
-	size_t v_undone = 0;
 	bool v_throw = false;
 	bool v_main;
 	bool v_active;

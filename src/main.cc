@@ -154,7 +154,6 @@ class t_debugger : public xemmai::t_debugger
 	void f_print_contexts(t_context* a_context, t_context* a_current)
 	{
 		for (; a_context; a_context = a_context->v_next) {
-			if (a_context->v_native > 0) std::fputs("<native code>\n", v_out);
 			if (a_context == a_current) std::fputs("* ", v_out);
 			f_print(a_context);
 		}

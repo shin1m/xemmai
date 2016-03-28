@@ -361,27 +361,6 @@ inline void t_context::f_terminate()
 	fiber.v_context = nullptr;
 }
 
-class t_native_context
-{
-	size_t& v_native;
-	bool v_done = false;
-
-public:
-	t_native_context() : v_native(f_context()->v_native)
-	{
-		++v_native;
-	}
-	~t_native_context()
-	{
-		--v_native;
-		if (!v_done) ++f_as<t_fiber&>(t_fiber::f_current()).v_undone;
-	}
-	void f_done()
-	{
-		v_done = true;
-	}
-};
-
 inline t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
 {
 	return f_engine()->v_dictionary__entry__pool.f_allocate();

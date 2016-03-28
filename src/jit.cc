@@ -390,7 +390,6 @@ struct t_engine_jit
 		v_type_context->setBody(
 			type_context_pointer,
 			type_value_pointer,
-			type_size_t,
 			v_type_value,
 			v_type_value,
 			nullptr
@@ -820,9 +819,9 @@ std::fprintf(stderr, "DONE.\n");
 		v_stack = CreateCall(v_globals.v_stack);
 		v_context = a_function->arg_begin();
 		v_base = CreateLoad(CreateStructGEP(f_type_context(), v_context, 1));
-		v_lambda = f_as(f_type_lambda(), f_value__p(CreateStructGEP(f_type_context(), v_context, 3)));
+		v_lambda = f_as(f_type_lambda(), f_value__p(CreateStructGEP(f_type_context(), v_context, 2)));
 		v_instructions = CreatePointerCast(CreateLoad(CreateStructGEP(f_type_lambda(), v_lambda, 9)), f_type_pc());
-		auto scope = CreateStructGEP(f_type_context(), v_context, 4);
+		auto scope = CreateStructGEP(f_type_context(), v_context, 3);
 		v_scope = f_value__p(scope);
 		v_pc = CreatePointerCast(CreateStructGEP(f_type_value(), scope, 1), llvm::PointerType::getUnqual(f_type_pc()));
 	}
@@ -1189,7 +1188,7 @@ std::fprintf(stderr, "DONE.\n");
 		f_value__destruct(f_base(-1));
 		for (size_t i = 0; i < v_code.v_privates; ++i) f_value__destruct(f_base(i));
 		auto used = CreateStructGEP(f_type_stack(), v_stack, 3);
-		auto lambda = CreateStructGEP(f_type_context(), v_context, 3);
+		auto lambda = CreateStructGEP(f_type_context(), v_context, 2);
 		auto previous = CreateStructGEP(f_type_value(), lambda, 1);
 		previous = CreateLoad(CreatePointerCast(previous, llvm::PointerType::getUnqual(llvm::PointerType::getUnqual(f_type_value()))));
 		CreateStore(previous, used);

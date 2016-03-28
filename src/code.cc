@@ -182,7 +182,6 @@ XEMMAI__PORTABLE__NOINLINE void t_code::f_method_bind(t_scoped* a_stack)
 size_t t_code::f_expand(t_scoped* a_stack, size_t a_n)
 {
 	assert(a_n > 0);
-	t_native_context context;
 	a_stack += a_n + 1;
 	t_scoped x = std::move(a_stack[0]);
 	size_t n;

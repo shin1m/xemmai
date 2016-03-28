@@ -1039,7 +1039,6 @@ intptr_t t_fiber::f_main(T_main a_main)
 	intptr_t n = -1;
 	t_context context;
 	try {
-		t_native_context context;
 		try {
 			a_main();
 			n = 0;
