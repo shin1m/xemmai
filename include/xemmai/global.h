@@ -1079,15 +1079,14 @@ XEMMAI__PORTABLE__NOINLINE size_t t_code::f_operator(t_context& a_context, t_sco
 	return n;
 }
 
-inline size_t t_code::f_loop(t_object* a_lambda, t_scoped* a_stack)
+inline size_t t_code::f_loop(t_object* a_lambda, t_lambda& a_as_lambda, t_scoped* a_stack)
 {
-	t_context context(a_lambda, a_stack);
+	t_context context(a_lambda, a_as_lambda, a_stack);
 	try {
-		auto& lambda = f_as<t_lambda&>(a_lambda);
 #ifdef XEMMAI_ENABLE_JIT
-		return lambda.v_jit_loop(&context);
+		return a_as_lambda.v_jit_loop(&context);
 #else
-		context.f_pc() = lambda.v_instructions;
+		context.f_pc() = a_as_lambda.v_instructions;
 		return f_loop(&context);
 #endif
 	} catch (const t_scoped& thrown) {

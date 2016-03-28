@@ -56,7 +56,7 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	t_scoped lambda = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), a_code);
 	t_scoped_stack stack(2);
 	stack[1].f_construct_nonnull(a_this);
-	t_code::f_loop(lambda, stack);
+	t_code::f_loop(lambda, f_as<t_lambda&>(lambda), stack);
 }
 
 t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path)

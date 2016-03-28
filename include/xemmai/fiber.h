@@ -21,14 +21,13 @@ struct t_context
 	t_scoped v_scope;
 
 	t_context();
-	t_context(t_object* a_lambda, t_scoped* a_stack) : v_next(v_instance), v_base(a_stack + 2)
+	t_context(t_object* a_lambda, t_lambda& a_as_lambda, t_scoped* a_stack) : v_next(v_instance), v_base(a_stack + 2)
 	{
 		v_lambda.f_construct_nonnull(a_lambda);
 		t_stack* stack = f_stack();
 		f_previous() = stack->v_used;
-		auto& lambda = f_as<t_lambda&>(a_lambda);
-		stack->f_allocate(v_base + lambda.v_size);
-		if (lambda.v_shared) v_scope.f_construct_nonnull(t_scope::f_instantiate(lambda.v_shareds, t_scoped(lambda.v_scope)));
+		stack->f_allocate(v_base + a_as_lambda.v_size);
+		if (a_as_lambda.v_shared) v_scope.f_construct_nonnull(t_scope::f_instantiate(a_as_lambda.v_shareds, t_scoped(a_as_lambda.v_scope)));
 		v_instance = this;
 	}
 	~t_context()

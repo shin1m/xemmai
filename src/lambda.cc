@@ -39,7 +39,7 @@ size_t t_type_of<t_lambda>::f_call(t_object* a_this, t_scoped* a_stack, size_t a
 {
 	auto& p = f_as<t_lambda&>(a_this);
 	if (a_n != p.v_arguments) t_throwable::f_throw(L"invalid number of arguments.");
-	return t_code::f_loop(a_this, a_stack);
+	return t_code::f_loop(a_this, p, a_stack);
 }
 
 size_t t_type_of<t_lambda>::f_get_at(t_object* a_this, t_scoped* a_stack)
@@ -98,7 +98,7 @@ size_t t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_scoped* a_stack,
 		for (size_t i = 0; i < n; ++i) t1[i].f_construct(std::move(t0[i]));
 		t0[0].f_construct(std::move(x));
 	}
-	return t_code::f_loop(a_this, a_stack);
+	return t_code::f_loop(a_this, p, a_stack);
 }
 
 }
