@@ -13,6 +13,7 @@ class t_lambda
 	friend struct t_code;
 	friend struct t_context;
 	friend struct t_type_of<t_lambda>;
+	friend struct t_module;
 
 protected:
 	t_slot v_scope;
@@ -62,9 +63,9 @@ struct t_type_of<t_lambda> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
-	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
-	virtual size_t f_get_at(t_object* a_this, t_scoped* a_stack);
+	virtual void f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
+	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
 };
 
 class t_advanced_lambda : public t_lambda
@@ -84,7 +85,7 @@ class t_advanced_lambda : public t_lambda
 	~t_advanced_lambda() = default;
 
 public:
-	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code, t_scoped* a_stack);
+	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code, t_stacked* a_stack);
 };
 
 template<>
@@ -93,7 +94,7 @@ struct t_type_of<t_advanced_lambda> : t_type_of<t_lambda>
 	using t_type_of<t_lambda>::t_type_of;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 };
 
 }

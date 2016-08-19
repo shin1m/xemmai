@@ -491,12 +491,12 @@ public:
 	{
 		return f_type_as_type()->f_remove(this, a_key);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_scoped* a_stack, size_t a_n)
+	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_stacked* a_stack, size_t a_n)
 	{
 		return f_type_as_type()->f_call(this, a_stack, a_n);
 	}
-	void f_get_owned(t_object* a_key, t_scoped* a_stack);
-	void f_get(t_object* a_key, t_scoped* a_stack);
+	void f_get_owned(t_object* a_key, t_stacked* a_stack);
+	void f_get(t_object* a_key, t_stacked* a_stack);
 };
 
 }

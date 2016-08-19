@@ -1,6 +1,7 @@
 #ifndef XEMMAI__CODE_H
 #define XEMMAI__CODE_H
 
+#include <set>
 #include <vector>
 
 #include "scope.h"
@@ -44,6 +45,8 @@ enum t_instruction
 	e_instruction__METHOD_GET_MEGAMORPHIC,
 	e_instruction__METHOD_BIND,
 	e_instruction__GLOBAL_GET,
+	e_instruction__STACK_LET,
+	e_instruction__STACK_LET_CLEAR,
 	e_instruction__STACK_GET,
 	e_instruction__STACK_PUT,
 	e_instruction__STACK_PUT_CLEAR,
@@ -219,17 +222,27 @@ struct t_code
 		e_try__RETURN,
 		e_try__THROW
 	};
+	struct t_stack_map
+	{
+		size_t v_address;
+		const std::vector<bool>* v_pattern;
 
-	static void f_object_get(t_scoped* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
-	static void f_object_put(t_scoped* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
-	static void f_object_put_clear(t_scoped* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
-	static void f_method_get(t_scoped* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
-	static void f_method_bind(t_scoped* a_stack);
-	static size_t f_expand(t_scoped* a_stack, size_t a_n);
-	template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-	static void f_operator(t_object* a_this, t_scoped* a_stack);
-	template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-	static size_t f_operator(t_context& a_context, t_scoped* a_base, t_object* a_this, t_scoped* a_stack);
+		bool operator<(const t_stack_map& a_other) const
+		{
+			return v_address < a_other.v_address;
+		}
+	};
+
+	static void f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
+	static void f_object_put(t_stacked* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
+	static void f_object_put_clear(t_stacked* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
+	static void f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
+	static void f_method_bind(t_stacked* a_stack);
+	static size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n);
+	template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+	static void f_operator(t_object* a_this, t_stacked* a_stack);
+	template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+	static size_t f_operator(t_context& a_context, t_stacked* a_base, t_object* a_this, t_stacked* a_stack);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static const void** v_labels;
@@ -245,12 +258,12 @@ struct t_code
 	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_context* a_context);
 #endif
 	static void f_try(t_context* a_context);
-	static size_t f_loop(t_object* a_lambda, t_lambda& a_as_lambda, t_scoped* a_stack);
+	static size_t f_loop(t_context* a_context, t_lambda& a_lambda);
 #ifdef XEMMAI_ENABLE_JIT
 	static size_t f_jit_loop_nojit(t_context* a_context);
-	static t_try f_jit_try(t_context* a_context, t_scoped* a_stack, t_try (*a_try)(t_context*), t_try (*a_catch)(t_context*, const t_scoped&), void (*a_finally)(t_context*));
-	static bool f_jit_catch_stack(t_context* a_context, t_scoped* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
-	static bool f_jit_catch_scope(t_context* a_context, t_scoped* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
+	static t_try f_jit_try(t_context* a_context, t_stacked* a_stack, t_try (*a_try)(t_context*), t_try (*a_catch)(t_context*, const t_scoped&), void (*a_finally)(t_context*));
+	static bool f_jit_catch_stack(t_context* a_context, t_stacked* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
+	static bool f_jit_catch_scope(t_context* a_context, t_stacked* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
 #endif
 	static t_scoped f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 
@@ -264,6 +277,8 @@ struct t_code
 	size_t v_minimum;
 	std::vector<void*> v_instructions;
 	std::vector<t_address_at> v_ats;
+	std::set<std::vector<bool>> v_stack_patterns;
+	std::vector<t_stack_map> v_stack_map;
 	std::map<std::wstring, t_variable> v_variables;
 #ifdef XEMMAI_ENABLE_JIT
 	size_t (*v_jit_loop)(t_context*);
@@ -278,6 +293,13 @@ struct t_code
 	{
 		v_ats.push_back(t_address_at(a_address, a_at));
 	}
+	const std::vector<bool>& f_stack_map(void** a_address) const;
+	void f_stack_map(int a_offset, const std::vector<bool>& a_pattern)
+	{
+		v_stack_map.push_back(t_stack_map{f_last() + a_offset, &*v_stack_patterns.insert(a_pattern).first});
+	}
+	void f_stack_clear(void** a_address, t_stacked* a_base) const;
+	void f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_stack) const;
 	size_t f_last() const
 	{
 		return v_instructions.size();
@@ -366,7 +388,7 @@ struct t_type_of<t_code> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
+	virtual void f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n);
 };
 
 }

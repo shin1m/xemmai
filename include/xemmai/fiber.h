@@ -16,18 +16,23 @@ struct t_context
 	static XEMMAI__PORTABLE__THREAD t_context* v_instance;
 
 	t_context* v_next;
-	t_scoped* v_base;
+	t_stacked* v_base;
 	t_scoped v_lambda;
 	t_scoped v_scope;
 
 	t_context();
-	t_context(t_object* a_lambda, t_lambda& a_as_lambda, t_scoped* a_stack) : v_next(v_instance), v_base(a_stack + 2)
+	t_context(t_object* a_lambda, t_stacked* a_stack, size_t a_size) : v_next(v_instance), v_base(a_stack + 2), v_lambda(*a_lambda)
 	{
-		v_lambda.f_construct_nonnull(a_lambda);
 		t_stack* stack = f_stack();
 		f_previous() = stack->v_used;
-		stack->f_allocate(v_base + a_as_lambda.v_size);
-		if (a_as_lambda.v_shared) v_scope.f_construct_nonnull(t_scope::f_instantiate(a_as_lambda.v_shareds, t_scoped(a_as_lambda.v_scope)));
+		stack->v_used = v_base + a_size;
+		v_instance = this;
+	}
+	t_context(t_object* a_lambda, t_stacked* a_stack, size_t a_size, size_t a_shareds, const t_slot& a_scope) : v_next(v_instance), v_base(a_stack + 2), v_lambda(*a_lambda), v_scope(t_scope::f_instantiate(a_shareds, t_scoped(a_scope)))
+	{
+		t_stack* stack = f_stack();
+		f_previous() = stack->v_used;
+		stack->v_used = v_base + a_size;
 		v_instance = this;
 	}
 	~t_context()
@@ -42,11 +47,11 @@ struct t_context
 		for (size_t i = 0; i < n; ++i) v_base[i].f_destruct();
 		f_stack()->v_used = f_previous();
 	}
-	void f_tail(t_scoped* a_stack, size_t a_n);
+	void f_tail(t_stacked* a_stack, size_t a_n);
 	void f_backtrace(const t_value& a_value);
-	t_scoped*& f_previous()
+	t_stacked*& f_previous()
 	{
-		return *reinterpret_cast<t_scoped**>(&v_lambda.v_pointer);
+		return *reinterpret_cast<t_stacked**>(&v_lambda.v_pointer);
 	}
 	void**& f_pc()
 	{
@@ -89,11 +94,12 @@ struct t_fiber
 	t_slot v_callable;
 	t_stack v_stack;
 	t_context* v_context = nullptr;
+	void** v_caught = nullptr;
 	bool v_throw = false;
 	bool v_main;
 	bool v_active;
-	t_scoped* v_used;
-	t_scoped* v_return;
+	t_stacked* v_used;
+	t_stacked* v_return;
 	portable::t_fiber v_fiber;
 
 	t_fiber(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active) : v_callable(std::move(a_callable)), v_stack(a_stack), v_main(a_main), v_active(a_active), v_used(v_stack.v_used), v_fiber(v_main)
@@ -109,8 +115,8 @@ struct t_type_of<t_fiber> : t_type
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n);
-	virtual size_t f_call(t_object* a_this, t_scoped* a_stack, size_t a_n);
+	virtual void f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 };
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT

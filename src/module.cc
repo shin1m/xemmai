@@ -56,7 +56,10 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	t_scoped lambda = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), a_code);
 	t_scoped_stack stack(2);
 	stack[1].f_construct_nonnull(a_this);
-	t_code::f_loop(lambda, f_as<t_lambda&>(lambda), stack);
+	auto& p = f_as<t_lambda&>(lambda);
+	t_context context(lambda, stack, p.v_size, p.v_shareds, p.v_scope);
+	t_code::f_loop(&context, p);
+	stack.f_return();
 }
 
 t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path)
@@ -210,12 +213,12 @@ void t_type_of<t_module>::f_finalize(t_object* a_this)
 	delete &f_as<t_module&>(a_this);
 }
 
-void t_type_of<t_module>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
+void t_type_of<t_module>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
-	t_scoped a0 = std::move(a_stack[2]);
-	f_check<std::wstring>(a0, L"argument0");
-	a_stack[0].f_construct(t_module::f_instantiate(f_as<const std::wstring&>(a0)));
+	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
+	t_destruct<> a0(a_stack[2]);
+	f_check<std::wstring>(a0.v_p, L"argument0");
+	a_stack[0].f_construct(t_module::f_instantiate(f_as<const std::wstring&>(a0.v_p)));
 }
 
 }

@@ -154,26 +154,31 @@ void t_type_of<t_dictionary::t_table>::f_finalize(t_object* a_this)
 	delete &f_as<t_dictionary::t_table&>(a_this);
 }
 
-void t_type_of<t_dictionary::t_table>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
+void t_type_of<t_dictionary::t_table>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	t_throwable::f_throw(L"uninstantiatable.");
+	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
-void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_scoped* a_stack, size_t a_n)
+void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_stacked* a_stack, size_t a_n)
 {
-	t_scoped self = std::move(a_stack[1]);
-	if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-	t_scoped p = t_object::f_allocate(self);
+	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");
+	t_scoped p = t_object::f_allocate(a_stack[1]);
+	a_stack[1].f_destruct();
 	t_dictionary* dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
 		t_scoped x = std::move(a_stack[i]);
-		if (++i > a_n) {
+		if (++i >= a_n) {
 			dictionary->f_put(x, t_value());
 			break;
 		}
-		dictionary->f_put(x, std::move(a_stack[i]));
+		try {
+			dictionary->f_put(x, t_scoped(std::move(a_stack[i])));
+		} catch (...) {
+			while (++i < a_n) a_stack[i].f_destruct();
+			throw;
+		}
 	}
 	a_stack[0].f_construct(std::move(p));
 }
@@ -319,56 +324,56 @@ void t_type_of<t_dictionary>::f_finalize(t_object* a_this)
 	delete &f_as<t_dictionary&>(a_this);
 }
 
-t_scoped t_type_of<t_dictionary>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
+t_scoped t_type_of<t_dictionary>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
 	t_scoped p = t_object::f_allocate(a_class);
 	t_dictionary* dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
-		t_scoped x = std::move(a_stack[i]);
-		if (++i > a_n) {
+		const auto& x = a_stack[i];
+		if (++i >= a_n) {
 			dictionary->f_put(x, t_value());
 			break;
 		}
-		dictionary->f_put(x, std::move(a_stack[i]));
+		dictionary->f_put(x, t_scoped(a_stack[i]));
 	}
 	return p;
 }
 
-void t_type_of<t_dictionary>::f_hash(t_object* a_this, t_scoped* a_stack)
+void t_type_of<t_dictionary>::f_hash(t_object* a_this, t_stacked* a_stack)
 {
 	a_stack[0].f_construct(f_hash(t_value(a_this)));
 }
 
-size_t t_type_of<t_dictionary>::f_get_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_dictionary>::f_get_at(t_object* a_this, t_stacked* a_stack)
 {
-	t_scoped a0 = std::move(a_stack[2]);
+	t_destruct<> a0(a_stack[2]);
 	t_with_lock_for_read lock(a_this);
-	a_stack[0].f_construct(f_as<const t_dictionary&>(a_this).f_get(a0));
+	a_stack[0].f_construct(f_as<const t_dictionary&>(a_this).f_get(a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_dictionary>::f_set_at(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_dictionary>::f_set_at(t_object* a_this, t_stacked* a_stack)
 {
-	t_scoped a0 = std::move(a_stack[2]);
+	t_destruct<> a0(a_stack[2]);
 	t_scoped a1 = std::move(a_stack[3]);
 	t_with_lock_for_write lock(a_this);
-	a_stack[0].f_construct(f_as<t_dictionary&>(a_this).f_put(a0, std::move(a1)));
+	a_stack[0].f_construct(f_as<t_dictionary&>(a_this).f_put(a0.v_p, std::move(a1)));
 	return -1;
 }
 
-size_t t_type_of<t_dictionary>::f_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_dictionary>::f_equals(t_object* a_this, t_stacked* a_stack)
 {
-	t_scoped a0 = std::move(a_stack[2]);
-	a_stack[0].f_construct(f_equals(a_this, a0));
+	t_destruct<> a0(a_stack[2]);
+	a_stack[0].f_construct(f_equals(a_this, a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_dictionary>::f_not_equals(t_object* a_this, t_scoped* a_stack)
+size_t t_type_of<t_dictionary>::f_not_equals(t_object* a_this, t_stacked* a_stack)
 {
-	t_scoped a0 = std::move(a_stack[2]);
-	a_stack[0].f_construct(f_not_equals(a_this, a0));
+	t_destruct<> a0(a_stack[2]);
+	a_stack[0].f_construct(f_not_equals(a_this, a0.v_p));
 	return -1;
 }
 

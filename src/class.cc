@@ -30,9 +30,9 @@ void t_class::f_finalize(t_object* a_this)
 	delete &f_as<t_type&>(a_this);
 }
 
-void t_class::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
+void t_class::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n > 1) t_throwable::f_throw(L"must be called with or without an argument.");
+	if (a_n > 1) t_throwable::f_throw(a_stack, a_n, L"must be called with or without an argument.");
 	t_scoped x;
 	if (a_n > 0) {
 		x = std::move(a_stack[2]);
@@ -103,13 +103,13 @@ t_scoped t_class::f_remove(t_object* a_this, t_object* a_key)
 	return value;
 }
 
-size_t t_class::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_class::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
 	f_as<t_type&>(a_this).f_instantiate(a_this, a_stack, a_n);
 	return -1;
 }
 
-size_t t_class::f_send(t_object* a_this, t_scoped* a_stack)
+size_t t_class::f_send(t_object* a_this, t_stacked* a_stack)
 {
 	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[1].f_construct_nonnull(a_this);

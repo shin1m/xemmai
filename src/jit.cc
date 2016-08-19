@@ -41,34 +41,34 @@ void f_throw_value(const t_scoped& a_value)
 	throw a_value;
 }
 
-void f_lambda(t_scoped* a_stack, t_object* a_scope, t_object* a_code)
+void f_lambda(t_stacked* a_stack, t_object* a_scope, t_object* a_code)
 {
 	a_stack[0].f_construct(t_lambda::f_instantiate(t_scoped(a_scope), t_scoped(a_code)));
 }
 
-void f_advanced_lambda(t_scoped* a_stack, t_object* a_scope, t_object* a_code)
+void f_advanced_lambda(t_stacked* a_stack, t_object* a_scope, t_object* a_code)
 {
 	a_stack[0].f_construct(t_advanced_lambda::f_instantiate(t_scoped(a_scope), t_scoped(a_code), a_stack));
 }
 
-void f_throw_move(t_scoped* a_stack)
+void f_throw_move(t_stacked* a_stack)
 {
 	throw t_scoped(std::move(a_stack[0]));
 }
 
-void f_object_get(t_scoped* a_stack, t_object* a_key)
+void f_object_get(t_stacked* a_stack, t_object* a_key)
 {
 	t_scoped& top = a_stack[0];
 	top = top.f_get(a_key);
 }
 
-void f_method_get(t_scoped* a_stack, t_object* a_key)
+void f_method_get(t_stacked* a_stack, t_object* a_key)
 {
 	t_scoped top = std::move(a_stack[0]);
 	top.f_get(a_key, a_stack);
 }
 
-void f_object_put(t_scoped* a_stack, t_object* a_key)
+void f_object_put(t_stacked* a_stack, t_object* a_key)
 {
 	t_scoped& top = a_stack[0];
 	t_scoped& value = a_stack[1];
@@ -76,7 +76,7 @@ void f_object_put(t_scoped* a_stack, t_object* a_key)
 	top = std::move(value);
 }
 
-void f_object_put_clear(t_scoped* a_stack, t_object* a_key)
+void f_object_put_clear(t_stacked* a_stack, t_object* a_key)
 {
 	t_scoped& top = a_stack[0];
 	t_scoped& value = a_stack[1];
@@ -84,7 +84,7 @@ void f_object_put_clear(t_scoped* a_stack, t_object* a_key)
 	top.f_destruct();
 }
 
-void f_object_put_indirect(t_scoped* a_stack)
+void f_object_put_indirect(t_stacked* a_stack)
 {
 	t_scoped& top = a_stack[0];
 	t_scoped& key = a_stack[1];
@@ -94,19 +94,19 @@ void f_object_put_indirect(t_scoped* a_stack)
 	top = std::move(value);
 }
 
-void f_object_has(t_scoped* a_stack, t_object* a_key)
+void f_object_has(t_stacked* a_stack, t_object* a_key)
 {
 	t_scoped& top = a_stack[0];
 	top = top.f_has(a_key);
 }
 
-void f_object_remove(t_scoped* a_stack, t_object* a_key)
+void f_object_remove(t_stacked* a_stack, t_object* a_key)
 {
 	t_scoped& top = a_stack[0];
 	top = top.f_remove(a_key);
 }
 
-void f_method_bind(t_scoped* a_stack)
+void f_method_bind(t_stacked* a_stack)
 {
 	if (a_stack[0].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_object* p = a_stack[0];
@@ -116,65 +116,65 @@ void f_method_bind(t_scoped* a_stack)
 		t_code::f_method_bind(a_stack);
 }
 
-void f_global_get(t_scoped* a_stack, t_object* a_key)
+void f_global_get(t_stacked* a_stack, t_object* a_key)
 {
 	a_stack[0] = f_engine()->f_module_global()->f_get(a_key);
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-void f_operator(const t_value& a_this, t_scoped* a_stack)
+void f_operator(const t_value& a_this, t_stacked* a_stack)
 {
 	t_code::f_operator<A_function>(a_this, a_stack);
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-void f_operator_move(t_scoped&& a_this, t_scoped* a_stack)
+void f_operator_move(t_scoped&& a_this, t_stacked* a_stack)
 {
 	t_scoped x = std::move(a_this);
 	t_code::f_operator<A_function>(x, a_stack);
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-size_t f_operator_tail(t_context* a_context, t_scoped* a_base, const t_value& a_this, t_scoped* a_stack)
+size_t f_operator_tail(t_context* a_context, t_scoped* a_base, const t_value& a_this, t_stacked* a_stack)
 {
 	return t_code::f_operator<A_function>(*a_context, a_base, a_this, a_stack);
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-size_t f_operator_tail_move(t_context* a_context, t_scoped* a_base, t_scoped&& a_this, t_scoped* a_stack)
+size_t f_operator_tail_move(t_context* a_context, t_scoped* a_base, t_scoped&& a_this, t_stacked* a_stack)
 {
 	t_scoped x = std::move(a_this);
 	return t_code::f_operator<A_function>(*a_context, a_base, x, a_stack);
 }
 
-void f_call(t_scoped* a_stack, size_t a_n)
+void f_call(t_stacked* a_stack, size_t a_n)
 {
 	t_scoped x = std::move(a_stack[0]);
 	x.f_call(a_stack, a_n);
 }
 
-void f_get_at(t_scoped* a_stack)
+void f_get_at(t_stacked* a_stack)
 {
 	if (a_stack[1].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_scoped x = std::move(a_stack[1]);
 	t_code::f_operator<&t_type::f_get_at>(x, a_stack);
 }
 
-size_t f_get_at_tail(t_context* a_context, t_scoped* a_base, t_scoped* a_stack)
+size_t f_get_at_tail(t_context* a_context, t_scoped* a_base, t_stacked* a_stack)
 {
 	if (a_stack[1].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_scoped x = std::move(a_stack[1]);
 	return t_code::f_operator<&t_type::f_get_at>(*a_context, a_base, x, a_stack);
 }
 
-void f_set_at(t_scoped* a_stack)
+void f_set_at(t_stacked* a_stack)
 {
 	if (a_stack[1].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_scoped x = std::move(a_stack[1]);
 	t_code::f_operator<&t_type::f_set_at>(x, a_stack);
 }
 
-size_t f_set_at_tail(t_context* a_context, t_scoped* a_base, t_scoped* a_stack)
+size_t f_set_at_tail(t_context* a_context, t_scoped* a_base, t_stacked* a_stack)
 {
 	if (a_stack[1].f_tag() < t_value::e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_scoped x = std::move(a_stack[1]);
@@ -496,7 +496,7 @@ size_t t_code::f_jit_loop_nojit(t_context* a_context)
 	return f_loop(a_context);
 }
 
-t_code::t_try t_code::f_jit_try(t_context* a_context, t_scoped* a_stack, t_try (*a_try)(t_context*), t_try (*a_catch)(t_context*, const t_scoped&), void (*a_finally)(t_context*))
+t_code::t_try t_code::f_jit_try(t_context* a_context, t_stacked* a_stack, t_try (*a_try)(t_context*), t_try (*a_catch)(t_context*, const t_scoped&), void (*a_finally)(t_context*))
 {
 	t_try try0;
 	try {
@@ -534,7 +534,7 @@ t_code::t_try t_code::f_jit_try(t_context* a_context, t_scoped* a_stack, t_try (
 	return try0;
 }
 
-bool t_code::f_jit_catch_stack(t_context* a_context, t_scoped* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index)
+bool t_code::f_jit_catch_stack(t_context* a_context, t_stacked* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index)
 {
 	t_scoped type = std::move(a_stack[0]);
 	if (a_thrown == f_engine()->v_fiber_exit || !a_thrown.f_is(type)) return false;
@@ -543,7 +543,7 @@ bool t_code::f_jit_catch_stack(t_context* a_context, t_scoped* a_stack, const t_
 	return true;
 }
 
-bool t_code::f_jit_catch_scope(t_context* a_context, t_scoped* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index)
+bool t_code::f_jit_catch_scope(t_context* a_context, t_stacked* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index)
 {
 	t_scoped type = std::move(a_stack[0]);
 	if (a_thrown == f_engine()->v_fiber_exit || !a_thrown.f_is(type)) return false;

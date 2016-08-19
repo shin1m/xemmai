@@ -569,13 +569,13 @@ inline t_scoped t_value::f_remove(t_object* a_key) const
 	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_scoped* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_stacked* a_stack, size_t a_n) const
 {
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	return v_p->f_call_without_loop(a_stack, a_n);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_loop(t_scoped* a_stack, size_t a_n)
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
 {
 	while (a_n != size_t(-1)) {
 		t_scoped x = std::move(a_stack[0]);
@@ -583,14 +583,14 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_loop(t_scoped* a_stack, s
 	}
 }
 
-inline void t_value::f_call(t_object* a_key, t_scoped* a_stack, size_t a_n) const
+inline void t_value::f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const
 {
 	if (f_tag() >= e_tag__OBJECT && v_p->f_owned()) {
 		intptr_t index = v_p->f_field_index(a_key);
 		if (index < 0) {
 			t_scoped value = v_p->f_type()->f_get(a_key);
 			if (value.f_type() == f_global()->f_type<t_method>()) {
-				a_stack[1].f_construct_nonnull(v_p);
+				a_stack[1] = *v_p;
 				f_as<t_method&>(value).f_function().f_call(a_stack, a_n);
 			} else {
 				value.f_call(a_stack, a_n);
@@ -603,7 +603,7 @@ inline void t_value::f_call(t_object* a_key, t_scoped* a_stack, size_t a_n) cons
 	}
 }
 
-inline void t_object::f_get_owned(t_object* a_key, t_scoped* a_stack)
+inline void t_object::f_get_owned(t_object* a_key, t_stacked* a_stack)
 {
 	intptr_t index = f_field_index(a_key);
 	if (index < 0) {
@@ -621,7 +621,7 @@ inline void t_object::f_get_owned(t_object* a_key, t_scoped* a_stack)
 	}
 }
 
-inline void t_object::f_get(t_object* a_key, t_scoped* a_stack)
+inline void t_object::f_get(t_object* a_key, t_stacked* a_stack)
 {
 	if (f_owned()) {
 		f_get_owned(a_key, a_stack);
@@ -631,7 +631,7 @@ inline void t_object::f_get(t_object* a_key, t_scoped* a_stack)
 	}
 }
 
-inline void t_value::f_get(t_object* a_key, t_scoped* a_stack) const
+inline void t_value::f_get(t_object* a_key, t_stacked* a_stack) const
 {
 	if (f_tag() >= e_tag__OBJECT && v_p->f_owned()) {
 		v_p->f_get_owned(a_key, a_stack);
@@ -641,7 +641,7 @@ inline void t_value::f_get(t_object* a_key, t_scoped* a_stack) const
 	}
 }
 
-inline t_scoped t_value::f_call_with_same(t_scoped* a_stack, size_t a_n) const
+inline t_scoped t_value::f_call_with_same(t_stacked* a_stack, size_t a_n) const
 {
 	size_t n = a_n + 2;
 	t_scoped_stack stack(n);
@@ -1060,14 +1060,14 @@ intptr_t t_fiber::f_main(T_main a_main)
 	return n;
 }
 
-template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-XEMMAI__PORTABLE__NOINLINE void t_code::f_operator(t_object* a_this, t_scoped* a_stack)
+template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+XEMMAI__PORTABLE__NOINLINE void t_code::f_operator(t_object* a_this, t_stacked* a_stack)
 {
 	t_value::f_loop(a_stack, (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack));
 }
 
-template<size_t (t_type::*A_function)(t_object*, t_scoped*)>
-XEMMAI__PORTABLE__NOINLINE size_t t_code::f_operator(t_context& a_context, t_scoped* a_base, t_object* a_this, t_scoped* a_stack)
+template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+XEMMAI__PORTABLE__NOINLINE size_t t_code::f_operator(t_context& a_context, t_stacked* a_base, t_object* a_this, t_stacked* a_stack)
 {
 	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack);
 	if (n == size_t(-1)) {
@@ -1079,22 +1079,21 @@ XEMMAI__PORTABLE__NOINLINE size_t t_code::f_operator(t_context& a_context, t_sco
 	return n;
 }
 
-inline size_t t_code::f_loop(t_object* a_lambda, t_lambda& a_as_lambda, t_scoped* a_stack)
+inline size_t t_code::f_loop(t_context* a_context, t_lambda& a_lambda)
 {
-	t_context context(a_lambda, a_as_lambda, a_stack);
 	try {
 #ifdef XEMMAI_ENABLE_JIT
-		return a_as_lambda.v_jit_loop(&context);
+		return a_lambda.v_jit_loop(a_context);
 #else
-		context.f_pc() = a_as_lambda.v_instructions;
-		return f_loop(&context);
+		a_context->f_pc() = a_lambda.v_instructions;
+		return f_loop(a_context);
 #endif
 	} catch (const t_scoped& thrown) {
-		context.f_backtrace(thrown);
+		a_context->f_backtrace(thrown);
 		throw thrown;
 	} catch (...) {
 		t_scoped thrown = t_throwable::f_instantiate(L"<unknown>.");
-		context.f_backtrace(thrown);
+		a_context->f_backtrace(thrown);
 		throw thrown;
 	}
 }

@@ -22,9 +22,9 @@ t_type* t_type_of<bool>::f_derive(t_object* a_this)
 	return nullptr;
 }
 
-void t_type_of<bool>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
+void t_type_of<bool>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	t_throwable::f_throw(L"uninstantiatable.");
+	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
 }

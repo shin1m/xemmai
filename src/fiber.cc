@@ -29,21 +29,22 @@ void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_pos
 
 XEMMAI__PORTABLE__THREAD t_context* t_context::v_instance;
 
-void t_context::f_tail(t_scoped* a_stack, size_t a_n)
+void t_context::f_tail(t_stacked* a_stack, size_t a_n)
 {
-	f_stack()->v_used = std::max(f_previous(), v_base + a_n);
-	v_base[-2] = std::move(*a_stack++);
-	v_base[-1] = std::move(*a_stack++);
-	size_t i = 0;
-	for (; i < a_n; ++i) v_base[i] = std::move(a_stack[i]);
 	size_t n = f_as<t_lambda&>(v_lambda).v_privates;
-	for (; i < n; ++i) v_base[i].f_destruct();
+	v_base[-1].f_destruct();
+	for (size_t i = 0; i < n; ++i) v_base[i].f_destruct();
+	f_stack()->v_used = std::max(f_previous(), v_base + a_n);
+	v_base[-2].f_construct(std::move(*a_stack++));
+	v_base[-1].f_construct(std::move(*a_stack++));
+	for (size_t i = 0; i < a_n; ++i) v_base[i].f_construct(std::move(a_stack[i]));
 }
 
 void t_context::f_backtrace(const t_value& a_value)
 {
-	auto& fiber = f_as<t_fiber&>(t_fiber::f_current());
+	f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code).f_stack_clear(f_pc(), v_base);
 	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_lambda, f_pc());
+	f_stack()->v_used = f_previous();
 }
 
 const t_value* t_context::f_variable(const std::wstring& a_name) const
@@ -129,7 +130,6 @@ void t_fiber::f_run()
 	t_context::v_instance = p.v_context;
 	p.v_throw = b;
 	p.v_return->f_construct(std::move(x));
-	x.f_destruct();
 	p.v_fiber.f_set();
 }
 
@@ -153,22 +153,23 @@ void t_type_of<t_fiber>::f_finalize(t_object* a_this)
 	delete &f_as<t_fiber&>(a_this);
 }
 
-void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
+void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1 && a_n != 2) t_throwable::f_throw(L"must be called with 1 or 2 argument(s).");
+	if (a_n != 1 && a_n != 2) t_throwable::f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");
 	t_scoped a0 = std::move(a_stack[2]);
 	size_t size = f_engine()->v_stack_size;
 	if (a_n == 2) {
-		t_scoped a1 = std::move(a_stack[3]);
-		f_check<size_t>(a1, L"argument1");
-		size = f_as<size_t>(a1);
+		t_destruct<> a1(a_stack[3]);
+		f_check<size_t>(a1.v_p, L"argument1");
+		size = f_as<size_t>(a1.v_p);
 	}
 	a_stack[0].f_construct(t_fiber::f_instantiate(std::move(a0), size));
 }
 
-size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
+	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
+	t_scoped x = std::move(a_stack[2]);
 	auto& p = f_as<t_fiber&>(a_this);
 	auto& thread = f_as<t_thread&>(t_thread::v_current);
 	auto& q = f_as<t_fiber&>(thread.v_active);
@@ -178,7 +179,6 @@ size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_
 		if (p.v_active) t_throwable::f_throw(L"already active.");
 		p.v_active = true;
 	}
-	t_scoped x = std::move(a_stack[2]);
 	q.v_context = t_context::v_instance;
 	q.v_used = q.v_stack.v_used;
 	q.v_return = a_stack;
@@ -188,9 +188,9 @@ size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_scoped* a_stack, size_t a_
 		t_context::v_instance = p.v_context;
 		p.v_return->f_construct(std::move(x));
 	} else {
-		t_scoped* head = p.v_stack.f_head();
-		p.v_stack.f_allocate(head + 1);
-		*head = std::move(x);
+		t_stacked* head = p.v_stack.f_head();
+		p.v_stack.v_used = head + 1;
+		head->f_construct(std::move(x));
 		p.v_fiber.f_make(t_fiber::f_run);
 	}
 	q.v_active = false;

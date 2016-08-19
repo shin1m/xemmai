@@ -16,10 +16,11 @@ bool t_type::f_derives(t_object* a_this, t_object* a_type)
 	return false;
 }
 
-void t_type::f_initialize(t_object* a_module, t_scoped* a_stack, size_t a_n)
+void t_type::f_initialize(t_object* a_module, t_stacked* a_stack, size_t a_n)
 {
 	a_n += 2;
 	for (size_t i = 1; i < a_n; ++i) a_stack[i].f_destruct();
+	a_stack[0].f_construct();
 }
 
 void t_type::f_own(const t_value& a_self)
@@ -60,14 +61,21 @@ void t_type::f_finalize(t_object* a_this)
 {
 }
 
-t_scoped t_type::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
+t_scoped t_type::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
 	return t_object::f_allocate(a_class);
 }
 
-void t_type::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
+void t_type::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	t_scoped object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
+	t_scoped object;
+	try {
+		object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
+	} catch (...) {
+		(++a_stack)->f_destruct();
+		for (size_t i = 0; i < a_n; ++i) (++a_stack)->f_destruct();
+		throw;
+	}
 	object.f_call(f_global()->f_symbol_initialize(), a_stack, a_n);
 	a_stack[0] = std::move(object);
 }
@@ -168,153 +176,61 @@ t_scoped t_type::f_remove(t_object* a_this, t_object* a_key)
 	}
 }
 
-void t_type::f_hash(t_object* a_this, t_scoped* a_stack)
+void t_type::f_hash(t_object* a_this, t_stacked* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_hash()).f_call(a_stack, 0);
+	a_this->f_get(f_global()->f_symbol_hash(), a_stack);
+	t_scoped x = std::move(a_stack[0]);
+	x.f_call(a_stack, 0);
 }
 
-size_t t_type::f_call(t_object* a_this, t_scoped* a_stack, size_t a_n)
+size_t t_type::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
-	return a_this->f_get(f_global()->f_symbol_call()).f_call_without_loop(a_stack, a_n);
+	try {
+		a_this->f_get(f_global()->f_symbol_call(), a_stack);
+	} catch (...) {
+		a_n += 2;
+		for (size_t i = 2; i < a_n; ++i) a_stack[i].f_destruct();
+		throw;
+	}
+	t_scoped x = std::move(a_stack[0]);
+	return x.f_call_without_loop(a_stack, a_n);
 }
 
-size_t t_type::f_get_at(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_get_at(), a_stack);
-	return 1;
+#define XEMMAI__TYPE__METHOD(a_method, a_n)\
+size_t t_type::f_##a_method(t_object* a_this, t_stacked* a_stack)\
+{\
+	try {\
+		a_this->f_get(f_global()->f_symbol_##a_method(), a_stack);\
+		return a_n;\
+	} catch (...) {\
+		for (size_t i = 2; i < a_n + 2; ++i) a_stack[i].f_destruct();\
+		throw;\
+	}\
 }
 
-size_t t_type::f_set_at(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_set_at(), a_stack);
-	return 2;
-}
-
-size_t t_type::f_plus(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_plus(), a_stack);
-	return 0;
-}
-
-size_t t_type::f_minus(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_minus(), a_stack);
-	return 0;
-}
-
-size_t t_type::f_not(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_not(), a_stack);
-	return 0;
-}
-
-size_t t_type::f_complement(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_complement(), a_stack);
-	return 0;
-}
-
-size_t t_type::f_multiply(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_multiply(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_divide(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_divide(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_modulus(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_modulus(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_add(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_add(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_subtract(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_subtract(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_left_shift(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_left_shift(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_right_shift(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_right_shift(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_less(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_less(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_less_equal(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_less_equal(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_greater(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_greater(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_greater_equal(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_greater_equal(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_equals(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_equals(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_not_equals(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_not_equals(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_and(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_and(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_xor(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_xor(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_or(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_or(), a_stack);
-	return 1;
-}
-
-size_t t_type::f_send(t_object* a_this, t_scoped* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_send(), a_stack);
-	return 1;
-}
+XEMMAI__TYPE__METHOD(get_at, 1)
+XEMMAI__TYPE__METHOD(set_at, 2)
+XEMMAI__TYPE__METHOD(plus, 0)
+XEMMAI__TYPE__METHOD(minus, 0)
+XEMMAI__TYPE__METHOD(not, 0)
+XEMMAI__TYPE__METHOD(complement, 0)
+XEMMAI__TYPE__METHOD(multiply, 1)
+XEMMAI__TYPE__METHOD(divide, 1)
+XEMMAI__TYPE__METHOD(modulus, 1)
+XEMMAI__TYPE__METHOD(add, 1)
+XEMMAI__TYPE__METHOD(subtract, 1)
+XEMMAI__TYPE__METHOD(left_shift, 1)
+XEMMAI__TYPE__METHOD(right_shift, 1)
+XEMMAI__TYPE__METHOD(less, 1)
+XEMMAI__TYPE__METHOD(less_equal, 1)
+XEMMAI__TYPE__METHOD(greater, 1)
+XEMMAI__TYPE__METHOD(greater_equal, 1)
+XEMMAI__TYPE__METHOD(equals, 1)
+XEMMAI__TYPE__METHOD(not_equals, 1)
+XEMMAI__TYPE__METHOD(and, 1)
+XEMMAI__TYPE__METHOD(xor, 1)
+XEMMAI__TYPE__METHOD(or, 1)
+XEMMAI__TYPE__METHOD(send, 1)
 
 void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name)
 {

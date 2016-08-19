@@ -420,7 +420,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		p.v_throw = true;
 		p.v_return->f_construct(v_fiber_exit);
 		p.v_fiber.f_swap(fiber.v_fiber);
-		*fiber.v_return = nullptr;
+		fiber.v_return->f_destruct();
 	}
 	if (v_debugger) {
 		f_debug_safe_region_leave(lock);

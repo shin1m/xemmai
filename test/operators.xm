@@ -111,3 +111,9 @@ assert(a + 10000 == "zero"
 
 f = @(x) x + x
 assert(f("x") == "xx"
+
+try
+	null["x"]
+	assert(false
+catch Throwable e
+	e.dump(

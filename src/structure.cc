@@ -73,9 +73,9 @@ void t_type_of<t_structure>::f_finalize(t_object* a_this)
 	f_engine()->v_structure__finalizing = &p;
 }
 
-void t_type_of<t_structure>::f_instantiate(t_object* a_class, t_scoped* a_stack, size_t a_n)
+void t_type_of<t_structure>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	t_throwable::f_throw(L"uninstantiatable.");
+	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
 }

@@ -20,7 +20,7 @@ struct t_type_of<std::mutex> : t_type
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
 };
 
 template<>
@@ -40,7 +40,7 @@ struct t_type_of<std::condition_variable> : t_type
 	}
 	virtual t_type* f_derive(t_object* a_this);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
 };
 
 class t_threading : public t_extension
@@ -123,7 +123,7 @@ void t_type_of<std::mutex>::f_finalize(t_object* a_this)
 	delete &f_as<std::mutex&>(a_this);
 }
 
-t_scoped t_type_of<std::mutex>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
+t_scoped t_type_of<std::mutex>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<std::mutex>::f_do(a_class, a_stack, a_n);
 }
@@ -184,7 +184,7 @@ void t_type_of<std::condition_variable>::f_finalize(t_object* a_this)
 	delete &f_as<std::condition_variable&>(a_this);
 }
 
-t_scoped t_type_of<std::condition_variable>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
+t_scoped t_type_of<std::condition_variable>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<std::condition_variable>::f_do(a_class, a_stack, a_n);
 }
