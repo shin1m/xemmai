@@ -1681,7 +1681,7 @@ const std::vector<bool>& t_code::f_stack_map(void** a_address) const
 void t_code::f_stack_clear(void** a_address, t_stacked* a_base) const
 {
 	auto& map = f_stack_map(a_address);
-	for (size_t i = 0; i < v_privates; ++i) a_base++->f_destruct();
+	for (size_t i = 0; i < v_arguments; ++i) a_base++->f_destruct();
 	for (bool x : map) {
 		if (x) a_base->f_destruct();
 		++a_base;
@@ -1691,7 +1691,7 @@ void t_code::f_stack_clear(void** a_address, t_stacked* a_base) const
 void t_code::f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_stack) const
 {
 	auto& map = f_stack_map(a_address);
-	for (size_t i = a_stack - a_base - v_privates; i < map.size(); ++i) {
+	for (size_t i = a_stack - a_base - v_arguments; i < map.size(); ++i) {
 		if (map[i]) a_stack->f_destruct();
 		++a_stack;
 	}

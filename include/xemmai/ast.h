@@ -17,6 +17,34 @@ struct t_jit_generator;
 namespace ast
 {
 
+struct t_block
+{
+	t_block* v_queue = nullptr;
+	std::vector<size_t> v_defines;
+	std::vector<bool> v_uses;
+	std::vector<t_block*> v_nexts;
+
+	bool f_merge(const std::vector<bool>& a_uses);
+};
+
+struct t_flow
+{
+	struct t_targets
+	{
+		t_block* v_break;
+		t_block* v_continue;
+		t_block* v_return;
+	};
+
+	size_t v_arguments;
+	t_targets* v_targets;
+	t_block* v_current;
+	t_block* v_queue = nullptr;
+
+	void f_queue(t_block* a_block);
+	void operator()(t_block* a_block);
+};
+
 struct t_operand
 {
 	enum t_tag
@@ -66,6 +94,7 @@ public:
 	{
 	}
 	virtual ~t_node() = default;
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear = false) = 0;
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear = false) = 0;
@@ -83,6 +112,8 @@ struct t_scope
 	std::map<t_object*, t_code::t_variable> v_variables;
 	std::vector<t_code::t_variable*> v_privates;
 	size_t v_shareds = 0;
+	t_block v_block_block;
+	t_block v_junction;
 
 	t_scope(t_scope* a_outer) : v_outer(a_outer)
 	{
@@ -101,6 +132,7 @@ struct t_lambda : t_node, t_scope
 	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer)
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	void f_jit_generate(t_generator& a_generator, t_code& a_code);
@@ -111,13 +143,18 @@ struct t_lambda : t_node, t_scope
 
 struct t_if : t_node
 {
-	std::unique_ptr<t_node> v_expression;
+	std::unique_ptr<t_node> v_condition;
 	std::vector<std::unique_ptr<t_node>> v_true;
 	std::vector<std::unique_ptr<t_node>> v_false;
+	t_block v_block_true;
+	t_block v_block_false;
+	t_block v_junction;
+	t_block v_block_exit;
 
-	t_if(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
+	t_if(const t_at& a_at, std::unique_ptr<t_node>&& a_condition) : t_node(a_at), v_condition(std::move(a_condition))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -126,12 +163,18 @@ struct t_if : t_node
 
 struct t_while : t_node
 {
-	std::unique_ptr<t_node> v_expression;
+	std::unique_ptr<t_node> v_condition;
 	std::vector<std::unique_ptr<t_node>> v_block;
+	t_block v_junction_condition;
+	t_block v_block_condition;
+	t_block v_block_block;
+	t_block v_junction_exit;
+	t_block v_block_exit;
 
-	t_while(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
+	t_while(const t_at& a_at, std::unique_ptr<t_node>&& a_condition) : t_node(a_at), v_condition(std::move(a_condition))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -144,8 +187,16 @@ struct t_for : t_node
 	std::unique_ptr<t_node> v_condition;
 	std::vector<std::unique_ptr<t_node>> v_next;
 	std::vector<std::unique_ptr<t_node>> v_block;
+	t_block v_junction_condition;
+	t_block v_block_condition;
+	t_block v_block_block;
+	t_block v_junction_next;
+	t_block v_block_next;
+	t_block v_junction_exit;
+	t_block v_block_exit;
 
 	using t_node::t_node;
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -155,10 +206,12 @@ struct t_for : t_node
 struct t_break : t_node
 {
 	std::unique_ptr<t_node> v_expression;
+	t_block v_block_dummy;
 
 	t_break(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -167,7 +220,10 @@ struct t_break : t_node
 
 struct t_continue : t_node
 {
+	t_block v_block_dummy;
+
 	using t_node::t_node;
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -177,10 +233,12 @@ struct t_continue : t_node
 struct t_return : t_node
 {
 	std::unique_ptr<t_node> v_expression;
+	t_block v_block_dummy;
 
 	t_return(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -194,6 +252,8 @@ struct t_try : t_node
 		std::unique_ptr<t_node> v_expression;
 		const t_code::t_variable& v_variable;
 		std::vector<std::unique_ptr<t_node>> v_block;
+		t_block v_block_expression;
+		t_block v_block_block;
 
 		t_catch(std::unique_ptr<t_node>&& a_expression, const t_code::t_variable& a_variable) : v_expression(std::move(a_expression)), v_variable(a_variable)
 		{
@@ -203,8 +263,14 @@ struct t_try : t_node
 	std::vector<std::unique_ptr<t_node>> v_block;
 	std::vector<std::unique_ptr<t_catch>> v_catches;
 	std::vector<std::unique_ptr<t_node>> v_finally;
+	t_block v_junction_try;
+	t_block v_block_try;
+	t_block v_junction_finally;
+	t_block v_block_finally;
+	t_block v_block_exit;
 
 	using t_node::t_node;
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	void* f_jit_try(t_jit_generator& a_generator, size_t a_stack, bool a_clear);
@@ -221,6 +287,7 @@ struct t_throw : t_node
 	t_throw(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -235,6 +302,7 @@ struct t_object_get : t_node
 	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 	void f_method(t_generator& a_generator);
 #ifdef XEMMAI_ENABLE_JIT
@@ -251,6 +319,7 @@ struct t_object_get_indirect : t_node
 	t_object_get_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -266,6 +335,7 @@ struct t_object_put : t_node
 	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key), v_value(std::move(a_value))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -281,6 +351,7 @@ struct t_object_put_indirect : t_node
 	t_object_put_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key)), v_value(std::move(a_value))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -295,6 +366,7 @@ struct t_object_has : t_node
 	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -309,6 +381,7 @@ struct t_object_has_indirect : t_node
 	t_object_has_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -323,6 +396,7 @@ struct t_object_remove : t_node
 	t_object_remove(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -337,6 +411,7 @@ struct t_object_remove_indirect : t_node
 	t_object_remove_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -366,11 +441,11 @@ struct t_scope_put : t_node
 	size_t v_outer;
 	const t_code::t_variable& v_variable;
 	std::unique_ptr<t_node> v_value;
-	bool v_let = false;
 
 	t_scope_put(const t_at& a_at, size_t a_outer, const t_code::t_variable& a_variable, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_outer(a_outer), v_variable(a_variable), v_value(std::move(a_value))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -397,6 +472,7 @@ struct t_class : t_node
 	t_class(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -410,6 +486,7 @@ struct t_super : t_node
 	t_super(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -485,6 +562,7 @@ struct t_unary : t_node
 	t_unary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_instruction(a_instruction), v_expression(std::move(a_expression))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -500,6 +578,7 @@ struct t_binary : t_node
 	t_binary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_left, std::unique_ptr<t_node>&& a_right) : t_node(a_at), v_instruction(a_instruction), v_left(std::move(a_left)), v_right(std::move(a_right))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -515,6 +594,7 @@ struct t_call : t_node
 	t_call(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target)), v_expand(false)
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -529,6 +609,7 @@ struct t_get_at : t_node
 	t_get_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index) : t_node(a_at), v_target(std::move(a_target)), v_index(std::move(a_index))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 	void f_bind(t_generator& a_generator);
 #ifdef XEMMAI_ENABLE_JIT
@@ -546,6 +627,7 @@ struct t_set_at : t_node
 	t_set_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_index(std::move(a_index)), v_value(std::move(a_value))
 	{
 	}
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
 	virtual t_operand f_generate(t_jit_generator& a_generator, size_t a_stack, bool a_tail, bool a_operand, bool a_clear);
@@ -559,10 +641,13 @@ struct t_generator
 	struct t_targets
 	{
 		t_code::t_label* v_break;
+		ast::t_block* v_break_junction;
 		bool v_break_is_tail;
 		bool v_break_must_clear;
 		t_code::t_label* v_continue;
+		ast::t_block* v_continue_junction;
 		t_code::t_label* v_return;
+		ast::t_block* v_return_junction;
 		bool v_return_is_tail;
 	};
 
@@ -570,6 +655,7 @@ struct t_generator
 	std::map<std::pair<size_t, void**>, size_t>* v_safe_points;
 	ast::t_scope* v_scope;
 	t_code* v_code;
+	size_t v_arguments;
 	std::vector<bool>* v_stack;
 	std::deque<t_code::t_label>* v_labels;
 	t_targets* v_targets;
@@ -594,7 +680,7 @@ struct t_generator
 	}
 	size_t f_stack() const
 	{
-		return v_scope->v_privates.size() + v_stack->size();
+		return v_arguments + v_stack->size();
 	}
 	t_generator& f_push(bool a_live)
 	{
@@ -640,12 +726,21 @@ struct t_generator
 		f_pop();
 		*this << e_instruction__CLEAR << f_stack();
 	}
+	void f_emit_null()
+	{
+		(*this << e_instruction__NUL << f_stack()).f_push(false);
+	}
 	void f_emit_safe_point(ast::t_node* a_node)
 	{
 		if (!v_safe_points) return;
 		v_safe_positions->push_back(std::make_tuple(a_node->v_at.f_line(), v_code->f_last(), a_node->v_at.f_column()));
 		*this << e_instruction__SAFE_POINT;
 		f_at(a_node);
+	}
+	void f_join(const ast::t_block& a_junction);
+	void f_merge(const ast::t_block& a_junction)
+	{
+		std::copy(a_junction.v_uses.begin(), a_junction.v_uses.end(), v_stack->begin());
 	}
 };
 
