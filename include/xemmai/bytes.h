@@ -14,9 +14,7 @@ class t_bytes
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
-		char* p = new char[a_size + a_n];
-		*reinterpret_cast<size_t*>(p) = a_n;
-		return p;
+		return new char[a_size + a_n];
 	}
 	void operator delete(void* a_p)
 	{
@@ -26,7 +24,7 @@ class t_bytes
 	{
 		delete[] static_cast<char*>(a_p);
 	}
-	t_bytes()
+	t_bytes(size_t a_size) : v_size(a_size)
 	{
 	}
 	~t_bytes() = default;

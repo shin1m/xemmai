@@ -28,7 +28,7 @@ void t_bytes::f_validate(intptr_t& a_index, size_t a_size) const
 t_scoped t_bytes::f_instantiate(size_t a_size)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_bytes>());
-	object.f_pointer__(new(a_size) t_bytes());
+	object.f_pointer__(new(a_size) t_bytes(a_size));
 	return object;
 }
 
@@ -73,7 +73,8 @@ void t_type_of<t_bytes>::f__construct(t_object* a_module, t_scoped* a_stack, siz
 	t_scoped a0 = std::move(a_stack[2]);
 	f_check<size_t>(a0, L"argument0");
 	t_scoped p = t_object::f_allocate(self);
-	p.f_pointer__(new(f_as<size_t>(a0)) t_bytes());
+	size_t n = f_as<size_t>(a0);
+	p.f_pointer__(new(n) t_bytes(n));
 	a_stack[0].f_construct(std::move(p));
 }
 
@@ -120,7 +121,8 @@ t_scoped t_type_of<t_bytes>::f_construct(t_object* a_class, t_scoped* a_stack, s
 	t_scoped a0 = std::move(a_stack[2]);
 	f_check<size_t>(a0, L"argument0");
 	t_scoped p = t_object::f_allocate(a_class);
-	p.f_pointer__(new(f_as<size_t>(a0)) t_bytes());
+	size_t n = f_as<size_t>(a0);
+	p.f_pointer__(new(n) t_bytes(n));
 	return p;
 }
 

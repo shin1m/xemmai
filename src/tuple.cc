@@ -9,7 +9,7 @@ namespace xemmai
 t_scoped t_tuple::f_instantiate(size_t a_size)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_tuple>());
-	object.f_pointer__(new(a_size) t_tuple());
+	object.f_pointer__(new(a_size) t_tuple(a_size));
 	return object;
 }
 
@@ -114,7 +114,7 @@ void t_type_of<t_tuple>::f__construct(t_object* a_module, t_scoped* a_stack, siz
 	t_scoped self = std::move(a_stack[1]);
 	if (self.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	t_scoped p = t_object::f_allocate(self);
-	t_tuple* tuple = new(a_n) t_tuple();
+	t_tuple* tuple = new(a_n) t_tuple(a_n);
 	p.f_pointer__(tuple);
 	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(std::move(a_stack[i + 2]));
 	a_stack[0].f_construct(std::move(p));
@@ -156,7 +156,7 @@ void t_type_of<t_tuple>::f_finalize(t_object* a_this)
 t_scoped t_type_of<t_tuple>::f_construct(t_object* a_class, t_scoped* a_stack, size_t a_n)
 {
 	t_scoped p = t_object::f_allocate(a_class);
-	t_tuple* tuple = new(a_n) t_tuple();
+	t_tuple* tuple = new(a_n) t_tuple(a_n);
 	p.f_pointer__(tuple);
 	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 2]);
 	return p;

@@ -36,9 +36,7 @@ public:
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
-		char* p = new char[a_size + sizeof(t_slot) * a_n];
-		*reinterpret_cast<size_t*>(p) = a_n;
-		return p;
+		return new char[a_size + sizeof(t_slot) * a_n];
 	}
 	void operator delete(void* a_p)
 	{
@@ -49,7 +47,7 @@ public:
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_scope(t_scoped&& a_outer) : v_outer(std::move(a_outer))
+	t_scope(size_t a_size, t_scoped&& a_outer) : v_size(a_size), v_outer(std::move(a_outer))
 	{
 		f_initialize();
 	}

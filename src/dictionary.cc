@@ -16,7 +16,7 @@ const size_t t_dictionary::t_table::v_capacities[] = {
 t_scoped t_dictionary::t_table::f_instantiate(size_t a_rank)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_table>());
-	object.f_pointer__(new(a_rank) t_table());
+	object.f_pointer__(new(a_rank) t_table(a_rank));
 	return object;
 }
 

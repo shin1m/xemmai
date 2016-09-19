@@ -178,12 +178,12 @@ void t_object::f_cyclic_decrement()
 void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 {
 	if (!v_fields) {
-		v_fields = new(4) t_tuple();
+		v_fields = new(4) t_tuple(4);
 		(*v_fields)[0].f_construct(std::move(a_value));
 	} else {
 		size_t index = v_structure->f_size();
 		if (index >= v_fields->f_size()) {
-			auto fields = new(index + 4) t_tuple();
+			auto fields = new(index + 4) t_tuple(index + 4);
 			for (size_t i = 0; i < index; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i]));
 			std::swap(v_fields, fields);
 			t_object::f_allocate(f_global()->f_type<t_tuple>()).f_pointer__(fields);

@@ -45,15 +45,11 @@ private:
 
 		size_t v_rank;
 		size_t v_capacity;
-		size_t v_size;
+		size_t v_size = 0;
 
 		void* operator new(size_t a_size, size_t a_rank)
 		{
-			size_t n = v_capacities[a_rank];
-			char* p = new char[a_size + sizeof(t_entry*) * n];
-			reinterpret_cast<size_t*>(p)[0] = a_rank;
-			reinterpret_cast<size_t*>(p)[1] = n;
-			return p;
+			return new char[a_size + sizeof(t_entry*) * v_capacities[a_rank]];
 		}
 		void operator delete(void* a_p)
 		{
@@ -66,7 +62,7 @@ private:
 
 		static t_scoped f_instantiate(size_t a_rank);
 
-		t_table() : v_size(0)
+		t_table(size_t a_rank) : v_rank(a_rank), v_capacity(v_capacities[v_rank])
 		{
 			t_entry** entries = f_entries();
 			for (size_t i = 0; i < v_capacity; ++i) entries[i] = nullptr;

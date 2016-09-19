@@ -57,9 +57,7 @@ class t_structure
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
-		char* p = new char[a_size + (sizeof(t_slot) + sizeof(t_entry)) * a_n];
-		*reinterpret_cast<size_t*>(p) = a_n;
-		return p;
+		return new char[a_size + (sizeof(t_slot) + sizeof(t_entry)) * a_n];
 	}
 	void operator delete(void* a_p)
 	{
@@ -70,10 +68,10 @@ class t_structure
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_structure(t_scoped&& a_this) : v_this(std::move(a_this))
+	t_structure(t_scoped&& a_this) : v_size(0), v_this(std::move(a_this))
 	{
 	}
-	t_structure(std::map<t_object*, t_object*>::iterator a_iterator, t_scoped&& a_this, t_structure* a_parent) : v_iterator(a_iterator), v_this(std::move(a_this)), v_parent0(a_parent->v_this), v_parent1(a_parent)
+	t_structure(size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_scoped&& a_this, t_structure* a_parent) : v_size(a_size), v_iterator(a_iterator), v_this(std::move(a_this)), v_parent0(a_parent->v_this), v_parent1(a_parent)
 	{
 		t_object* key = v_iterator->first;
 		size_t n = a_parent->v_size;
@@ -142,9 +140,7 @@ class t_tuple
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
-		char* p = new char[a_size + sizeof(t_slot) * a_n];
-		*reinterpret_cast<size_t*>(p) = a_n;
-		return p;
+		return new char[a_size + sizeof(t_slot) * a_n];
 	}
 	void operator delete(void* a_p)
 	{
@@ -155,7 +151,7 @@ class t_tuple
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_tuple()
+	t_tuple(size_t a_size) : v_size(a_size)
 	{
 		t_slot* p = f_entries();
 		for (size_t i = 0; i < v_size; ++i) new(p + i) t_slot();
