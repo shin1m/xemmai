@@ -206,7 +206,6 @@ struct t_for : t_node
 struct t_break : t_node
 {
 	std::unique_ptr<t_node> v_expression;
-	t_block v_block_dummy;
 
 	t_break(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{
@@ -220,8 +219,6 @@ struct t_break : t_node
 
 struct t_continue : t_node
 {
-	t_block v_block_dummy;
-
 	using t_node::t_node;
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
@@ -233,7 +230,6 @@ struct t_continue : t_node
 struct t_return : t_node
 {
 	std::unique_ptr<t_node> v_expression;
-	t_block v_block_dummy;
 
 	t_return(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
 	{

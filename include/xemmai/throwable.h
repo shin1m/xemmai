@@ -22,7 +22,7 @@ public:
 	XEMMAI__PORTABLE__EXPORT static void f_throw [[noreturn]] (const std::wstring& a_message);
 	static void f_throw [[noreturn]] (t_stacked* a_stack, size_t a_n, const std::wstring& a_message)
 	{
-		f_destruct(a_stack, a_n);
+		t_destruct_n(a_stack, a_n);
 		f_throw(a_message);
 	}
 

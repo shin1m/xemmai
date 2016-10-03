@@ -1,0 +1,5 @@
+caught: key not found.
+at .*/dump2\.xmo:1:3
+	\{\}\[""\]\(
+	  \^
+from <fiber>

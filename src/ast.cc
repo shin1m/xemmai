@@ -310,7 +310,6 @@ void t_break::f_flow(t_flow& a_flow)
 {
 	if (v_expression) v_expression->f_flow(a_flow);
 	a_flow.v_current->v_nexts.push_back(a_flow.v_targets->v_break);
-	a_flow.v_current = &v_block_dummy;
 }
 
 t_operand t_break::f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
@@ -329,7 +328,6 @@ t_operand t_break::f_generate(t_generator& a_generator, bool a_tail, bool a_oper
 void t_continue::f_flow(t_flow& a_flow)
 {
 	a_flow.v_current->v_nexts.push_back(a_flow.v_targets->v_continue);
-	a_flow.v_current = &v_block_dummy;
 }
 
 t_operand t_continue::f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
@@ -343,7 +341,6 @@ void t_return::f_flow(t_flow& a_flow)
 {
 	if (v_expression) v_expression->f_flow(a_flow);
 	a_flow.v_current->v_nexts.push_back(a_flow.v_targets->v_return);
-	a_flow.v_current = &v_block_dummy;
 }
 
 t_operand t_return::f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
@@ -367,14 +364,13 @@ void t_try::f_flow(t_flow& a_flow)
 	a_flow.v_targets = &targets1;
 	a_flow.v_current = &v_block_try;
 	for (auto& p : v_block) p->f_flow(a_flow);
-	a_flow.v_targets = targets0;
 	a_flow.v_current->v_nexts.push_back(&v_junction_finally);
 	for (auto& p : v_catches) {
 		a_flow.v_current->v_nexts.push_back(&p->v_block_expression);
 		a_flow.v_current = &p->v_block_expression;
 		p->v_expression->f_flow(a_flow);
 		auto block = a_flow.v_current;
-		a_flow.v_current->v_nexts.push_back(&p->v_block_block);
+		block->v_nexts.push_back(&p->v_block_block);
 		a_flow.v_current = &p->v_block_block;
 		if (!p->v_variable.v_shared) a_flow.v_current->v_defines.push_back(p->v_variable.v_index - a_flow.v_arguments);
 		for (auto& p : p->v_block) p->f_flow(a_flow);
@@ -434,7 +430,12 @@ t_operand t_try::f_generate(t_generator& a_generator, bool a_tail, bool a_operan
 		t_generator::t_targets targets2{nullptr, nullptr, false, false, nullptr, nullptr, nullptr, nullptr, false};
 		a_generator.v_targets = &targets2;
 		f_generate_block_without_value(a_generator, v_finally);
+	}
+	if (a_clear) {
 		a_generator.f_stack_map();
+	} else {
+		bool live = a_generator.v_stack->back();
+		a_generator.f_pop().f_stack_map().f_push(live);
 	}
 	a_generator << e_instruction__YRT;
 	auto operand = [&](t_code::t_label* a_label, t_block* a_junction) -> t_code::t_label*
@@ -675,6 +676,7 @@ t_operand t_symbol_get::f_generate(t_generator& a_generator, bool a_tail, bool a
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
+			a_generator.f_join(*a_generator.v_targets->v_return_junction);
 			a_generator.f_emit_safe_point(this);
 			a_generator << e_instruction__RETURN;
 			a_generator.f_push(false);
@@ -847,7 +849,7 @@ t_operand t_unary::f_generate(t_generator& a_generator, bool a_tail, bool a_oper
 	}
 	size_t instruction = v_instruction;
 	if (a_tail) {
-		if (a_generator.v_targets->v_return_junction) a_generator.f_join(*a_generator.v_targets->v_return_junction);
+		a_generator.f_join(*a_generator.v_targets->v_return_junction);
 		instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	}
 	switch (operand.v_tag) {
@@ -1024,7 +1026,7 @@ t_operand t_binary::f_generate(t_generator& a_generator, bool a_tail, bool a_ope
 		}
 	}
 	if (a_tail) {
-		if (a_generator.v_targets->v_return_junction) a_generator.f_join(*a_generator.v_targets->v_return_junction);
+		a_generator.f_join(*a_generator.v_targets->v_return_junction);
 		instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	}
 	switch (left.v_tag) {
@@ -1126,7 +1128,7 @@ t_operand t_call::f_generate(t_generator& a_generator, bool a_tail, bool a_opera
 	for (size_t i = 0; i < v_arguments.size(); ++i) a_generator.f_pop();
 	a_generator.f_pop().f_pop();
 	if (a_tail) {
-		if (a_generator.v_targets->v_return_junction) a_generator.f_join(*a_generator.v_targets->v_return_junction);
+		a_generator.f_join(*a_generator.v_targets->v_return_junction);
 		instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	}
 	a_generator.f_emit_safe_point(this);
@@ -1150,7 +1152,7 @@ t_operand t_get_at::f_generate(t_generator& a_generator, bool a_tail, bool a_ope
 	a_generator.f_push(false);
 	v_target->f_generate(a_generator, false, false);
 	v_index->f_generate(a_generator, false, false);
-	if (a_tail && a_generator.v_targets->v_return_junction) a_generator.f_join(*a_generator.v_targets->v_return_junction);
+	if (a_tail) a_generator.f_join(*a_generator.v_targets->v_return_junction);
 	a_generator.f_emit_safe_point(this);
 	a_generator << (a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT) << a_generator.f_stack() - 3;
 	a_generator.f_stack_map(-1).f_pop().f_pop().f_pop().f_stack_map().f_push(true);
@@ -1165,7 +1167,7 @@ void t_get_at::f_bind(t_generator& a_generator)
 	v_index->f_generate(a_generator, false, false);
 	a_generator.f_emit_safe_point(this);
 	a_generator << e_instruction__METHOD_BIND << a_generator.f_stack() - 2;
-	a_generator.f_stack_map(-1).f_pop().f_pop().f_stack_map().f_push(true).f_push(true);
+	a_generator.f_stack_map(-1).f_push(true).f_pop().f_pop().f_pop().f_stack_map().f_push(true).f_push(true);
 	a_generator.f_at(this);
 }
 
@@ -1182,7 +1184,7 @@ t_operand t_set_at::f_generate(t_generator& a_generator, bool a_tail, bool a_ope
 	v_target->f_generate(a_generator, false, false);
 	v_index->f_generate(a_generator, false, false);
 	v_value->f_generate(a_generator, false, false);
-	if (a_tail && a_generator.v_targets->v_return_junction) a_generator.f_join(*a_generator.v_targets->v_return_junction);
+	if (a_tail) a_generator.f_join(*a_generator.v_targets->v_return_junction);
 	a_generator.f_emit_safe_point(this);
 	a_generator << (a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT) << a_generator.f_stack() - 4;
 	a_generator.f_stack_map(-1).f_pop().f_pop().f_pop().f_pop().f_stack_map().f_push(true);

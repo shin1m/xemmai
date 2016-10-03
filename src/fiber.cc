@@ -43,7 +43,11 @@ void t_context::f_tail(t_stacked* a_stack, size_t a_n)
 void t_context::f_backtrace(const t_value& a_value)
 {
 	f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code).f_stack_clear(f_pc(), v_base);
-	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, v_lambda, f_pc());
+	if (f_is<t_throwable>(a_value)) {
+		auto& p = f_as<t_fiber&>(t_fiber::f_current());
+		t_backtrace::f_push(a_value, v_lambda, p.v_caught == nullptr ? f_pc() : p.v_caught);
+		p.v_caught = nullptr;
+	}
 	f_stack()->v_used = f_previous();
 }
 

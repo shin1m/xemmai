@@ -72,8 +72,7 @@ void t_type::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 	try {
 		object = f_as<t_type&>(a_class).f_construct(a_class, a_stack, a_n);
 	} catch (...) {
-		(++a_stack)->f_destruct();
-		for (size_t i = 0; i < a_n; ++i) (++a_stack)->f_destruct();
+		t_destruct_n(a_stack, a_n);
 		throw;
 	}
 	object.f_call(f_global()->f_symbol_initialize(), a_stack, a_n);

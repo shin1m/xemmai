@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <condition_variable>
 #include <mutex>
+#include <type_traits>
 
 #include "portable/define.h"
 
@@ -608,12 +609,8 @@ public:
 		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
 		v_boolean = a_value;
 	}
-	void f_construct(intptr_t a_value)
-	{
-		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
-		v_integer = a_value;
-	}
-	void f_construct(size_t a_value)
+	template<typename T>
+	typename std::enable_if<std::is_integral<T>::value>::type f_construct(T a_value)
 	{
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
 		v_integer = a_value;
@@ -734,18 +731,12 @@ public:
 	}
 };
 
-inline void f_destruct(t_stacked* a_stacked, size_t a_n)
-{
-	(++a_stacked)->f_destruct();
-	for (size_t i = 0; i < a_n; ++i) (++a_stacked)->f_destruct();
-}
-
 template<size_t A_N = -1>
 struct t_destruct
 {
 	t_stacked* v_p;
 
-	t_destruct(t_stacked* a_stacked) : v_p(a_stacked)
+	t_destruct(t_stacked* a_stack) : v_p(a_stack)
 	{
 	}
 	~t_destruct()
@@ -765,6 +756,21 @@ struct t_destruct<-1>
 	~t_destruct()
 	{
 		v_p.f_destruct();
+	}
+};
+
+struct t_destruct_n
+{
+	t_stacked* v_p;
+	size_t v_n;
+
+	t_destruct_n(t_stacked* a_stack, size_t a_n) : v_p(a_stack), v_n(a_n)
+	{
+	}
+	~t_destruct_n()
+	{
+		(++v_p)->f_destruct();
+		for (size_t i = 0; i < v_n; ++i) (++v_p)->f_destruct();
 	}
 };
 

@@ -8,6 +8,15 @@ scripts = \
 	field.xm \
 	flow.xm \
 	flow2.xm \
+	flow3.xm \
+	flow4.xm \
+	tail.xm \
+	throw.xm \
+	throw2.xm \
+	throw3.xm \
+	throw4.xm \
+	throw5.xm \
+	throw6.xm \
 	primitives.xm \
 	operators.xm \
 	indent.xm \
@@ -35,7 +44,6 @@ scripts = \
 	psmtp.xm \
 	mandelbrot.xm \
 	fix.xm \
-	tail.xm \
 	time.xm \
 	totp.xm
 TESTS = $(scripts) \
@@ -45,14 +53,18 @@ TESTS = $(scripts) \
 	callback/fiber2.xm \
 	enum/test.xm \
 	hanoi3.xmd \
-	tail2.xmo
+	dump.xmo \
+	dump2.xmo \
+	dump3.xmo
 EXTRA_DIST = $(scripts) \
 	list.xm \
 	run-xmd \
 	run-xmo \
 	hanoi3.xmdi \
 	hanoi3.xmde \
-	tail2.xmoe \
+	dump.xmoe \
+	dump2.xmoe \
+	dump3.xmoe \
 	test.proj
 CLEANFILES = \
 	file.xm.test \
