@@ -9,7 +9,7 @@ AM_LDFLAGS =
 LDADD =
 endif
 AM_CPPFLAGS += -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai-$(VERSION)"
-AM_CXXFLAGS = -std=c++1y
+AM_CXXFLAGS =
 AM_LDFLAGS += -rdynamic
 LDADD += -ldl -lpthread -lrt
 if DEBUG

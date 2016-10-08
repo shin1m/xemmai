@@ -1,6 +1,6 @@
 check_PROGRAMS = enum.so
 AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CXXFLAGS = -std=c++1y -fPIC
+AM_CXXFLAGS = -fPIC
 AM_LDFLAGS = -shared
 if DEBUG
 AM_CXXFLAGS += -g
