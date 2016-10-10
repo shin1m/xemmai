@@ -701,7 +701,44 @@ void t_scope_put::f_flow(t_flow& a_flow)
 
 t_operand t_scope_put::f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_value->f_generate(a_generator, false, false);
+	bool b = false;
+	if (a_clear && !v_variable.v_shared) {
+		int i = v_variable.v_index - a_generator.v_arguments;
+		if (i >= 0 && !(*a_generator.v_stack)[i]) {
+			b = true;
+			auto operand = v_value->f_generate(a_generator, false, true);
+			if (operand.v_tag != t_operand::e_tag__TEMPORARY) {
+				a_generator.f_emit_safe_point(this);
+				(*a_generator.v_stack)[i] = true;
+				switch (operand.v_tag) {
+				case t_operand::e_tag__INTEGER:
+					a_generator << e_instruction__INTEGER << v_variable.v_index << operand.v_integer;
+					break;
+				case t_operand::e_tag__FLOAT:
+					a_generator << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
+					break;
+				case t_operand::e_tag__LITERAL:
+					switch (operand.v_value.f_tag()) {
+					case t_value::e_tag__NULL:
+						a_generator << e_instruction__NUL << v_variable.v_index;
+						break;
+					case t_value::e_tag__BOOLEAN:
+						a_generator << e_instruction__BOOLEAN << v_variable.v_index << operand.v_value.f_boolean();
+						break;
+					default:
+						a_generator << e_instruction__INSTANCE << v_variable.v_index << operand.v_value;
+					}
+					break;
+				case t_operand::e_tag__VARIABLE:
+					a_generator << e_instruction__STACK_LET << operand.v_index << v_variable.v_index;
+					break;
+				}
+				a_generator.f_at(this);
+				return t_operand();
+			}
+		}
+	}
+	if (!b) v_value->f_generate(a_generator, false, false);
 	a_generator.f_emit_safe_point(this);
 	if (v_variable.v_shared) {
 		a_generator << (a_clear ? e_instruction__SCOPE_PUT_CLEAR : e_instruction__SCOPE_PUT) << a_generator.f_stack() - 1 << v_outer;
