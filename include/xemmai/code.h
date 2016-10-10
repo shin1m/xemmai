@@ -316,25 +316,14 @@ struct t_code
 	{
 		v_instructions.push_back(f_p(a_instruction));
 	}
-	void f_operand(size_t a_operand)
+	template<typename T>
+	void f_operand(T a_operand)
 	{
 		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
 	}
 	void f_operand(bool a_operand)
 	{
 		v_instructions.push_back(reinterpret_cast<void*>(a_operand ? 1 : 0));
-	}
-	void f_operand(short a_operand)
-	{
-		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
-	}
-	void f_operand(int a_operand)
-	{
-		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
-	}
-	void f_operand(long a_operand)
-	{
-		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
 	}
 	void f_operand(double a_operand)
 	{
@@ -345,10 +334,6 @@ struct t_code
 		};
 		v0 = a_operand;
 		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_instructions.push_back(v1[i]);
-	}
-	void f_operand(t_object* a_operand)
-	{
-		v_instructions.push_back(a_operand);
 	}
 	void f_operand(const t_value& a_operand)
 	{
