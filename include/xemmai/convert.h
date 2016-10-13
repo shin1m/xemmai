@@ -469,7 +469,7 @@ struct t_overload<>
 		}
 		static t_scoped f_do(t_object* a_class, t_stacked* a_stack, size_t a_n)
 		{
-			t_throwable::f_throw(a_stack, a_n, L"no method matching signature is found.");
+			t_throwable::f_throw(L"no method matching signature is found.");
 		}
 	};
 };
