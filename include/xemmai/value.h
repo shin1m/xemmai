@@ -346,7 +346,8 @@ public:
 	static void f_loop(t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_stacked* a_stack, size_t a_n) const
 	{
-		f_loop(a_stack, f_call_without_loop(a_stack, a_n));
+		size_t n = f_call_without_loop(a_stack, a_n);
+		if (n != size_t(-1)) f_loop(a_stack, n);
 	}
 	void f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const;
 	void f_get(t_object* a_key, t_stacked* a_stack) const;

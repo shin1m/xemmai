@@ -575,12 +575,12 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_sta
 	return v_p->f_call_without_loop(a_stack, a_n);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
+inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
 {
-	while (a_n != size_t(-1)) {
+	do {
 		t_scoped x = std::move(a_stack[0]);
 		a_n = x.f_call_without_loop(a_stack, a_n);
-	}
+	} while (a_n != size_t(-1));
 }
 
 inline void t_value::f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const
@@ -654,14 +654,16 @@ inline t_scoped t_value::f_call_with_same(t_stacked* a_stack, size_t a_n) const
 #define XEMMAI__VALUE__UNARY(a_method)\
 		{\
 			t_scoped_stack stack(2);\
-			f_loop(stack, f_as<t_type&>(v_p->f_type()).a_method(v_p, stack));\
+			size_t n = f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
+			if (n != size_t(-1)) f_loop(stack, n);\
 			return stack.f_return();\
 		}
 #define XEMMAI__VALUE__BINARY(a_method)\
 		{\
 			t_scoped_stack stack(3);\
 			stack[2].f_construct(a_value);\
-			f_loop(stack, f_as<t_type&>(v_p->f_type()).a_method(v_p, stack));\
+			size_t n = f_as<t_type&>(v_p->f_type()).a_method(v_p, stack);\
+			if (n != size_t(-1)) f_loop(stack, n);\
 			return stack.f_return();\
 		}
 
@@ -699,7 +701,8 @@ inline t_scoped t_value::f_get_at(const t_value& a_index) const
 	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
 	t_scoped_stack stack(3);
 	stack[2].f_construct(a_index);
-	f_loop(stack, f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack));
+	size_t n = f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack);
+	if (n != size_t(-1)) f_loop(stack, n);
 	return stack.f_return();
 }
 
@@ -709,7 +712,8 @@ inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value
 	t_scoped_stack stack(4);
 	stack[2].f_construct(a_index);
 	stack[3].f_construct(a_value);
-	f_loop(stack, f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack));
+	size_t n = f_as<t_type&>(v_p->f_type()).f_set_at(v_p, stack);
+	if (n != size_t(-1)) f_loop(stack, n);
 	return stack.f_return();
 }
 
@@ -1061,9 +1065,10 @@ intptr_t t_fiber::f_main(T_main a_main)
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-XEMMAI__PORTABLE__NOINLINE void t_code::f_operator(t_object* a_this, t_stacked* a_stack)
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_code::f_operator(t_object* a_this, t_stacked* a_stack)
 {
-	t_value::f_loop(a_stack, (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack));
+	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack);
+	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_stacked*)>

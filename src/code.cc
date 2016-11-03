@@ -175,7 +175,8 @@ XEMMAI__PORTABLE__NOINLINE void t_code::f_method_bind(t_stacked* a_stack)
 	t_scoped x = std::move(a_stack[0]);
 	a_stack[2].f_construct(std::move(a_stack[1]));
 	t_object* p = static_cast<t_object*>(x);
-	t_value::f_loop(a_stack, f_as<t_type&>(p->f_type()).f_get_at(p, a_stack));
+	size_t n = f_as<t_type&>(p->f_type()).f_get_at(p, a_stack);
+	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
 	a_stack[1].f_construct();
 }
 
