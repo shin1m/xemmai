@@ -80,13 +80,21 @@ void t_object::f_collect()
 	}
 	if (!v_roots) return;
 	{
-		bool b = ++f_engine()->v_collector__skip >= t_engine::V_COLLECTOR__SKIP;
+		auto& pool = f_engine()->v_object__pool;
+		size_t live = pool.f_allocated() - pool.f_freed() - f_engine()->v_object__freed;
+		auto& lower0 = f_engine()->v_object__lower0;
+		if (live < lower0) lower0 = live;
+		auto& lower1 = f_engine()->v_object__lower1;
+		if (live < lower1) lower1 = live;
+		bool b = live - lower1 >= f_engine()->v_collector__threshold1;
 		if (b) {
-			f_engine()->v_collector__skip = 0;
+			lower1 = live;
 			++f_engine()->v_collector__collect;
-		} else if (f_engine()->v_collector__skip % 8 != 0) {
+		} else if (live - lower0 < f_engine()->v_collector__threshold0) {
 			return;
 		}
+		lower0 = live;
+		++f_engine()->v_collector__release;
 		t_object* p = v_roots;
 		while (true) {
 			t_object* q = p->v_next;

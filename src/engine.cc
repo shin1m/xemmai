@@ -164,7 +164,7 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 	--v_debug__safe;
 }
 
-t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_stack_size(a_stack), v_verbose(a_verbose)
+t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_collector__threshold0(1024 * 8), v_collector__threshold1(1024 * 16), v_stack_size(a_stack), v_verbose(a_verbose)
 {
 	v_object__pool.f_grow();
 	t_thread* thread = new t_thread(nullptr);
@@ -324,10 +324,11 @@ t_engine::~t_engine()
 		internal->v_cache_missed = t_thread::v_cache_missed;
 	}
 	f_pools__return();
-	f_collect();
-	f_collect();
-	f_collect();
-	f_collect();
+	v_collector__threshold1 = 0;
+	f_wait();
+	f_wait();
+	f_wait();
+	f_wait();
 	{
 		std::lock_guard<std::mutex> lock(v_collector__mutex);
 		v_collector__running = v_collector__quitting = true;
@@ -372,7 +373,7 @@ t_engine::~t_engine()
 			std::fprintf(stderr, "\tdictionary entry: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed));
 			if (allocated > freed) b = true;
 		}
-		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__collect));
+		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__release), static_cast<uintptr_t>(v_collector__collect));
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
 			std::fprintf(stderr, "\tfield cache: hit = %" PRIuPTR ", missed = %" PRIuPTR ", ratio = %.1f%%\n", static_cast<uintptr_t>(v_thread__cache_hit), static_cast<uintptr_t>(v_thread__cache_missed), base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);

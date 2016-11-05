@@ -69,8 +69,6 @@ class t_engine : public t_value::t_collector
 		void f_run();
 	};
 
-	static const size_t V_COLLECTOR__SKIP = 1024;
-
 	template<typename T, size_t A_size>
 	static void f_return(t_shared_pool<T, A_size>& a_pool)
 	{
@@ -99,8 +97,12 @@ class t_engine : public t_value::t_collector
 		if (++a_freed >= A_size) f_return(a_pool, a_freed);
 	}
 
+	size_t v_collector__threshold0;
+	size_t v_collector__threshold1;
 	t_shared_pool<t_object, 4096> v_object__pool;
 	size_t v_object__freed = 0;
+	size_t v_object__lower0 = 0;
+	size_t v_object__lower1 = 0;
 	t_object* v_object__cycle = nullptr;
 	std::list<t_object*> v_object__cycles;
 	bool v_object__reviving = false;
@@ -203,11 +205,6 @@ class t_engine : public t_value::t_collector
 public:
 	t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments);
 	~t_engine();
-	void f_collect()
-	{
-		v_collector__skip = V_COLLECTOR__SKIP;
-		f_wait();
-	}
 	t_object* f_module_global() const
 	{
 		return v_module_global;

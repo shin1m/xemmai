@@ -61,7 +61,7 @@ public:
 		size_t v_collector__tick = 0;
 		size_t v_collector__wait = 0;
 		size_t v_collector__epoch = 0;
-		size_t v_collector__skip = 0;
+		size_t v_collector__release = 0;
 		size_t v_collector__collect = 0;
 
 		t_collector()
