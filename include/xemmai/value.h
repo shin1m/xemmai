@@ -85,18 +85,13 @@ public:
 		}
 		void f_wait()
 		{
-			{
-				std::unique_lock<std::mutex> lock(v_collector__mutex);
-				++v_collector__wait;
-				if (v_collector__running) {
-					v_collector__done.wait(lock);
-					return;
-				}
+			std::unique_lock<std::mutex> lock(v_collector__mutex);
+			++v_collector__wait;
+			if (!v_collector__running) {
 				v_collector__running = true;
 				v_collector__wake.notify_one();
 			}
-			std::unique_lock<std::mutex> lock(v_collector__mutex);
-			if (v_collector__running) v_collector__done.wait(lock);
+			v_collector__done.wait(lock);
 		}
 	};
 	enum t_tag

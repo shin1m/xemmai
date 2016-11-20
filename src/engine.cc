@@ -71,13 +71,10 @@ void t_engine::f_collector()
 	if (v_verbose) std::fprintf(stderr, "collector starting...\n");
 	while (true) {
 		{
-			std::lock_guard<std::mutex> lock(v_collector__mutex);
+			std::unique_lock<std::mutex> lock(v_collector__mutex);
 			v_collector__running = false;
 			v_collector__done.notify_all();
-		}
-		{
-			std::unique_lock<std::mutex> lock(v_collector__mutex);
-			while (!v_collector__running) v_collector__wake.wait(lock);
+			do v_collector__wake.wait(lock); while (!v_collector__running);
 		}
 		if (v_collector__quitting) {
 			if (v_verbose) std::fprintf(stderr, "collector quitting...\n");
@@ -330,13 +327,10 @@ t_engine::~t_engine()
 	f_wait();
 	f_wait();
 	{
-		std::lock_guard<std::mutex> lock(v_collector__mutex);
+		std::unique_lock<std::mutex> lock(v_collector__mutex);
 		v_collector__running = v_collector__quitting = true;
 		v_collector__wake.notify_one();
-	}
-	{
-		std::unique_lock<std::mutex> lock(v_collector__mutex);
-		while (v_collector__running) v_collector__done.wait(lock);
+		do v_collector__done.wait(lock); while (v_collector__running);
 	}
 	if (v_synchronizers) {
 		do {
