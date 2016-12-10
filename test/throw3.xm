@@ -10,3 +10,15 @@ try
 catch Throwable e
 	print(e
 	e.dump(
+
+(@
+	try
+		(@
+			try
+				(@() "".x)(
+			finally
+		)(
+	catch Throwable e
+		print(e
+		e.dump(
+)(

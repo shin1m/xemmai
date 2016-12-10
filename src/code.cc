@@ -204,10 +204,11 @@ size_t t_code::f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n)
 			f_check<size_t>(size, L"size");
 			n = f_as<size_t>(size);
 			f_allocate(a_stack, n);
-			while (i < n) a_stack[i++].f_construct(x.f_get_at(t_value(i)));
+			for (; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
 		} catch (...) {
-			while (i > 1) a_stack[--i].f_destruct();
-			--a_pc;
+			a_stack -= a_n + 1;
+			i += a_n + 1;
+			while (i > 0) a_stack[--i].f_destruct();
 			throw;
 		}
 	}

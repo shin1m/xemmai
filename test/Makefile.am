@@ -18,6 +18,7 @@ scripts = \
 	throw5.xm \
 	throw6.xm \
 	throw7.xm \
+	throw8.xm \
 	primitives.xm \
 	operators.xm \
 	indent.xm \

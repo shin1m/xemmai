@@ -150,7 +150,7 @@
         ?( xX)
         |x
     CALL_WITH_EXPANSION
-        ?xxX
+        ?(xxX)
         ?( xX)
         |x
     CALL_OUTER
@@ -177,7 +177,7 @@
         ? P
         |x
         --
-        ?(x)
+        ?( x)
         |x
     ##a_name##_II
         ?
@@ -227,7 +227,7 @@
         |xxX
         |
     CALL_WITH_EXPANSION_TAIL
-        ?xxX
+        ?(xxX)
         |
     CALL_OUTER_TAIL
         |  X

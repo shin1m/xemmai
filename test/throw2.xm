@@ -6,3 +6,11 @@ try
 catch Throwable e
 	print(e
 	e.dump(
+
+(@
+	try
+		{}[""](
+	catch Throwable e
+		print(e
+		e.dump(
+)(

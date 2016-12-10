@@ -9,7 +9,7 @@ catch Throwable e
 	print(e
 	e.dump(
 
-f = @()
+(@()
 	try
 		throw Throwable("Hello, World!"
 	catch Throwable e
@@ -17,4 +17,4 @@ f = @()
 		e.dump(
 	finally
 		print("Good bye!"
-f(
+)(
