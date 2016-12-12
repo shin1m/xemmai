@@ -1,7 +1,6 @@
 // TODO
 // * implement inline field caches.
 // * use llvm::Value*s directly.
-// * construct/destruct stack t_scopeds on demand.
 #include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
@@ -576,7 +575,7 @@ uint64_t t_script::f_jit_find(const std::string& a_name)
 	return static_cast<t_jit*>(v_jit)->f_find_unmangled_symbol(a_name).getAddress();
 }
 
-struct t_jit_generator : llvm::IRBuilder<>
+struct t_jit_emit : llvm::IRBuilder<>
 {
 	struct t_operator
 	{
@@ -587,7 +586,7 @@ struct t_jit_generator : llvm::IRBuilder<>
 	};
 	struct t_globals
 	{
-		t_generator& v_generator;
+		t_emit& v_emit;
 		std::unique_ptr<llvm::Module> v_module;
 		std::unique_ptr<llvm::legacy::FunctionPassManager> v_fpm;
 		std::vector<std::pair<t_code&, std::string>> v_codes;
@@ -648,9 +647,9 @@ struct t_jit_generator : llvm::IRBuilder<>
 		llvm::Function* v_set_at_tail;
 		llvm::Function* v_safe_point;
 
-		t_globals(t_generator& a_generator) : v_generator(a_generator), v_module(new llvm::Module(f_name(v_generator.v_module), f_jit()->v_context))
+		t_globals(t_emit& a_emit) : v_emit(a_emit), v_module(new llvm::Module(f_name(v_emit.v_module), f_jit()->v_context))
 		{
-			auto& script = static_cast<t_script&>(xemmai::f_as<t_module&>(v_generator.v_module));
+			auto& script = static_cast<t_script&>(xemmai::f_as<t_module&>(v_emit.v_module));
 			v_module->setDataLayout(static_cast<t_jit*>(script.v_jit)->v_layout);
 			auto module = v_module.get();
 			v_fpm = std::make_unique<llvm::legacy::FunctionPassManager>(module);
@@ -726,7 +725,7 @@ struct t_jit_generator : llvm::IRBuilder<>
 		void f_install()
 		{
 //			v_module->dump();
-			auto& script = static_cast<t_script&>(xemmai::f_as<t_module&>(v_generator.v_module));
+			auto& script = static_cast<t_script&>(xemmai::f_as<t_module&>(v_emit.v_module));
 #ifdef XEMMAI__JIT__DEBUG_PRINT
 std::fprintf(stderr, "ADDING A MODULE...\n");
 #endif
@@ -819,7 +818,7 @@ std::fprintf(stderr, "DONE.\n");
 	std::vector<bool>* v_stack_map;
 	t_targets* v_targets;
 
-	t_jit_generator(llvm::Function* a_function, t_code& a_code, t_globals& a_globals) : llvm::IRBuilder<>(llvm::BasicBlock::Create(f_jit()->v_context, "entry", a_function)), v_code(a_code), v_globals(a_globals)
+	t_jit_emit(llvm::Function* a_function, t_code& a_code, t_globals& a_globals) : llvm::IRBuilder<>(llvm::BasicBlock::Create(f_jit()->v_context, "entry", a_function)), v_code(a_code), v_globals(a_globals)
 	{
 		v_increments.v_f_next = v_globals.v_increments__f_next;
 		v_increments.v_this = CreateCall(v_globals.v_increments);
@@ -1233,18 +1232,18 @@ std::fprintf(stderr, "DONE.\n");
 	{
 		return v_arguments + v_stack_map->size();
 	}
-	t_jit_generator& f_push(bool a_live)
+	t_jit_emit& f_push(bool a_live)
 	{
 		v_stack_map->push_back(a_live);
 		if (f_stack() > v_code.v_size) v_code.v_size = f_stack();
 		return *this;
 	}
-	t_jit_generator& f_pop()
+	t_jit_emit& f_pop()
 	{
 		v_stack_map->pop_back();
 		return *this;
 	}
-	t_jit_generator& f_stack_map(int a_offset = 0)
+	t_jit_emit& f_stack_map(int a_offset = 0)
 	{
 		v_code.f_stack_map(a_offset, *v_stack_map);
 		return *this;
@@ -1675,7 +1674,7 @@ std::fprintf(stderr, "INSTANCE %zd %p\n", f_stack(), static_cast<t_object*>(a_va
 		}
 		return f_object_call(a_operator, a_stack, a_x_operand, a_x, a_tail, a_at);
 	}
-	template<typename T, llvm::Value* (t_jit_generator::*A_operator)(llvm::Value*)>
+	template<typename T, llvm::Value* (t_jit_emit::*A_operator)(llvm::Value*)>
 	llvm::BasicBlock* f_unary(llvm::Value* a_stack, llvm::Value* a_value, llvm::BasicBlock* a_merge, bool a_tail)
 	{
 		auto block = f_block("block");
@@ -1685,7 +1684,7 @@ std::fprintf(stderr, "INSTANCE %zd %p\n", f_stack(), static_cast<t_object*>(a_va
 		f_return_or_jump(f_integer(-1), a_merge, a_tail);
 		return block;
 	}
-	template<llvm::BasicBlock* (t_jit_generator::*A_boolean)(llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_integer)(llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_float)(llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool)>
+	template<llvm::BasicBlock* (t_jit_emit::*A_boolean)(llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_integer)(llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_float)(llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool)>
 	void f_emit_UNARY(const t_operator& a_operator, const ast::t_operand& a_value, bool a_tail, const t_at& a_at)
 	{
 		if (a_value.v_tag == ast::t_operand::e_tag__TEMPORARY) f_pop();
@@ -1749,7 +1748,7 @@ std::fprintf(stderr, "UNARY %zd %zd %d\n", f_stack(), a_value.v_index, a_tail);
 	{
 		return CreateXor(a_value, f_integer(~0));
 	}
-	template<typename T, typename T_x, typename T_y, llvm::Value* (t_jit_generator::*A_operator)(llvm::Value*, llvm::Value*)>
+	template<typename T, typename T_x, typename T_y, llvm::Value* (t_jit_emit::*A_operator)(llvm::Value*, llvm::Value*)>
 	llvm::BasicBlock* f_binary_xy(llvm::Value* a_stack, llvm::Value* a_x, llvm::Value* a_y, llvm::BasicBlock* a_merge, bool a_tail)
 	{
 		auto block = f_block("block");
@@ -1760,7 +1759,7 @@ std::fprintf(stderr, "UNARY %zd %zd %d\n", f_stack(), a_value.v_index, a_tail);
 		f_return_or_jump(f_integer(-1), a_merge, a_tail);
 		return block;
 	}
-	template<typename T, typename T_x, llvm::Value* (t_jit_generator::*A_operator)(llvm::Value*, llvm::Value*), llvm::Value* (t_jit_generator::*A_other)(llvm::Value*, llvm::Value*)>
+	template<typename T, typename T_x, llvm::Value* (t_jit_emit::*A_operator)(llvm::Value*, llvm::Value*), llvm::Value* (t_jit_emit::*A_other)(llvm::Value*, llvm::Value*)>
 	llvm::BasicBlock* f_binary_xo(llvm::Value* a_stack, llvm::Value* a_x, ast::t_operand::t_tag a_y_tag, llvm::Value* a_y, llvm::BasicBlock* a_merge, llvm::BasicBlock* a_throw, bool a_tail)
 	{
 		auto thenbb = f_block("then");
@@ -1792,7 +1791,7 @@ std::fprintf(stderr, "UNARY %zd %zd %d\n", f_stack(), a_value.v_index, a_tail);
 		f_return_or_jump(f_integer(-1), a_merge, a_tail);
 		return block;
 	}
-	template<llvm::BasicBlock* (t_jit_generator::*A_null)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_boolean)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_integer)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_float)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_object)(llvm::Value*, llvm::Value*, ast::t_operand::t_tag, llvm::Value*, llvm::BasicBlock*, llvm::BasicBlock*, bool)>
+	template<llvm::BasicBlock* (t_jit_emit::*A_null)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_boolean)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_integer)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_float)(llvm::Value*, llvm::Value*, llvm::Value*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_object)(llvm::Value*, llvm::Value*, ast::t_operand::t_tag, llvm::Value*, llvm::BasicBlock*, llvm::BasicBlock*, bool)>
 	llvm::BasicBlock* f_binary_x(llvm::Value* a_stack, llvm::Value* a_x, const ast::t_operand& a_y, llvm::BasicBlock* a_merge, llvm::BasicBlock* a_throw, bool a_tail)
 	{
 		switch (a_y.v_tag) {
@@ -1813,7 +1812,7 @@ std::fprintf(stderr, "UNARY %zd %zd %d\n", f_stack(), a_value.v_index, a_tail);
 		s->addCase(f_integer(t_value::e_tag__FLOAT), A_float ? (this->*A_float)(a_stack, a_x, y, a_merge, a_tail) : a_throw);
 		return block;
 	}
-	template<llvm::BasicBlock* (t_jit_generator::*A_null)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_boolean)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_integer)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_generator::*A_float)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, llvm::BasicBlock*, bool)>
+	template<llvm::BasicBlock* (t_jit_emit::*A_null)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_boolean)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_integer)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, llvm::BasicBlock*, bool), llvm::BasicBlock* (t_jit_emit::*A_float)(llvm::Value*, llvm::Value*, const ast::t_operand&, llvm::BasicBlock*, llvm::BasicBlock*, bool)>
 	void f_emit_BINARY(const t_operator& a_operator, const ast::t_operand& a_x, const ast::t_operand& a_y, bool a_tail, const t_at& a_at)
 	{
 		size_t n = 1;
@@ -2340,12 +2339,12 @@ std::fprintf(stderr, "SET AT %zd %d\n", f_stack() - 4, a_tail);
 	}
 	void f_emit_SAFE_POINT(const t_at& a_at)
 	{
-		if (!v_globals.v_generator.v_safe_points) return;
+		if (!v_globals.v_emit.v_safe_points) return;
 #ifdef XEMMAI__JIT__DEBUG_PRINT
 std::fprintf(stderr, "SAFE POINT\n");
 #endif
 		size_t n = v_code.f_last();
-		v_globals.v_generator.v_safe_positions->push_back(std::make_tuple(a_at.f_line(), n, a_at.f_column()));
+		v_globals.v_emit.v_safe_positions->push_back(std::make_tuple(a_at.f_line(), n, a_at.f_column()));
 		f_at(a_at);
 		v_code.v_instructions[n] = v_code.f_p(e_instruction__SAFE_POINT);
 		CreateCall(v_globals.v_safe_point, {v_context});
@@ -2362,66 +2361,66 @@ std::fprintf(stderr, "SAFE POINT\n");
 };
 
 template<>
-inline t_value::t_tag t_jit_generator::f_tag<bool>()
+inline t_value::t_tag t_jit_emit::f_tag<bool>()
 {
 	return t_value::e_tag__BOOLEAN;
 }
 
 template<>
-inline t_value::t_tag t_jit_generator::f_tag<intptr_t>()
+inline t_value::t_tag t_jit_emit::f_tag<intptr_t>()
 {
 	return t_value::e_tag__INTEGER;
 }
 
 template<>
-inline t_value::t_tag t_jit_generator::f_tag<double>()
+inline t_value::t_tag t_jit_emit::f_tag<double>()
 {
 	return t_value::e_tag__FLOAT;
 }
 
 template<>
-inline llvm::Type* t_jit_generator::f_type<bool>()
+inline llvm::Type* t_jit_emit::f_type<bool>()
 {
 	return getInt1Ty();
 }
 
 template<>
-inline llvm::Type* t_jit_generator::f_type<intptr_t>()
+inline llvm::Type* t_jit_emit::f_type<intptr_t>()
 {
 	return getIntNTy(sizeof(intptr_t) * 8);
 }
 
 template<>
-inline llvm::Type* t_jit_generator::f_type<double>()
+inline llvm::Type* t_jit_emit::f_type<double>()
 {
 	return getDoubleTy();
 }
 
 template<>
-inline llvm::Value* t_jit_generator::f_derives<intptr_t>(llvm::Value* a_p)
+inline llvm::Value* t_jit_emit::f_derives<intptr_t>(llvm::Value* a_p)
 {
 	return CreateCall(v_globals.v_derives_integer, {a_p});
 }
 
 template<>
-inline llvm::Value* t_jit_generator::f_derives<double>(llvm::Value* a_p)
+inline llvm::Value* t_jit_emit::f_derives<double>(llvm::Value* a_p)
 {
 	return CreateCall(v_globals.v_derives_float, {a_p});
 }
 
-t_generator::t_generator(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points) : v_module(a_module), v_safe_points(a_safe_points)
+t_emit::t_emit(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points) : v_module(a_module), v_safe_points(a_safe_points)
 {
-	v_jit = new t_jit_generator::t_globals(*this);
+	v_jit = new t_jit_emit::t_globals(*this);
 }
 
-t_generator::~t_generator()
+t_emit::~t_emit()
 {
-	delete static_cast<t_jit_generator::t_globals*>(v_jit);
+	delete static_cast<t_jit_emit::t_globals*>(v_jit);
 }
 
-void t_generator::f_jit_install()
+void t_emit::f_jit_install()
 {
-	static_cast<t_jit_generator::t_globals*>(v_jit)->f_install();
+	static_cast<t_jit_emit::t_globals*>(v_jit)->f_install();
 }
 
 namespace ast
@@ -2430,55 +2429,55 @@ namespace ast
 namespace
 {
 
-void f_generate_block(t_jit_generator& a_generator, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail, bool a_clear)
+void f_emit_block(t_jit_emit& a_emit, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail, bool a_clear)
 {
 	auto i = a_nodes.begin();
 	auto j = a_nodes.end();
 	if (i == j) {
-		if (!a_clear) a_generator.f_emit_NUL();
+		if (!a_clear) a_emit.f_emit_NUL();
 	} else {
-		for (--j; i != j; ++i) (*i)->f_generate(a_generator, false, false, true);
-		(*i)->f_generate(a_generator, a_tail, false, a_clear);
+		for (--j; i != j; ++i) (*i)->f_emit(a_emit, false, false, true);
+		(*i)->f_emit(a_emit, a_tail, false, a_clear);
 	}
 }
 
-void f_generate_block_without_value(t_jit_generator& a_generator, const std::vector<std::unique_ptr<t_node>>& a_nodes)
+void f_emit_block_without_value(t_jit_emit& a_emit, const std::vector<std::unique_ptr<t_node>>& a_nodes)
 {
-	for (auto& p : a_nodes) p->f_generate(a_generator, false, false, true);
+	for (auto& p : a_nodes) p->f_emit(a_emit, false, false, true);
 }
 
 }
 
-void t_lambda::f_jit_generate(t_generator& a_generator, t_code& a_code)
+void t_lambda::f_jit_emit(t_emit& a_emit, t_code& a_code)
 {
-	auto safe_positions0 = a_generator.v_safe_positions;
+	auto safe_positions0 = a_emit.v_safe_positions;
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions1;
-	a_generator.v_safe_positions = &safe_positions1;
+	a_emit.v_safe_positions = &safe_positions1;
 	auto name = f_name(this);
-	auto& globals = *static_cast<t_jit_generator::t_globals*>(a_generator.v_jit);
+	auto& globals = *static_cast<t_jit_emit::t_globals*>(a_emit.v_jit);
 	auto function = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer, llvm::Function::ExternalLinkage, name, globals.v_module.get());
-	t_jit_generator generator(function, a_code, globals);
-	generator.v_arguments = v_arguments;
+	t_jit_emit emit(function, a_code, globals);
+	emit.v_arguments = v_arguments;
 	std::vector<bool> stack_map(v_privates.size() - v_arguments, false);
-	generator.v_stack_map = &stack_map;
-	auto returnbb = generator.f_block("return");
-	t_jit_generator::t_targets targets{nullptr, nullptr, false, false, nullptr, nullptr, returnbb, &v_junction, true};
-	generator.v_targets = &targets;
+	emit.v_stack_map = &stack_map;
+	auto returnbb = emit.f_block("return");
+	t_jit_emit::t_targets targets{nullptr, nullptr, false, false, nullptr, nullptr, returnbb, &v_junction, true};
+	emit.v_targets = &targets;
 	if (v_self_shared) {
-		generator.f_emit_SELF(0);
-		generator.f_emit_SCOPE_PUT(0, 0, true);
+		emit.f_emit_SELF(0);
+		emit.f_emit_SCOPE_PUT(0, 0, true);
 	}
 	for (size_t i = 0; i < v_arguments; ++i) {
 		if (!v_privates[i]->v_shared) continue;
-		generator.f_emit_STACK_GET(i);
-		generator.f_emit_SCOPE_PUT(0, v_privates[i]->v_index, true);
+		emit.f_emit_STACK_GET(i);
+		emit.f_emit_SCOPE_PUT(0, v_privates[i]->v_index, true);
 	}
-	f_generate_block(generator, v_block, true, false);
-	generator.f_pop();
-	generator.CreateBr(returnbb);
-	generator.SetInsertPoint(returnbb);
-	generator.f_join(v_junction);
-	generator.f_emit_RETURN();
+	f_emit_block(emit, v_block, true, false);
+	emit.f_pop();
+	emit.CreateBr(returnbb);
+	emit.SetInsertPoint(returnbb);
+	emit.f_join(v_junction);
+	emit.f_emit_RETURN();
 #ifdef XEMMAI__JIT__DEBUG_PRINT
 std::fprintf(stderr, "VERIFYING A FUNCTION...\n");
 #endif
@@ -2490,731 +2489,731 @@ std::fprintf(stderr, "RUNNING FPM...\n");
 #ifdef XEMMAI__JIT__DEBUG_PRINT
 std::fprintf(stderr, "DONE.\n");
 #endif
-	a_generator.v_safe_positions = safe_positions0;
-	if (a_generator.v_safe_points) f_safe_points(a_code, *a_generator.v_safe_points, safe_positions1);
+	a_emit.v_safe_positions = safe_positions0;
+	if (a_emit.v_safe_points) f_safe_points(a_code, *a_emit.v_safe_points, safe_positions1);
 	globals.v_codes.emplace_back(a_code, name);
 }
 
-void t_lambda::f_jit_generate_with_lock(t_generator& a_generator, t_code& a_code)
+void t_lambda::f_jit_emit_with_lock(t_emit& a_emit, t_code& a_code)
 {
 	std::lock_guard<std::mutex> lock(f_jit()->v_mutex);
-	f_jit_generate(a_generator, a_code);
+	f_jit_emit(a_emit, a_code);
 }
 
-t_operand t_lambda::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_lambda::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	auto code = f_code(a_generator.v_code.v_module);
-	f_jit_generate(a_generator.v_globals.v_generator, f_as<t_code&>(code));
-	a_generator.f_emit_SAFE_POINT(v_at);
+	auto code = f_code(a_emit.v_code.v_module);
+	f_jit_emit(a_emit.v_globals.v_emit, f_as<t_code&>(code));
+	a_emit.f_emit_SAFE_POINT(v_at);
 	if (v_variadic || v_defaults.size() > 0) {
-		for (size_t i = 0; i < v_defaults.size(); ++i) v_defaults[i]->f_generate(a_generator, false, false);
-		for (size_t i = 0; i < v_defaults.size(); ++i) a_generator.f_pop();
-		a_generator.f_emit_LAMBDA(code, true);
+		for (size_t i = 0; i < v_defaults.size(); ++i) v_defaults[i]->f_emit(a_emit, false, false);
+		for (size_t i = 0; i < v_defaults.size(); ++i) a_emit.f_pop();
+		a_emit.f_emit_LAMBDA(code, true);
 	} else {
-		a_generator.f_emit_LAMBDA(code, false);
+		a_emit.f_emit_LAMBDA(code, false);
 	}
-	if (a_clear) a_generator.f_emit_CLEAR();
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_if::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_if::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_condition->f_generate(a_generator, false, false);
-	auto thenbb = a_generator.f_block("then");
-	auto elsebb = a_generator.f_block("else");
-	auto mergebb = a_generator.f_block("merge");
-	a_generator.f_emit_BRANCH(thenbb, elsebb);
-	a_generator.SetInsertPoint(thenbb);
-	auto stack_map = *a_generator.v_stack_map;
-	f_generate_block(a_generator, v_true, a_tail, a_clear);
-	a_generator.f_join(v_junction);
-	a_generator.CreateBr(mergebb);
-	a_generator.SetInsertPoint(elsebb);
-	*a_generator.v_stack_map = stack_map;
-	f_generate_block(a_generator, v_false, a_tail, a_clear);
-	a_generator.f_join(v_junction);
-	a_generator.CreateBr(mergebb);
-	a_generator.SetInsertPoint(mergebb);
-	a_generator.f_merge(v_junction);
+	v_condition->f_emit(a_emit, false, false);
+	auto thenbb = a_emit.f_block("then");
+	auto elsebb = a_emit.f_block("else");
+	auto mergebb = a_emit.f_block("merge");
+	a_emit.f_emit_BRANCH(thenbb, elsebb);
+	a_emit.SetInsertPoint(thenbb);
+	auto stack_map = *a_emit.v_stack_map;
+	f_emit_block(a_emit, v_true, a_tail, a_clear);
+	a_emit.f_join(v_junction);
+	a_emit.CreateBr(mergebb);
+	a_emit.SetInsertPoint(elsebb);
+	*a_emit.v_stack_map = stack_map;
+	f_emit_block(a_emit, v_false, a_tail, a_clear);
+	a_emit.f_join(v_junction);
+	a_emit.CreateBr(mergebb);
+	a_emit.SetInsertPoint(mergebb);
+	a_emit.f_merge(v_junction);
 	return t_operand();
 }
 
-t_operand t_while::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_while::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_generator.f_join(v_junction_condition);
-	auto loopbb = a_generator.f_block("loop");
-	auto thenbb = a_generator.f_block("then");
-	auto elsebb = a_generator.f_block("else");
-	auto breakbb = a_generator.f_block("break");
-	a_generator.CreateBr(loopbb);
-	a_generator.SetInsertPoint(loopbb);
-	a_generator.f_merge(v_junction_condition);
-	v_condition->f_generate(a_generator, false, false);
-	a_generator.f_emit_BRANCH(thenbb, elsebb);
-	a_generator.SetInsertPoint(thenbb);
-	auto targets0 = a_generator.v_targets;
-	t_jit_generator::t_targets targets1{breakbb, &v_junction_exit, a_tail, a_clear, loopbb, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_is_tail};
-	a_generator.v_targets = &targets1;
-	f_generate_block_without_value(a_generator, v_block);
-	a_generator.v_targets = targets0;
-	a_generator.CreateBr(loopbb);
-	a_generator.SetInsertPoint(elsebb);
-	a_generator.f_join(v_junction_exit);
-	if (!a_clear) a_generator.f_emit_NUL();
-	a_generator.CreateBr(breakbb);
-	a_generator.SetInsertPoint(breakbb);
-	a_generator.f_merge(v_junction_exit);
+	a_emit.f_join(v_junction_condition);
+	auto loopbb = a_emit.f_block("loop");
+	auto thenbb = a_emit.f_block("then");
+	auto elsebb = a_emit.f_block("else");
+	auto breakbb = a_emit.f_block("break");
+	a_emit.CreateBr(loopbb);
+	a_emit.SetInsertPoint(loopbb);
+	a_emit.f_merge(v_junction_condition);
+	v_condition->f_emit(a_emit, false, false);
+	a_emit.f_emit_BRANCH(thenbb, elsebb);
+	a_emit.SetInsertPoint(thenbb);
+	auto targets0 = a_emit.v_targets;
+	t_jit_emit::t_targets targets1{breakbb, &v_junction_exit, a_tail, a_clear, loopbb, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_is_tail};
+	a_emit.v_targets = &targets1;
+	f_emit_block_without_value(a_emit, v_block);
+	a_emit.v_targets = targets0;
+	a_emit.CreateBr(loopbb);
+	a_emit.SetInsertPoint(elsebb);
+	a_emit.f_join(v_junction_exit);
+	if (!a_clear) a_emit.f_emit_NUL();
+	a_emit.CreateBr(breakbb);
+	a_emit.SetInsertPoint(breakbb);
+	a_emit.f_merge(v_junction_exit);
 	return t_operand();
 }
 
-t_operand t_for::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_for::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	f_generate_block_without_value(a_generator, v_initialization);
-	a_generator.f_join(v_junction_condition);
-	auto loopbb = a_generator.f_block("loop");
-	auto continuebb = a_generator.f_block("continue");
-	auto thenbb = a_generator.f_block("then");
-	auto elsebb = a_generator.f_block("else");
-	auto breakbb = a_generator.f_block("break");
-	a_generator.CreateBr(loopbb);
-	a_generator.SetInsertPoint(loopbb);
-	a_generator.f_merge(v_junction_condition);
+	f_emit_block_without_value(a_emit, v_initialization);
+	a_emit.f_join(v_junction_condition);
+	auto loopbb = a_emit.f_block("loop");
+	auto continuebb = a_emit.f_block("continue");
+	auto thenbb = a_emit.f_block("then");
+	auto elsebb = a_emit.f_block("else");
+	auto breakbb = a_emit.f_block("break");
+	a_emit.CreateBr(loopbb);
+	a_emit.SetInsertPoint(loopbb);
+	a_emit.f_merge(v_junction_condition);
 	if (v_condition) {
-		v_condition->f_generate(a_generator, false, false);
-		a_generator.f_emit_BRANCH(thenbb, elsebb);
+		v_condition->f_emit(a_emit, false, false);
+		a_emit.f_emit_BRANCH(thenbb, elsebb);
 	} else {
-		a_generator.CreateBr(thenbb);
+		a_emit.CreateBr(thenbb);
 	}
-	a_generator.SetInsertPoint(thenbb);
-	auto targets0 = a_generator.v_targets;
-	t_jit_generator::t_targets targets1{breakbb, &v_junction_exit, a_tail, a_clear, continuebb, &v_junction_next, targets0->v_return, targets0->v_return_junction, targets0->v_return_is_tail};
-	a_generator.v_targets = &targets1;
-	f_generate_block_without_value(a_generator, v_block);
-	a_generator.v_targets = targets0;
-	a_generator.CreateBr(continuebb);
-	a_generator.SetInsertPoint(continuebb);
-	f_generate_block_without_value(a_generator, v_next);
-	a_generator.CreateBr(loopbb);
-	a_generator.SetInsertPoint(elsebb);
-	a_generator.f_join(v_junction_exit);
-	if (!a_clear) a_generator.f_emit_NUL();
-	a_generator.CreateBr(breakbb);
-	a_generator.SetInsertPoint(breakbb);
-	a_generator.f_merge(v_junction_exit);
+	a_emit.SetInsertPoint(thenbb);
+	auto targets0 = a_emit.v_targets;
+	t_jit_emit::t_targets targets1{breakbb, &v_junction_exit, a_tail, a_clear, continuebb, &v_junction_next, targets0->v_return, targets0->v_return_junction, targets0->v_return_is_tail};
+	a_emit.v_targets = &targets1;
+	f_emit_block_without_value(a_emit, v_block);
+	a_emit.v_targets = targets0;
+	a_emit.CreateBr(continuebb);
+	a_emit.SetInsertPoint(continuebb);
+	f_emit_block_without_value(a_emit, v_next);
+	a_emit.CreateBr(loopbb);
+	a_emit.SetInsertPoint(elsebb);
+	a_emit.f_join(v_junction_exit);
+	if (!a_clear) a_emit.f_emit_NUL();
+	a_emit.CreateBr(breakbb);
+	a_emit.SetInsertPoint(breakbb);
+	a_emit.f_merge(v_junction_exit);
 	return t_operand();
 }
 
-t_operand t_break::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_break::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (v_expression)
-		v_expression->f_generate(a_generator, a_generator.v_targets->v_break_is_tail, false, a_generator.v_targets->v_break_must_clear);
-	else if (!a_generator.v_targets->v_break_must_clear)
-		a_generator.f_emit_NUL();
-	if (!a_generator.v_targets->v_break_must_clear) a_generator.f_pop();
-	if (!a_clear) a_generator.f_push(false);
-	a_generator.f_join(*a_generator.v_targets->v_break_junction);
-	a_generator.CreateBr(a_generator.v_targets->v_break);
-	a_generator.SetInsertPoint(a_generator.f_block("unreachable"));
+		v_expression->f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, a_emit.v_targets->v_break_must_clear);
+	else if (!a_emit.v_targets->v_break_must_clear)
+		a_emit.f_emit_NUL();
+	if (!a_emit.v_targets->v_break_must_clear) a_emit.f_pop();
+	if (!a_clear) a_emit.f_push(false);
+	a_emit.f_join(*a_emit.v_targets->v_break_junction);
+	a_emit.CreateBr(a_emit.v_targets->v_break);
+	a_emit.SetInsertPoint(a_emit.f_block("unreachable"));
 	return t_operand();
 }
 
-t_operand t_continue::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_continue::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	if (!a_clear) a_generator.f_push(false);
-	a_generator.CreateBr(a_generator.v_targets->v_continue);
-	a_generator.SetInsertPoint(a_generator.f_block("unreachable"));
+	if (!a_clear) a_emit.f_push(false);
+	a_emit.CreateBr(a_emit.v_targets->v_continue);
+	a_emit.SetInsertPoint(a_emit.f_block("unreachable"));
 	return t_operand();
 }
 
-t_operand t_return::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_return::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (v_expression)
-		v_expression->f_generate(a_generator, a_generator.v_targets->v_return_is_tail, false);
+		v_expression->f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false);
 	else
-		a_generator.f_emit_NUL();
-	a_generator.f_join(*a_generator.v_targets->v_return_junction);
-	a_generator.CreateBr(a_generator.v_targets->v_return);
-	if (a_clear) a_generator.f_pop();
-	a_generator.SetInsertPoint(a_generator.f_block("unreachable"));
+		a_emit.f_emit_NUL();
+	a_emit.f_join(*a_emit.v_targets->v_return_junction);
+	a_emit.CreateBr(a_emit.v_targets->v_return);
+	if (a_clear) a_emit.f_pop();
+	a_emit.SetInsertPoint(a_emit.f_block("unreachable"));
 	return t_operand();
 }
 
-void* t_try::f_jit_try(t_jit_generator& a_generator, bool a_clear)
+void* t_try::f_jit_try(t_jit_emit& a_emit, bool a_clear)
 {
-	auto function = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer, llvm::Function::PrivateLinkage, "try", a_generator.GetInsertBlock()->getModule());
-	t_jit_generator generator(function, a_generator.v_code, a_generator.v_globals);
-	generator.v_arguments = a_generator.v_arguments;
-	generator.v_stack_map = a_generator.v_stack_map;
-	auto stepbb = generator.f_block("step");
-	auto breakbb = a_generator.v_targets->v_break ? generator.f_block("break") : nullptr;
-	auto continuebb = a_generator.v_targets->v_continue ? generator.f_block("continue") : nullptr;
-	auto returnbb = a_generator.v_targets->v_return ? generator.f_block("return") : nullptr;
-	t_jit_generator::t_targets targets{breakbb, &v_junction_finally, false, a_generator.v_targets->v_break_must_clear, continuebb, &v_junction_finally, returnbb, &v_junction_finally, false};
-	generator.v_targets = &targets;
-	f_generate_block(generator, v_block, false, a_clear);
-	generator.CreateBr(stepbb);
-	generator.SetInsertPoint(stepbb);
-	generator.CreateRet(generator.f_integer(t_code::e_try__STEP));
+	auto function = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer, llvm::Function::PrivateLinkage, "try", a_emit.GetInsertBlock()->getModule());
+	t_jit_emit emit(function, a_emit.v_code, a_emit.v_globals);
+	emit.v_arguments = a_emit.v_arguments;
+	emit.v_stack_map = a_emit.v_stack_map;
+	auto stepbb = emit.f_block("step");
+	auto breakbb = a_emit.v_targets->v_break ? emit.f_block("break") : nullptr;
+	auto continuebb = a_emit.v_targets->v_continue ? emit.f_block("continue") : nullptr;
+	auto returnbb = a_emit.v_targets->v_return ? emit.f_block("return") : nullptr;
+	t_jit_emit::t_targets targets{breakbb, &v_junction_finally, false, a_emit.v_targets->v_break_must_clear, continuebb, &v_junction_finally, returnbb, &v_junction_finally, false};
+	emit.v_targets = &targets;
+	f_emit_block(emit, v_block, false, a_clear);
+	emit.CreateBr(stepbb);
+	emit.SetInsertPoint(stepbb);
+	emit.CreateRet(emit.f_integer(t_code::e_try__STEP));
 	if (breakbb) {
-		generator.SetInsertPoint(breakbb);
-		generator.CreateRet(generator.f_integer(t_code::e_try__BREAK));
+		emit.SetInsertPoint(breakbb);
+		emit.CreateRet(emit.f_integer(t_code::e_try__BREAK));
 	}
 	if (continuebb) {
-		generator.SetInsertPoint(continuebb);
-		generator.CreateRet(generator.f_integer(t_code::e_try__CONTINUE));
+		emit.SetInsertPoint(continuebb);
+		emit.CreateRet(emit.f_integer(t_code::e_try__CONTINUE));
 	}
 	if (returnbb) {
-		generator.SetInsertPoint(returnbb);
-		generator.CreateRet(generator.f_integer(t_code::e_try__RETURN));
+		emit.SetInsertPoint(returnbb);
+		emit.CreateRet(emit.f_integer(t_code::e_try__RETURN));
 	}
 	llvm::verifyFunction(*function);
-	generator.v_globals.v_fpm->run(*function);
+	emit.v_globals.v_fpm->run(*function);
 	return function;
 }
 
-void* t_try::f_jit_catch(t_jit_generator& a_generator, bool a_clear)
+void* t_try::f_jit_catch(t_jit_emit& a_emit, bool a_clear)
 {
-	auto function = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__value_pointer, llvm::Function::PrivateLinkage, "catch", a_generator.GetInsertBlock()->getModule());
-	t_jit_generator generator(function, a_generator.v_code, a_generator.v_globals);
-	generator.v_arguments = a_generator.v_arguments;
-	generator.v_stack_map = a_generator.v_stack_map;
+	auto function = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__value_pointer, llvm::Function::PrivateLinkage, "catch", a_emit.GetInsertBlock()->getModule());
+	t_jit_emit emit(function, a_emit.v_code, a_emit.v_globals);
+	emit.v_arguments = a_emit.v_arguments;
+	emit.v_stack_map = a_emit.v_stack_map;
 	auto thrown = &*++function->arg_begin();
-	auto caught = generator.CreateLoad(generator.v_pc);
-	auto stepbb = generator.f_block("step");
-	auto breakbb = a_generator.v_targets->v_break ? generator.f_block("break") : nullptr;
-	auto continuebb = a_generator.v_targets->v_continue ? generator.f_block("continue") : nullptr;
-	auto returnbb = a_generator.v_targets->v_return ? generator.f_block("return") : nullptr;
-	t_jit_generator::t_targets targets{breakbb, &v_junction_finally, false, a_generator.v_targets->v_break_must_clear, continuebb, &v_junction_finally, returnbb, &v_junction_finally, false};
-	generator.v_targets = &targets;
+	auto caught = emit.CreateLoad(emit.v_pc);
+	auto stepbb = emit.f_block("step");
+	auto breakbb = a_emit.v_targets->v_break ? emit.f_block("break") : nullptr;
+	auto continuebb = a_emit.v_targets->v_continue ? emit.f_block("continue") : nullptr;
+	auto returnbb = a_emit.v_targets->v_return ? emit.f_block("return") : nullptr;
+	t_jit_emit::t_targets targets{breakbb, &v_junction_finally, false, a_emit.v_targets->v_break_must_clear, continuebb, &v_junction_finally, returnbb, &v_junction_finally, false};
+	emit.v_targets = &targets;
 	for (auto& p : v_catches) {
-		if (!a_clear) generator.f_pop();
-		p->v_expression->f_generate(generator, false, false);
-		auto nextbb = generator.f_block("next");
-		generator.f_pop();
-		generator.f_emit_CATCH(thrown, caught, p->v_variable, nextbb);
-		f_generate_block(generator, p->v_block, false, a_clear);
-		generator.CreateBr(stepbb);
-		generator.SetInsertPoint(nextbb);
+		if (!a_clear) emit.f_pop();
+		p->v_expression->f_emit(emit, false, false);
+		auto nextbb = emit.f_block("next");
+		emit.f_pop();
+		emit.f_emit_CATCH(thrown, caught, p->v_variable, nextbb);
+		f_emit_block(emit, p->v_block, false, a_clear);
+		emit.CreateBr(stepbb);
+		emit.SetInsertPoint(nextbb);
 	}
-	generator.CreateStore(caught, generator.v_pc);
-	generator.f_throw(thrown);
-	generator.SetInsertPoint(stepbb);
-	generator.CreateRet(generator.f_integer(t_code::e_try__STEP));
+	emit.CreateStore(caught, emit.v_pc);
+	emit.f_throw(thrown);
+	emit.SetInsertPoint(stepbb);
+	emit.CreateRet(emit.f_integer(t_code::e_try__STEP));
 	if (breakbb) {
-		generator.SetInsertPoint(breakbb);
-		generator.CreateRet(generator.f_integer(t_code::e_try__BREAK));
+		emit.SetInsertPoint(breakbb);
+		emit.CreateRet(emit.f_integer(t_code::e_try__BREAK));
 	}
 	if (continuebb) {
-		generator.SetInsertPoint(continuebb);
-		generator.CreateRet(generator.f_integer(t_code::e_try__CONTINUE));
+		emit.SetInsertPoint(continuebb);
+		emit.CreateRet(emit.f_integer(t_code::e_try__CONTINUE));
 	}
 	if (returnbb) {
-		generator.SetInsertPoint(returnbb);
-		generator.CreateRet(generator.f_integer(t_code::e_try__RETURN));
+		emit.SetInsertPoint(returnbb);
+		emit.CreateRet(emit.f_integer(t_code::e_try__RETURN));
 	}
 	llvm::verifyFunction(*function);
-	generator.v_globals.v_fpm->run(*function);
+	emit.v_globals.v_fpm->run(*function);
 	return function;
 }
 
-void* t_try::f_jit_finally(t_jit_generator& a_generator)
+void* t_try::f_jit_finally(t_jit_emit& a_emit)
 {
-	auto function = llvm::Function::Create(f_jit()->v_ft_void__context_pointer, llvm::Function::PrivateLinkage, "finally", a_generator.GetInsertBlock()->getModule());
-	t_jit_generator generator(function, a_generator.v_code, a_generator.v_globals);
-	generator.v_arguments = a_generator.v_arguments;
-	generator.v_stack_map = a_generator.v_stack_map;
-	t_jit_generator::t_targets targets{nullptr, nullptr, false, false, nullptr, nullptr, nullptr, nullptr, false};
-	generator.v_targets = &targets;
-	f_generate_block_without_value(generator, v_finally);
-	generator.CreateRetVoid();
+	auto function = llvm::Function::Create(f_jit()->v_ft_void__context_pointer, llvm::Function::PrivateLinkage, "finally", a_emit.GetInsertBlock()->getModule());
+	t_jit_emit emit(function, a_emit.v_code, a_emit.v_globals);
+	emit.v_arguments = a_emit.v_arguments;
+	emit.v_stack_map = a_emit.v_stack_map;
+	t_jit_emit::t_targets targets{nullptr, nullptr, false, false, nullptr, nullptr, nullptr, nullptr, false};
+	emit.v_targets = &targets;
+	f_emit_block_without_value(emit, v_finally);
+	emit.CreateRetVoid();
 	llvm::verifyFunction(*function);
-	generator.v_globals.v_fpm->run(*function);
+	emit.v_globals.v_fpm->run(*function);
 	return function;
 }
 
-t_operand t_try::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_try::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_generator.f_join(v_junction_try);
-	a_generator.f_merge(v_junction_try);
-	auto try0 = static_cast<llvm::Function*>(f_jit_try(a_generator, a_clear));
-	auto catch0 = static_cast<llvm::Function*>(f_jit_catch(a_generator, a_clear));
-	auto finally0 = static_cast<llvm::Function*>(f_jit_finally(a_generator));
+	a_emit.f_join(v_junction_try);
+	a_emit.f_merge(v_junction_try);
+	auto try0 = static_cast<llvm::Function*>(f_jit_try(a_emit, a_clear));
+	auto catch0 = static_cast<llvm::Function*>(f_jit_catch(a_emit, a_clear));
+	auto finally0 = static_cast<llvm::Function*>(f_jit_finally(a_emit));
 	if (a_clear) {
-		a_generator.f_stack_map();
-		a_generator.f_emit_TRY(try0, catch0, finally0);
+		a_emit.f_stack_map();
+		a_emit.f_emit_TRY(try0, catch0, finally0);
 	} else {
-		bool live = a_generator.v_stack_map->back();
-		a_generator.f_pop();
-		a_generator.f_emit_TRY(try0, catch0, finally0);
-		a_generator.f_stack_map().f_push(live);
+		bool live = a_emit.v_stack_map->back();
+		a_emit.f_pop();
+		a_emit.f_emit_TRY(try0, catch0, finally0);
+		a_emit.f_stack_map().f_push(live);
 	}
 	return t_operand();
 }
 
-t_operand t_throw::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_throw::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_expression->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_THROW(v_at);
-	if (!a_clear) a_generator.f_push(false);
+	v_expression->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_THROW(v_at);
+	if (!a_clear) a_emit.f_push(false);
 	return t_operand();
 }
 
-t_operand t_object_get::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_get::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_GET(v_key, v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_GET(v_key, v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-void t_object_get::f_method(t_jit_generator& a_generator)
+void t_object_get::f_method(t_jit_emit& a_emit)
 {
-	v_target->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_METHOD_GET(v_key, v_at);
+	v_target->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_METHOD_GET(v_key, v_at);
 }
 
-t_operand t_object_get_indirect::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_get_indirect::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	v_key->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_GET_INDIRECT(v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	v_key->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_GET_INDIRECT(v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_object_put::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_put::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	v_value->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_PUT(v_key, a_clear, v_at);
-	if (a_clear) a_generator.f_pop();
+	v_target->f_emit(a_emit, false, false);
+	v_value->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_PUT(v_key, a_clear, v_at);
+	if (a_clear) a_emit.f_pop();
 	return t_operand();
 }
 
-t_operand t_object_put_indirect::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_put_indirect::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	v_key->f_generate(a_generator, false, false);
-	v_value->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_PUT_INDIRECT(v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	v_key->f_emit(a_emit, false, false);
+	v_value->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_PUT_INDIRECT(v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_object_has::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_has::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_HAS(v_key);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_HAS(v_key);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_object_has_indirect::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_has_indirect::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	v_key->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_HAS_INDIRECT();
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	v_key->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_HAS_INDIRECT();
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_object_remove::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_remove::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_REMOVE(v_key, v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_REMOVE(v_key, v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_object_remove_indirect::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_object_remove_indirect::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	v_key->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_OBJECT_REMOVE_INDIRECT(v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	v_key->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_OBJECT_REMOVE_INDIRECT(v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_symbol_get::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_symbol_get::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	f_resolve();
 	if (!v_variable) {
-		if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-		a_generator.f_emit_GLOBAL_GET(v_symbol, v_at);
+		if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+		a_emit.f_emit_GLOBAL_GET(v_symbol, v_at);
 	} else if (v_variable->v_shared) {
-		if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-		a_generator.f_emit_SCOPE_GET(v_resolved, v_variable->v_index, v_variable->v_varies);
+		if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+		a_emit.f_emit_SCOPE_GET(v_resolved, v_variable->v_index, v_variable->v_varies);
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
-			a_generator.f_join(*a_generator.v_targets->v_return_junction);
-			a_generator.f_emit_SAFE_POINT(v_at);
-			a_generator.f_emit_RETURN(v_variable->v_index);
-			a_generator.f_push(false);
-			a_generator.SetInsertPoint(a_generator.f_block("unreachable"));
+			a_emit.f_join(*a_emit.v_targets->v_return_junction);
+			a_emit.f_emit_SAFE_POINT(v_at);
+			a_emit.f_emit_RETURN(v_variable->v_index);
+			a_emit.f_push(false);
+			a_emit.SetInsertPoint(a_emit.f_block("unreachable"));
 		} else {
-			a_generator.f_emit_STACK_GET(v_variable->v_index);
+			a_emit.f_emit_STACK_GET(v_variable->v_index);
 		}
 	}
-	if (a_clear) a_generator.f_emit_CLEAR();
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_scope_put::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_scope_put::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_value->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
+	v_value->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
 	if (v_variable.v_shared)
-		a_generator.f_emit_SCOPE_PUT(v_outer, v_variable.v_index, a_clear);
+		a_emit.f_emit_SCOPE_PUT(v_outer, v_variable.v_index, a_clear);
 	else
-		a_generator.f_emit_STACK_PUT(v_variable.v_index, a_clear);
+		a_emit.f_emit_STACK_PUT(v_variable.v_index, a_clear);
 	return t_operand();
 }
 
-t_operand t_self::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_self::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_clear) return t_operand();
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_SELF(v_outer);
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_SELF(v_outer);
 	return t_operand();
 }
 
-t_operand t_class::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_class::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_CLASS();
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_CLASS();
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_super::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_super::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	v_target->f_generate(a_generator, false, false);
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_SUPER(v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	v_target->f_emit(a_emit, false, false);
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_SUPER(v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_null::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_null::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_operand) return t_value::v_null;
 	if (a_clear) return t_operand();
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_NUL();
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_NUL();
 	return t_operand();
 }
 
-t_operand t_boolean::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_boolean::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_operand) return v_value ? t_value::v_true : t_value::v_false;
 	if (a_clear) return t_operand();
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_BOOLEAN(v_value);
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_BOOLEAN(v_value);
 	return t_operand();
 }
 
-t_operand t_integer::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_integer::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_operand) return v_value;
 	if (a_clear) return t_operand();
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_INTEGER(v_value);
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_INTEGER(v_value);
 	return t_operand();
 }
 
-t_operand t_float::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_float::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_operand) return v_value;
 	if (a_clear) return t_operand();
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_FLOAT(v_value);
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_FLOAT(v_value);
 	return t_operand();
 }
 
-t_operand t_instance::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_instance::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_operand) return v_value;
 	if (a_clear) return t_operand();
-	if (a_tail) a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_INSTANCE(v_value);
+	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_INSTANCE(v_value);
 	return t_operand();
 }
 
-t_operand t_unary::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_unary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_generator.f_push(false);
-	auto operand = v_expression->f_generate(a_generator, false, true);
-	if (operand.v_tag == t_operand::e_tag__TEMPORARY) operand.v_index = a_generator.f_stack() - 1;
+	a_emit.f_push(false);
+	auto operand = v_expression->f_emit(a_emit, false, true);
+	if (operand.v_tag == t_operand::e_tag__TEMPORARY) operand.v_index = a_emit.f_stack() - 1;
 	if (operand.v_tag == t_operand::e_tag__INTEGER) {
-		a_generator.f_pop();
+		a_emit.f_pop();
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
-			return t_integer(v_at, operand.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+			return t_integer(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
-			return t_integer(v_at, -operand.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+			return t_integer(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__COMPLEMENT_T:
-			return t_integer(v_at, ~operand.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+			return t_integer(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			t_throwable::f_throw(L"not supported");
 		}
 	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
-		a_generator.f_pop();
+		a_emit.f_pop();
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
-			return t_float(v_at, operand.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+			return t_float(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
-			return t_float(v_at, -operand.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+			return t_float(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			t_throwable::f_throw(L"not supported");
 		}
 	}
-	if (a_tail) a_generator.f_join(*a_generator.v_targets->v_return_junction);
-	a_generator.f_emit_SAFE_POINT(v_at);
+	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
+	a_emit.f_emit_SAFE_POINT(v_at);
 	switch (v_instruction) {
 	case e_instruction__PLUS_T:
-		a_generator.f_emit_UNARY<nullptr, &t_jit_generator::f_unary<intptr_t, &t_jit_generator::f_plus>, &t_jit_generator::f_unary<double, &t_jit_generator::f_plus>>(a_generator.v_globals.v_plus, operand, a_tail, v_at);
+		a_emit.f_emit_UNARY<nullptr, &t_jit_emit::f_unary<intptr_t, &t_jit_emit::f_plus>, &t_jit_emit::f_unary<double, &t_jit_emit::f_plus>>(a_emit.v_globals.v_plus, operand, a_tail, v_at);
 		break;
 	case e_instruction__MINUS_T:
-		a_generator.f_emit_UNARY<nullptr, &t_jit_generator::f_unary<intptr_t, &t_jit_generator::f_minus_integer>, &t_jit_generator::f_unary<double, &t_jit_generator::f_minus_float>>(a_generator.v_globals.v_minus, operand, a_tail, v_at);
+		a_emit.f_emit_UNARY<nullptr, &t_jit_emit::f_unary<intptr_t, &t_jit_emit::f_minus_integer>, &t_jit_emit::f_unary<double, &t_jit_emit::f_minus_float>>(a_emit.v_globals.v_minus, operand, a_tail, v_at);
 		break;
 	case e_instruction__NOT_T:
-		a_generator.f_emit_UNARY<&t_jit_generator::f_unary<bool, &t_jit_generator::f_not>, nullptr, nullptr>(a_generator.v_globals.v_not, operand, a_tail, v_at);
+		a_emit.f_emit_UNARY<&t_jit_emit::f_unary<bool, &t_jit_emit::f_not>, nullptr, nullptr>(a_emit.v_globals.v_not, operand, a_tail, v_at);
 		break;
 	case e_instruction__COMPLEMENT_T:
-		a_generator.f_emit_UNARY<nullptr, &t_jit_generator::f_unary<intptr_t, &t_jit_generator::f_complement>, nullptr>(a_generator.v_globals.v_complement, operand, a_tail, v_at);
+		a_emit.f_emit_UNARY<nullptr, &t_jit_emit::f_unary<intptr_t, &t_jit_emit::f_complement>, nullptr>(a_emit.v_globals.v_complement, operand, a_tail, v_at);
 		break;
 	}
-	if (a_clear) a_generator.f_emit_CLEAR();
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_binary::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_binary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_generator.f_push(false);
+	a_emit.f_push(false);
 	bool operand = v_instruction != e_instruction__SEND;
-	auto left = v_left->f_generate(a_generator, false, operand);
-	if (left.v_tag == t_operand::e_tag__TEMPORARY) left.v_index = a_generator.f_stack() - 1;
-	auto right = v_right->f_generate(a_generator, false, operand);
-	if (right.v_tag == t_operand::e_tag__TEMPORARY) right.v_index = a_generator.f_stack() - 1;
+	auto left = v_left->f_emit(a_emit, false, operand);
+	if (left.v_tag == t_operand::e_tag__TEMPORARY) left.v_index = a_emit.f_stack() - 1;
+	auto right = v_right->f_emit(a_emit, false, operand);
+	if (right.v_tag == t_operand::e_tag__TEMPORARY) right.v_index = a_emit.f_stack() - 1;
 	if (left.v_tag == t_operand::e_tag__INTEGER) {
 		if (right.v_tag == t_operand::e_tag__INTEGER) {
-			a_generator.f_pop();
+			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_integer(v_at, left.v_integer * right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_integer(v_at, left.v_integer / right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__MODULUS_TT:
-				return t_integer(v_at, left.v_integer % right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer % right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_integer(v_at, left.v_integer + right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_integer(v_at, left.v_integer - right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LEFT_SHIFT_TT:
-				return t_integer(v_at, left.v_integer << right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer << right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__RIGHT_SHIFT_TT:
-				return t_integer(v_at, static_cast<size_t>(left.v_integer) >> right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, static_cast<size_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_integer < right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer <= right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_integer > right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer >= right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, left.v_integer == right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, left.v_integer != right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__AND_TT:
-				return t_integer(v_at, left.v_integer & right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer & right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__XOR_TT:
-				return t_integer(v_at, left.v_integer ^ right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer ^ right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__OR_TT:
-				return t_integer(v_at, left.v_integer | right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_integer(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
 		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
-			a_generator.f_pop();
+			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_integer * right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_integer * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_integer / right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_integer / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_integer + right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_integer + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_integer - right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_integer - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_integer < right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer <= right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_integer > right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer >= right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_boolean(v_at, left.v_integer == right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_boolean(v_at, left.v_integer != right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, false).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, true).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
 		}
 	} else if (left.v_tag == t_operand::e_tag__FLOAT) {
 		if (right.v_tag == t_operand::e_tag__INTEGER) {
-			a_generator.f_pop();
+			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_float * right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_float / right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_float + right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_float - right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_float < right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_float <= right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_float > right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_float >= right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_boolean(v_at, left.v_float == right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_boolean(v_at, left.v_float != right.v_integer).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, false).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, true).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
 		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
-			a_generator.f_pop();
+			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_float * right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_float / right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_float + right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_float - right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_float(v_at, left.v_float - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_float < right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_float <= right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_float > right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_float >= right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, left.v_float == right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, left.v_float != right.v_float).f_generate(a_generator, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
 		}
 	}
-	if (a_tail) a_generator.f_join(*a_generator.v_targets->v_return_junction);
-	a_generator.f_emit_SAFE_POINT(v_at);
+	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
+	a_emit.f_emit_SAFE_POINT(v_at);
 	switch (v_instruction) {
 #define XEMMAI__JIT__BINARY_ARITHMETIC(a_label, a_operator)\
 	case e_instruction__##a_label##_TT:\
-		a_generator.f_emit_BINARY<nullptr, nullptr,\
-			&t_jit_generator::f_binary_x<nullptr, nullptr,\
-				&t_jit_generator::f_binary_xy<intptr_t, intptr_t, intptr_t, &t_jit_generator::f_##a_operator##_integer>,\
-				&t_jit_generator::f_binary_xy<double, intptr_t, double, &t_jit_generator::f_##a_operator##_integer_float>,\
-				&t_jit_generator::f_binary_xo<intptr_t, intptr_t, &t_jit_generator::f_##a_operator##_integer, nullptr>\
+		a_emit.f_emit_BINARY<nullptr, nullptr,\
+			&t_jit_emit::f_binary_x<nullptr, nullptr,\
+				&t_jit_emit::f_binary_xy<intptr_t, intptr_t, intptr_t, &t_jit_emit::f_##a_operator##_integer>,\
+				&t_jit_emit::f_binary_xy<double, intptr_t, double, &t_jit_emit::f_##a_operator##_integer_float>,\
+				&t_jit_emit::f_binary_xo<intptr_t, intptr_t, &t_jit_emit::f_##a_operator##_integer, nullptr>\
 			>,\
-			&t_jit_generator::f_binary_x<nullptr, nullptr,\
-				&t_jit_generator::f_binary_xy<double, double, intptr_t, &t_jit_generator::f_##a_operator##_float_integer>,\
-				&t_jit_generator::f_binary_xy<double, double, double, &t_jit_generator::f_##a_operator##_float>,\
-				&t_jit_generator::f_binary_xo<double, double, &t_jit_generator::f_##a_operator##_float, nullptr>\
+			&t_jit_emit::f_binary_x<nullptr, nullptr,\
+				&t_jit_emit::f_binary_xy<double, double, intptr_t, &t_jit_emit::f_##a_operator##_float_integer>,\
+				&t_jit_emit::f_binary_xy<double, double, double, &t_jit_emit::f_##a_operator##_float>,\
+				&t_jit_emit::f_binary_xo<double, double, &t_jit_emit::f_##a_operator##_float, nullptr>\
 			>\
-		>(a_generator.v_globals.v_##a_operator, left, right, a_tail, v_at);\
+		>(a_emit.v_globals.v_##a_operator, left, right, a_tail, v_at);\
 		break;
 #define XEMMAI__JIT__BINARY_INTEGRAL(a_label, a_operator)\
 	case e_instruction__##a_label##_TT:\
-		a_generator.f_emit_BINARY<nullptr, nullptr,\
-			&t_jit_generator::f_binary_x<nullptr, nullptr,\
-				&t_jit_generator::f_binary_xy<intptr_t, intptr_t, intptr_t, &t_jit_generator::f_##a_operator>, nullptr,\
-				&t_jit_generator::f_binary_xo<intptr_t, intptr_t, &t_jit_generator::f_##a_operator, nullptr>\
+		a_emit.f_emit_BINARY<nullptr, nullptr,\
+			&t_jit_emit::f_binary_x<nullptr, nullptr,\
+				&t_jit_emit::f_binary_xy<intptr_t, intptr_t, intptr_t, &t_jit_emit::f_##a_operator>, nullptr,\
+				&t_jit_emit::f_binary_xo<intptr_t, intptr_t, &t_jit_emit::f_##a_operator, nullptr>\
 			>, nullptr\
-		>(a_generator.v_globals.v_##a_operator, left, right, a_tail, v_at);\
+		>(a_emit.v_globals.v_##a_operator, left, right, a_tail, v_at);\
 		break;
 #define XEMMAI__JIT__BINARY_RELATIONAL(a_label, a_operator)\
 	case e_instruction__##a_label##_TT:\
-		a_generator.f_emit_BINARY<nullptr, nullptr,\
-			&t_jit_generator::f_binary_x<nullptr, nullptr,\
-				&t_jit_generator::f_binary_xy<bool, intptr_t, intptr_t, &t_jit_generator::f_##a_operator##_integer>,\
-				&t_jit_generator::f_binary_xy<bool, intptr_t, double, &t_jit_generator::f_##a_operator##_integer_float>,\
-				&t_jit_generator::f_binary_xo<bool, intptr_t, &t_jit_generator::f_##a_operator##_integer, nullptr>\
+		a_emit.f_emit_BINARY<nullptr, nullptr,\
+			&t_jit_emit::f_binary_x<nullptr, nullptr,\
+				&t_jit_emit::f_binary_xy<bool, intptr_t, intptr_t, &t_jit_emit::f_##a_operator##_integer>,\
+				&t_jit_emit::f_binary_xy<bool, intptr_t, double, &t_jit_emit::f_##a_operator##_integer_float>,\
+				&t_jit_emit::f_binary_xo<bool, intptr_t, &t_jit_emit::f_##a_operator##_integer, nullptr>\
 			>,\
-			&t_jit_generator::f_binary_x<nullptr, nullptr,\
-				&t_jit_generator::f_binary_xy<bool, double, intptr_t, &t_jit_generator::f_##a_operator##_float_integer>,\
-				&t_jit_generator::f_binary_xy<bool, double, double, &t_jit_generator::f_##a_operator##_float>,\
-				&t_jit_generator::f_binary_xo<bool, double, &t_jit_generator::f_##a_operator##_float, nullptr>\
+			&t_jit_emit::f_binary_x<nullptr, nullptr,\
+				&t_jit_emit::f_binary_xy<bool, double, intptr_t, &t_jit_emit::f_##a_operator##_float_integer>,\
+				&t_jit_emit::f_binary_xy<bool, double, double, &t_jit_emit::f_##a_operator##_float>,\
+				&t_jit_emit::f_binary_xo<bool, double, &t_jit_emit::f_##a_operator##_float, nullptr>\
 			>\
-		>(a_generator.v_globals.v_##a_operator, left, right, a_tail, v_at);\
+		>(a_emit.v_globals.v_##a_operator, left, right, a_tail, v_at);\
 		break;
 #define XEMMAI__JIT__BINARY_EQUALITY(a_label, a_operator, a_not)\
 	case e_instruction__##a_label##_TT:\
-		a_generator.f_emit_BINARY<\
-			&t_jit_generator::f_equals_null<a_not>,\
-			&t_jit_generator::f_equals_boolean<a_not>,\
-			&t_jit_generator::f_binary_x<\
-				&t_jit_generator::f_equals_return<a_not>,\
-				&t_jit_generator::f_equals_return<a_not>,\
-				&t_jit_generator::f_binary_xy<bool, intptr_t, intptr_t, &t_jit_generator::f_##a_operator##_integer>,\
-				&t_jit_generator::f_binary_xy<bool, intptr_t, double, &t_jit_generator::f_##a_operator##_integer_float>,\
-				&t_jit_generator::f_binary_xo<bool, intptr_t, &t_jit_generator::f_##a_operator##_integer, &t_jit_generator::f_equals_other<a_not>>\
+		a_emit.f_emit_BINARY<\
+			&t_jit_emit::f_equals_null<a_not>,\
+			&t_jit_emit::f_equals_boolean<a_not>,\
+			&t_jit_emit::f_binary_x<\
+				&t_jit_emit::f_equals_return<a_not>,\
+				&t_jit_emit::f_equals_return<a_not>,\
+				&t_jit_emit::f_binary_xy<bool, intptr_t, intptr_t, &t_jit_emit::f_##a_operator##_integer>,\
+				&t_jit_emit::f_binary_xy<bool, intptr_t, double, &t_jit_emit::f_##a_operator##_integer_float>,\
+				&t_jit_emit::f_binary_xo<bool, intptr_t, &t_jit_emit::f_##a_operator##_integer, &t_jit_emit::f_equals_other<a_not>>\
 			>,\
-			&t_jit_generator::f_binary_x<\
-				&t_jit_generator::f_equals_return<a_not>,\
-				&t_jit_generator::f_equals_return<a_not>,\
-				&t_jit_generator::f_binary_xy<bool, double, intptr_t, &t_jit_generator::f_##a_operator##_float_integer>,\
-				&t_jit_generator::f_binary_xy<bool, double, double, &t_jit_generator::f_##a_operator##_float>,\
-				&t_jit_generator::f_binary_xo<bool, double, &t_jit_generator::f_##a_operator##_float, &t_jit_generator::f_equals_other<a_not>>\
+			&t_jit_emit::f_binary_x<\
+				&t_jit_emit::f_equals_return<a_not>,\
+				&t_jit_emit::f_equals_return<a_not>,\
+				&t_jit_emit::f_binary_xy<bool, double, intptr_t, &t_jit_emit::f_##a_operator##_float_integer>,\
+				&t_jit_emit::f_binary_xy<bool, double, double, &t_jit_emit::f_##a_operator##_float>,\
+				&t_jit_emit::f_binary_xo<bool, double, &t_jit_emit::f_##a_operator##_float, &t_jit_emit::f_equals_other<a_not>>\
 			>\
-		>(a_generator.v_globals.v_##a_operator, left, right, a_tail, v_at);\
+		>(a_emit.v_globals.v_##a_operator, left, right, a_tail, v_at);\
 		break;
 #define XEMMAI__JIT__BINARY_LOGICAL(a_label, a_operator)\
 	case e_instruction__##a_label##_TT:\
-		a_generator.f_emit_BINARY<nullptr,\
-			&t_jit_generator::f_binary_x<nullptr,\
-				&t_jit_generator::f_binary_xy<bool, bool, bool, &t_jit_generator::f_##a_operator>, nullptr, nullptr, nullptr\
+		a_emit.f_emit_BINARY<nullptr,\
+			&t_jit_emit::f_binary_x<nullptr,\
+				&t_jit_emit::f_binary_xy<bool, bool, bool, &t_jit_emit::f_##a_operator>, nullptr, nullptr, nullptr\
 			>,\
-			&t_jit_generator::f_binary_x<nullptr, nullptr,\
-				&t_jit_generator::f_binary_xy<intptr_t, intptr_t, intptr_t, &t_jit_generator::f_##a_operator>, nullptr,\
-				&t_jit_generator::f_binary_xo<intptr_t, intptr_t, &t_jit_generator::f_##a_operator, nullptr>\
+			&t_jit_emit::f_binary_x<nullptr, nullptr,\
+				&t_jit_emit::f_binary_xy<intptr_t, intptr_t, intptr_t, &t_jit_emit::f_##a_operator>, nullptr,\
+				&t_jit_emit::f_binary_xo<intptr_t, intptr_t, &t_jit_emit::f_##a_operator, nullptr>\
 			>, nullptr\
-		>(a_generator.v_globals.v_##a_operator, left, right, a_tail, v_at);\
+		>(a_emit.v_globals.v_##a_operator, left, right, a_tail, v_at);\
 		break;
 	XEMMAI__JIT__BINARY_ARITHMETIC(MULTIPLY, multiply)
 	XEMMAI__JIT__BINARY_ARITHMETIC(DIVIDE, divide)
@@ -3230,23 +3229,23 @@ t_operand t_binary::f_generate(t_jit_generator& a_generator, bool a_tail, bool a
 	XEMMAI__JIT__BINARY_EQUALITY(EQUALS, equals, false)
 	XEMMAI__JIT__BINARY_EQUALITY(NOT_EQUALS, not_equals, true)
 	case e_instruction__IDENTICAL_TT:
-		a_generator.f_emit_IDENTICAL<false>(left, right, a_tail);
+		a_emit.f_emit_IDENTICAL<false>(left, right, a_tail);
 		break;
 	case e_instruction__NOT_IDENTICAL_TT:
-		a_generator.f_emit_IDENTICAL<true>(left, right, a_tail);
+		a_emit.f_emit_IDENTICAL<true>(left, right, a_tail);
 		break;
 	XEMMAI__JIT__BINARY_LOGICAL(AND, and)
 	XEMMAI__JIT__BINARY_LOGICAL(XOR, xor)
 	XEMMAI__JIT__BINARY_LOGICAL(OR, or)
 	case e_instruction__SEND:
-		a_generator.f_emit_SEND(left, right, a_tail, v_at);
+		a_emit.f_emit_SEND(left, right, a_tail, v_at);
 		break;
 	}
-	if (a_clear) a_generator.f_emit_CLEAR();
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_call::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_call::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	const t_code::t_variable* variable = nullptr;
 	if (auto get = v_expand ? nullptr : dynamic_cast<t_symbol_get*>(v_target.get())) {
@@ -3254,55 +3253,55 @@ t_operand t_call::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_o
 		if (get->v_resolved == 1 && get->v_variable && !get->v_variable->v_varies) variable = get->v_variable;
 	}
 	if (variable) {
-		a_generator.f_push(false).f_push(false);
+		a_emit.f_push(false).f_push(false);
 	} else if (auto p = dynamic_cast<t_object_get*>(v_target.get())) {
-		p->f_method(a_generator);
+		p->f_method(a_emit);
 	} else if (auto p = dynamic_cast<t_get_at*>(v_target.get())) {
-		p->f_bind(a_generator);
+		p->f_bind(a_emit);
 	} else {
-		v_target->f_generate(a_generator, false, false);
-		a_generator.f_emit_NUL();
+		v_target->f_emit(a_emit, false, false);
+		a_emit.f_emit_NUL();
 	}
-	for (auto& p : v_arguments) p->f_generate(a_generator, false, false);
-	if (a_tail) a_generator.f_join(*a_generator.v_targets->v_return_junction);
-	a_generator.f_emit_SAFE_POINT(v_at);
+	for (auto& p : v_arguments) p->f_emit(a_emit, false, false);
+	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
+	a_emit.f_emit_SAFE_POINT(v_at);
 	if (variable)
-		a_generator.f_emit_CALL_OUTER(variable->v_index, v_arguments.size(), a_tail, v_at);
+		a_emit.f_emit_CALL_OUTER(variable->v_index, v_arguments.size(), a_tail, v_at);
 	else
-		a_generator.f_emit_CALL(v_arguments.size(), v_expand, a_tail, v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+		a_emit.f_emit_CALL(v_arguments.size(), v_expand, a_tail, v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-t_operand t_get_at::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_get_at::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_generator.f_push(false);
-	v_target->f_generate(a_generator, false, false);
-	v_index->f_generate(a_generator, false, false);
-	if (a_tail) a_generator.f_join(*a_generator.v_targets->v_return_junction);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_GET_AT(a_tail, v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	a_emit.f_push(false);
+	v_target->f_emit(a_emit, false, false);
+	v_index->f_emit(a_emit, false, false);
+	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_GET_AT(a_tail, v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 
-void t_get_at::f_bind(t_jit_generator& a_generator)
+void t_get_at::f_bind(t_jit_emit& a_emit)
 {
-	v_target->f_generate(a_generator, false, false);
-	v_index->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_METHOD_BIND(v_at);
+	v_target->f_emit(a_emit, false, false);
+	v_index->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_METHOD_BIND(v_at);
 }
 
-t_operand t_set_at::f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_set_at::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_generator.f_push(false);
-	v_target->f_generate(a_generator, false, false);
-	v_index->f_generate(a_generator, false, false);
-	v_value->f_generate(a_generator, false, false);
-	a_generator.f_emit_SAFE_POINT(v_at);
-	a_generator.f_emit_SET_AT(a_tail, v_at);
-	if (a_clear) a_generator.f_emit_CLEAR();
+	a_emit.f_push(false);
+	v_target->f_emit(a_emit, false, false);
+	v_index->f_emit(a_emit, false, false);
+	v_value->f_emit(a_emit, false, false);
+	a_emit.f_emit_SAFE_POINT(v_at);
+	a_emit.f_emit_SET_AT(a_tail, v_at);
+	if (a_clear) a_emit.f_emit_CLEAR();
 	return t_operand();
 }
 

@@ -9,9 +9,9 @@
 namespace xemmai
 {
 
-struct t_generator;
+struct t_emit;
 #ifdef XEMMAI_ENABLE_JIT
-struct t_jit_generator;
+struct t_jit_emit;
 #endif
 
 namespace ast
@@ -84,7 +84,7 @@ struct t_operand
 
 class t_node
 {
-	friend struct xemmai::t_generator;
+	friend struct xemmai::t_emit;
 
 protected:
 	t_at v_at;
@@ -95,9 +95,9 @@ public:
 	}
 	virtual ~t_node() = default;
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear = false) = 0;
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear = false) = 0;
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear = false) = 0;
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear = false) = 0;
 #endif
 };
 
@@ -133,11 +133,11 @@ struct t_lambda : t_node, t_scope
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	void f_jit_generate(t_generator& a_generator, t_code& a_code);
-	void f_jit_generate_with_lock(t_generator& a_generator, t_code& a_code);
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	void f_jit_emit(t_emit& a_emit, t_code& a_code);
+	void f_jit_emit_with_lock(t_emit& a_emit, t_code& a_code);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -155,9 +155,9 @@ struct t_if : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -175,9 +175,9 @@ struct t_while : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -197,9 +197,9 @@ struct t_for : t_node
 
 	using t_node::t_node;
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -211,9 +211,9 @@ struct t_break : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -221,9 +221,9 @@ struct t_continue : t_node
 {
 	using t_node::t_node;
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -235,9 +235,9 @@ struct t_return : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -267,12 +267,12 @@ struct t_try : t_node
 
 	using t_node::t_node;
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	void* f_jit_try(t_jit_generator& a_generator, bool a_clear);
-	void* f_jit_catch(t_jit_generator& a_generator, bool a_clear);
-	void* f_jit_finally(t_jit_generator& a_generator);
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	void* f_jit_try(t_jit_emit& a_emit, bool a_clear);
+	void* f_jit_catch(t_jit_emit& a_emit, bool a_clear);
+	void* f_jit_finally(t_jit_emit& a_emit);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -284,9 +284,9 @@ struct t_throw : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -299,11 +299,11 @@ struct t_object_get : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
-	void f_method(t_generator& a_generator);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
+	void f_method(t_emit& a_emit);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
-	void f_method(t_jit_generator& a_generator);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
+	void f_method(t_jit_emit& a_emit);
 #endif
 };
 
@@ -316,9 +316,9 @@ struct t_object_get_indirect : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -332,9 +332,9 @@ struct t_object_put : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -348,9 +348,9 @@ struct t_object_put_indirect : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -363,9 +363,9 @@ struct t_object_has : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -378,9 +378,9 @@ struct t_object_has_indirect : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -393,9 +393,9 @@ struct t_object_remove : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -408,9 +408,9 @@ struct t_object_remove_indirect : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -426,9 +426,9 @@ struct t_symbol_get : t_node
 	{
 	}
 	void f_resolve();
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -442,9 +442,9 @@ struct t_scope_put : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -455,9 +455,9 @@ struct t_self : t_node
 	t_self(const t_at& a_at, size_t a_outer) : t_node(a_at), v_outer(a_outer)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -469,9 +469,9 @@ struct t_class : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -483,18 +483,18 @@ struct t_super : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
 struct t_null : t_node
 {
 	using t_node::t_node;
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -505,9 +505,9 @@ struct t_boolean : t_node
 	t_boolean(const t_at& a_at, bool a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -518,9 +518,9 @@ struct t_integer : t_node
 	t_integer(const t_at& a_at, intptr_t a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -531,9 +531,9 @@ struct t_float : t_node
 	t_float(const t_at& a_at, double a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -544,9 +544,9 @@ struct t_instance : t_node
 	t_instance(const t_at& a_at, const t_value& a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -559,9 +559,9 @@ struct t_unary : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -575,9 +575,9 @@ struct t_binary : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -591,9 +591,9 @@ struct t_call : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
@@ -606,11 +606,11 @@ struct t_get_at : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
-	void f_bind(t_generator& a_generator);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
+	void f_bind(t_emit& a_emit);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
-	void f_bind(t_jit_generator& a_generator);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
+	void f_bind(t_jit_emit& a_emit);
 #endif
 };
 
@@ -624,15 +624,15 @@ struct t_set_at : t_node
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_generate(t_jit_generator& a_generator, bool a_tail, bool a_operand, bool a_clear);
+	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 #endif
 };
 
 }
 
-struct t_generator
+struct t_emit
 {
 	struct t_targets
 	{
@@ -659,17 +659,17 @@ struct t_generator
 #ifdef XEMMAI_ENABLE_JIT
 	void* v_jit;
 
-	t_generator(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points);
-	~t_generator();
+	t_emit(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points);
+	~t_emit();
 	void f_jit_install();
 #else
 
-	t_generator(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points) : v_module(a_module), v_safe_points(a_safe_points)
+	t_emit(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points) : v_module(a_module), v_safe_points(a_safe_points)
 	{
 	}
 #endif
 	t_scoped operator()(ast::t_scope& a_scope);
-	t_generator& operator<<(t_instruction a_instruction)
+	t_emit& operator<<(t_instruction a_instruction)
 	{
 		v_code->f_emit(a_instruction);
 		return *this;
@@ -678,24 +678,24 @@ struct t_generator
 	{
 		return v_arguments + v_stack->size();
 	}
-	t_generator& f_push(bool a_live)
+	t_emit& f_push(bool a_live)
 	{
 		v_stack->push_back(a_live);
 		if (f_stack() > v_code->v_size) v_code->v_size = f_stack();
 		return *this;
 	}
-	t_generator& f_pop()
+	t_emit& f_pop()
 	{
 		v_stack->pop_back();
 		return *this;
 	}
-	t_generator& f_stack_map(int a_offset = 0)
+	t_emit& f_stack_map(int a_offset = 0)
 	{
 		v_code->f_stack_map(a_offset, *v_stack);
 		return *this;
 	}
 	template<typename T>
-	t_generator& operator<<(T&& a_operand)
+	t_emit& operator<<(T&& a_operand)
 	{
 		v_code->f_operand(std::forward<T>(a_operand));
 		return *this;

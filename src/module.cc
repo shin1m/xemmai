@@ -71,7 +71,7 @@ t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const s
 		auto script = new t_debug_script(a_path);
 		t_scoped module = f_instantiate(a_name, script);
 		t_parser(*script, stream)(scope);
-		script->v_code = t_generator(module, &script->v_safe_points)(scope);
+		script->v_code = t_emit(module, &script->v_safe_points)(scope);
 		f_engine()->f_debug_script_loaded();
 		f_execute_script(module, script->v_code);
 		return module;
@@ -79,7 +79,7 @@ t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const s
 		auto script = new t_script(a_path);
 		t_scoped module = f_instantiate(a_name, script);
 		t_parser(*script, stream)(scope);
-		f_execute_script(module, t_generator(module, nullptr)(scope));
+		f_execute_script(module, t_emit(module, nullptr)(scope));
 		return module;
 	}
 }
