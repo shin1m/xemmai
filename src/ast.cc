@@ -188,8 +188,8 @@ void t_if::f_flow(t_flow& a_flow)
 t_operand t_if::f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
 {
 	v_condition->f_generate(a_generator, false, false);
-	a_generator.f_pop();
 	auto& label0 = a_generator.f_label();
+	a_generator.f_pop();
 	a_generator << e_instruction__BRANCH << a_generator.f_stack() << label0;
 	auto stack = *a_generator.v_stack;
 	f_generate_block(a_generator, v_true, a_tail, a_clear);
@@ -231,8 +231,8 @@ t_operand t_while::f_generate(t_generator& a_generator, bool a_tail, bool a_oper
 	a_generator.f_target(loop);
 	a_generator.f_merge(v_junction_condition);
 	v_condition->f_generate(a_generator, false, false);
-	a_generator.f_pop();
 	auto& label0 = a_generator.f_label();
+	a_generator.f_pop();
 	a_generator << e_instruction__BRANCH << a_generator.f_stack() << label0;
 	auto targets0 = a_generator.v_targets;
 	auto& break0 = a_generator.f_label();
@@ -481,8 +481,8 @@ void t_throw::f_flow(t_flow& a_flow)
 t_operand t_throw::f_generate(t_generator& a_generator, bool a_tail, bool a_operand, bool a_clear)
 {
 	v_expression->f_generate(a_generator, false, false);
-	a_generator.f_pop();
 	a_generator.f_emit_safe_point(this);
+	a_generator.f_pop();
 	a_generator << e_instruction__THROW << a_generator.f_stack();
 	a_generator.f_stack_map();
 	if (!a_clear) a_generator.f_push(false);
@@ -510,9 +510,9 @@ t_operand t_object_get::f_generate(t_generator& a_generator, bool a_tail, bool a
 void t_object_get::f_method(t_generator& a_generator)
 {
 	v_target->f_generate(a_generator, false, false);
-	a_generator.f_pop();
 	a_generator.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_generator.v_module));
+	a_generator.f_pop();
 	a_generator << e_instruction__METHOD_GET << a_generator.f_stack() << v_key << 0 << script.f_slot(t_scoped()) << 0;
 	a_generator.f_stack_map().f_push(true).f_push(true);
 	a_generator.f_at(this);
