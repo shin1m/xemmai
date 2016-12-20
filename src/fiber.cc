@@ -29,17 +29,6 @@ void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_pos
 
 XEMMAI__PORTABLE__THREAD t_context* t_context::v_instance;
 
-void t_context::f_tail(t_stacked* a_stack, size_t a_n)
-{
-	size_t n = f_as<t_lambda&>(v_lambda).v_privates;
-	v_base[-1].f_destruct();
-	for (size_t i = 0; i < n; ++i) v_base[i].f_destruct();
-	f_stack()->v_used = std::max(f_previous(), v_base + a_n);
-	v_base[-2].f_construct(std::move(*a_stack++));
-	v_base[-1].f_construct(std::move(*a_stack++));
-	for (size_t i = 0; i < a_n; ++i) v_base[i].f_construct(std::move(a_stack[i]));
-}
-
 void t_context::f_backtrace(const t_value& a_value)
 {
 	f_as<t_code&>(f_as<t_lambda&>(v_lambda).v_code).f_stack_clear(f_pc(), v_base);

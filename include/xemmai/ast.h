@@ -65,6 +65,9 @@ struct t_operand
 		size_t v_index;
 	};
 
+	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(a_value ? t_value::v_true : t_value::v_false)
+	{
+	}
 	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_integer(a_value)
 	{
 	}
@@ -498,50 +501,12 @@ struct t_null : t_node
 #endif
 };
 
-struct t_boolean : t_node
+template<typename T>
+struct t_literal : t_node
 {
-	bool v_value;
+	T v_value;
 
-	t_boolean(const t_at& a_at, bool a_value) : t_node(a_at), v_value(a_value)
-	{
-	}
-	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-#ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-#endif
-};
-
-struct t_integer : t_node
-{
-	intptr_t v_value;
-
-	t_integer(const t_at& a_at, intptr_t a_value) : t_node(a_at), v_value(a_value)
-	{
-	}
-	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-#ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-#endif
-};
-
-struct t_float : t_node
-{
-	double v_value;
-
-	t_float(const t_at& a_at, double a_value) : t_node(a_at), v_value(a_value)
-	{
-	}
-	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-#ifdef XEMMAI_ENABLE_JIT
-	virtual t_operand f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-#endif
-};
-
-struct t_instance : t_node
-{
-	const t_value& v_value;
-
-	t_instance(const t_at& a_at, const t_value& a_value) : t_node(a_at), v_value(a_value)
+	t_literal(const t_at& a_at, T a_value) : t_node(a_at), v_value(a_value)
 	{
 	}
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
@@ -647,6 +612,12 @@ struct t_emit
 		bool v_return_is_tail;
 	};
 
+	template<typename T>
+	static constexpr t_instruction f_instruction_of()
+	{
+		return e_instruction__INSTANCE;
+	}
+
 	t_object* v_module;
 	std::map<std::pair<size_t, void**>, size_t>* v_safe_points;
 	ast::t_scope* v_scope;
@@ -739,6 +710,51 @@ struct t_emit
 		std::copy(a_junction.v_uses.begin(), a_junction.v_uses.end(), v_stack->begin());
 	}
 };
+
+template<>
+constexpr t_instruction t_emit::f_instruction_of<bool>()
+{
+	return e_instruction__BOOLEAN;
+}
+template<>
+constexpr t_instruction t_emit::f_instruction_of<intptr_t>()
+{
+	return e_instruction__INTEGER;
+}
+template<>
+constexpr t_instruction t_emit::f_instruction_of<double>()
+{
+	return e_instruction__FLOAT;
+}
+
+namespace ast
+{
+
+template<typename T>
+t_operand t_literal<T>::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
+{
+	if (a_operand) return v_value;
+	if (a_clear) return t_operand();
+	if (a_tail) {
+		a_emit.f_emit_safe_point(this);
+		a_emit.f_join(*a_emit.v_targets->v_return_junction);
+		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + e_instruction__RETURN_B - e_instruction__BOOLEAN) << v_value;
+	} else {
+		a_emit << t_emit::f_instruction_of<T>() << a_emit.f_stack() << v_value;
+	}
+	a_emit.f_push(true);
+	a_emit.f_at(this);
+	return t_operand();
+}
+
+#ifdef XEMMAI_ENABLE_JIT
+extern template struct t_literal<bool>;
+extern template struct t_literal<intptr_t>;
+extern template struct t_literal<double>;
+extern template struct t_literal<const t_value&>;
+#endif
+
+}
 
 }
 

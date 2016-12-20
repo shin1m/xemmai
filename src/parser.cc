@@ -82,13 +82,13 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			{
 				auto& symbol = v_module.f_slot(t_symbol::f_instantiate(std::wstring(v_lexer.f_value().begin(), v_lexer.f_value().end())));
 				v_lexer.f_next();
-				return std::unique_ptr<ast::t_node>(new ast::t_instance(at, symbol));
+				return std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, symbol));
 			}
 		case t_lexer::e_token__LEFT_PARENTHESIS:
 			{
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
-				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_instance(at, v_module.f_slot(f_global()->f_type<t_tuple>())))));
+				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_tuple>())))));
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) call->v_expand = f_expressions(indent, call->v_arguments);
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_PARENTHESIS) v_lexer.f_next();
 				return std::move(call);
@@ -195,7 +195,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_instance(at, v_module.f_slot(f_global()->f_type<t_array>())))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_array>())))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) call->v_expand = f_expressions(indent, call->v_arguments);
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_BRACKET) v_lexer.f_next();
 			return std::move(call);
@@ -204,7 +204,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_instance(at, v_module.f_slot(f_global()->f_type<t_dictionary>())))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_dictionary>())))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
 				size_t i = v_lexer.f_indent();
 				while (true) {
@@ -235,27 +235,27 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		return std::unique_ptr<ast::t_node>(new ast::t_null(at));
 	case t_lexer::e_token__TRUE:
 		v_lexer.f_next();
-		return std::unique_ptr<ast::t_node>(new ast::t_boolean(at, true));
+		return std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, true));
 	case t_lexer::e_token__FALSE:
 		v_lexer.f_next();
-		return std::unique_ptr<ast::t_node>(new ast::t_boolean(at, false));
+		return std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, false));
 	case t_lexer::e_token__INTEGER:
 		{
 			intptr_t value = f_integer();
 			v_lexer.f_next();
-			return std::unique_ptr<ast::t_node>(new ast::t_integer(at, value));
+			return std::unique_ptr<ast::t_node>(new ast::t_literal<intptr_t>(at, value));
 		}
 	case t_lexer::e_token__FLOAT:
 		{
 			double value = f_float();
 			v_lexer.f_next();
-			return std::unique_ptr<ast::t_node>(new ast::t_float(at, value));
+			return std::unique_ptr<ast::t_node>(new ast::t_literal<double>(at, value));
 		}
 	case t_lexer::e_token__STRING:
 		{
 			std::wstring value(v_lexer.f_value().begin(), v_lexer.f_value().end());
 			v_lexer.f_next();
-			return std::unique_ptr<ast::t_node>(new ast::t_instance(at, v_module.f_slot(f_global()->f_as(value))));
+			return std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_as(value))));
 		}
 	default:
 		f_throw(L"unexpected token.");
@@ -386,13 +386,13 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 			{
 				intptr_t value = f_integer();
 				v_lexer.f_next();
-				return f_action(indent, new ast::t_integer(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
+				return f_action(indent, new ast::t_literal<intptr_t>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		case t_lexer::e_token__FLOAT:
 			{
 				double value = f_float();
 				v_lexer.f_next();
-				return f_action(indent, new ast::t_float(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
+				return f_action(indent, new ast::t_literal<double>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		}
 		break;
@@ -400,7 +400,7 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
 			intptr_t value = f_integer();
 			v_lexer.f_next();
-			return f_action(indent, new ast::t_integer(at, ~value), a_assignable);
+			return f_action(indent, new ast::t_literal<intptr_t>(at, ~value), a_assignable);
 		}
 		break;
 	}
@@ -573,7 +573,7 @@ std::unique_ptr<ast::t_node> t_parser::f_and_also(bool a_assignable)
 		v_lexer.f_next();
 		std::unique_ptr<ast::t_if> branch(new ast::t_if(at, std::move(node)));
 		branch->v_true.push_back(f_or(false));
-		branch->v_false.push_back(std::unique_ptr<ast::t_node>(new ast::t_boolean(at, false)));
+		branch->v_false.push_back(std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, false)));
 		node = std::move(branch);
 	}
 	return node;
@@ -586,7 +586,7 @@ std::unique_ptr<ast::t_node> t_parser::f_or_else(bool a_assignable)
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
 		std::unique_ptr<ast::t_if> branch(new ast::t_if(at, std::move(node)));
-		branch->v_true.push_back(std::unique_ptr<ast::t_node>(new ast::t_boolean(at, true)));
+		branch->v_true.push_back(std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, true)));
 		branch->v_false.push_back(f_and_also(false));
 		node = std::move(branch);
 	}

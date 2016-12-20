@@ -146,7 +146,8 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.f_pop();
 	a_emit.f_target(return0);
 	a_emit.f_join(v_junction);
-	a_emit << e_instruction__RETURN << a_emit.f_stack();
+	assert(a_emit.f_stack() == v_privates.size());
+	a_emit << e_instruction__RETURN_T;
 	a_emit.f_resolve();
 	a_emit.v_scope = scope0;
 	a_emit.v_code = code0;
@@ -317,7 +318,7 @@ t_operand t_break::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	if (v_expression)
 		v_expression->f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, a_emit.v_targets->v_break_must_clear);
 	else if (!a_emit.v_targets->v_break_must_clear)
-		a_emit.f_emit_null();
+		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, false);
 	if (!a_emit.v_targets->v_break_must_clear) a_emit.f_pop();
 	if (!a_clear) a_emit.f_push(false);
 	a_emit.f_join(*a_emit.v_targets->v_break_junction);
@@ -348,9 +349,14 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	if (v_expression)
 		v_expression->f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false);
 	else
-		a_emit.f_emit_null();
+		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false, false);
 	a_emit.f_join(*a_emit.v_targets->v_return_junction);
-	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_return;
+	if (a_emit.v_targets->v_return_is_tail) {
+		assert(a_emit.f_stack() - 1 == a_emit.v_scope->v_privates.size());
+		a_emit << e_instruction__RETURN_T;
+	} else {
+		a_emit << e_instruction__JUMP << *a_emit.v_targets->v_return;
+	}
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
 }
@@ -676,9 +682,9 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
-			a_emit.f_join(*a_emit.v_targets->v_return_junction);
 			a_emit.f_emit_safe_point(this);
-			a_emit << e_instruction__RETURN;
+			a_emit.f_join(*a_emit.v_targets->v_return_junction);
+			a_emit << e_instruction__RETURN_V;
 			a_emit.f_push(false);
 		} else {
 			a_emit << e_instruction__STACK_GET << a_emit.f_stack();
@@ -701,44 +707,43 @@ void t_scope_put::f_flow(t_flow& a_flow)
 
 t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	bool b = false;
 	if (a_clear && !v_variable.v_shared) {
 		int i = v_variable.v_index - a_emit.v_arguments;
 		if (i >= 0 && !(*a_emit.v_stack)[i]) {
-			b = true;
 			auto operand = v_value->f_emit(a_emit, false, true);
-			if (operand.v_tag != t_operand::e_tag__TEMPORARY) {
-				a_emit.f_emit_safe_point(this);
-				(*a_emit.v_stack)[i] = true;
-				switch (operand.v_tag) {
-				case t_operand::e_tag__INTEGER:
-					a_emit << e_instruction__INTEGER << v_variable.v_index << operand.v_integer;
+			a_emit.f_emit_safe_point(this);
+			(*a_emit.v_stack)[i] = true;
+			switch (operand.v_tag) {
+			case t_operand::e_tag__INTEGER:
+				a_emit << e_instruction__INTEGER << v_variable.v_index << operand.v_integer;
+				break;
+			case t_operand::e_tag__FLOAT:
+				a_emit << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
+				break;
+			case t_operand::e_tag__LITERAL:
+				switch (operand.v_value.f_tag()) {
+				case t_value::e_tag__NULL:
+					a_emit << e_instruction__NUL << v_variable.v_index;
 					break;
-				case t_operand::e_tag__FLOAT:
-					a_emit << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
+				case t_value::e_tag__BOOLEAN:
+					a_emit << e_instruction__BOOLEAN << v_variable.v_index << operand.v_value.f_boolean();
 					break;
-				case t_operand::e_tag__LITERAL:
-					switch (operand.v_value.f_tag()) {
-					case t_value::e_tag__NULL:
-						a_emit << e_instruction__NUL << v_variable.v_index;
-						break;
-					case t_value::e_tag__BOOLEAN:
-						a_emit << e_instruction__BOOLEAN << v_variable.v_index << operand.v_value.f_boolean();
-						break;
-					default:
-						a_emit << e_instruction__INSTANCE << v_variable.v_index << operand.v_value;
-					}
-					break;
-				case t_operand::e_tag__VARIABLE:
-					a_emit << e_instruction__STACK_LET << operand.v_index << v_variable.v_index;
-					break;
+				default:
+					a_emit << e_instruction__INSTANCE << v_variable.v_index << operand.v_value;
 				}
-				a_emit.f_at(this);
-				return t_operand();
+				break;
+			case t_operand::e_tag__VARIABLE:
+				a_emit << e_instruction__STACK_LET << operand.v_index << v_variable.v_index;
+				break;
+			default:
+				a_emit << e_instruction__STACK_LET_CLEAR << a_emit.f_stack() - 1 << v_variable.v_index;
+				a_emit.f_pop();
 			}
+			a_emit.f_at(this);
+			return t_operand();
 		}
 	}
-	if (!b) v_value->f_emit(a_emit, false, false);
+	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	if (v_variable.v_shared) {
 		a_emit << (a_clear ? e_instruction__SCOPE_PUT_CLEAR : e_instruction__SCOPE_PUT) << a_emit.f_stack() - 1 << v_outer;
@@ -748,7 +753,7 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 			a_emit << (a_clear ? e_instruction__STACK_PUT_CLEAR : e_instruction__STACK_PUT);
 		} else {
 			(*a_emit.v_stack)[i] = true;
-			a_emit << (a_clear ? e_instruction__STACK_LET_CLEAR : e_instruction__STACK_LET);
+			a_emit << e_instruction__STACK_LET;
 		}
 		a_emit << a_emit.f_stack() - 1;
 	}
@@ -803,52 +808,13 @@ t_operand t_null::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 {
 	if (a_operand) return t_value::v_null;
 	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit.f_emit_null();
-	a_emit.f_at(this);
-	return t_operand();
-}
-
-t_operand t_boolean::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	if (a_operand) return v_value ? t_value::v_true : t_value::v_false;
-	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__BOOLEAN << a_emit.f_stack() << v_value;
-	a_emit.f_push(false);
-	a_emit.f_at(this);
-	return t_operand();
-}
-
-t_operand t_integer::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	if (a_operand) return v_value;
-	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__INTEGER << a_emit.f_stack() << v_value;
-	a_emit.f_push(false);
-	a_emit.f_at(this);
-	return t_operand();
-}
-
-t_operand t_float::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	if (a_operand) return v_value;
-	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__FLOAT << a_emit.f_stack() << v_value;
-	a_emit.f_push(false);
-	a_emit.f_at(this);
-	return t_operand();
-}
-
-t_operand t_instance::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	if (a_operand) return v_value;
-	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__INSTANCE << a_emit.f_stack() << v_value;
-	a_emit.f_push(true);
+	if (a_tail) {
+		a_emit.f_emit_safe_point(this);
+		a_emit.f_join(*a_emit.v_targets->v_return_junction);
+		(a_emit << e_instruction__RETURN_N).f_push(false);
+	} else {
+		a_emit.f_emit_null();
+	}
 	a_emit.f_at(this);
 	return t_operand();
 }
@@ -866,20 +832,20 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	if (operand.v_tag == t_operand::e_tag__INTEGER) {
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
-			return t_integer(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<intptr_t>(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
-			return t_integer(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<intptr_t>(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__COMPLEMENT_T:
-			return t_integer(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<intptr_t>(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			t_throwable::f_throw(L"not supported");
 		}
 	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
-			return t_float(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<double>(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
-			return t_float(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<double>(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			t_throwable::f_throw(L"not supported");
 		}
@@ -898,17 +864,17 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		break;
 	}
 	a_emit.f_emit_safe_point(this);
+	if (operand.v_tag == t_operand::e_tag__TEMPORARY) a_emit.f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
+	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.f_stack();
 	switch (operand.v_tag) {
 	case t_operand::e_tag__LITERAL:
-		a_emit << a_emit.f_stack() << operand.v_value;
+		a_emit << operand.v_value;
 		break;
 	case t_operand::e_tag__VARIABLE:
-		a_emit << a_emit.f_stack() << operand.v_index;
+		a_emit << operand.v_index;
 		break;
-	default:
-		a_emit.f_pop();
-		a_emit << a_emit.f_stack();
 	}
 	a_emit.f_stack_map().f_push(true);
 	a_emit.f_at(this);
@@ -934,39 +900,39 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_integer(v_at, left.v_integer * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_integer(v_at, left.v_integer / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__MODULUS_TT:
-				return t_integer(v_at, left.v_integer % right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer % right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_integer(v_at, left.v_integer + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_integer(v_at, left.v_integer - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LEFT_SHIFT_TT:
-				return t_integer(v_at, left.v_integer << right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer << right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__RIGHT_SHIFT_TT:
-				return t_integer(v_at, static_cast<size_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, static_cast<size_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__AND_TT:
-				return t_integer(v_at, left.v_integer & right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer & right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__XOR_TT:
-				return t_integer(v_at, left.v_integer ^ right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer ^ right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__OR_TT:
-				return t_integer(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
@@ -974,29 +940,29 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_integer * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_integer / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_integer + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_integer - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_boolean(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_boolean(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
@@ -1006,29 +972,29 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_float * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_float / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_float + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_float - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_boolean(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_boolean(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
@@ -1036,27 +1002,27 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_float * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_float / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_float + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_float - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
@@ -1098,7 +1064,9 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	size_t stack = a_emit.f_stack() - 1;
 	if (left.v_tag == t_operand::e_tag__TEMPORARY) --stack;
 	if (right.v_tag == t_operand::e_tag__TEMPORARY) --stack;
-	a_emit << static_cast<t_instruction>(instruction) << stack;
+	a_emit << static_cast<t_instruction>(instruction);
+	assert(!a_tail || stack == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << stack;
 	switch (left.v_tag) {
 	case t_operand::e_tag__INTEGER:
 		a_emit << left.v_integer;
@@ -1169,7 +1137,9 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 		instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
 	}
 	a_emit.f_emit_safe_point(this);
-	a_emit << static_cast<t_instruction>(instruction) << a_emit.f_stack();
+	a_emit << static_cast<t_instruction>(instruction);
+	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.f_stack();
 	if (variable) a_emit << variable->v_index;
 	a_emit << v_arguments.size();
 	a_emit.f_stack_map().f_push(true);
@@ -1191,7 +1161,9 @@ t_operand t_get_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	v_index->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
 	a_emit.f_emit_safe_point(this);
-	a_emit << (a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT) << a_emit.f_stack() - 3;
+	a_emit << (a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT);
+	assert(!a_tail || a_emit.f_stack() - 3 == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.f_stack() - 3;
 	a_emit.f_stack_map(-1).f_pop().f_pop().f_pop().f_stack_map().f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_emit_clear();
@@ -1223,7 +1195,9 @@ t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	v_value->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
 	a_emit.f_emit_safe_point(this);
-	a_emit << (a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT) << a_emit.f_stack() - 4;
+	a_emit << (a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT);
+	assert(!a_tail || a_emit.f_stack() - 4 == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.f_stack() - 4;
 	a_emit.f_stack_map(-1).f_pop().f_pop().f_pop().f_pop().f_stack_map().f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_emit_clear();

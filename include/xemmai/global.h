@@ -1072,15 +1072,13 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_code::f_operator(t_object* a_this,
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-XEMMAI__PORTABLE__NOINLINE size_t t_code::f_operator(t_context& a_context, t_stacked* a_base, t_object* a_this, t_stacked* a_stack)
+XEMMAI__PORTABLE__NOINLINE size_t t_context::f_tail(size_t a_privates, t_object* a_this)
 {
-	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack);
-	if (n == size_t(-1)) {
-		a_base[-2].f_construct(std::move(a_stack[0]));
-		a_context.f_pop();
-	} else {
-		a_context.f_tail(a_stack, n);
-	}
+	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, v_base + a_privates);
+	if (n == size_t(-1))
+		f_return(a_privates);
+	else
+		f_tail(a_privates, n);
 	return n;
 }
 

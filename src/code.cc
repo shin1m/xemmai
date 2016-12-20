@@ -279,7 +279,13 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__INTEGER,
 			&&label__FLOAT,
 			&&label__INSTANCE,
-			&&label__RETURN,
+			&&label__RETURN_N,
+			&&label__RETURN_B,
+			&&label__RETURN_I,
+			&&label__RETURN_F,
+			&&label__RETURN_L,
+			&&label__RETURN_V,
+			&&label__RETURN_T,
 			&&label__CALL,
 			&&label__CALL_WITH_EXPANSION,
 			&&label__CALL_OUTER,
@@ -1017,14 +1023,42 @@ size_t t_code::f_loop(t_context* a_context)
 				stack[0].f_construct(value);
 			}
 			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(RETURN)
+		XEMMAI__CODE__CASE(RETURN_N)
+			a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates, nullptr);
+			return -1;
+		XEMMAI__CODE__CASE(RETURN_B)
 			{
-				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-				base[-2].f_construct(std::move(static_cast<t_value&>(stack[0])));
-				a_context->f_pop();
+				bool value = reinterpret_cast<intptr_t>(*++pc) != 0;
+				a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates, value);
+			}
+			return -1;
+		XEMMAI__CODE__CASE(RETURN_I)
+			{
+				intptr_t value = reinterpret_cast<intptr_t>(*++pc);
+				a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates, value);
+			}
+			return -1;
+		XEMMAI__CODE__CASE(RETURN_F)
+			{
+				XEMMAI__CODE__FLOAT(v0, v1)
+				a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates, v0);
+			}
+			return -1;
+		XEMMAI__CODE__CASE(RETURN_L)
+			{
+				auto& value = *static_cast<const t_value*>(*++pc);
+				a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates, value);
+			}
+			return -1;
+		XEMMAI__CODE__CASE(RETURN_V)
+			{
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates, index);
 				return -1;
 			}
-			XEMMAI__CODE__BREAK
+		XEMMAI__CODE__CASE(RETURN_T)
+			a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates);
+			return -1;
 		XEMMAI__CODE__CASE(CALL)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
@@ -1352,32 +1386,29 @@ size_t t_code::f_loop(t_context* a_context)
 #undef XEMMAI__CODE__CASE_NA
 		XEMMAI__CODE__CASE(CALL_TAIL)
 			{
-				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t n = reinterpret_cast<size_t>(*++pc);
-				a_context->f_tail(stack, n);
+				a_context->f_tail(f_as<t_lambda&>(a_context->v_lambda).v_privates, n);
 				return n;
 			}
-			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CALL_WITH_EXPANSION_TAIL)
 			{
-				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t n = reinterpret_cast<size_t>(*++pc);
-				n = f_expand(pc, stack, n);
-				a_context->f_tail(stack, n);
+				size_t privates = f_as<t_lambda&>(a_context->v_lambda).v_privates;
+				n = f_expand(pc, base + privates, n);
+				a_context->f_tail(privates, n);
 				return n;
 			}
-			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CALL_OUTER_TAIL)
 			{
-				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				size_t n = reinterpret_cast<size_t>(*++pc);
-				stack[0].f_construct(f_as<t_lambda&>(a_context->v_lambda).v_as_scope[index]);
+				auto& lambda = f_as<t_lambda&>(a_context->v_lambda);
+				t_stacked* stack = base + lambda.v_privates;
+				stack[0].f_construct(lambda.v_as_scope[index]);
 				stack[1].f_construct();
-				a_context->f_tail(stack, n);
+				a_context->f_tail(lambda.v_privates, n);
 				return n;
 			}
-			XEMMAI__CODE__BREAK
 #undef XEMMAI__CODE__PRIMITIVE
 #define XEMMAI__CODE__PRIMITIVE(a_x)
 #undef XEMMAI__CODE__PREPARE_V
@@ -1420,18 +1451,18 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\
 		XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name##_TAIL, XEMMAI__CODE__OPERANDS))\
 			{\
-				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);\
+				size_t privates = f_as<t_lambda&>(a_context->v_lambda).v_privates;\
+				t_stacked* stack = base + privates;\
 				XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__FETCH, XEMMAI__CODE__OPERANDS)()\
 				++pc;
 #define XEMMAI__CODE__PRIMITIVE_CALL(a_p, a_x)\
-				base[-2].f_construct(a_x);\
+				a_context->f_return(privates, a_x);\
 				XEMMAI__MACRO__CONCATENATE(XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PRIMITIVE, a_p), XEMMAI__CODE__OPERANDS)(a_x)\
-				a_context->f_pop();\
 				return -1;
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
 				{\
 					XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
-					return f_operator<&t_type::a_method>(*a_context, base, x, stack);\
+					return a_context->f_tail<&t_type::a_method>(privates, x);\
 				}
 #define XEMMAI__CODE__CASE_END\
 			}
@@ -1547,8 +1578,7 @@ size_t t_code::f_loop(t_context* a_context)
 #undef XEMMAI__CODE__CASE_END
 #undef XEMMAI__CODE__CASE_NA
 		XEMMAI__CODE__CASE(END)
-			base[-2].f_construct();
-			a_context->f_pop();
+			a_context->f_return(f_as<t_lambda&>(a_context->v_lambda).v_privates, nullptr);
 			return -1;
 		XEMMAI__CODE__CASE(SAFE_POINT)
 			++pc;

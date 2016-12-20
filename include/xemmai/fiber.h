@@ -40,14 +40,37 @@ struct t_context
 		v_instance = v_next;
 	}
 	void f_terminate();
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_pop()
+	template<typename T>
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(size_t a_privates, T&& a_value)
 	{
-		size_t n = f_as<t_lambda&>(v_lambda).v_privates;
 		v_base[-1].f_destruct();
-		for (size_t i = 0; i < n; ++i) v_base[i].f_destruct();
+		for (size_t i = 0; i < a_privates; ++i) v_base[i].f_destruct();
+		v_base[-2].f_construct(std::forward<T>(a_value));
 		f_stack()->v_used = f_previous();
 	}
-	void f_tail(t_stacked* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(size_t a_privates)
+	{
+		f_return(a_privates, std::move(v_base[a_privates]));
+	}
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(size_t a_privates, size_t a_index)
+	{
+		v_base[-1].f_destruct();
+		size_t i = 0;
+		while (i < a_index) v_base[i++].f_destruct();
+		v_base[-2].f_construct(std::move(v_base[i++]));
+		while (i < a_privates) v_base[i++].f_destruct();
+		f_stack()->v_used = f_previous();
+	}
+	void f_tail(size_t a_privates, size_t a_n)
+	{
+		v_base[-1].f_destruct();
+		for (size_t i = 0; i < a_privates; ++i) v_base[i].f_destruct();
+		auto p = reinterpret_cast<char*>(v_base + a_privates);
+		std::copy(p, p + (a_n + 2) * sizeof(t_stacked), reinterpret_cast<char*>(v_base - 2));
+		f_stack()->v_used = std::max(f_previous(), v_base + a_n);
+	}
+	template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+	size_t f_tail(size_t a_privates, t_object* a_this);
 	void f_backtrace(const t_value& a_value);
 	t_stacked*& f_previous()
 	{

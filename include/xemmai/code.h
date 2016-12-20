@@ -70,7 +70,13 @@ enum t_instruction
 	e_instruction__INTEGER,
 	e_instruction__FLOAT,
 	e_instruction__INSTANCE,
-	e_instruction__RETURN,
+	e_instruction__RETURN_N,
+	e_instruction__RETURN_B,
+	e_instruction__RETURN_I,
+	e_instruction__RETURN_F,
+	e_instruction__RETURN_L,
+	e_instruction__RETURN_V,
+	e_instruction__RETURN_T,
 	e_instruction__CALL,
 	e_instruction__CALL_WITH_EXPANSION,
 	e_instruction__CALL_OUTER,
@@ -241,8 +247,6 @@ struct t_code
 	static size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n);
 	template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
 	static void f_operator(t_object* a_this, t_stacked* a_stack);
-	template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-	static size_t f_operator(t_context& a_context, t_stacked* a_base, t_object* a_this, t_stacked* a_stack);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static const void** v_labels;

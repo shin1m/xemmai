@@ -134,16 +134,16 @@ void f_operator_move(t_stacked&& a_this, t_stacked* a_stack)
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-size_t f_operator_tail(t_context* a_context, t_stacked* a_base, const t_value& a_this, t_stacked* a_stack)
+size_t f_operator_tail(t_context* a_context, size_t a_privates, const t_value& a_this)
 {
-	return t_code::f_operator<A_function>(*a_context, a_base, a_this, a_stack);
+	return a_context->f_tail<A_function>(a_privates, a_this);
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-size_t f_operator_tail_move(t_context* a_context, t_stacked* a_base, t_value& a_this, t_stacked* a_stack)
+size_t f_operator_tail_move(t_context* a_context, size_t a_privates, t_value& a_this)
 {
 	t_scoped x = std::move(a_this);
-	return t_code::f_operator<A_function>(*a_context, a_base, x, a_stack);
+	return a_context->f_tail<A_function>(a_privates, x);
 }
 
 void f_call(t_stacked* a_stack, size_t a_n)
@@ -152,16 +152,21 @@ void f_call(t_stacked* a_stack, size_t a_n)
 	x.f_call(a_stack, a_n);
 }
 
+void f_tail(t_context* a_context, size_t a_privates, size_t a_n)
+{
+	a_context->f_tail(a_privates, a_n);
+}
+
 void f_get_at(t_stacked* a_stack)
 {
 	t_scoped x = std::move(a_stack[1]);
 	t_code::f_operator<&t_type::f_get_at>(x, a_stack);
 }
 
-size_t f_get_at_tail(t_context* a_context, t_stacked* a_base, t_stacked* a_stack)
+size_t f_get_at_tail(t_context* a_context, size_t a_privates)
 {
-	t_scoped x = std::move(a_stack[1]);
-	return t_code::f_operator<&t_type::f_get_at>(*a_context, a_base, x, a_stack);
+	t_scoped x = std::move(a_context->v_base[a_privates + 1]);
+	return a_context->f_tail<&t_type::f_get_at>(a_privates, x);
 }
 
 void f_set_at(t_stacked* a_stack)
@@ -170,10 +175,10 @@ void f_set_at(t_stacked* a_stack)
 	t_code::f_operator<&t_type::f_set_at>(x, a_stack);
 }
 
-size_t f_set_at_tail(t_context* a_context, t_stacked* a_base, t_stacked* a_stack)
+size_t f_set_at_tail(t_context* a_context, size_t a_privates)
 {
-	t_scoped x = std::move(a_stack[1]);
-	return t_code::f_operator<&t_type::f_set_at>(*a_context, a_base, x, a_stack);
+	t_scoped x = std::move(a_context->v_base[a_privates + 1]);
+	return a_context->f_tail<&t_type::f_set_at>(a_privates, x);
 }
 
 void f_safe_point(t_context* a_context)
@@ -246,7 +251,7 @@ struct t_engine_jit
 		XEMMAI__JIT__OPERATOR_SYMBOL(send)
 		if (a_name == "xemmai::t_value::f_call") return reinterpret_cast<void*>(static_cast<void (t_value::*)(t_stacked*, size_t) const>(&t_value::f_call));
 		if (a_name == "f_call") return reinterpret_cast<void*>(f_call);
-		if (a_name == "xemmai::t_context::f_tail") return reinterpret_cast<void*>(&t_context::f_tail);
+		if (a_name == "f_tail") return reinterpret_cast<void*>(f_tail);
 		if (a_name == "xemmai::t_code::f_expand") return reinterpret_cast<void*>(t_code::f_expand);
 		if (a_name == "f_get_at") return reinterpret_cast<void*>(f_get_at);
 		if (a_name == "f_get_at_tail") return reinterpret_cast<void*>(f_get_at_tail);
@@ -284,18 +289,18 @@ struct t_engine_jit
 	llvm::FunctionType* v_ft_void__wstring;
 	llvm::FunctionType* v_ft_void__value_pointer;
 	llvm::FunctionType* v_ft_size_t__context_pointer__value_pointer;
+	llvm::FunctionType* v_ft_size_t__context_pointer__size_t;
+	llvm::FunctionType* v_ft_size_t__context_pointer__size_t__value_pointer;
 	llvm::FunctionType* v_ft_bool__context_pointer__value_pointer__value_pointer__pc__size_t;
 	llvm::FunctionType* v_ft_void__context_pointer;
 	llvm::FunctionType* v_ft_size_t__context_pointer__value_pointer__fp__fp__fp;
 	llvm::FunctionType* v_ft_void__value_pointer__object_pointer__object_pointer;
 	llvm::FunctionType* v_ft_void__value_pointer__object_pointer;
 	llvm::FunctionType* v_ft_void__value_pointer__value_pointer;
-	llvm::FunctionType* v_ft_size_t__context_pointer__value_pointer__value_pointer__value_pointer;
 	llvm::FunctionType* v_ft_void__value_pointer__value_pointer__size_t;
 	llvm::FunctionType* v_ft_void__value_pointer__size_t;
-	llvm::FunctionType* v_ft_void__context_pointer__value_pointer__size_t;
+	llvm::FunctionType* v_ft_void__context_pointer__size_t__size_t;
 	llvm::FunctionType* v_ft_size_t__pc_pointer__value_pointer__size_t;
-	llvm::FunctionType* v_ft_size_t__context_pointer__value_pointer__value_pointer;
 
 	t_engine_jit() : v_target(llvm::EngineBuilder().selectTarget())
 	{
@@ -397,18 +402,18 @@ struct t_engine_jit
 		v_ft_void__wstring = llvm::FunctionType::get(type_void, {type_wstring}, false);
 		v_ft_void__value_pointer = llvm::FunctionType::get(type_void, {type_value_pointer}, false);
 		v_ft_size_t__context_pointer__value_pointer = llvm::FunctionType::get(type_size_t, {type_context_pointer, type_value_pointer}, false);
+		v_ft_size_t__context_pointer__size_t = llvm::FunctionType::get(type_size_t, {type_context_pointer, type_size_t, type_size_t}, false);
+		v_ft_size_t__context_pointer__size_t__value_pointer = llvm::FunctionType::get(type_size_t, {type_context_pointer, type_size_t, type_value_pointer}, false);
 		v_ft_bool__context_pointer__value_pointer__value_pointer__pc__size_t = llvm::FunctionType::get(type_bool, {type_context_pointer, type_value_pointer, type_value_pointer, v_type_pc, type_size_t}, false);
 		v_ft_void__context_pointer = llvm::FunctionType::get(type_void, {type_context_pointer}, false);
 		v_ft_size_t__context_pointer__value_pointer__fp__fp__fp = llvm::FunctionType::get(type_size_t, {type_context_pointer, type_value_pointer, llvm::PointerType::getUnqual(v_ft_size_t__context_pointer), llvm::PointerType::getUnqual(v_ft_size_t__context_pointer__value_pointer), llvm::PointerType::getUnqual(v_ft_void__context_pointer)}, false);
 		v_ft_void__value_pointer__object_pointer__object_pointer = llvm::FunctionType::get(type_void, {type_value_pointer, v_type_object_pointer, v_type_object_pointer}, false);
 		v_ft_void__value_pointer__object_pointer = llvm::FunctionType::get(type_void, {type_value_pointer, v_type_object_pointer}, false);
 		v_ft_void__value_pointer__value_pointer = llvm::FunctionType::get(type_void, {type_value_pointer, type_value_pointer}, false);
-		v_ft_size_t__context_pointer__value_pointer__value_pointer__value_pointer = llvm::FunctionType::get(type_size_t, {type_context_pointer, type_value_pointer, type_value_pointer, type_value_pointer}, false);
 		v_ft_void__value_pointer__value_pointer__size_t = llvm::FunctionType::get(type_void, {type_value_pointer, type_value_pointer, type_size_t}, false);
 		v_ft_void__value_pointer__size_t = llvm::FunctionType::get(type_void, {type_value_pointer, type_size_t}, false);
-		v_ft_void__context_pointer__value_pointer__size_t = llvm::FunctionType::get(type_void, {type_context_pointer, type_value_pointer, type_size_t}, false);
+		v_ft_void__context_pointer__size_t__size_t = llvm::FunctionType::get(type_void, {type_context_pointer, type_size_t, type_size_t}, false);
 		v_ft_size_t__pc_pointer__value_pointer__size_t = llvm::FunctionType::get(type_size_t, {v_type_pc_pointer, type_value_pointer, type_size_t}, false);
-		v_ft_size_t__context_pointer__value_pointer__value_pointer = llvm::FunctionType::get(type_size_t, {type_context_pointer, type_value_pointer, type_value_pointer}, false);
 	}
 };
 
@@ -689,8 +694,8 @@ struct t_jit_emit : llvm::IRBuilder<>
 #define XEMMAI__JIT__OPERATOR_CREATE(a_operator)\
 			v_##a_operator.v_call = llvm::Function::Create(f_jit()->v_ft_void__value_pointer__value_pointer, llvm::Function::ExternalLinkage, "f_"#a_operator, module);\
 			v_##a_operator.v_call_move = llvm::Function::Create(f_jit()->v_ft_void__value_pointer__value_pointer, llvm::Function::ExternalLinkage, "f_"#a_operator"_move", module);\
-			v_##a_operator.v_tail = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__value_pointer__value_pointer__value_pointer, llvm::Function::ExternalLinkage, "f_"#a_operator"_tail", module);\
-			v_##a_operator.v_tail_move = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__value_pointer__value_pointer__value_pointer, llvm::Function::ExternalLinkage, "f_"#a_operator"_tail_move", module);
+			v_##a_operator.v_tail = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__size_t__value_pointer, llvm::Function::ExternalLinkage, "f_"#a_operator"_tail", module);\
+			v_##a_operator.v_tail_move = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__size_t__value_pointer, llvm::Function::ExternalLinkage, "f_"#a_operator"_tail_move", module);
 			XEMMAI__JIT__OPERATOR_CREATE(plus)
 			XEMMAI__JIT__OPERATOR_CREATE(minus)
 			XEMMAI__JIT__OPERATOR_CREATE(not)
@@ -714,12 +719,12 @@ struct t_jit_emit : llvm::IRBuilder<>
 			XEMMAI__JIT__OPERATOR_CREATE(send)
 			v_value__call = llvm::Function::Create(f_jit()->v_ft_void__value_pointer__value_pointer__size_t, llvm::Function::ExternalLinkage, "xemmai::t_value::f_call", module);
 			v_call = llvm::Function::Create(f_jit()->v_ft_void__value_pointer__size_t, llvm::Function::ExternalLinkage, "f_call", module);
-			v_tail = llvm::Function::Create(f_jit()->v_ft_void__context_pointer__value_pointer__size_t, llvm::Function::ExternalLinkage, "xemmai::t_context::f_tail", module);
+			v_tail = llvm::Function::Create(f_jit()->v_ft_void__context_pointer__size_t__size_t, llvm::Function::ExternalLinkage, "f_tail", module);
 			v_expand = llvm::Function::Create(f_jit()->v_ft_size_t__pc_pointer__value_pointer__size_t, llvm::Function::ExternalLinkage, "xemmai::t_code::f_expand", module);
 			v_get_at = llvm::Function::Create(f_jit()->v_ft_void__value_pointer, llvm::Function::ExternalLinkage, "f_get_at", module);
-			v_get_at_tail = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__value_pointer__value_pointer, llvm::Function::ExternalLinkage, "f_get_at_tail", module);
+			v_get_at_tail = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__size_t, llvm::Function::ExternalLinkage, "f_get_at_tail", module);
 			v_set_at = llvm::Function::Create(f_jit()->v_ft_void__value_pointer, llvm::Function::ExternalLinkage, "f_set_at", module);
-			v_set_at_tail = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__value_pointer__value_pointer, llvm::Function::ExternalLinkage, "f_set_at_tail", module);
+			v_set_at_tail = llvm::Function::Create(f_jit()->v_ft_size_t__context_pointer__size_t, llvm::Function::ExternalLinkage, "f_set_at_tail", module);
 			v_safe_point = llvm::Function::Create(f_jit()->v_ft_void__context_pointer, llvm::Function::ExternalLinkage, "f_safe_point", module);
 		}
 		void f_install()
@@ -1205,13 +1210,17 @@ std::fprintf(stderr, "DONE.\n");
 	}
 	void f_context__pop()
 	{
-		f_stacked__destruct(f_base(-1));
-		for (size_t i = 0; i < v_code.v_privates; ++i) f_stacked__destruct(f_base(i));
 		auto used = CreateStructGEP(f_type_stack(), v_stack, 2);
 		auto lambda = CreateStructGEP(f_type_context(), v_context, 2);
 		auto previous = CreateStructGEP(f_type_value(), lambda, 1);
 		previous = CreateLoad(CreatePointerCast(previous, llvm::PointerType::getUnqual(llvm::PointerType::getUnqual(f_type_value()))));
 		CreateStore(previous, used);
+	}
+	void f_context__return()
+	{
+		f_stacked__destruct(f_base(-1));
+		for (size_t i = 0; i < v_code.v_privates; ++i) f_stacked__destruct(f_base(i));
+		f_context__pop();
 	}
 	llvm::Value* f_outer(size_t a_outer)
 	{
@@ -1452,6 +1461,19 @@ std::fprintf(stderr, "GLOBAL GET %zd %p\n", f_stack(), a_key);
 		f_invoke(v_globals.v_global_get, {stack, key}, a_at, [] {});
 		f_stack_map().f_push(true);
 	}
+	void f_emit_STACK_LET(size_t a_stack, size_t a_index, bool a_clear)
+	{
+#ifdef XEMMAI__JIT__DEBUG_PRINT
+std::fprintf(stderr, "STACK LET %zd %zd %d\n", a_stack, a_index, a_clear);
+#endif
+		auto stack = f_base(a_stack);
+		if (a_clear) {
+			f_stacked__construct_move_stacked(f_base(a_index), stack);
+			f_pop();
+		} else {
+			f_value__construct(f_base(a_index), stack);
+		}
+	}
 	void f_emit_STACK_GET(size_t a_index)
 	{
 #ifdef XEMMAI__JIT__DEBUG_PRINT
@@ -1467,22 +1489,11 @@ std::fprintf(stderr, "STACK GET %zd %zd\n", f_stack(), a_index);
 std::fprintf(stderr, "STACK PUT %zd %zd %d\n", f_stack() - 1, a_index, a_clear);
 #endif
 		auto stack = f_base(f_stack() - 1);
-		int i = a_index - v_arguments;
-		if (i < 0 || (*v_stack_map)[i]) {
-			if (a_clear) {
-				f_stacked__move(f_base(a_index), stack);
-				f_pop();
-			} else {
-				f_value__assign(f_base(a_index), stack);
-			}
+		if (a_clear) {
+			f_stacked__move(f_base(a_index), stack);
+			f_pop();
 		} else {
-			(*v_stack_map)[i] = true;
-			if (a_clear) {
-				f_stacked__construct_move_stacked(f_base(a_index), stack);
-				f_pop();
-			} else {
-				f_value__construct(f_base(a_index), stack);
-			}
+			f_value__assign(f_base(a_index), stack);
 		}
 	}
 	void f_emit_SCOPE_GET(size_t a_outer, size_t a_index, bool a_lock)
@@ -1574,44 +1585,35 @@ std::fprintf(stderr, "SUPER %zd\n", f_stack() - 1);
 		f_value__assign_pointer(stack, super);
 		f_stack_map();
 	}
+	void f_emit_NUL(size_t a_index)
+	{
+#ifdef XEMMAI__JIT__DEBUG_PRINT
+std::fprintf(stderr, "NUL %zd\n", a_index);
+#endif
+		f_value__p__(f_base(a_index), f_null());
+	}
 	void f_emit_NUL()
 	{
-#ifdef XEMMAI__JIT__DEBUG_PRINT
-std::fprintf(stderr, "NUL %zd\n", f_stack());
-#endif
-		f_value__p__(f_base(f_stack()), f_null());
+		f_emit_NUL(f_stack());
 		f_push(false);
 	}
-	void f_emit_BOOLEAN(bool a_value)
+	template<typename T>
+	void f_emit_LITERAL(size_t a_index, T&& a_value)
 	{
 #ifdef XEMMAI__JIT__DEBUG_PRINT
-std::fprintf(stderr, "BOOLEAN %zd %d\n", f_stack(), a_value);
+std::fprintf(stderr, "LITERAL %zd\n", a_index);
 #endif
-		f_value__construct(f_base(f_stack()), a_value);
+		f_value__construct(f_base(a_index), std::forward<T>(a_value));
+	}
+	template<typename T>
+	void f_emit_LITERAL(T a_value)
+	{
+		f_emit_LITERAL(f_stack(), a_value);
 		f_push(false);
 	}
-	void f_emit_INTEGER(intptr_t a_value)
+	void f_emit_LITERAL(const t_value& a_value)
 	{
-#ifdef XEMMAI__JIT__DEBUG_PRINT
-std::fprintf(stderr, "INTEGER %zd %ld\n", f_stack(), a_value);
-#endif
-		f_value__construct(f_base(f_stack()), a_value);
-		f_push(false);
-	}
-	void f_emit_FLOAT(double a_value)
-	{
-#ifdef XEMMAI__JIT__DEBUG_PRINT
-std::fprintf(stderr, "FLOAT %zd %g\n", f_stack(), a_value);
-#endif
-		f_value__construct(f_base(f_stack()), a_value);
-		f_push(false);
-	}
-	void f_emit_INSTANCE(const t_value& a_value)
-	{
-#ifdef XEMMAI__JIT__DEBUG_PRINT
-std::fprintf(stderr, "INSTANCE %zd %p\n", f_stack(), static_cast<t_object*>(a_value));
-#endif
-		f_value__construct(f_base(f_stack()), a_value);
+		f_emit_LITERAL(f_stack(), a_value);
 		f_push(true);
 	}
 	llvm::Value* f_value(const ast::t_operand& a_value)
@@ -1638,7 +1640,7 @@ std::fprintf(stderr, "INSTANCE %zd %p\n", f_stack(), static_cast<t_object*>(a_va
 	{
 		if (a_tail) {
 			f_value__construct(f_base(-2), a_tag, a_value);
-			f_context__pop();
+			f_context__return();
 		} else {
 			f_value__construct(a_stack, a_tag, a_value);
 		}
@@ -1646,7 +1648,7 @@ std::fprintf(stderr, "INSTANCE %zd %p\n", f_stack(), static_cast<t_object*>(a_va
 	llvm::Value* f_object_call(const t_operator& a_operator, llvm::Value* a_stack, const ast::t_operand& a_operand, llvm::Value* a_value, bool a_tail, const t_at& a_at)
 	{
 		if (a_tail)
-			return f_invoke(a_operand.v_tag == ast::t_operand::e_tag__LITERAL ? a_operator.v_tail : a_operator.v_tail_move, {v_context, v_base, a_value, a_stack}, a_at, [] {});
+			return f_invoke(a_operand.v_tag == ast::t_operand::e_tag__LITERAL ? a_operator.v_tail : a_operator.v_tail_move, {v_context, f_integer(v_code.v_privates), a_value}, a_at, [] {});
 		else
 			return f_invoke(a_operand.v_tag == ast::t_operand::e_tag__TEMPORARY ? a_operator.v_call_move : a_operator.v_call, {a_value, a_stack}, a_at, [] {});
 	}
@@ -2252,24 +2254,52 @@ std::fprintf(stderr, "SEND %zd %zd %zd %d\n", f_stack() - 3, a_x.v_index, a_y.v_
 		SetInsertPoint(mergebb);
 		f_stack_map(-1).f_pop().f_pop().f_pop().f_stack_map().f_push(true);
 	}
-	void f_emit_RETURN()
+	void f_emit_RETURN_N()
 	{
 #ifdef XEMMAI__JIT__DEBUG_PRINT
-std::fprintf(stderr, "RETURN\n");
+std::fprintf(stderr, "RETURN N\n");
+#endif
+		f_join(*v_targets->v_return_junction);
+		f_value__p__(f_base(-2), f_null());
+		f_context__return();
+		f_return(f_integer(-1));
+		f_push(false);
+	}
+	template<typename T>
+	void f_emit_RETURN_L(T&& a_value)
+	{
+#ifdef XEMMAI__JIT__DEBUG_PRINT
+std::fprintf(stderr, "RETURN L\n");
+#endif
+		f_join(*v_targets->v_return_junction);
+		f_value__construct(f_base(-2), std::forward<T>(a_value));
+		f_context__return();
+		f_return(f_integer(-1));
+		f_push(false);
+	}
+	void f_emit_RETURN_V(size_t a_index)
+	{
+#ifdef XEMMAI__JIT__DEBUG_PRINT
+std::fprintf(stderr, "RETURN V %zd\n", a_index);
+#endif
+		f_join(*v_targets->v_return_junction);
+		f_stacked__destruct(f_base(-1));
+		size_t i = 0;
+		while (i < a_index) f_stacked__destruct(f_base(i++));
+		f_stacked__construct_move_stacked(f_base(-2), f_base(i++));
+		while (i < v_code.v_privates) f_stacked__destruct(f_base(i++));
+		f_context__pop();
+		f_return(f_integer(-1));
+		f_push(false);
+	}
+	void f_emit_RETURN_T()
+	{
+#ifdef XEMMAI__JIT__DEBUG_PRINT
+std::fprintf(stderr, "RETURN T\n");
 #endif
 		auto stack = f_base(v_code.v_privates);
 		f_stacked__construct_move_stacked(f_base(-2), stack);
-		f_context__pop();
-		CreateRet(f_integer(-1));
-	}
-	void f_emit_RETURN(size_t a_stack)
-	{
-#ifdef XEMMAI__JIT__DEBUG_PRINT
-std::fprintf(stderr, "RETURN %zd\n", a_stack);
-#endif
-		auto stack = f_base(a_stack);
-		f_stacked__construct_move_value(f_base(-2), stack);
-		f_context__pop();
+		f_context__return();
 		CreateRet(f_integer(-1));
 	}
 	void f_emit_CALL(size_t a_n, bool a_expand, bool a_tail, const t_at& a_at)
@@ -2283,7 +2313,7 @@ std::fprintf(stderr, "CALL %zd %zd %d %d\n", f_stack(), a_n, a_expand, a_tail);
 		llvm::Value* n = f_integer(a_n);
 		if (a_expand) n = f_invoke(v_globals.v_expand, {v_pc, stack, n}, a_at, [] {});
 		if (a_tail) {
-			f_invoke(v_globals.v_tail, {v_context, stack, n}, a_at, [] {});
+			f_invoke(v_globals.v_tail, {v_context, f_integer(v_code.v_privates), n}, a_at, [] {});
 			f_return(n);
 		} else {
 			f_invoke(v_globals.v_call, {stack, n}, a_at, [] {});
@@ -2303,7 +2333,7 @@ std::fprintf(stderr, "CALL OUTER %zd %zd %zd %d\n", f_stack(), a_index, a_n, a_t
 		if (a_tail) {
 			f_value__construct(stack, x);
 			f_value__p__(f_base(f_stack() + 1), f_null());
-			f_invoke(v_globals.v_tail, {v_context, stack, n}, a_at, [] {});
+			f_invoke(v_globals.v_tail, {v_context, f_integer(v_code.v_privates), n}, a_at, [] {});
 			f_return(n);
 		} else {
 			f_value__p__(f_base(f_stack() + 1), f_null());
@@ -2319,7 +2349,7 @@ std::fprintf(stderr, "GET AT %zd %d\n", f_stack() - 3, a_tail);
 		f_throw_unless_object(f_base(f_stack() - 2), a_at);
 		auto stack = f_base(f_stack() - 3);
 		if (a_tail)
-			f_return(f_invoke(v_globals.v_get_at_tail, {v_context, v_base, stack}, a_at, [] {}));
+			f_return(f_invoke(v_globals.v_get_at_tail, {v_context, f_integer(v_code.v_privates)}, a_at, [] {}));
 		else
 			f_invoke(v_globals.v_get_at, {stack}, a_at, [] {});
 		f_stack_map(-1).f_pop().f_pop().f_pop().f_stack_map().f_push(true);
@@ -2332,7 +2362,7 @@ std::fprintf(stderr, "SET AT %zd %d\n", f_stack() - 4, a_tail);
 		f_throw_unless_object(f_base(f_stack() - 3), a_at);
 		auto stack = f_base(f_stack() - 4);
 		if (a_tail)
-			f_return(f_invoke(v_globals.v_set_at_tail, {v_context, v_base, stack}, a_at, [] {}));
+			f_return(f_invoke(v_globals.v_set_at_tail, {v_context, f_integer(v_code.v_privates)}, a_at, [] {}));
 		else
 			f_invoke(v_globals.v_set_at, {stack}, a_at, [] {});
 		f_stack_map(-1).f_pop().f_pop().f_pop().f_pop().f_stack_map().f_push(true);
@@ -2477,7 +2507,7 @@ void t_lambda::f_jit_emit(t_emit& a_emit, t_code& a_code)
 	emit.CreateBr(returnbb);
 	emit.SetInsertPoint(returnbb);
 	emit.f_join(v_junction);
-	emit.f_emit_RETURN();
+	emit.f_emit_RETURN_T();
 #ifdef XEMMAI__JIT__DEBUG_PRINT
 std::fprintf(stderr, "VERIFYING A FUNCTION...\n");
 #endif
@@ -2608,7 +2638,7 @@ t_operand t_break::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool 
 	if (v_expression)
 		v_expression->f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, a_emit.v_targets->v_break_must_clear);
 	else if (!a_emit.v_targets->v_break_must_clear)
-		a_emit.f_emit_NUL();
+		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, false);
 	if (!a_emit.v_targets->v_break_must_clear) a_emit.f_pop();
 	if (!a_clear) a_emit.f_push(false);
 	a_emit.f_join(*a_emit.v_targets->v_break_junction);
@@ -2630,9 +2660,12 @@ t_operand t_return::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool
 	if (v_expression)
 		v_expression->f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false);
 	else
-		a_emit.f_emit_NUL();
+		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false, false);
 	a_emit.f_join(*a_emit.v_targets->v_return_junction);
-	a_emit.CreateBr(a_emit.v_targets->v_return);
+	if (a_emit.v_targets->v_return_is_tail)
+		a_emit.f_emit_RETURN_T();
+	else
+		a_emit.CreateBr(a_emit.v_targets->v_return);
 	if (a_clear) a_emit.f_pop();
 	a_emit.SetInsertPoint(a_emit.f_block("unreachable"));
 	return t_operand();
@@ -2856,11 +2889,8 @@ t_operand t_symbol_get::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, 
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
-			a_emit.f_join(*a_emit.v_targets->v_return_junction);
 			a_emit.f_emit_SAFE_POINT(v_at);
-			a_emit.f_emit_RETURN(v_variable->v_index);
-			a_emit.f_push(false);
-			a_emit.SetInsertPoint(a_emit.f_block("unreachable"));
+			a_emit.f_emit_RETURN_V(v_variable->v_index);
 		} else {
 			a_emit.f_emit_STACK_GET(v_variable->v_index);
 		}
@@ -2871,12 +2901,53 @@ t_operand t_symbol_get::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, 
 
 t_operand t_scope_put::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
+	if (a_clear && !v_variable.v_shared) {
+		int i = v_variable.v_index - a_emit.v_arguments;
+		if (i >= 0 && !(*a_emit.v_stack_map)[i]) {
+			auto operand = v_value->f_emit(a_emit, false, true);
+			a_emit.f_emit_SAFE_POINT(v_at);
+			(*a_emit.v_stack_map)[i] = true;
+			switch (operand.v_tag) {
+			case t_operand::e_tag__INTEGER:
+				a_emit.f_emit_LITERAL(v_variable.v_index, operand.v_integer);
+				break;
+			case t_operand::e_tag__FLOAT:
+				a_emit.f_emit_LITERAL(v_variable.v_index, operand.v_float);
+				break;
+			case t_operand::e_tag__LITERAL:
+				switch (operand.v_value.f_tag()) {
+				case t_value::e_tag__NULL:
+					a_emit.f_emit_NUL(v_variable.v_index);
+					break;
+				case t_value::e_tag__BOOLEAN:
+					a_emit.f_emit_LITERAL(v_variable.v_index, operand.v_value.f_boolean());
+					break;
+				default:
+					a_emit.f_emit_LITERAL(v_variable.v_index, operand.v_value);
+				}
+				break;
+			case t_operand::e_tag__VARIABLE:
+				a_emit.f_emit_STACK_LET(operand.v_index, v_variable.v_index, false);
+				break;
+			default:
+				a_emit.f_emit_STACK_LET(a_emit.f_stack() - 1, v_variable.v_index, true);
+			}
+			return t_operand();
+		}
+	}
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_SAFE_POINT(v_at);
-	if (v_variable.v_shared)
+	if (v_variable.v_shared) {
 		a_emit.f_emit_SCOPE_PUT(v_outer, v_variable.v_index, a_clear);
-	else
-		a_emit.f_emit_STACK_PUT(v_variable.v_index, a_clear);
+	} else {
+		int i = v_variable.v_index - a_emit.v_arguments;
+		if (i < 0 || (*a_emit.v_stack_map)[i]) {
+			a_emit.f_emit_STACK_PUT(v_variable.v_index, a_clear);
+		} else {
+			(*a_emit.v_stack_map)[i] = true;
+			a_emit.f_emit_STACK_LET(a_emit.f_stack() - 1, v_variable.v_index, a_clear);
+		}
+	}
 	return t_operand();
 }
 
@@ -2910,46 +2981,33 @@ t_operand t_null::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a
 {
 	if (a_operand) return t_value::v_null;
 	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
-	a_emit.f_emit_NUL();
+	if (a_tail) {
+		a_emit.f_emit_SAFE_POINT(v_at);
+		a_emit.f_emit_RETURN_N();
+	} else {
+		a_emit.f_emit_NUL();
+	}
 	return t_operand();
 }
 
-t_operand t_boolean::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	if (a_operand) return v_value ? t_value::v_true : t_value::v_false;
-	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
-	a_emit.f_emit_BOOLEAN(v_value);
-	return t_operand();
-}
-
-t_operand t_integer::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
+template<typename T>
+t_operand t_literal<T>::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_operand) return v_value;
 	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
-	a_emit.f_emit_INTEGER(v_value);
+	if (a_tail) {
+		a_emit.f_emit_SAFE_POINT(v_at);
+		a_emit.f_emit_RETURN_L(v_value);
+	} else {
+		a_emit.f_emit_LITERAL(v_value);
+	}
 	return t_operand();
 }
 
-t_operand t_float::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	if (a_operand) return v_value;
-	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
-	a_emit.f_emit_FLOAT(v_value);
-	return t_operand();
-}
-
-t_operand t_instance::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	if (a_operand) return v_value;
-	if (a_clear) return t_operand();
-	if (a_tail) a_emit.f_emit_SAFE_POINT(v_at);
-	a_emit.f_emit_INSTANCE(v_value);
-	return t_operand();
-}
+template struct t_literal<bool>;
+template struct t_literal<intptr_t>;
+template struct t_literal<double>;
+template struct t_literal<const t_value&>;
 
 t_operand t_unary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
@@ -2960,11 +3018,11 @@ t_operand t_unary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool 
 		a_emit.f_pop();
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
-			return t_integer(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<intptr_t>(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
-			return t_integer(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<intptr_t>(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__COMPLEMENT_T:
-			return t_integer(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<intptr_t>(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			t_throwable::f_throw(L"not supported");
 		}
@@ -2972,9 +3030,9 @@ t_operand t_unary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool 
 		a_emit.f_pop();
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
-			return t_float(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<double>(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
-			return t_float(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_literal<double>(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			t_throwable::f_throw(L"not supported");
 		}
@@ -3012,39 +3070,39 @@ t_operand t_binary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_integer(v_at, left.v_integer * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_integer(v_at, left.v_integer / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__MODULUS_TT:
-				return t_integer(v_at, left.v_integer % right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer % right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_integer(v_at, left.v_integer + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_integer(v_at, left.v_integer - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LEFT_SHIFT_TT:
-				return t_integer(v_at, left.v_integer << right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer << right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__RIGHT_SHIFT_TT:
-				return t_integer(v_at, static_cast<size_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, static_cast<size_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__AND_TT:
-				return t_integer(v_at, left.v_integer & right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer & right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__XOR_TT:
-				return t_integer(v_at, left.v_integer ^ right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer ^ right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__OR_TT:
-				return t_integer(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
@@ -3052,29 +3110,29 @@ t_operand t_binary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_integer * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_integer / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_integer + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_integer - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_integer - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_boolean(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_boolean(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
@@ -3084,29 +3142,29 @@ t_operand t_binary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_float * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_float / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_float + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_float - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_boolean(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_boolean(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
@@ -3114,27 +3172,27 @@ t_operand t_binary::f_emit(t_jit_emit& a_emit, bool a_tail, bool a_operand, bool
 			a_emit.f_pop();
 			switch (v_instruction) {
 			case e_instruction__MULTIPLY_TT:
-				return t_float(v_at, left.v_float * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__DIVIDE_TT:
-				return t_float(v_at, left.v_float / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__ADD_TT:
-				return t_float(v_at, left.v_float + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__SUBTRACT_TT:
-				return t_float(v_at, left.v_float - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<double>(v_at, left.v_float - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_boolean(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_boolean(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_boolean(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_boolean(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_boolean(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_boolean(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<bool>(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				t_throwable::f_throw(L"not supported");
 			}
