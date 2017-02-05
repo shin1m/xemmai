@@ -966,37 +966,20 @@ std::fprintf(stderr, "DONE.\n");
 		p = CreatePointerCast(p, llvm::PointerType::getUnqual(a_value->getType()));
 		CreateStore(a_value, p);
 	}
-	void f_value__copy_union(llvm::Value* a_this, llvm::Value* a_value, llvm::Type* a_type)
+	void f_value__copy(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		f_value__union__(a_this, f_value__union(a_value, a_type));
+		f_value__p__(a_this, f_value__p(a_value));
+		f_value__union__(a_this, f_value__union(a_value, getIntNTy(std::max(sizeof(intptr_t), sizeof(double)) * 8)));
 	}
-	void f_value__copy_union_value(llvm::Value* a_this, llvm::Value* a_value, llvm::Type* a_type)
+	void f_value__copy_construct(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		auto p = CreateExtractValue(a_value, {1});
-		p = CreateBitOrPointerCast(p, a_type);
-		f_value__union__(a_this, p);
+		f_value__push_if_object(v_increments, f_value__p(a_value));
+		f_value__copy(a_this, a_value);
 	}
-	void f_value__copy(llvm::Value* a_this, llvm::Value* a_p, llvm::Value* a_value)
+	void f_value__move_construct(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		auto integerbb = f_block("integer");
-		auto floatbb = f_block("float");
-		auto objectbb = f_block("object");
-		auto mergebb = f_block("merge");
-		auto s = CreateSwitch(f_tag(a_p), objectbb, 4);
-		s->addCase(f_integer(t_value::e_tag__NULL), mergebb);
-		s->addCase(f_integer(t_value::e_tag__BOOLEAN), integerbb);
-		s->addCase(f_integer(t_value::e_tag__INTEGER), integerbb);
-		SetInsertPoint(integerbb);
-		f_value__copy_union(a_this, a_value, f_type_integer());
-		CreateBr(mergebb);
-		s->addCase(f_integer(t_value::e_tag__FLOAT), floatbb);
-		SetInsertPoint(floatbb);
-		f_value__copy_union(a_this, a_value, getDoubleTy());
-		CreateBr(mergebb);
-		SetInsertPoint(objectbb);
-		f_value__push(v_increments, a_p);
-		CreateBr(mergebb);
-		SetInsertPoint(mergebb);
+		f_value__copy(a_this, a_value);
+		f_value__p__(a_value, f_null());
 	}
 	void f_value__assign_pointer(llvm::Value* a_this, llvm::Value* a_value)
 	{
@@ -1008,45 +991,23 @@ std::fprintf(stderr, "DONE.\n");
 	}
 	void f_value__assign(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		auto p0 = f_value__p(a_value);
-		f_value__copy(a_this, p0, a_value);
-		auto p1 = CreateStructGEP(f_type_value(), a_this, 0);
-		auto p = CreateLoad(p1);
-		CreateStore(p0, p1);
+		auto p = f_value__p(a_this);
+		f_value__copy_construct(a_this, a_value);
 		f_value__push_if_object(v_decrements, p);
 	}
-	void f_value__copy_union(llvm::Value* a_this, llvm::Value* a_p, llvm::Value* a_value)
+	void f_value__assign_move_stacked(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		auto integerbb = f_block("integer");
-		auto floatbb = f_block("float");
-		auto mergebb = f_block("merge");
-		auto s = CreateSwitch(f_tag(a_p), mergebb, 3);
-		s->addCase(f_integer(t_value::e_tag__BOOLEAN), integerbb);
-		s->addCase(f_integer(t_value::e_tag__INTEGER), integerbb);
-		SetInsertPoint(integerbb);
-		f_value__copy_union(a_this, a_value, f_type_integer());
-		CreateBr(mergebb);
-		s->addCase(f_integer(t_value::e_tag__FLOAT), floatbb);
-		SetInsertPoint(floatbb);
-		f_value__copy_union(a_this, a_value, getDoubleTy());
-		CreateBr(mergebb);
-		SetInsertPoint(mergebb);
-	}
-	void f_value__move_union(llvm::Value* a_this, llvm::Value* a_p, llvm::Value* a_value)
-	{
-		f_value__copy_union(a_this, a_p, a_value);
-		f_value__p__(a_value, f_null());
+		auto p = f_value__p(a_this);
+		f_value__copy(a_this, a_value);
+		f_value__push_if_object(v_decrements, p);
 	}
 	void f_value__construct(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		auto p = f_value__p(a_value);
-		f_value__copy(a_this, p, a_value);
-		f_value__p__(a_this, p);
+		f_value__copy_construct(a_this, a_value);
 	}
 	void f_value__construct(llvm::Value* a_this, t_value::t_tag a_tag, llvm::Value* a_value)
 	{
-		auto p = CreateIntToPtr(f_integer(a_tag), f_type_object_pointer());
-		f_value__p__(a_this, p);
+		f_value__p__(a_this, CreateIntToPtr(f_integer(a_tag), f_type_object_pointer()));
 		f_value__union__(a_this, a_value);
 	}
 	void f_value__construct(llvm::Value* a_this, bool a_value)
@@ -1086,36 +1047,15 @@ std::fprintf(stderr, "DONE.\n");
 	}
 	void f_stacked__destruct(llvm::Value* a_this)
 	{
-		auto p = f_value__p(a_this);
-		auto elsebb = f_block("else");
-		auto mergebb = f_block("merge");
-		auto tag = f_tag(p);
-		CreateCondBr(CreateICmpULT(tag, f_integer(t_value::e_tag__OBJECT)), mergebb, elsebb);
-		SetInsertPoint(elsebb);
-		f_value__push(v_decrements, p);
-		CreateBr(mergebb);
-		SetInsertPoint(mergebb);
+		f_value__push_if_object(v_decrements, f_value__p(a_this));
 	}
 	void f_stacked__construct_move_value(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		auto p = f_value__p(a_value);
-		f_value__p__(a_this, p);
-		f_value__move_union(a_this, p, a_value);
+		f_value__move_construct(a_this, a_value);
 	}
 	void f_stacked__construct_move_stacked(llvm::Value* a_this, llvm::Value* a_value)
 	{
-		auto p = f_value__p(a_value);
-		f_value__p__(a_this, p);
-		f_value__copy_union(a_this, p, a_value);
-	}
-	void f_stacked__move(llvm::Value* a_this, llvm::Value* a_value)
-	{
-		auto p0 = f_value__p(a_value);
-		auto p1 = CreateStructGEP(f_type_value(), a_this, 0);
-		auto p = CreateLoad(p1);
-		CreateStore(p0, p1);
-		f_value__move_union(a_this, p0, a_value);
-		f_value__push_if_object(v_decrements, p);
+		f_value__copy(a_this, a_value);
 	}
 	llvm::Value* f_value__type(llvm::Value* a_value)
 	{
@@ -1490,7 +1430,7 @@ std::fprintf(stderr, "STACK PUT %zd %zd %d\n", f_stack() - 1, a_index, a_clear);
 #endif
 		auto stack = f_base(f_stack() - 1);
 		if (a_clear) {
-			f_stacked__move(f_base(a_index), stack);
+			f_value__assign_move_stacked(f_base(a_index), stack);
 			f_pop();
 		} else {
 			f_value__assign(f_base(a_index), stack);
