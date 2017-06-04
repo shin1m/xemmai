@@ -721,15 +721,15 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 				a_emit << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
 				break;
 			case t_operand::e_tag__LITERAL:
-				switch (operand.v_value.f_tag()) {
+				switch (operand.v_value->f_tag()) {
 				case t_value::e_tag__NULL:
 					a_emit << e_instruction__NUL << v_variable.v_index;
 					break;
 				case t_value::e_tag__BOOLEAN:
-					a_emit << e_instruction__BOOLEAN << v_variable.v_index << operand.v_value.f_boolean();
+					a_emit << e_instruction__BOOLEAN << v_variable.v_index << operand.v_value->f_boolean();
 					break;
 				default:
-					a_emit << e_instruction__INSTANCE << v_variable.v_index << operand.v_value;
+					a_emit << e_instruction__INSTANCE << v_variable.v_index << *operand.v_value;
 				}
 				break;
 			case t_operand::e_tag__VARIABLE:
@@ -870,7 +870,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	if (!a_tail) a_emit << a_emit.f_stack();
 	switch (operand.v_tag) {
 	case t_operand::e_tag__LITERAL:
-		a_emit << operand.v_value;
+		a_emit << *operand.v_value;
 		break;
 	case t_operand::e_tag__VARIABLE:
 		a_emit << operand.v_index;
@@ -1075,7 +1075,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		a_emit << left.v_float;
 		break;
 	case t_operand::e_tag__LITERAL:
-		a_emit << left.v_value;
+		a_emit << *left.v_value;
 		break;
 	case t_operand::e_tag__VARIABLE:
 		a_emit << left.v_index;
@@ -1089,7 +1089,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		a_emit << right.v_float;
 		break;
 	case t_operand::e_tag__LITERAL:
-		a_emit << right.v_value;
+		a_emit << *right.v_value;
 		break;
 	case t_operand::e_tag__VARIABLE:
 		a_emit << right.v_index;

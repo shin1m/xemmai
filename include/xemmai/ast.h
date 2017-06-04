@@ -61,11 +61,11 @@ struct t_operand
 	{
 		intptr_t v_integer;
 		double v_float;
-		const t_value& v_value;
+		const t_value* v_value;
 		size_t v_index;
 	};
 
-	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(a_value ? t_value::v_true : t_value::v_false)
+	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(a_value ? &t_value::v_true : &t_value::v_false)
 	{
 	}
 	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_integer(a_value)
@@ -74,7 +74,7 @@ struct t_operand
 	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_float(a_value)
 	{
 	}
-	t_operand(const t_value& a_value) : v_tag(e_tag__LITERAL), v_value(a_value)
+	t_operand(const t_value& a_value) : v_tag(e_tag__LITERAL), v_value(&a_value)
 	{
 	}
 	t_operand() : v_tag(e_tag__TEMPORARY)
