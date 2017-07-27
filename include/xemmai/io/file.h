@@ -17,21 +17,32 @@ class t_file
 {
 	friend struct t_type_of<t_file>;
 
+	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(t_file* a_file);
+
 	std::FILE* v_stream;
 	bool v_own = false;
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(std::FILE* a_stream);
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(const std::wstring& a_path, const std::wstring& a_mode);
+	static t_scoped f_instantiate(std::FILE* a_stream)
+	{
+		return f_instantiate(new t_file(a_stream));
+	}
+	static t_scoped f_instantiate(const std::wstring& a_path, const std::wstring& a_mode)
+	{
+		return f_instantiate(new t_file(a_path, a_mode));
+	}
+	static t_scoped f_instantiate(int a_fd, const std::wstring& a_mode)
+	{
+		return f_instantiate(new t_file(a_fd, a_mode));
+	}
 
 	t_file(std::FILE* a_stream) : v_stream(a_stream)
 	{
 	}
 	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const char* a_mode);
 	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const std::wstring& a_mode);
-	t_file(int a_fd, const char* a_mode) : v_stream(fdopen(a_fd, a_mode)), v_own(true)
-	{
-	}
+	XEMMAI__PORTABLE__EXPORT t_file(int a_fd, const char* a_mode);
+	XEMMAI__PORTABLE__EXPORT t_file(int a_fd, const std::wstring& a_mode);
 	~t_file()
 	{
 		if (v_stream != NULL && v_own) std::fclose(v_stream);

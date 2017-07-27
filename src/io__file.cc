@@ -16,19 +16,11 @@ namespace xemmai
 namespace io
 {
 
-t_scoped t_file::f_instantiate(std::FILE* a_stream)
+t_scoped t_file::f_instantiate(t_file* a_file)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
 	t_scoped object = t_object::f_allocate(extension->f_type<t_file>());
-	object.f_pointer__(new t_file(a_stream));
-	return object;
-}
-
-t_scoped t_file::f_instantiate(const std::wstring& a_path, const std::wstring& a_mode)
-{
-	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_scoped object = t_object::f_allocate(extension->f_type<t_file>());
-	object.f_pointer__(new t_file(a_path, a_mode));
+	object.f_pointer__(a_file);
 	return object;
 }
 
@@ -39,6 +31,15 @@ t_file::t_file(const std::wstring& a_path, const char* a_mode) : v_stream(std::f
 t_file::t_file(const std::wstring& a_path, const std::wstring& a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str())), v_own(true)
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+}
+
+t_file::t_file(int a_fd, const char* a_mode) : v_stream(fdopen(a_fd, a_mode)), v_own(true)
+{
+	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+}
+
+t_file::t_file(int a_fd, const std::wstring& a_mode) : t_file(a_fd, portable::f_convert(a_mode).c_str())
+{
 }
 
 void t_file::f_reopen(const std::wstring& a_path, const std::wstring& a_mode)
@@ -90,7 +91,7 @@ size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 		return p - q;
 	} else {
 		size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
-		if (std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
+		if (n <= 0 && std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
 		return n;
 	}
 }
@@ -103,7 +104,7 @@ void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 	unsigned char* p = &a_bytes[0] + a_offset;
 	while (true) {
 		size_t n = std::fwrite(p, 1, a_size, v_stream);
-		if (std::ferror(v_stream)) t_throwable::f_throw(L"failed to write.");
+		if (n <= 0 && std::ferror(v_stream)) t_throwable::f_throw(L"failed to write.");
 		a_size -= n;
 		if (a_size <= 0) break;
 		p += n;
@@ -144,7 +145,10 @@ void t_type_of<io::t_file>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<io::t_file>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<const std::wstring&, const std::wstring&>::t_bind<io::t_file>::f_do(a_class, a_stack, a_n);
+	return t_overload<
+		t_construct<const std::wstring&, const std::wstring&>,
+		t_construct<int, const std::wstring&>
+	>::t_bind<io::t_file>::f_do(a_class, a_stack, a_n);
 }
 
 }

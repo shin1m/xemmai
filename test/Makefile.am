@@ -57,7 +57,8 @@ TESTS = $(scripts) \
 	hanoi3.xmd \
 	dump.xmo \
 	dump2.xmo \
-	dump3.xmo
+	dump3.xmo \
+	fd.xmo
 EXTRA_DIST = $(scripts) \
 	list.xm \
 	run-xmd \
@@ -67,6 +68,7 @@ EXTRA_DIST = $(scripts) \
 	dump.xmoe \
 	dump2.xmoe \
 	dump3.xmoe \
+	fd.xmoe \
 	test.proj
 CLEANFILES = \
 	file.xm.test \
