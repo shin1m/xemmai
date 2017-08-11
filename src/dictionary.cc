@@ -164,7 +164,7 @@ void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_stacked* a_stac
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");
 	t_scoped p = t_object::f_allocate(a_stack[1]);
 	a_stack[1].f_destruct();
-	t_dictionary* dictionary = new t_dictionary();
+	auto dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
@@ -327,7 +327,7 @@ void t_type_of<t_dictionary>::f_finalize(t_object* a_this)
 t_scoped t_type_of<t_dictionary>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
 	t_scoped p = t_object::f_allocate(a_class);
-	t_dictionary* dictionary = new t_dictionary();
+	auto dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {

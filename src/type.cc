@@ -48,7 +48,7 @@ void t_type::f_define(t_object* a_class)
 
 t_type* t_type::f_derive(t_object* a_this)
 {
-	t_type* p = new t_type(t_scoped(v_module), a_this);
+	auto p = new t_type(t_scoped(v_module), a_this);
 	p->v_primitive = true;
 	return p;
 }

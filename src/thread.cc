@@ -84,7 +84,7 @@ t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 {
 	t_scoped fiber = t_fiber::f_instantiate(std::move(a_callable), a_stack, true, true);
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_thread>());
-	t_thread* p = new t_thread(std::move(fiber));
+	auto p = new t_thread(std::move(fiber));
 	object.f_pointer__(p);
 	t_internal* internal = p->v_internal;
 	internal->v_thread = nullptr;

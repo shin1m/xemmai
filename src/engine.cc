@@ -164,7 +164,7 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_collector__threshold0(1024 * 8), v_collector__threshold1(1024 * 16), v_stack_size(a_stack), v_verbose(a_verbose)
 {
 	v_object__pool.f_grow();
-	t_thread* thread = new t_thread(nullptr);
+	auto thread = new t_thread(nullptr);
 	thread->v_internal->f_initialize();
 	thread->v_internal->v_next = v_thread__internals;
 	v_thread__internals = thread->v_internal;
@@ -189,7 +189,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	static_cast<t_object*>(v_structure_root)->v_structure = root;
 	t_scoped type_module = t_class::f_instantiate(new t_type_of<t_module>(nullptr, t_scoped(type_object)));
 	v_module_global = t_object::f_allocate(type_module);
-	t_library* library = new t_library(std::wstring(), nullptr);
+	auto library = new t_library(std::wstring(), nullptr);
 	v_module_global.f_pointer__(library);
 	v_module__instances__null = v_module__instances.emplace(std::wstring(), t_slot()).first;
 	library->v_iterator = v_module__instances.emplace(L"__global", t_slot()).first;
@@ -269,7 +269,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	}
 	v_module_system.f_put(f_global()->f_symbol_path(), std::move(path));
 	{
-		t_library* library = new t_library(std::wstring(), nullptr);
+		auto library = new t_library(std::wstring(), nullptr);
 		v_module_io = t_module::f_instantiate(L"io", library);
 		library->v_extension = new t_io(v_module_io);
 	}
