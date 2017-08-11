@@ -48,6 +48,14 @@ struct t_signature
 {
 	static const size_t V_N = sizeof...(T_an);
 
+	static constexpr const wchar_t* f_error()
+	{
+		return t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>();
+	}
+	static void f_check(t_stacked* a_stack, size_t a_n)
+	{
+		if (a_n != sizeof...(T_an)) t_throwable::f_throw(a_stack, a_n, f_error());
+	}
 	template<size_t A_i>
 	static void f_check__(t_stacked* a_stack)
 	{
@@ -58,9 +66,8 @@ struct t_signature
 		xemmai::f_check<T_a0>(*++a_stack, t_cs<L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't'>() + typename t_n2s<A_i>::t());
 		f_check__<A_i + 1, T_am...>(a_stack);
 	}
-	static void f_check(t_stacked* a_stack, size_t a_n)
+	static void f_check(t_stacked* a_stack)
 	{
-		if (a_n != sizeof...(T_an)) t_throwable::f_throw((t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>()).v);
 		f_check__<0, T_an...>(a_stack + 1);
 	}
 	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...)>
@@ -134,9 +141,10 @@ struct t_call_construct<t_scoped (*)(t_object*, T_an...), A_function>
 	}
 	static void f_call(t_object* a_module, t_stacked* a_stack, size_t a_n)
 	{
+		t_signature<T_an...>::f_check(a_stack, a_n);
 		t_destruct<sizeof...(T_an)> destruct(a_stack);
 		if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-		t_signature<T_an...>::f_check(a_stack, a_n);
+		t_signature<T_an...>::f_check(a_stack);
 		t_signature<T_an...>::template f_call<f_function>(a_module, a_stack[1], a_stack);
 	}
 	static void f_call(t_object* a_module, t_stacked* a_stack)
@@ -157,7 +165,8 @@ struct t_call_construct<t_scoped (*)(t_object*, T_an...), A_function>
 	}
 	static t_scoped f_do(t_object* a_class, t_stacked* a_stack, size_t a_n)
 	{
-		t_signature<T_an...>::f_check(a_stack, a_n);
+		if (a_n != sizeof...(T_an)) t_throwable::f_throw(t_signature<T_an...>::f_error());
+		t_signature<T_an...>::f_check(a_stack);
 		return f__do<T_an...>(a_class, a_stack + 1);
 	}
 	static t_scoped f_do(t_object* a_class, t_stacked* a_stack)
@@ -353,9 +362,10 @@ struct t_member
 		}
 		static void f_call(t_object* a_module, t_stacked* a_stack, size_t a_n)
 		{
+			t_signature::f_check(a_stack, a_n);
 			t_destruct<t_signature::V_N> destruct(a_stack);
 			f_check<t_self>(a_stack[1], L"this");
-			t_signature::f_check(a_stack, a_n);
+			t_signature::f_check(a_stack);
 			t_signature::template f_call<f_function>(a_module, a_stack[1], a_stack);
 		}
 		static void f_call(t_object* a_module, t_stacked* a_stack)
@@ -438,8 +448,9 @@ struct t_static
 		}
 		static void f_call(t_object* a_module, t_stacked* a_stack, size_t a_n)
 		{
-			t_destruct<t_signature::V_N> destruct(a_stack);
 			t_signature::f_check(a_stack, a_n);
+			t_destruct<t_signature::V_N> destruct(a_stack);
+			t_signature::f_check(a_stack);
 			t_signature::template f_call<f_function>(a_module, a_stack[1], a_stack);
 		}
 		static void f_call(t_object* a_module, t_stacked* a_stack)

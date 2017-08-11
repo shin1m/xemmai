@@ -22,6 +22,7 @@ scripts = \
 	primitives.xm \
 	operators.xm \
 	indent.xm \
+	call-errors.xm \
 	race.xm \
 	ring.xm \
 	symbol.xm \
