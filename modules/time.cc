@@ -560,17 +560,17 @@ t_time::t_time(t_object* a_module) : t_extension(a_module)
 , v_tick_base(f_now())
 #endif
 {
-	f_define<double (*)(), f_now>(this, L"now");
-	f_define<intptr_t (*)(t_time*), f_tick>(this, L"tick");
-	f_define<double (*)(const t_tuple&), f_compose>(this, L"compose");
-	f_define<t_scoped (*)(double), f_decompose>(this, L"decompose");
-	f_define<intptr_t (*)(), f_offset>(this, L"offset");
-	f_define<t_scoped (*)(const std::wstring&), f_parse_rfc2822>(this, L"parse_rfc2822");
-	f_define<std::wstring (*)(const t_tuple&, intptr_t), f_format_rfc2822>(this, L"format_rfc2822");
-	f_define<t_scoped (*)(const std::wstring&), f_parse_http>(this, L"parse_http");
-	f_define<std::wstring (*)(const t_tuple&), f_format_http>(this, L"format_http");
-	f_define<t_scoped (*)(const std::wstring&), f_parse_xsd>(this, L"parse_xsd");
-	f_define<std::wstring (*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd");
+	f_define<double(*)(), f_now>(this, L"now");
+	f_define<intptr_t(*)(t_time*), f_tick>(this, L"tick");
+	f_define<double(*)(const t_tuple&), f_compose>(this, L"compose");
+	f_define<t_scoped(*)(double), f_decompose>(this, L"decompose");
+	f_define<intptr_t(*)(), f_offset>(this, L"offset");
+	f_define<t_scoped(*)(const std::wstring&), f_parse_rfc2822>(this, L"parse_rfc2822");
+	f_define<std::wstring(*)(const t_tuple&, intptr_t), f_format_rfc2822>(this, L"format_rfc2822");
+	f_define<t_scoped(*)(const std::wstring&), f_parse_http>(this, L"parse_http");
+	f_define<std::wstring(*)(const t_tuple&), f_format_http>(this, L"format_http");
+	f_define<t_scoped(*)(const std::wstring&), f_parse_xsd>(this, L"parse_xsd");
+	f_define<std::wstring(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd");
 }
 
 void t_time::f_scan(t_scan a_scan)

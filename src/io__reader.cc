@@ -104,9 +104,9 @@ void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader")
 		(t_construct<t_scoped&&, const std::wstring&>())
-		(a_extension->f_symbol_close(), t_member<void (io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
-		(a_extension->f_symbol_read(), t_member<std::wstring (io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
-		(a_extension->f_symbol_read_line(), t_member<std::wstring (io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
+		(a_extension->f_symbol_close(), t_member<void(io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
+		(a_extension->f_symbol_read(), t_member<std::wstring(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
+		(a_extension->f_symbol_read_line(), t_member<std::wstring(io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
 	;
 }
 

@@ -46,8 +46,8 @@ void f_sleep(intptr_t a_miliseconds)
 
 t_os::t_os(t_object* a_module) : t_extension(a_module)
 {
-	f_define<int (*)(const std::wstring&), f_system>(this, L"system");
-	f_define<void (*)(intptr_t), f_sleep>(this, L"sleep");
+	f_define<int(*)(const std::wstring&), f_system>(this, L"system");
+	f_define<void(*)(intptr_t), f_sleep>(this, L"sleep");
 }
 
 void t_os::f_scan(t_scan a_scan)

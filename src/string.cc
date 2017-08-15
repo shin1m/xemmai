@@ -27,23 +27,23 @@ bool t_type_of<std::wstring>::f_not_equals(const std::wstring& a_self, const t_v
 void t_type_of<std::wstring>::f_define()
 {
 	t_define<std::wstring, t_object>(f_global(), L"String")
-		(L"from_code", t_static<std::wstring (*)(intptr_t), f_from_code>())
+		(L"from_code", t_static<std::wstring(*)(intptr_t), f_from_code>())
 		(t_construct<const std::wstring&>())
-		(f_global()->f_symbol_string(), t_member<t_scoped (*)(t_scoped&&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t (*)(const std::wstring&), f_hash>())
-		(f_global()->f_symbol_add(), t_member<std::wstring (*)(const std::wstring&, const t_value&), f_add>())
-		(f_global()->f_symbol_less(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_less>())
-		(f_global()->f_symbol_less_equal(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_less_equal>())
-		(f_global()->f_symbol_greater(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_greater>())
-		(f_global()->f_symbol_greater_equal(), t_member<bool (*)(const std::wstring&, const std::wstring&), f_greater_equal>())
-		(f_global()->f_symbol_equals(), t_member<bool (*)(const std::wstring&, const t_value&), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const std::wstring&, const t_value&), f_not_equals>())
-		(f_global()->f_symbol_size(), t_member<size_t (std::wstring::*)() const, &std::wstring::size>())
+		(f_global()->f_symbol_string(), t_member<t_scoped(*)(t_scoped&&), f_string>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const std::wstring&), f_hash>())
+		(f_global()->f_symbol_add(), t_member<std::wstring(*)(const std::wstring&, const t_value&), f_add>())
+		(f_global()->f_symbol_less(), t_member<bool(*)(const std::wstring&, const std::wstring&), f_less>())
+		(f_global()->f_symbol_less_equal(), t_member<bool(*)(const std::wstring&, const std::wstring&), f_less_equal>())
+		(f_global()->f_symbol_greater(), t_member<bool(*)(const std::wstring&, const std::wstring&), f_greater>())
+		(f_global()->f_symbol_greater_equal(), t_member<bool(*)(const std::wstring&, const std::wstring&), f_greater_equal>())
+		(f_global()->f_symbol_equals(), t_member<bool(*)(const std::wstring&, const t_value&), f_equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const std::wstring&, const t_value&), f_not_equals>())
+		(f_global()->f_symbol_size(), t_member<size_t(std::wstring::*)() const, &std::wstring::size>())
 		(L"substring",
-			t_member<std::wstring (*)(const std::wstring&, size_t), f_substring>(),
-			t_member<std::wstring (*)(const std::wstring&, size_t, size_t), f_substring>()
+			t_member<std::wstring(*)(const std::wstring&, size_t), f_substring>(),
+			t_member<std::wstring(*)(const std::wstring&, size_t, size_t), f_substring>()
 		)
-		(L"code_at", t_member<intptr_t (*)(const std::wstring&, size_t), f_code_at>())
+		(L"code_at", t_member<intptr_t(*)(const std::wstring&, size_t), f_code_at>())
 	;
 }
 

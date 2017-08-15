@@ -70,18 +70,18 @@ struct t_signature
 	{
 		f_check__<0, T_an...>(a_stack + 1);
 	}
-	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...)>
+	template<t_scoped(*A_function)(t_object*, const t_value&, T_an&&...)>
 	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_stacked* a_stack, T_an&&... a_n)
 	{
 		return A_function(a_module, a_self, std::forward<T_an>(a_n)...);
 	}
-	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...), typename T_a0, typename... T_am, typename... T_ak>
+	template<t_scoped(*A_function)(t_object*, const t_value&, T_an&&...), typename T_a0, typename... T_am, typename... T_ak>
 	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_stacked* a_stack, T_ak&&... a_k)
 	{
 		++a_stack;
 		return f__call<A_function, T_am...>(a_module, a_self, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(*a_stack));
 	}
-	template<t_scoped (*A_function)(t_object*, const t_value&, T_an&&...)>
+	template<t_scoped(*A_function)(t_object*, const t_value&, T_an&&...)>
 	static void f_call(t_object* a_module, const t_value& a_self, t_stacked* a_stack)
 	{
 		a_stack[0].f_construct(f__call<A_function, T_an...>(a_module, a_self, a_stack + 1));
@@ -132,8 +132,8 @@ public:
 template<typename T_function, T_function A_function>
 struct t_call_construct;
 
-template<typename... T_an, t_scoped (*A_function)(t_object*, T_an...)>
-struct t_call_construct<t_scoped (*)(t_object*, T_an...), A_function>
+template<typename... T_an, t_scoped(*A_function)(t_object*, T_an...)>
+struct t_call_construct<t_scoped(*)(t_object*, T_an...), A_function>
 {
 	static t_scoped f_function(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
@@ -217,9 +217,9 @@ template<typename T_extension, typename T_function>
 struct t_call_member;
 
 template<typename T_extension, typename T_self, typename T_r, typename... T_an>
-struct t_call_member<T_extension, T_r (T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, T_r(T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
 {
-	template<T_r (T_self::*A_function)(T_an...) const>
+	template<T_r(T_self::*A_function)(T_an...) const>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		return f_extension<T_extension>(a_module)->f_as((f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...));
@@ -227,9 +227,9 @@ struct t_call_member<T_extension, T_r (T_self::*)(T_an...) const> : t_call_membe
 };
 
 template<typename T_extension, typename T_self, typename... T_an>
-struct t_call_member<T_extension, void (T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, void(T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
 {
-	template<void (T_self::*A_function)(T_an...) const>
+	template<void(T_self::*A_function)(T_an...) const>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
@@ -238,9 +238,9 @@ struct t_call_member<T_extension, void (T_self::*)(T_an...) const> : t_call_memb
 };
 
 template<typename T_extension, typename T_self, typename T_r, typename... T_an>
-struct t_call_member<T_extension, T_r (T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, T_r(T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<T_r (T_self::*A_function)(T_an...)>
+	template<T_r(T_self::*A_function)(T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		return f_extension<T_extension>(a_module)->f_as((f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...));
@@ -248,9 +248,9 @@ struct t_call_member<T_extension, T_r (T_self::*)(T_an...)> : t_call_member_base
 };
 
 template<typename T_extension, typename T_self, typename... T_an>
-struct t_call_member<T_extension, void (T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, void(T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<void (T_self::*A_function)(T_an...)>
+	template<void(T_self::*A_function)(T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
@@ -259,9 +259,9 @@ struct t_call_member<T_extension, void (T_self::*)(T_an...)> : t_call_member_bas
 };
 
 template<typename T_extension, typename T_self, typename T_r, typename... T_an>
-struct t_call_member<T_extension, T_r (T_self::*)(T_extension*, T_an...) const> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, T_r(T_self::*)(T_extension*, T_an...) const> : t_call_member_base<T_self, T_an...>
 {
-	template<T_r (T_self::*A_function)(T_extension*, T_an...) const>
+	template<T_r(T_self::*A_function)(T_extension*, T_an...) const>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		T_extension* extension = f_extension<T_extension>(a_module);
@@ -270,9 +270,9 @@ struct t_call_member<T_extension, T_r (T_self::*)(T_extension*, T_an...) const> 
 };
 
 template<typename T_extension, typename T_self, typename... T_an>
-struct t_call_member<T_extension, void (T_self::*)(T_extension*, T_an...) const> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, void(T_self::*)(T_extension*, T_an...) const> : t_call_member_base<T_self, T_an...>
 {
-	template<void (T_self::*A_function)(T_extension*, T_an...) const>
+	template<void(T_self::*A_function)(T_extension*, T_an...) const>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<const T_self&>(a_self).*A_function)(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
@@ -281,9 +281,9 @@ struct t_call_member<T_extension, void (T_self::*)(T_extension*, T_an...) const>
 };
 
 template<typename T_extension, typename T_self, typename T_r, typename... T_an>
-struct t_call_member<T_extension, T_r (T_self::*)(T_extension*, T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, T_r(T_self::*)(T_extension*, T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<T_r (T_self::*A_function)(T_extension*, T_an...)>
+	template<T_r(T_self::*A_function)(T_extension*, T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		T_extension* extension = f_extension<T_extension>(a_module);
@@ -292,9 +292,9 @@ struct t_call_member<T_extension, T_r (T_self::*)(T_extension*, T_an...)> : t_ca
 };
 
 template<typename T_extension, typename T_self, typename... T_an>
-struct t_call_member<T_extension, void (T_self::*)(T_extension*, T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, void(T_self::*)(T_extension*, T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<void (T_self::*A_function)(T_extension*, T_an...)>
+	template<void(T_self::*A_function)(T_extension*, T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<T_self&>(a_self).*A_function)(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
@@ -303,9 +303,9 @@ struct t_call_member<T_extension, void (T_self::*)(T_extension*, T_an...)> : t_c
 };
 
 template<typename T_extension, typename T_r, typename T_self, typename... T_an>
-struct t_call_member<T_extension, T_r (*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, T_r(*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<T_r (*A_function)(T_self, T_an...)>
+	template<T_r(*A_function)(T_self, T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		return f_extension<T_extension>(a_module)->f_as(A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...));
@@ -313,9 +313,9 @@ struct t_call_member<T_extension, T_r (*)(T_self, T_an...)> : t_call_member_base
 };
 
 template<typename T_extension, typename T_self, typename... T_an>
-struct t_call_member<T_extension, void (*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, void(*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<void (*A_function)(T_self, T_an...)>
+	template<void(*A_function)(T_self, T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
@@ -324,9 +324,9 @@ struct t_call_member<T_extension, void (*)(T_self, T_an...)> : t_call_member_bas
 };
 
 template<typename T_extension, typename T_r, typename T_self, typename... T_an>
-struct t_call_member<T_extension, T_r (*)(T_extension*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, T_r(*)(T_extension*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<T_r (*A_function)(T_extension*, T_self, T_an...)>
+	template<T_r(*A_function)(T_extension*, T_self, T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		T_extension* extension = f_extension<T_extension>(a_module);
@@ -335,9 +335,9 @@ struct t_call_member<T_extension, T_r (*)(T_extension*, T_self, T_an...)> : t_ca
 };
 
 template<typename T_extension, typename T_self, typename... T_an>
-struct t_call_member<T_extension, void (*)(T_extension*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
+struct t_call_member<T_extension, void(*)(T_extension*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
 {
-	template<void (*A_function)(T_extension*, T_self, T_an...)>
+	template<void(*A_function)(T_extension*, T_self, T_an...)>
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		A_function(f_extension<T_extension>(a_module), f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
@@ -384,11 +384,11 @@ template<typename T_extension, typename T_function>
 struct t_call_static;
 
 template<typename T_extension, typename T_r, typename... T_an>
-struct t_call_static<T_extension, T_r (*)(T_an...)>
+struct t_call_static<T_extension, T_r(*)(T_an...)>
 {
 	typedef xemmai::t_signature<T_an...> t_signature;
 
-	template<T_r (*A_function)(T_an...)>
+	template<T_r(*A_function)(T_an...)>
 	static t_scoped f_call(T_extension* a_extension, T_an&&... a_n)
 	{
 		return a_extension->f_as(A_function(std::forward<T_an>(a_n)...));
@@ -396,11 +396,11 @@ struct t_call_static<T_extension, T_r (*)(T_an...)>
 };
 
 template<typename T_extension, typename... T_an>
-struct t_call_static<T_extension, void (*)(T_an...)>
+struct t_call_static<T_extension, void(*)(T_an...)>
 {
 	typedef xemmai::t_signature<T_an...> t_signature;
 
-	template<void (*A_function)(T_an...)>
+	template<void(*A_function)(T_an...)>
 	static t_scoped f_call(T_extension* a_extension, T_an&&... a_n)
 	{
 		A_function(std::forward<T_an>(a_n)...);
@@ -409,11 +409,11 @@ struct t_call_static<T_extension, void (*)(T_an...)>
 };
 
 template<typename T_extension, typename T_r, typename... T_an>
-struct t_call_static<T_extension, T_r (*)(T_extension*, T_an...)>
+struct t_call_static<T_extension, T_r(*)(T_extension*, T_an...)>
 {
 	typedef xemmai::t_signature<T_an...> t_signature;
 
-	template<T_r (*A_function)(T_extension*, T_an...)>
+	template<T_r(*A_function)(T_extension*, T_an...)>
 	static t_scoped f_call(T_extension* a_extension, T_an&&... a_n)
 	{
 		return a_extension->f_as(A_function(a_extension, std::forward<T_an>(a_n)...));
@@ -421,11 +421,11 @@ struct t_call_static<T_extension, T_r (*)(T_extension*, T_an...)>
 };
 
 template<typename T_extension, typename... T_an>
-struct t_call_static<T_extension, void (*)(T_extension*, T_an...)>
+struct t_call_static<T_extension, void(*)(T_extension*, T_an...)>
 {
 	typedef xemmai::t_signature<T_an...> t_signature;
 
-	template<void (*A_function)(T_extension*, T_an...)>
+	template<void(*A_function)(T_extension*, T_an...)>
 	static t_scoped f_call(T_extension* a_extension, T_an&&... a_n)
 	{
 		A_function(a_extension, std::forward<T_an>(a_n)...);

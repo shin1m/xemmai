@@ -197,28 +197,28 @@ bool t_type_of<intptr_t>::f_not_equals(intptr_t a_self, const t_value& a_value)
 void t_type_of<intptr_t>::f_define()
 {
 	t_define<intptr_t, t_object>(f_global(), L"Integer")
-		(t_construct_with<t_scoped (*)(t_object*, intptr_t), f_construct_derived>())
-		(f_global()->f_symbol_string(), t_member<std::wstring (*)(intptr_t), f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t (*)(intptr_t), f_hash>())
-		(f_global()->f_symbol_plus(), t_member<intptr_t (*)(intptr_t), f_plus>())
-		(f_global()->f_symbol_minus(), t_member<intptr_t (*)(intptr_t), f_minus>())
-		(f_global()->f_symbol_complement(), t_member<intptr_t (*)(intptr_t), f_complement>())
-		(f_global()->f_symbol_multiply(), t_member<t_scoped (*)(intptr_t, const t_value&), f_multiply>())
-		(f_global()->f_symbol_divide(), t_member<t_scoped (*)(intptr_t, const t_value&), f_divide>())
-		(f_global()->f_symbol_modulus(), t_member<intptr_t (*)(intptr_t, intptr_t), f_modulus>())
-		(f_global()->f_symbol_add(), t_member<t_scoped (*)(intptr_t, const t_value&), f_add>())
-		(f_global()->f_symbol_subtract(), t_member<t_scoped (*)(intptr_t, const t_value&), f_subtract>())
-		(f_global()->f_symbol_left_shift(), t_member<intptr_t (*)(intptr_t, intptr_t), f_left_shift>())
-		(f_global()->f_symbol_right_shift(), t_member<size_t (*)(size_t, intptr_t), f_right_shift>())
-		(f_global()->f_symbol_less(), t_member<bool (*)(intptr_t, const t_value&), f_less>())
-		(f_global()->f_symbol_less_equal(), t_member<bool (*)(intptr_t, const t_value&), f_less_equal>())
-		(f_global()->f_symbol_greater(), t_member<bool (*)(intptr_t, const t_value&), f_greater>())
-		(f_global()->f_symbol_greater_equal(), t_member<bool (*)(intptr_t, const t_value&), f_greater_equal>())
-		(f_global()->f_symbol_equals(), t_member<bool (*)(intptr_t, const t_value&), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool (*)(intptr_t, const t_value&), f_not_equals>())
-		(f_global()->f_symbol_and(), t_member<intptr_t (*)(intptr_t, intptr_t), f_and>())
-		(f_global()->f_symbol_xor(), t_member<intptr_t (*)(intptr_t, intptr_t), f_xor>())
-		(f_global()->f_symbol_or(), t_member<intptr_t (*)(intptr_t, intptr_t), f_or>())
+		(t_construct_with<t_scoped(*)(t_object*, intptr_t), f_construct_derived>())
+		(f_global()->f_symbol_string(), t_member<std::wstring(*)(intptr_t), f_string>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(intptr_t), f_hash>())
+		(f_global()->f_symbol_plus(), t_member<intptr_t(*)(intptr_t), f_plus>())
+		(f_global()->f_symbol_minus(), t_member<intptr_t(*)(intptr_t), f_minus>())
+		(f_global()->f_symbol_complement(), t_member<intptr_t(*)(intptr_t), f_complement>())
+		(f_global()->f_symbol_multiply(), t_member<t_scoped(*)(intptr_t, const t_value&), f_multiply>())
+		(f_global()->f_symbol_divide(), t_member<t_scoped(*)(intptr_t, const t_value&), f_divide>())
+		(f_global()->f_symbol_modulus(), t_member<intptr_t(*)(intptr_t, intptr_t), f_modulus>())
+		(f_global()->f_symbol_add(), t_member<t_scoped(*)(intptr_t, const t_value&), f_add>())
+		(f_global()->f_symbol_subtract(), t_member<t_scoped(*)(intptr_t, const t_value&), f_subtract>())
+		(f_global()->f_symbol_left_shift(), t_member<intptr_t(*)(intptr_t, intptr_t), f_left_shift>())
+		(f_global()->f_symbol_right_shift(), t_member<size_t(*)(size_t, intptr_t), f_right_shift>())
+		(f_global()->f_symbol_less(), t_member<bool(*)(intptr_t, const t_value&), f_less>())
+		(f_global()->f_symbol_less_equal(), t_member<bool(*)(intptr_t, const t_value&), f_less_equal>())
+		(f_global()->f_symbol_greater(), t_member<bool(*)(intptr_t, const t_value&), f_greater>())
+		(f_global()->f_symbol_greater_equal(), t_member<bool(*)(intptr_t, const t_value&), f_greater_equal>())
+		(f_global()->f_symbol_equals(), t_member<bool(*)(intptr_t, const t_value&), f_equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool(*)(intptr_t, const t_value&), f_not_equals>())
+		(f_global()->f_symbol_and(), t_member<intptr_t(*)(intptr_t, intptr_t), f_and>())
+		(f_global()->f_symbol_xor(), t_member<intptr_t(*)(intptr_t, intptr_t), f_xor>())
+		(f_global()->f_symbol_or(), t_member<intptr_t(*)(intptr_t, intptr_t), f_or>())
 	;
 }
 
@@ -230,9 +230,9 @@ t_type* t_type_of<intptr_t>::f_derive(t_object* a_this)
 t_scoped t_type_of<intptr_t>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct_with<t_scoped (*)(t_object*, intptr_t), f_construct>,
-		t_construct_with<t_scoped (*)(t_object*, double), f_construct>,
-		t_construct_with<t_scoped (*)(t_object*, const std::wstring&), f_construct>
+		t_construct_with<t_scoped(*)(t_object*, intptr_t), f_construct>,
+		t_construct_with<t_scoped(*)(t_object*, double), f_construct>,
+		t_construct_with<t_scoped(*)(t_object*, const std::wstring&), f_construct>
 	>::t_bind<intptr_t>::f_do(a_class, a_stack, a_n);
 }
 

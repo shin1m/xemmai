@@ -38,10 +38,10 @@ void t_type_of<t_pair>::f_instantiate(t_object* a_class, t_stacked* a_stack, siz
 void t_type_of<t_queue>::f_define(t_container* a_extension)
 {
 	t_define<t_queue, t_object>(a_extension, L"Queue")
-		(f_global()->f_symbol_string(), t_member<std::wstring (t_queue::*)() const, &t_queue::f_string>())
-		(L"empty", t_member<bool (t_queue::*)() const, &t_queue::f_empty>())
-		(L"push", t_member<void (t_queue::*)(t_container*, t_scoped&&), &t_queue::f_push>())
-		(L"pop", t_member<t_scoped (t_queue::*)(), &t_queue::f_pop>())
+		(f_global()->f_symbol_string(), t_member<std::wstring(t_queue::*)() const, &t_queue::f_string>())
+		(L"empty", t_member<bool(t_queue::*)() const, &t_queue::f_empty>())
+		(L"push", t_member<void(t_queue::*)(t_container*, t_scoped&&), &t_queue::f_push>())
+		(L"pop", t_member<t_scoped(t_queue::*)(), &t_queue::f_pop>())
 	;
 }
 

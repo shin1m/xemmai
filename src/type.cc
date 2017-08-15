@@ -37,12 +37,12 @@ void t_type::f_define(t_object* a_class)
 {
 	t_define<t_object, t_object>(f_global(), L"Object", a_class)
 		(f_global()->f_symbol_initialize(), f_initialize)
-		(f_global()->f_symbol_string(), t_member<std::wstring (*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t (*)(const t_value&), f_hash>())
-		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const t_value&, const t_value&), f_not_equals>())
-		(L"own", t_member<void (*)(const t_value&), f_own>())
-		(L"share", t_member<void (*)(const t_value&), f_share>())
+		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f_hash>())
+		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f_equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f_not_equals>())
+		(L"own", t_member<void(*)(const t_value&), f_own>())
+		(L"share", t_member<void(*)(const t_value&), f_share>())
 	;
 }
 

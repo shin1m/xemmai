@@ -129,8 +129,8 @@ namespace xemmai
 void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_client, t_object>(a_extension, L"Client")
-		(a_extension->v_symbol_on_message, t_member<void (*)(t_client*, const std::wstring&), t_client_wrapper::f_super__on_message>())
-		(L"remove", t_member<void (t_client::*)(), &t_client::f_remove>())
+		(a_extension->v_symbol_on_message, t_member<void(*)(t_client*, const std::wstring&), t_client_wrapper::f_super__on_message>())
+		(L"remove", t_member<void(t_client::*)(), &t_client::f_remove>())
 	;
 }
 
@@ -146,15 +146,15 @@ void t_type_of<t_client>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<t_client>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
 {
-	return t_construct_with<t_scoped (*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(a_class, a_stack, a_n);
+	return t_construct_with<t_scoped(*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(a_class, a_stack, a_n);
 }
 
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_server, t_object>(a_extension, L"Server")
-		(L"add", t_member<void (t_server::*)(t_client&), &t_server::f_add>())
-		(L"post", t_member<void (t_server::*)(const std::wstring&), &t_server::f_post>())
-		(L"run", t_member<void (t_server::*)(), &t_server::f_run>())
+		(L"add", t_member<void(t_server::*)(t_client&), &t_server::f_add>())
+		(L"post", t_member<void(t_server::*)(const std::wstring&), &t_server::f_post>())
+		(L"run", t_member<void(t_server::*)(), &t_server::f_run>())
 	;
 }
 

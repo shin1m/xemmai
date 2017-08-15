@@ -29,7 +29,7 @@ t_scoped t_symbol::f_instantiate(const std::wstring& a_value)
 void t_symbol::f_define(t_object* a_class)
 {
 	t_define<t_symbol, t_object>(f_global(), L"Symbol", a_class)
-		(f_global()->f_symbol_string(), t_member<const std::wstring& (t_symbol::*)() const, &t_symbol::f_string>())
+		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
 	;
 }
 

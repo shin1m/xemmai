@@ -82,7 +82,7 @@ t_scoped t_fiber::f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_ma
 void t_fiber::f_define(t_object* a_class)
 {
 	t_define<t_fiber, t_object>(f_global(), L"Fiber", a_class)
-		(L"current", t_static<t_object* (*)(), f_current>())
+		(L"current", t_static<t_object*(*)(), f_current>())
 	;
 }
 

@@ -111,8 +111,8 @@ t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 void t_thread::f_define(t_object* a_class)
 {
 	t_define<t_thread, t_object>(f_global(), L"Thread", a_class)
-		(L"current", t_static<t_object* (*)(), f_current>())
-		(L"join", t_member<void (t_thread::*)(), &t_thread::f_join>())
+		(L"current", t_static<t_object*(*)(), f_current>())
+		(L"join", t_member<void(t_thread::*)(), &t_thread::f_join>())
 	;
 }
 

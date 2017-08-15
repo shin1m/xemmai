@@ -94,14 +94,14 @@ void t_type_of<t_bytes>::f_define()
 {
 	t_define<t_bytes, t_object>(f_global(), L"Bytes")
 		(f_global()->f_symbol_construct(), f__construct)
-		(f_global()->f_symbol_string(), t_member<std::wstring (t_bytes::*)() const, &t_bytes::f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t (t_bytes::*)() const, &t_bytes::f_hash>())
-		(f_global()->f_symbol_get_at(), t_member<intptr_t (t_bytes::*)(intptr_t) const, &t_bytes::f_get_at>())
-		(f_global()->f_symbol_set_at(), t_member<intptr_t (t_bytes::*)(intptr_t, intptr_t), &t_bytes::f_set_at>())
-		(f_global()->f_symbol_equals(), t_member<bool (*)(const t_value&, const t_value&), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool (*)(const t_value&, const t_value&), f_not_equals>())
-		(L"size", t_member<size_t (t_bytes::*)() const, &t_bytes::f_size>())
-		(L"copy", t_member<void (t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
+		(f_global()->f_symbol_string(), t_member<std::wstring(t_bytes::*)() const, &t_bytes::f_string>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t(t_bytes::*)() const, &t_bytes::f_hash>())
+		(f_global()->f_symbol_get_at(), t_member<intptr_t(t_bytes::*)(intptr_t) const, &t_bytes::f_get_at>())
+		(f_global()->f_symbol_set_at(), t_member<intptr_t(t_bytes::*)(intptr_t, intptr_t), &t_bytes::f_set_at>())
+		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f_equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f_not_equals>())
+		(L"size", t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())
+		(L"copy", t_member<void(t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
 	;
 }
 

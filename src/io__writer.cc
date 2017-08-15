@@ -126,13 +126,13 @@ void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
 	t_define<io::t_writer, t_object>(a_extension, L"Writer")
 		(t_construct<t_scoped&&, const std::wstring&>())
-		(a_extension->f_symbol_close(), t_member<void (io::t_writer::*)(t_io*), &io::t_writer::f_close, t_with_lock_for_write>())
-		(a_extension->f_symbol_write(), t_member<void (io::t_writer::*)(t_io*, const t_value&), &io::t_writer::f_write, t_with_lock_for_write>())
+		(a_extension->f_symbol_close(), t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_close, t_with_lock_for_write>())
+		(a_extension->f_symbol_write(), t_member<void(io::t_writer::*)(t_io*, const t_value&), &io::t_writer::f_write, t_with_lock_for_write>())
 		(a_extension->f_symbol_write_line(),
-			t_member<void (io::t_writer::*)(t_io*), &io::t_writer::f_write_line, t_with_lock_for_write>(),
-			t_member<void (io::t_writer::*)(t_io*, const t_value&), &io::t_writer::f_write_line, t_with_lock_for_write>()
+			t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_write_line, t_with_lock_for_write>(),
+			t_member<void(io::t_writer::*)(t_io*, const t_value&), &io::t_writer::f_write_line, t_with_lock_for_write>()
 		)
-		(a_extension->f_symbol_flush(), t_member<void (io::t_writer::*)(t_io*), &io::t_writer::f_flush, t_with_lock_for_write>())
+		(a_extension->f_symbol_flush(), t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_flush, t_with_lock_for_write>())
 	;
 }
 

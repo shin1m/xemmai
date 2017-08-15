@@ -11,8 +11,8 @@ void t_type_of<portable::t_path>::f_define(t_io* a_extension)
 {
 	t_define<portable::t_path, t_object>(a_extension, L"Path")
 		(t_construct<const std::wstring&>())
-		(f_global()->f_symbol_string(), t_member<const std::wstring& (portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
-		(f_global()->f_symbol_divide(), t_member<portable::t_path (portable::t_path::*)(const std::wstring&) const, &portable::t_path::operator/>())
+		(f_global()->f_symbol_string(), t_member<const std::wstring&(portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
+		(f_global()->f_symbol_divide(), t_member<portable::t_path(portable::t_path::*)(const std::wstring&) const, &portable::t_path::operator/>())
 	;
 }
 
