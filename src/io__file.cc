@@ -4,7 +4,7 @@
 #include <xemmai/derived.h>
 #include <xemmai/io.h>
 #ifdef __unix__
-#include <unistd.h>
+#include <fcntl.h>
 #endif
 #ifdef _MSC_VER
 #include <io.h>
@@ -31,21 +31,26 @@ t_file::t_file(const std::wstring& a_path, const char* a_mode) : v_stream(std::f
 t_file::t_file(const std::wstring& a_path, const std::wstring& a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str())), v_own(true)
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+	std::setbuf(v_stream, NULL);
 }
 
+#ifdef __unix__
 t_file::t_file(int a_fd, const char* a_mode) : v_stream(fdopen(a_fd, a_mode)), v_own(true)
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+	std::setbuf(v_stream, NULL);
 }
 
 t_file::t_file(int a_fd, const std::wstring& a_mode) : t_file(a_fd, portable::f_convert(a_mode).c_str())
 {
 }
+#endif
 
 void t_file::f_reopen(const std::wstring& a_path, const std::wstring& a_mode)
 {
 	v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
 	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+	std::setbuf(v_stream, NULL);
 }
 
 void t_file::f_close()
@@ -62,7 +67,7 @@ void t_file::f_seek(intptr_t a_offset, int a_whence)
 	if (std::fseek(v_stream, a_offset, a_whence) == -1) t_throwable::f_throw(L"failed to seek.");
 }
 
-intptr_t t_file::f_tell()
+intptr_t t_file::f_tell() const
 {
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
 	intptr_t n = std::ftell(v_stream);
@@ -75,25 +80,9 @@ size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 	t_safe_region region;
 	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
 	if (a_offset + a_size > a_bytes.f_size()) t_throwable::f_throw(L"out of range.");
-	if (isatty(fileno(v_stream))) {
-		unsigned char* p = &a_bytes[0] + a_offset;
-		unsigned char* q = p;
-		while (a_size > 0) {
-			int c = std::getc(v_stream);
-			if (c == EOF) {
-				if (std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
-				break;
-			}
-			*p++ = c;
-			if (c == '\n') break;
-			--a_size;
-		}
-		return p - q;
-	} else {
-		size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
-		if (n <= 0 && std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
-		return n;
-	}
+	size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
+	if (n <= 0 && std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
+	return n;
 }
 
 void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
@@ -117,19 +106,45 @@ void t_file::f_flush()
 	std::fflush(v_stream);
 }
 
+#ifdef __unix__
+bool t_file::f_blocking() const
+{
+	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	return (fcntl(fileno(v_stream), F_GETFL) & O_NONBLOCK) == 0;
+}
+
+void t_file::f_blocking__(bool a_value)
+{
+	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	int flags = fcntl(fileno(v_stream), F_GETFL);
+	if (a_value)
+		flags &= ~O_NONBLOCK;
+	else
+		flags |= O_NONBLOCK;
+	if (fcntl(fileno(v_stream), F_SETFL, flags) == -1) t_throwable::f_throw(L"failed to F_SETFL.");
+}
+#endif
+
 }
 
 void t_type_of<io::t_file>::f_define(t_io* a_extension)
 {
 	t_define<io::t_file, t_object>(a_extension, L"File")
-		(t_construct<const std::wstring&, const std::wstring&>())
+		(
+			t_construct<const std::wstring&, const std::wstring&>(),
+			t_construct<int, const std::wstring&>()
+		)
 		(L"reopen", t_member<void(io::t_file::*)(const std::wstring&, const std::wstring&), &io::t_file::f_reopen, t_with_lock_for_write>())
 		(a_extension->f_symbol_close(), t_member<void(io::t_file::*)(), &io::t_file::f_close, t_with_lock_for_write>())
 		(L"seek", t_member<void(io::t_file::*)(intptr_t, int), &io::t_file::f_seek, t_with_lock_for_write>())
-		(L"tell", t_member<intptr_t(io::t_file::*)(), &io::t_file::f_tell, t_with_lock_for_write>())
+		(L"tell", t_member<intptr_t(io::t_file::*)() const, &io::t_file::f_tell, t_with_lock_for_read>())
 		(a_extension->f_symbol_read(), t_member<size_t(io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_read, t_with_lock_for_write>())
 		(a_extension->f_symbol_write(), t_member<void(io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_write, t_with_lock_for_write>())
 		(a_extension->f_symbol_flush(), t_member<void(io::t_file::*)(), &io::t_file::f_flush, t_with_lock_for_write>())
+#ifdef __unix__
+		(L"blocking", t_member<bool(io::t_file::*)() const, &io::t_file::f_blocking, t_with_lock_for_read>())
+		(L"blocking__", t_member<void(io::t_file::*)(bool), &io::t_file::f_blocking__, t_with_lock_for_write>())
+#endif
 	;
 }
 

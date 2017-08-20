@@ -14,7 +14,7 @@ namespace io
 size_t t_reader::f_read(t_io* a_extension)
 {
 	auto& buffer = f_as<t_bytes&>(v_buffer);
-	char* p = reinterpret_cast<char*>(&buffer[0]);
+	auto p = reinterpret_cast<char*>(&buffer[0]);
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;
 	t_scoped n = v_stream.f_get(a_extension->f_symbol_read())(v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
@@ -27,7 +27,7 @@ wint_t t_reader::f_get(t_io* a_extension)
 {
 	if (v_n <= 0 && f_read(a_extension) <= 0) return WEOF;
 	wchar_t c;
-	char* p = reinterpret_cast<char*>(&c);
+	auto p = reinterpret_cast<char*>(&c);
 	size_t n = sizeof(c);
 	while (true) {
 		if (iconv(v_cd, &v_p, &v_n, &p, &n) == size_t(-1)) {

@@ -24,11 +24,11 @@ void t_code::f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 	void** pc0 = a_pc;
 	a_pc += 6;
 	t_stacked* stack = a_base + reinterpret_cast<size_t>(pc0[1]);
-	t_object* key = static_cast<t_object*>(pc0[2]);
+	auto key = static_cast<t_object*>(pc0[2]);
 	t_stacked& top = stack[0];
 	size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
 	if (f_atomic_increment(count) == 2) {
-		t_object* p = static_cast<t_object*>(top);
+		auto p = static_cast<t_object*>(top);
 		if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 			*static_cast<t_slot*>(pc0[4]) = p->v_structure->v_this;
 			pc0[4] = p->v_structure;
@@ -58,12 +58,12 @@ void t_code::f_object_put(t_stacked* a_base, void**& a_pc, void* a_add, void* a_
 	void** pc0 = a_pc;
 	a_pc += 6;
 	t_stacked* stack = a_base + reinterpret_cast<size_t>(pc0[1]);
-	t_object* key = static_cast<t_object*>(pc0[2]);
+	auto key = static_cast<t_object*>(pc0[2]);
 	t_stacked& top = stack[0];
 	t_stacked& value = stack[1];
 	size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
 	if (f_atomic_increment(count) == 2) {
-		t_object* p = static_cast<t_object*>(top);
+		auto p = static_cast<t_object*>(top);
 		if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 			intptr_t index = p->f_field_index(key);
 			if (index < 0) {
@@ -96,12 +96,12 @@ void t_code::f_object_put_clear(t_stacked* a_base, void**& a_pc, void* a_add, vo
 	void** pc0 = a_pc;
 	a_pc += 6;
 	t_stacked* stack = a_base + reinterpret_cast<size_t>(pc0[1]);
-	t_object* key = static_cast<t_object*>(pc0[2]);
+	auto key = static_cast<t_object*>(pc0[2]);
 	t_stacked& top = stack[0];
 	t_stacked& value = stack[1];
 	size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
 	if (f_atomic_increment(count) == 2) {
-		t_object* p = static_cast<t_object*>(top);
+		auto p = static_cast<t_object*>(top);
 		if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 			intptr_t index = p->f_field_index(key);
 			if (index < 0) {
@@ -134,11 +134,11 @@ void t_code::f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 	void** pc0 = a_pc;
 	a_pc += 6;
 	t_stacked* stack = a_base + reinterpret_cast<size_t>(pc0[1]);
-	t_object* key = static_cast<t_object*>(pc0[2]);
+	auto key = static_cast<t_object*>(pc0[2]);
 	t_scoped top = std::move(stack[0]);
 	size_t& count = *reinterpret_cast<size_t*>(pc0 + 3);
 	if (f_atomic_increment(count) == 2) {
-		t_object* p = static_cast<t_object*>(top);
+		auto p = static_cast<t_object*>(top);
 		if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 			*static_cast<t_slot*>(pc0[4]) = p->v_structure->v_this;
 			pc0[4] = p->v_structure;
@@ -174,7 +174,7 @@ XEMMAI__PORTABLE__NOINLINE void t_code::f_method_bind(t_stacked* a_stack)
 {
 	t_scoped x = std::move(a_stack[0]);
 	a_stack[2].f_construct(std::move(a_stack[1]));
-	t_object* p = static_cast<t_object*>(x);
+	auto p = static_cast<t_object*>(x);
 	size_t n = f_as<t_type&>(p->f_type()).f_get_at(p, a_stack);
 	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
 	a_stack[1].f_construct();
@@ -444,9 +444,9 @@ size_t t_code::f_loop(t_context* a_context)
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
-				t_object* key = static_cast<t_object*>(pc0[2]);
+				auto key = static_cast<t_object*>(pc0[2]);
 				t_stacked& top = stack[0];
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
 					t_scoped value = p->f_type()->f_get(key);
 					top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(p)) : value;
@@ -462,13 +462,13 @@ size_t t_code::f_loop(t_context* a_context)
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
 				t_stacked& top = stack[0];
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 					size_t index = reinterpret_cast<size_t>(pc0[5]);
 					if (p->v_structure == pc0[4]) {
 						top = p->f_field_get(index);
 					} else {
-						t_object* key = static_cast<t_object*>(pc0[2]);
+						auto key = static_cast<t_object*>(pc0[2]);
 						if (index < p->v_structure->f_size() && static_cast<t_object*>(p->v_structure->f_fields()[index]) == key) {
 							top = p->f_field_get(index);
 						} else {
@@ -477,7 +477,7 @@ size_t t_code::f_loop(t_context* a_context)
 						}
 					}
 				} else {
-					t_object* key = static_cast<t_object*>(pc0[2]);
+					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
 					top = top.f_get(key);
 				}
@@ -488,7 +488,7 @@ size_t t_code::f_loop(t_context* a_context)
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
-				t_object* key = static_cast<t_object*>(pc0[2]);
+				auto key = static_cast<t_object*>(pc0[2]);
 				t_stacked& top = stack[0];
 				top = top.f_get(key);
 			}
@@ -513,18 +513,18 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
 				t_stacked& top = stack[0];
 				t_stacked& value = stack[1];
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-					t_structure* structure = static_cast<t_structure*>(pc0[4]);
+					auto structure = static_cast<t_structure*>(pc0[4]);
 					if (p->v_structure == structure->v_parent1) {
 						p->f_field_add(t_scoped(structure->v_this), t_scoped(value));
 					} else {
-						t_object* key = static_cast<t_object*>(pc0[2]);
+						auto key = static_cast<t_object*>(pc0[2]);
 						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC);
 						p->f_field_put(key, t_scoped(value));
 					}
 				} else {
-					t_object* key = static_cast<t_object*>(pc0[2]);
+					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC);
 					top.f_put(key, t_scoped(value));
 				}
@@ -538,13 +538,13 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
 				t_stacked& top = stack[0];
 				t_stacked& value = stack[1];
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 					size_t index = reinterpret_cast<size_t>(pc0[5]);
 					if (p->v_structure == pc0[4]) {
 						p->f_field_get(index) = value;
 					} else {
-						t_object* key = static_cast<t_object*>(pc0[2]);
+						auto key = static_cast<t_object*>(pc0[2]);
 						if (index < p->v_structure->f_size() && static_cast<t_object*>(p->v_structure->f_fields()[index]) == key) {
 							p->f_field_get(index) = value;
 						} else {
@@ -553,7 +553,7 @@ size_t t_code::f_loop(t_context* a_context)
 						}
 					}
 				} else {
-					t_object* key = static_cast<t_object*>(pc0[2]);
+					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC);
 					top.f_put(key, t_scoped(value));
 				}
@@ -565,7 +565,7 @@ size_t t_code::f_loop(t_context* a_context)
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
-				t_object* key = static_cast<t_object*>(pc0[2]);
+				auto key = static_cast<t_object*>(pc0[2]);
 				t_stacked& top = stack[0];
 				t_stacked& value = stack[1];
 				top.f_put(key, t_scoped(value));
@@ -582,18 +582,18 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
 				t_stacked& top = stack[0];
 				t_stacked& value = stack[1];
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-					t_structure* structure = static_cast<t_structure*>(pc0[4]);
+					auto structure = static_cast<t_structure*>(pc0[4]);
 					if (p->v_structure == structure->v_parent1) {
 						p->f_field_add(t_scoped(structure->v_this), std::move(value));
 					} else {
-						t_object* key = static_cast<t_object*>(pc0[2]);
+						auto key = static_cast<t_object*>(pc0[2]);
 						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_CLEAR_MEGAMORPHIC);
 						p->f_field_put(key, std::move(value));
 					}
 				} else {
-					t_object* key = static_cast<t_object*>(pc0[2]);
+					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_CLEAR_MEGAMORPHIC);
 					top.f_put(key, std::move(value));
 				}
@@ -607,13 +607,13 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
 				t_stacked& top = stack[0];
 				t_stacked& value = stack[1];
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 					size_t index = reinterpret_cast<size_t>(pc0[5]);
 					if (p->v_structure == pc0[4]) {
 						p->f_field_get(index) = std::move(value);
 					} else {
-						t_object* key = static_cast<t_object*>(pc0[2]);
+						auto key = static_cast<t_object*>(pc0[2]);
 						if (index < p->v_structure->f_size() && static_cast<t_object*>(p->v_structure->f_fields()[index]) == key) {
 							p->f_field_get(index) = std::move(value);
 						} else {
@@ -622,7 +622,7 @@ size_t t_code::f_loop(t_context* a_context)
 						}
 					}
 				} else {
-					t_object* key = static_cast<t_object*>(pc0[2]);
+					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_CLEAR_MEGAMORPHIC);
 					top.f_put(key, std::move(value));
 				}
@@ -634,7 +634,7 @@ size_t t_code::f_loop(t_context* a_context)
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
-				t_object* key = static_cast<t_object*>(pc0[2]);
+				auto key = static_cast<t_object*>(pc0[2]);
 				t_stacked& top = stack[0];
 				t_stacked& value = stack[1];
 				top.f_put(key, std::move(value));
@@ -656,7 +656,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(OBJECT_HAS)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-				t_object* key = static_cast<t_object*>(*++pc);
+				auto key = static_cast<t_object*>(*++pc);
 				++pc;
 				t_stacked& top = stack[0];
 				top = top.f_has(key);
@@ -675,7 +675,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(OBJECT_REMOVE)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-				t_object* key = static_cast<t_object*>(*++pc);
+				auto key = static_cast<t_object*>(*++pc);
 				++pc;
 				t_stacked& top = stack[0];
 				top = top.f_remove(key);
@@ -699,9 +699,9 @@ size_t t_code::f_loop(t_context* a_context)
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
-				t_object* key = static_cast<t_object*>(pc0[2]);
+				auto key = static_cast<t_object*>(pc0[2]);
 				t_scoped top = std::move(stack[0]);
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
 					t_scoped value = p->f_type()->f_get(key);
 					if (value.f_type() == f_global()->f_type<t_method>()) {
@@ -723,14 +723,14 @@ size_t t_code::f_loop(t_context* a_context)
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
 				t_scoped top = std::move(stack[0]);
-				t_object* p = static_cast<t_object*>(top);
+				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 					size_t index = reinterpret_cast<size_t>(pc0[5]);
 					if (p->v_structure == pc0[4]) {
 						stack[0].f_construct(p->f_field_get(index));
 						stack[1].f_construct();
 					} else {
-						t_object* key = static_cast<t_object*>(pc0[2]);
+						auto key = static_cast<t_object*>(pc0[2]);
 						if (index < p->v_structure->f_size() && static_cast<t_object*>(p->v_structure->f_fields()[index]) == key) {
 							stack[0].f_construct(p->f_field_get(index));
 							stack[1].f_construct();
@@ -740,7 +740,7 @@ size_t t_code::f_loop(t_context* a_context)
 						}
 					}
 				} else {
-					t_object* key = static_cast<t_object*>(pc0[2]);
+					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
 					top.f_get(key, stack);
 				}
@@ -751,7 +751,7 @@ size_t t_code::f_loop(t_context* a_context)
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
-				t_object* key = static_cast<t_object*>(pc0[2]);
+				auto key = static_cast<t_object*>(pc0[2]);
 				t_scoped top = std::move(stack[0]);
 				top.f_get(key, stack);
 			}
@@ -771,7 +771,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(GLOBAL_GET)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-				t_object* key = static_cast<t_object*>(*++pc);
+				auto key = static_cast<t_object*>(*++pc);
 				++pc;
 				stack[0].f_construct(f_engine()->f_module_global()->f_get(key));
 			}
@@ -932,7 +932,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(LAMBDA)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-				t_object* code = static_cast<t_object*>(*++pc);
+				auto code = static_cast<t_object*>(*++pc);
 				++pc;
 				stack[0].f_construct(t_lambda::f_instantiate(t_scoped(a_context->v_scope), code));
 			}
@@ -940,7 +940,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(ADVANCED_LAMBDA)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-				t_object* code = static_cast<t_object*>(*++pc);
+				auto code = static_cast<t_object*>(*++pc);
 				++pc;
 				stack[0].f_construct(t_advanced_lambda::f_instantiate(t_scoped(a_context->v_scope), code, stack));
 			}
@@ -1605,8 +1605,8 @@ void t_code::f_try(t_context* a_context)
 	auto base = a_context->v_base;
 	auto& pc = a_context->f_pc();
 	t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-	void** catch0 = static_cast<void**>(*++pc);
-	void** finally0 = static_cast<void**>(*++pc);
+	auto catch0 = static_cast<void**>(*++pc);
+	auto finally0 = static_cast<void**>(*++pc);
 	++pc;
 	t_try try0;
 	try {
@@ -1669,9 +1669,9 @@ void t_code::f_try(t_context* a_context)
 	}
 	pc = finally0;
 	f_loop(a_context);
-	void** break0 = static_cast<void**>(*++pc);
-	void** continue0 = static_cast<void**>(*++pc);
-	void** return0 = static_cast<void**>(*++pc);
+	auto break0 = static_cast<void**>(*++pc);
+	auto continue0 = static_cast<void**>(*++pc);
+	auto return0 = static_cast<void**>(*++pc);
 	switch (try0) {
 	case e_try__BREAK:
 		pc = break0;

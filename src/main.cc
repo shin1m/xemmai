@@ -491,7 +491,6 @@ int main(int argc, char* argv[])
 	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
 	if (debug < 0) return static_cast<int>(engine.f_run(nullptr));
 	io::t_file out(debug == 2 ? dup(2) : debug, "w");
-	std::setbuf(out, NULL);
 	::t_debugger debugger(engine, out);
 	return static_cast<int>(engine.f_run(&debugger));
 }

@@ -1,5 +1,6 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+bin_path=@abs_top_srcdir@/src/xemmai
 include_path=@abs_top_srcdir@/include
 module_path=@abs_top_srcdir@/lib
 

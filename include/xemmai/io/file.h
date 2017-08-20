@@ -31,18 +31,22 @@ public:
 	{
 		return f_instantiate(new t_file(a_path, a_mode));
 	}
+#ifdef __unix__
 	static t_scoped f_instantiate(int a_fd, const std::wstring& a_mode)
 	{
 		return f_instantiate(new t_file(a_fd, a_mode));
 	}
+#endif
 
 	t_file(std::FILE* a_stream) : v_stream(a_stream)
 	{
 	}
 	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const char* a_mode);
 	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const std::wstring& a_mode);
-	XEMMAI__PORTABLE__EXPORT t_file(int a_fd, const char* a_mode);
-	XEMMAI__PORTABLE__EXPORT t_file(int a_fd, const std::wstring& a_mode);
+#ifdef __unix__
+	t_file(int a_fd, const char* a_mode);
+	t_file(int a_fd, const std::wstring& a_mode);
+#endif
 	~t_file()
 	{
 		if (v_stream != NULL && v_own) std::fclose(v_stream);
@@ -54,10 +58,14 @@ public:
 	XEMMAI__PORTABLE__EXPORT void f_reopen(const std::wstring& a_path, const std::wstring& a_mode);
 	XEMMAI__PORTABLE__EXPORT void f_close();
 	XEMMAI__PORTABLE__EXPORT void f_seek(intptr_t a_offset, int a_whence);
-	XEMMAI__PORTABLE__EXPORT intptr_t f_tell();
+	XEMMAI__PORTABLE__EXPORT intptr_t f_tell() const;
 	XEMMAI__PORTABLE__EXPORT size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	XEMMAI__PORTABLE__EXPORT void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	XEMMAI__PORTABLE__EXPORT void f_flush();
+#ifdef __unix__
+	bool f_blocking() const;
+	void f_blocking__(bool a_value);
+#endif
 };
 
 }

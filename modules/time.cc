@@ -107,7 +107,7 @@ double f_compose(const t_tuple& a_value)
 
 t_scoped f_decompose(double a_value)
 {
-	std::time_t t0 = static_cast<std::time_t>(std::floor(a_value));
+	auto t0 = static_cast<std::time_t>(std::floor(a_value));
 	double fraction = a_value - t0;
 	std::tm* t1 = std::gmtime(&t0);
 	t_scoped p = t_tuple::f_instantiate(8);

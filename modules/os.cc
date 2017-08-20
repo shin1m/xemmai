@@ -1,4 +1,8 @@
 #include <xemmai/convert.h>
+#include <xemmai/tuple.h>
+#ifdef __unix__
+#include <unistd.h>
+#endif
 
 namespace xemmai
 {
@@ -42,12 +46,28 @@ void f_sleep(intptr_t a_miliseconds)
 #endif
 }
 
+#ifdef __unix__
+t_scoped f_pipe()
+{
+	int fds[2];
+	if (pipe(fds) != 0) t_throwable::f_throw(L"pipe failed.");
+	auto p = t_tuple::f_instantiate(2);
+	auto& tuple = f_as<t_tuple&>(p);
+	tuple[0].f_construct(f_global()->f_as(fds[0]));
+	tuple[1].f_construct(f_global()->f_as(fds[1]));
+	return p;
+}
+#endif
+
 }
 
 t_os::t_os(t_object* a_module) : t_extension(a_module)
 {
 	f_define<int(*)(const std::wstring&), f_system>(this, L"system");
 	f_define<void(*)(intptr_t), f_sleep>(this, L"sleep");
+#ifdef __unix__
+	f_define<t_scoped(*)(), f_pipe>(this, L"pipe");
+#endif
 }
 
 void t_os::f_scan(t_scan a_scan)

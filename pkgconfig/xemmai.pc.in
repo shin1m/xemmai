@@ -1,5 +1,6 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+bin_path=@bindir@/xemmai
 include_path=@includedir@/@PACKAGE@-@VERSION@
 module_path=@libdir@/@PACKAGE@-@VERSION@
 

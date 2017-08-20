@@ -14,7 +14,7 @@ namespace io
 void t_writer::f_write(t_io* a_extension)
 {
 	auto& buffer = f_as<t_bytes&>(v_buffer);
-	char* p = reinterpret_cast<char*>(&buffer[0]);
+	auto p = reinterpret_cast<char*>(&buffer[0]);
 	v_stream.f_get(a_extension->f_symbol_write())(v_buffer, f_global()->f_as(0), f_global()->f_as(v_p - p));
 	v_p = p;
 	v_n = buffer.f_size();
@@ -22,7 +22,7 @@ void t_writer::f_write(t_io* a_extension)
 
 void t_writer::f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n)
 {
-	char* p = const_cast<char*>(reinterpret_cast<const char*>(a_p));
+	auto p = const_cast<char*>(reinterpret_cast<const char*>(a_p));
 	size_t n = a_n * sizeof(wchar_t);
 	while (iconv(v_cd, &p, &n, &v_p, &v_n) == size_t(-1)) {
 		switch (errno) {

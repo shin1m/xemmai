@@ -184,7 +184,7 @@ void t_callback_extension::f_scan(t_scan a_scan)
 
 t_scoped t_callback_extension::f_as(t_client* a_value) const
 {
-	t_client_wrapper* p = dynamic_cast<t_client_wrapper*>(a_value);
+	auto p = dynamic_cast<t_client_wrapper*>(a_value);
 	if (p) return p->v_self;
 	t_scoped object = t_object::f_allocate(v_type_client);
 	object.f_pointer__(a_value);
