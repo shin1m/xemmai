@@ -79,7 +79,10 @@ std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
 	std::wstring s(a_size, L'\0');
 	for (size_t i = 0; i < a_size; ++i) {
 		wint_t c = f_get(a_extension);
-		if (c == WEOF) break;
+		if (c == WEOF) {
+			s.resize(i);
+			break;
+		}
 		s[i] = c;
 	}
 	return s;
@@ -95,7 +98,7 @@ std::wstring t_reader::f_read_line(t_io* a_extension)
 		cs.push_back(c);
 		if (c == L'\n') break;
 	}
-	return std::wstring(cs.begin(), cs.end());
+	return {cs.begin(), cs.end()};
 }
 
 }
@@ -117,7 +120,7 @@ t_type* t_type_of<io::t_reader>::f_derive(t_object* a_this)
 
 void t_type_of<io::t_reader>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	io::t_reader* p = &f_as<io::t_reader&>(a_this);
+	auto p = &f_as<io::t_reader&>(a_this);
 	if (!p) return;
 	a_scan(p->v_stream);
 	a_scan(p->v_buffer);

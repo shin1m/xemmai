@@ -143,7 +143,7 @@ t_type* t_type_of<io::t_writer>::f_derive(t_object* a_this)
 
 void t_type_of<io::t_writer>::f_scan(t_object* a_this, t_scan a_scan)
 {
-	io::t_writer* p = &f_as<io::t_writer&>(a_this);
+	auto p = &f_as<io::t_writer&>(a_this);
 	if (!p) return;
 	a_scan(p->v_stream);
 	a_scan(p->v_buffer);
