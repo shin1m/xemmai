@@ -44,7 +44,7 @@
         |
     THROW
         |x
-        ?
+        !
     CLEAR
         |x
         |

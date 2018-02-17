@@ -571,7 +571,10 @@ inline t_scoped t_value::f_remove(t_object* a_key) const
 
 XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_stacked* a_stack, size_t a_n) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	if (f_tag() < e_tag__OBJECT) {
+		t_destruct_n(a_stack, a_n);
+		t_throwable::f_throw(L"not supported");
+	}
 	return v_p->f_call_without_loop(a_stack, a_n);
 }
 

@@ -10,6 +10,16 @@ namespace xemmai
 namespace
 {
 
+inline void f_put_or_clear(t_stacked& a_top, t_object* a_key, t_stacked& a_value)
+{
+	try {
+		a_top.f_put(a_key, std::move(a_value));
+	} catch (...) {
+		a_value.f_construct();
+		throw;
+	}
+}
+
 inline void f_allocate(t_stacked* a_stack, size_t a_n)
 {
 	t_stack* stack = f_stack();
@@ -121,10 +131,10 @@ void t_code::f_object_put_clear(t_stacked* a_base, void**& a_pc, void* a_add, vo
 			}
 		} else {
 			pc0[0] = a_megamorphic;
-			top.f_put(key, std::move(value));
+			f_put_or_clear(top, key, value);
 		}
 	} else {
-		top.f_put(key, std::move(value));
+		f_put_or_clear(top, key, value);
 	}
 	top.f_destruct();
 }
@@ -595,7 +605,7 @@ size_t t_code::f_loop(t_context* a_context)
 				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_CLEAR_MEGAMORPHIC);
-					top.f_put(key, std::move(value));
+					f_put_or_clear(top, key, value);
 				}
 				top.f_destruct();
 			}
@@ -624,7 +634,7 @@ size_t t_code::f_loop(t_context* a_context)
 				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_CLEAR_MEGAMORPHIC);
-					top.f_put(key, std::move(value));
+					f_put_or_clear(top, key, value);
 				}
 				top.f_destruct();
 			}
@@ -637,7 +647,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto key = static_cast<t_object*>(pc0[2]);
 				t_stacked& top = stack[0];
 				t_stacked& value = stack[1];
-				top.f_put(key, std::move(value));
+				f_put_or_clear(top, key, value);
 				top.f_destruct();
 			}
 			XEMMAI__CODE__BREAK
