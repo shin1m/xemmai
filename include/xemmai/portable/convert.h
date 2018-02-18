@@ -5,16 +5,11 @@
 
 #include "define.h"
 
-namespace xemmai
-{
-
-namespace portable
+namespace xemmai::portable
 {
 
 XEMMAI__PORTABLE__EXPORT std::string f_convert(const std::wstring& a_string);
 XEMMAI__PORTABLE__EXPORT std::wstring f_convert(const std::string& a_string);
-
-}
 
 }
 

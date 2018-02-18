@@ -6,10 +6,7 @@
 #include <unistd.h>
 #endif
 
-namespace xemmai
-{
-
-namespace portable
+namespace xemmai::portable
 {
 
 #ifdef __unix__
@@ -82,8 +79,6 @@ std::wstring f_convert(const std::string& a_string)
 	std::vector<wchar_t> cs(n);
 	std::mbstowcs(&cs[0], a_string.c_str(), n);
 	return &cs[0];
-}
-
 }
 
 }

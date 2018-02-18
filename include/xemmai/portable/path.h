@@ -3,10 +3,7 @@
 
 #include <string>
 
-namespace xemmai
-{
-
-namespace portable
+namespace xemmai::portable
 {
 
 class t_path
@@ -34,8 +31,6 @@ public:
 		return v_path;
 	}
 };
-
-}
 
 }
 

@@ -11,10 +11,7 @@
 #include <cstdio>
 #include <string>
 
-namespace xemmai
-{
-
-namespace portable
+namespace xemmai::portable
 {
 
 #ifdef __unix__
@@ -81,8 +78,6 @@ public:
 	}
 };
 #endif
-
-}
 
 }
 
