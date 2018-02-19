@@ -838,7 +838,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		case e_instruction__COMPLEMENT_T:
 			return t_literal<intptr_t>(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
-			t_throwable::f_throw(L"not supported");
+			t_throwable::f_throw(L"not supported.");
 		}
 	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
 		switch (v_instruction) {
@@ -847,7 +847,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		case e_instruction__MINUS_T:
 			return t_literal<double>(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
-			t_throwable::f_throw(L"not supported");
+			t_throwable::f_throw(L"not supported.");
 		}
 	}
 	size_t instruction = v_instruction;
@@ -934,7 +934,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__OR_TT:
 				return t_literal<intptr_t>(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				t_throwable::f_throw(L"not supported");
+				t_throwable::f_throw(L"not supported.");
 			}
 		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
 			a_emit.f_pop();
@@ -964,7 +964,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__NOT_IDENTICAL_TT:
 				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				t_throwable::f_throw(L"not supported");
+				t_throwable::f_throw(L"not supported.");
 			}
 		}
 	} else if (left.v_tag == t_operand::e_tag__FLOAT) {
@@ -996,7 +996,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__NOT_IDENTICAL_TT:
 				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				t_throwable::f_throw(L"not supported");
+				t_throwable::f_throw(L"not supported.");
 			}
 		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
 			a_emit.f_pop();
@@ -1024,7 +1024,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__NOT_IDENTICAL_TT:
 				return t_literal<bool>(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				t_throwable::f_throw(L"not supported");
+				t_throwable::f_throw(L"not supported.");
 			}
 		}
 	}

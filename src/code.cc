@@ -1607,7 +1607,7 @@ size_t t_code::f_loop(t_context* a_context)
 label__THROW_NOT_SUPPORTED_M1:
 	--pc;
 label__THROW_NOT_SUPPORTED:
-	t_throwable::f_throw(L"not supported");
+	t_throwable::f_throw(L"not supported.");
 }
 
 void t_code::f_try(t_context* a_context)

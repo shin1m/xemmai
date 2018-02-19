@@ -554,7 +554,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_value::f_get(t_object* a_key) 
 
 inline void t_value::f_put(t_object* a_key, t_scoped&& a_value) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported.");
 	f_as<t_type&>(v_p->f_type()).f_put(v_p, a_key, std::move(a_value));
 }
 
@@ -565,7 +565,7 @@ inline bool t_value::f_has(t_object* a_key) const
 
 inline t_scoped t_value::f_remove(t_object* a_key) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported.");
 	return f_as<t_type&>(v_p->f_type()).f_remove(v_p, a_key);
 }
 
@@ -573,7 +573,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_sta
 {
 	if (f_tag() < e_tag__OBJECT) {
 		t_destruct_n(a_stack, a_n);
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	}
 	return v_p->f_call_without_loop(a_stack, a_n);
 }
@@ -701,7 +701,7 @@ inline t_scoped t_value::operator()(T&&... a_arguments) const
 
 inline t_scoped t_value::f_get_at(const t_value& a_index) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported.");
 	t_scoped_stack stack(3);
 	stack[2].f_construct(a_index);
 	size_t n = f_as<t_type&>(v_p->f_type()).f_get_at(v_p, stack);
@@ -711,7 +711,7 @@ inline t_scoped t_value::f_get_at(const t_value& a_index) const
 
 inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported.");
 	t_scoped_stack stack(4);
 	stack[2].f_construct(a_index);
 	stack[3].f_construct(a_value);
@@ -725,7 +725,7 @@ inline t_scoped t_value::f_plus() const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_value(v_integer);
 	case e_tag__FLOAT:
@@ -740,7 +740,7 @@ inline t_scoped t_value::f_minus() const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_value(-v_integer);
 	case e_tag__FLOAT:
@@ -758,7 +758,7 @@ inline t_scoped t_value::f_not() const
 	case e_tag__NULL:
 	case e_tag__INTEGER:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__UNARY(f_not)
 	}
@@ -772,7 +772,7 @@ inline t_scoped t_value::f_complement() const
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__UNARY(f_complement)
 	}
@@ -783,7 +783,7 @@ inline t_scoped t_value::f_multiply(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_type_of<intptr_t>::f_multiply(v_integer, a_value);
 	case e_tag__FLOAT:
@@ -799,7 +799,7 @@ inline t_scoped t_value::f_divide(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_type_of<intptr_t>::f_divide(v_integer, a_value);
 	case e_tag__FLOAT:
@@ -819,7 +819,7 @@ inline t_scoped t_value::f_modulus(const t_value& a_value) const
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__BINARY(f_modulus)
 	}
@@ -830,7 +830,7 @@ inline t_scoped t_value::f_add(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_type_of<intptr_t>::f_add(v_integer, a_value);
 	case e_tag__FLOAT:
@@ -846,7 +846,7 @@ inline t_scoped t_value::f_subtract(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_type_of<intptr_t>::f_subtract(v_integer, a_value);
 	case e_tag__FLOAT:
@@ -866,7 +866,7 @@ inline t_scoped t_value::f_left_shift(const t_value& a_value) const
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__BINARY(f_left_shift)
 	}
@@ -881,7 +881,7 @@ inline t_scoped t_value::f_right_shift(const t_value& a_value) const
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__BINARY(f_right_shift)
 	}
@@ -892,7 +892,7 @@ inline t_scoped t_value::f_less(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_value(t_type_of<intptr_t>::f_less(v_integer, a_value));
 	case e_tag__FLOAT:
@@ -908,7 +908,7 @@ inline t_scoped t_value::f_less_equal(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_value(t_type_of<intptr_t>::f_less_equal(v_integer, a_value));
 	case e_tag__FLOAT:
@@ -924,7 +924,7 @@ inline t_scoped t_value::f_greater(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_value(t_type_of<intptr_t>::f_greater(v_integer, a_value));
 	case e_tag__FLOAT:
@@ -940,7 +940,7 @@ inline t_scoped t_value::f_greater_equal(const t_value& a_value) const
 	switch (f_tag()) {
 	case e_tag__NULL:
 	case e_tag__BOOLEAN:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	case e_tag__INTEGER:
 		return t_value(t_type_of<intptr_t>::f_greater_equal(v_integer, a_value));
 	case e_tag__FLOAT:
@@ -994,7 +994,7 @@ inline t_scoped t_value::f_and(const t_value& a_value) const
 		return t_value(v_integer & f_as<intptr_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__BINARY(f_and)
 	}
@@ -1011,7 +1011,7 @@ inline t_scoped t_value::f_xor(const t_value& a_value) const
 		return t_value(v_integer ^ f_as<intptr_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__BINARY(f_xor)
 	}
@@ -1028,7 +1028,7 @@ inline t_scoped t_value::f_or(const t_value& a_value) const
 		return t_value(v_integer | f_as<intptr_t>(a_value));
 	case e_tag__NULL:
 	case e_tag__FLOAT:
-		t_throwable::f_throw(L"not supported");
+		t_throwable::f_throw(L"not supported.");
 	default:
 		XEMMAI__VALUE__BINARY(f_or)
 	}
@@ -1036,7 +1036,7 @@ inline t_scoped t_value::f_or(const t_value& a_value) const
 
 inline t_scoped t_value::f_send(const t_value& a_value) const
 {
-	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported");
+	if (f_tag() < e_tag__OBJECT) t_throwable::f_throw(L"not supported.");
 	XEMMAI__VALUE__BINARY(f_send)
 }
 

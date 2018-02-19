@@ -11,7 +11,7 @@ test = @(x, error)
 		e.dump(
 		assert(e.__string() == error
 
-test_not_supported = @(x) test(x, "not supported"
+test_not_supported = @(x) test(x, "not supported."
 test_not_supported(@() null.a = ""
 test_not_supported(@() null.~a
 test_not_supported(@() null("", ""
