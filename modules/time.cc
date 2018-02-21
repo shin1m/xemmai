@@ -110,17 +110,7 @@ t_scoped f_decompose(double a_value)
 	auto t0 = static_cast<std::time_t>(std::floor(a_value));
 	double fraction = a_value - t0;
 	std::tm* t1 = std::gmtime(&t0);
-	t_scoped p = t_tuple::f_instantiate(8);
-	auto& tuple = f_as<t_tuple&>(p);
-	tuple[0] = t_value(t1->tm_year + 1900);
-	tuple[1] = t_value(t1->tm_mon + 1);
-	tuple[2] = t_value(t1->tm_mday);
-	tuple[3] = t_value(t1->tm_hour);
-	tuple[4] = t_value(t1->tm_min);
-	tuple[5] = t_value(t1->tm_sec + fraction);
-	tuple[6] = t_value(t1->tm_wday);
-	tuple[7] = t_value(t1->tm_yday + 1);
-	return p;
+	return f_tuple(t1->tm_year + 1900, t1->tm_mon + 1, t1->tm_mday, t1->tm_hour, t1->tm_min, t1->tm_sec + fraction, t1->tm_wday, t1->tm_yday + 1);
 }
 
 intptr_t f_offset()
@@ -432,16 +422,7 @@ t_scoped f_parse_rfc2822(const std::wstring& a_value)
 		year += 2000;
 	else if (year < 1000)
 		year += 1900;
-	t_scoped p = t_tuple::f_instantiate(7);
-	auto& tuple = f_as<t_tuple&>(p);
-	tuple[0] = t_value(year);
-	tuple[1] = t_value(m);
-	tuple[2] = t_value(day);
-	tuple[3] = t_value(hour);
-	tuple[4] = t_value(minute);
-	tuple[5] = t_value(second);
-	tuple[6] = t_value(f_zone_to_offset(zone));
-	return p;
+	return f_tuple(year, m, day, hour, minute, second, f_zone_to_offset(zone));
 }
 
 std::wstring f_format_rfc2822(const t_tuple& a_value, intptr_t a_offset)
@@ -484,15 +465,7 @@ t_scoped f_parse_http(const std::wstring& a_value)
 		year += 2000;
 	else if (year < 1000)
 		year += 1900;
-	t_scoped p = t_tuple::f_instantiate(6);
-	auto& tuple = f_as<t_tuple&>(p);
-	tuple[0] = t_value(year);
-	tuple[1] = t_value(m);
-	tuple[2] = t_value(day);
-	tuple[3] = t_value(hour);
-	tuple[4] = t_value(minute);
-	tuple[5] = t_value(second);
-	return p;
+	return f_tuple(year, m, day, hour, minute, second);
 }
 
 std::wstring f_format_http(const t_tuple& a_value)
@@ -521,16 +494,7 @@ t_scoped f_parse_xsd(const std::wstring& a_value)
 	wchar_t zone[7];
 	int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
 	if (n < 6) t_throwable::f_throw(L"invalid format.");
-	t_scoped p = t_tuple::f_instantiate(n < 7 ? 6 : 7);
-	auto& tuple = f_as<t_tuple&>(p);
-	tuple[0] = t_value(year);
-	tuple[1] = t_value(month);
-	tuple[2] = t_value(day);
-	tuple[3] = t_value(hour);
-	tuple[4] = t_value(minute);
-	tuple[5] = t_value(second);
-	if (n >= 7) tuple[6] = t_value(f_zone_to_offset(zone));
-	return p;
+	return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
 }
 
 std::wstring f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_precision)

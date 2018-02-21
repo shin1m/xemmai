@@ -379,6 +379,25 @@ public:
 		f_decrements()->f_push(v_p);
 		v_p = nullptr;
 	}
+	void f_construct(bool a_value)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
+		v_boolean = a_value;
+	}
+	template<typename T>
+	typename std::enable_if<std::is_integral<T>::value>::type f_construct(T a_value)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
+	void f_construct(double a_value)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
+		v_float = a_value;
+	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
 	{
 		f_construct(a_value);

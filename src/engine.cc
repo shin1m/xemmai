@@ -177,7 +177,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	t_scoped type_structure = t_object::f_allocate_on_boot(type_class);
 	type_structure.f_pointer__(new t_type_of<t_structure>(nullptr, t_scoped(type_object)));
 	v_structure_root = t_object::f_allocate_on_boot(type_structure);
-	t_structure* root = new(0) t_structure(t_scoped(v_structure_root));
+	auto root = new(0) t_structure(t_scoped(v_structure_root));
 	v_structure_root.f_pointer__(root);
 	t_value::v_increments->f_push(v_structure_root);
 	static_cast<t_object*>(type_object)->v_structure = root;

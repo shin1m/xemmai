@@ -51,11 +51,7 @@ t_scoped f_pipe()
 {
 	int fds[2];
 	if (pipe(fds) != 0) t_throwable::f_throw(L"pipe failed.");
-	auto p = t_tuple::f_instantiate(2);
-	auto& tuple = f_as<t_tuple&>(p);
-	tuple[0].f_construct(f_global()->f_as(fds[0]));
-	tuple[1].f_construct(f_global()->f_as(fds[1]));
-	return p;
+	return f_tuple(fds[0], fds[1]);
 }
 #endif
 

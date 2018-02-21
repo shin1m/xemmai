@@ -75,7 +75,7 @@ public:
 template<typename T, size_t A_size>
 void t_shared_pool<T, A_size>::f_grow()
 {
-	t_block* block = new t_block();
+	auto block = new t_block();
 	block->v_next = v_blocks;
 	v_blocks = block;
 	T* p = block->v_cells;

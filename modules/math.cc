@@ -28,22 +28,14 @@ t_scoped f_frexp(double a_value)
 {
 	int e;
 	double m = std::frexp(a_value, &e);
-	t_scoped p = t_tuple::f_instantiate(2);
-	auto& tuple = f_as<t_tuple&>(p);
-	tuple[0] = t_value(m);
-	tuple[1] = t_value(e);
-	return p;
+	return f_tuple(m, e);
 }
 
 t_scoped f_modf(double a_value)
 {
 	double i;
 	double f = std::modf(a_value, &i);
-	t_scoped p = t_tuple::f_instantiate(2);
-	auto& tuple = f_as<t_tuple&>(p);
-	tuple[0] = t_value(f);
-	tuple[1] = t_value(i);
-	return p;
+	return f_tuple(f, i);
 }
 
 template<bool (*A_function)(double)>
