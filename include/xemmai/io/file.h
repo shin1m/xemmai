@@ -62,6 +62,7 @@ public:
 	XEMMAI__PORTABLE__EXPORT size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	XEMMAI__PORTABLE__EXPORT void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	XEMMAI__PORTABLE__EXPORT void f_flush();
+	bool f_tty() const;
 #ifdef __unix__
 	bool f_blocking() const;
 	void f_blocking__(bool a_value);

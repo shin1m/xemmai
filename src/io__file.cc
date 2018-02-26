@@ -4,6 +4,7 @@
 #include <xemmai/derived.h>
 #include <xemmai/io.h>
 #ifdef __unix__
+#include <unistd.h>
 #include <fcntl.h>
 #endif
 #ifdef _MSC_VER
@@ -106,6 +107,12 @@ void t_file::f_flush()
 	std::fflush(v_stream);
 }
 
+bool t_file::f_tty() const
+{
+	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	return isatty(fileno(v_stream)) == 1;
+}
+
 #ifdef __unix__
 bool t_file::f_blocking() const
 {
@@ -141,6 +148,7 @@ void t_type_of<io::t_file>::f_define(t_io* a_extension)
 		(a_extension->f_symbol_read(), t_member<size_t(io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_read, t_with_lock_for_write>())
 		(a_extension->f_symbol_write(), t_member<void(io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_write, t_with_lock_for_write>())
 		(a_extension->f_symbol_flush(), t_member<void(io::t_file::*)(), &io::t_file::f_flush, t_with_lock_for_write>())
+		(L"tty", t_member<bool(io::t_file::*)() const, &io::t_file::f_tty, t_with_lock_for_read>())
 #ifdef __unix__
 		(L"blocking", t_member<bool(io::t_file::*)() const, &io::t_file::f_blocking, t_with_lock_for_read>())
 		(L"blocking__", t_member<void(io::t_file::*)(bool), &io::t_file::f_blocking__, t_with_lock_for_write>())

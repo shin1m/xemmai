@@ -276,15 +276,16 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	{
 		t_scoped file = io::t_file::f_instantiate(stdin);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"native_in"), t_scoped(file));
-		t_scoped reader = io::t_reader::f_instantiate(std::move(file), L"");
+		v_module_system.f_put(t_symbol::f_instantiate(L"raw_in"), t_scoped(file));
+		bool tty = f_as<io::t_file&>(file).f_tty();
+		t_scoped reader = io::t_reader::f_instantiate(std::move(file), L"", tty ? 1 : 1024);
 		static_cast<t_object*>(reader)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"in"), std::move(reader));
 	}
 	{
 		t_scoped file = io::t_file::f_instantiate(stdout);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"native_out"), t_scoped(file));
+		v_module_system.f_put(t_symbol::f_instantiate(L"raw_out"), t_scoped(file));
 		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L"");
 		static_cast<t_object*>(writer)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"out"), std::move(writer));
@@ -292,7 +293,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	{
 		t_scoped file = io::t_file::f_instantiate(stderr);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"native_error"), t_scoped(file));
+		v_module_system.f_put(t_symbol::f_instantiate(L"raw_error"), t_scoped(file));
 		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L"");
 		static_cast<t_object*>(writer)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"error"), std::move(writer));
