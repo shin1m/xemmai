@@ -1,7 +1,7 @@
 system = Module("system"
 print = system.out.write_line
 
-sequence = @(n) @() :n = n + 1
+sequence = @(n) @ :n = n + 1
 
 sieve = @(n, ns) @
 	while true

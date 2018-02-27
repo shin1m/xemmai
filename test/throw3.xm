@@ -4,7 +4,7 @@ print = system.out.write_line
 try
 	(@
 		try
-			(@() "".x)(
+			(@ "".x)(
 		finally
 	)(
 catch Throwable e
@@ -15,7 +15,7 @@ catch Throwable e
 	try
 		(@
 			try
-				(@() "".x)(
+				(@ "".x)(
 			finally
 		)(
 	catch Throwable e

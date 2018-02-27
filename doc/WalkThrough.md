@@ -94,11 +94,10 @@ Using `return` statement:
         n + sum2(n - 1) # Tail return can be omitted.
     sum2(10) # => 55
 
-An empty arguments list can be omitted when block form is used:
+An empty arguments list can be omitted:
 
     # Same as @() 55.
-    fiftyfive = @
-        55
+    fiftyfive = @ 55
     fiftyfive() # => 55
 
 A single expression form:
@@ -182,7 +181,7 @@ More object oriented way:
         $__initialize = @(x, y)
             $x = x
             $y = y
-        $l2 = @() $x * $x + $y * $y
+        $l2 = @ $x * $x + $y * $y
     foo = Foo(3.0, 4.0)
     foo.l2() # => 25.0
 
@@ -223,7 +222,7 @@ xemmai supports a single inheritance.
             # :$^ is Foo.
             :$^__initialize[$](x, y)
             $z = z
-        $l2 = @() :$^l2[$]() + $z * $z
+        $l2 = @ :$^l2[$]() + $z * $z
 
 `^` denotes a super class.
 So `:$^` in an instance method refers to the super class of its defining class.

@@ -3,7 +3,7 @@ print = system.out.write_line
 
 generator = @(f)
 	fiber = Fiber(@(other) f(@(x) :other = other(x
-	@() fiber(Fiber.current(
+	@ fiber(Fiber.current(
 
 sequence = @(n) generator(@(yield)
 	while true

@@ -10,9 +10,9 @@ test = @(f)
 		return
 	throw Throwable("should not reach here."
 
-test(@() print(*null
-test(@() null["x"](
-test(@() null * "x"
-test(@() null :: "x"
-test(@() null["x"]
-test(@() null["x"] = null
+test(@ print(*null
+test(@ null["x"](
+test(@ null * "x"
+test(@ null :: "x"
+test(@ null["x"]
+test(@ null["x"] = null

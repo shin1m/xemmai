@@ -1,7 +1,7 @@
 system = Module("system"
 print = system.error.write_line
 
-f = @()
+f = @
 	throw Throwable("Hello, World!"
 try
 	f(
@@ -9,7 +9,7 @@ catch Throwable e
 	print(e
 	e.dump(
 
-(@()
+(@
 	try
 		throw Throwable("Hello, World!"
 	catch Throwable e

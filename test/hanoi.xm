@@ -16,7 +16,7 @@ Towers = Class() :: @
 		$x = x
 		$y = y
 		$z = z
-	$__string = @() "(" + $x + " " + $y + " " + $z + ")"
+	$__string = @ "(" + $x + " " + $y + " " + $z + ")"
 
 hanoi = @(height, from, via, to, move)
 	if height > 1: hanoi(height - 1, from, to, via, move

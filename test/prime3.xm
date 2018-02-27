@@ -12,11 +12,11 @@ Pair = Class() :: @
 		$first = first
 		$second = second
 
-sequence = @(n) delay(@() Pair(n, sequence(n + 1
+sequence = @(n) delay(@ Pair(n, sequence(n + 1
 
-sieve = @(n, ns) delay(@() ns().first % n == 0 ? sieve(n, ns().second)() : Pair(ns().first, sieve(n, ns().second))
+sieve = @(n, ns) delay(@ ns().first % n == 0 ? sieve(n, ns().second)() : Pair(ns().first, sieve(n, ns().second))
 
-primes = @(ns) delay(@() Pair(ns().first, primes(sieve(ns().first, ns().second)))
+primes = @(ns) delay(@ Pair(ns().first, primes(sieve(ns().first, ns().second)))
 
 ns = primes(sequence(2
 for i = 0; i < 30; i = i + 1
