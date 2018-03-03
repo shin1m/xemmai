@@ -13,14 +13,14 @@ finally
 reader = io.Reader(io.File("text.xm.test", "r"), "utf-8"
 try
 	s = reader.read_line(
-	if s != "Hello, world!\n": throw Throwable(s
+	s == "Hello, world!\n" || throw Throwable(s
 	s = reader.read_line(
-	if s != "This is shin.\n": throw Throwable(s
+	s == "This is shin.\n" || throw Throwable(s
 	s = reader.read(4
-	if s != "Good": throw Throwable(s
+	s == "Good" || throw Throwable(s
 	s = reader.read_line(
-	if s != " bye.\n": throw Throwable(s
+	s == " bye.\n" || throw Throwable(s
 	s = reader.read_line(
-	if s != "": throw Throwable(s
+	s == "" || throw Throwable(s
 finally
 	reader.close(

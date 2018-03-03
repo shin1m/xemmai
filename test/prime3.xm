@@ -4,7 +4,7 @@ print = system.out.write_line
 delay = @(f)
 	v = null
 	@
-		if v === null: :v = f(
+		v === null && (:v = f())
 		v
 
 Pair = Class() :: @

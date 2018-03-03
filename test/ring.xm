@@ -13,7 +13,7 @@ Ring = Class() :: @
 		else
 			return "(" + $string($ring.next) + ")"
 	$string = @(cell)
-		if cell == $ring: return cell.value.__string(
+		cell === $ring && return cell.value.__string(
 		return cell.value.__string() + " " + $string(cell.next)
 	$push = @(value)
 		cell = Cell(value
@@ -37,7 +37,7 @@ ring = @(n)
 		return Ring(
 
 rings = @(n)
-	if n > 0: rings(n - 1
+	n > 0 && rings(n - 1
 	print(ring(n
 
 rings(10

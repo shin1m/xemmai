@@ -6,7 +6,7 @@ sequence = @(n) @ :n = n + 1
 sieve = @(n, ns) @
 	while true
 		m = ns(
-		if m % n != 0: break m
+		m % n != 0 && break m
 
 primes = (@
 	ns = sequence(1

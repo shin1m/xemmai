@@ -26,7 +26,7 @@ This document walks through xemmai language.
 
 ## Control Flows
 
-### `if` Statement
+### `if` Expression
 
     if a > 0
         # a is greater than zero.
@@ -40,7 +40,7 @@ A single line form:
     if a > 0: greater = true else: greater = false
 
 
-### `while` Statement
+### `while` Expression
 
     while a > 0
         a = a - 1
@@ -49,7 +49,7 @@ A single line form:
 
     while a > 0: a = a - 1
 
-Using `break` and `continue` statements:
+Using `break` and `continue` expressions:
 
     a = b = c = 0
     while true
@@ -63,7 +63,7 @@ Using `break` and `continue` statements:
         a = a + 1
 
 
-### `for` Statement
+### `for` Expression
 
     n = 0
     for i = 0; i < 10; i = i + 1
@@ -87,7 +87,7 @@ A single line form:
         a
     sum(10) # => 55
 
-Using `return` statement:
+Using `return` expression:
 
     sum2 = @(n)
         if n <= 0: return 0

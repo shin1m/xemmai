@@ -1,4 +1,4 @@
-assert = @(x) if !x: throw Throwable("Assertion failed."
+assert = @(x) x || throw Throwable("Assertion failed."
 
 Foo = Class() :: @
 	$__call = @(x, y) "a(" + x + ", " + y + ")"

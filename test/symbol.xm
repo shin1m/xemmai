@@ -6,7 +6,7 @@ symbol = @
 	print('Good.__string() + " " + 'bye + ", " + 'World + "!!"
 
 symbols = @(n)
-	if n > 0: symbols(n - 1
+	n > 0 && symbols(n - 1
 	symbol(
 
 symbols(100

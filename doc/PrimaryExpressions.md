@@ -7,6 +7,10 @@ This page explains primary expressions.
         | literal
         | '(' expression ')'
         | lambda
+        | break
+        | continue
+        | return
+        | throw
         | getter
         | tester
         | remover
@@ -32,12 +36,31 @@ See [Literals](Literals.md).
 
 ## Lambda Expressions
 
-    lambda: '@' ('(' arguments? ')')? (indent statement+)?
-        | '@' '(' arguments? ')' expression
-        ;
+    lambda: '@' ('(' arguments? ')')? body ;
     arguments: '*' symbol
         | symbol ((',' symbol)* | '=' expression) (',' symbol '=' expression)* (',' '*' symbol)?
         ;
+    body: expression | (indent expression+)? ;
+
+
+## The `break` Expressions
+
+    break: 'break' expression? ;
+
+
+## The `continue` Expressions
+
+    continue: 'continue' ;
+
+
+## The `return` Expressions
+
+    return: 'return' expression? ;
+
+
+## The `throw` Expressions
+
+    throw: 'throw' expression ;
 
 
 ## Getter Expressions

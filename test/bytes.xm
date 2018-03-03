@@ -2,8 +2,8 @@ system = Module("system"
 print = system.out.write_line
 
 assert_bytes = @(xs, ys)
-	if xs.size() != ys.size(): throw Throwable("must be same size."
-	for i = 0; i < xs.size(); i = i + 1: if xs[i] != ys[i]: throw Throwable("xs[" + i + "] must be " + ys[i] + "."
+	xs.size() == ys.size() || throw Throwable("must be same size."
+	for i = 0; i < xs.size(); i = i + 1: xs[i] == ys[i] || throw Throwable("xs[" + i + "] must be " + ys[i] + "."
 
 bytes = Bytes(16
 for i = 0; i < bytes.size(); i = i + 1: bytes[i] = i * 17

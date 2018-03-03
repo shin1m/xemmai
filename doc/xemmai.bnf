@@ -31,6 +31,10 @@ target: '\'' symbol
 	| string
 	| '[' expressions? ']'
 	| '{' pairs? '}'
+	| 'break' expression?
+	| 'continue'
+	| 'return' expression?
+	| 'throw' expression
 	;
 
 qualifier: symbol | '(' expression ')' ;
@@ -72,14 +76,17 @@ term: term12 ('?' term ':' term)? ;
 
 assignment: (variable | self symbol | term0 ('.' qualifier | subscription)) '=' expression ;
 
-catch: 'catch' '(' expression symbol ')' '{' statement* '}' ;
+catch: 'catch' expression symbol block ;
 
-finally: 'finally' '{' statement* '}' ;
+finally: 'finally' block ;
 
-compound: 'if' '(' expression ')' block ('else' block)?
-	| 'while' '(' expression ')' block
-	| 'try' '{' statement* '}' (catch+ finally? | finally)
+compound: 'if' expression block ('else' 'if' expression block)* ('else' block)?
+        | 'while' expression block
+        | 'for' for-expressions? ';' expression? ';' for-expressions? block
+        | 'try' block (catch+ finally? | finally)
 	;
+
+for-expressions: expression (',' expression)* ;
 
 expression: term | assignment | compound ;
 
@@ -89,15 +96,6 @@ pair: expression ':' expression ;
 
 pairs: pair (',' pair)* ;
 
-block: statement | '{' statement* '}' ;
+block: ':' expression | (indent expression+)? ;
 
-statement: term ';'
-	| assignment ';'
-	| compound
-	| 'break' expression? ';'
-	| 'continue' ';'
-	| 'return' expression? ';'
-	| 'throw' expression ';'
-	;
-
-module: statement* ;
+module: expression* ;

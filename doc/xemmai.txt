@@ -5,55 +5,48 @@
 # $:^^foo is $.:.^.^.foo
 # :foo ::foo are outer variables.
 
-module0 = Module("...");
+module0 = Module("..."
 
-variable0 = ...;
+variable0 = ...
 
-$function0 = @(x, y) {
+$function0 = @(x, y)
 	...
-};
 
-$class0 = Class() :: @{
-	$ == :$class0;
-	$^ == Object;
+$class0 = Class() :: @
+	$ == :$class0
+	$^ == Object
 
-	local_variable0 = ...;
+	local_variable0 = ...
 
-	local_function0 = @(x, y) {
-		$ == null;
-		:$ == ::$class0;
+	local_function0 = @(x, y)
+		$ == null
+		:$ == ::$class0
 		...
-	};
 
-	$class_variable0 = ...;
+	$class_variable0 = ...
 
-	$method0 = @(x, y) {
-		$ == ::$class0 or <instance>;
-		:$ == ::$class0;
-		variable0 == ::variable0;
-		$method0 == $:method0[$];
+	$method0 = @(x, y)
+		$ == ::$class0 or <instance>
+		:$ == ::$class0
+		variable0 == ::variable0
+		$method0 == $:method0[$]
 		...
-	}
 	...
-};
 
-$class1 = Class($class0) :: @{
-	$ == :$class1;
-	$^ == :$class0;
+$class1 = Class($class0) :: @
+	$ == :$class1
+	$^ == :$class0
 
-	$method0 = @(x, y) {
-		$ == ::$class1 or <instance>;
-		:$ == ::$class1;
-		:$^ == ::$class0;
-		:$class_variable0 == :$^class_variable0;
-		$method0 == $:method0[$];
-		$^method0 == :$^method0[$];
+	$method0 = @(x, y)
+		$ == ::$class1 or <instance>
+		:$ == ::$class1
+		:$^ == ::$class0
+		:$class_variable0 == :$^class_variable0
+		$method0 == $:method0[$]
+		$^method0 == :$^method0[$]
 		...
-	}
 	...
-};
 
-$class1.method1 = @(x, y) {
-	$ == :$class1 or <instance>;
+$class1.method1 = @(x, y)
+	$ == :$class1 or <instance>
 	...
-}

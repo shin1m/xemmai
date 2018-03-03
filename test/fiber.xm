@@ -1,6 +1,6 @@
 system = Module("system"
 print = system.out.write_line
-assert = @(x) if !x: throw Throwable("Assertion failed."
+assert = @(x) x || throw Throwable("Assertion failed."
 
 f0 = f1 = f2 = null
 fm = Fiber.current(

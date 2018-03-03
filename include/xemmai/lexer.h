@@ -60,17 +60,17 @@ public:
 		e_token__INTEGER,
 		e_token__FLOAT,
 		e_token__STRING,
+		e_token__BREAK,
+		e_token__CONTINUE,
+		e_token__RETURN,
+		e_token__THROW,
 		e_token__IF,
 		e_token__ELSE,
 		e_token__WHILE,
 		e_token__FOR,
-		e_token__BREAK,
-		e_token__CONTINUE,
-		e_token__RETURN,
 		e_token__TRY,
 		e_token__CATCH,
-		e_token__FINALLY,
-		e_token__THROW,
+		e_token__FINALLY
 	};
 
 private:

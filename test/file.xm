@@ -16,7 +16,7 @@ file = io.File("file.xm.test", "r"
 try
 	while true
 		n = file.read(bytes, 0, bytes.size(
-		if n <= 0: break
+		n > 0 || break
 		print(bytes
 finally
 	file.close(

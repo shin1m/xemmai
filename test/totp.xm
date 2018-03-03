@@ -31,7 +31,7 @@ base32_decode = @(source)
 				c = (c << 5) + d
 				j = j - 5
 		catch Throwable e
-	if j < 8: bs.push(c << j
+	j < 8 && bs.push(c << j
 	bs
 
 sha1 = @
@@ -71,9 +71,9 @@ sha1 = @
 	put = @(b)
 		:x = (x << 8) + b
 		:n = n + 1
-		if n < 4: return
+		n < 4 && return
 		xs.push(x
-		if xs.size() >= 16: step(
+		xs.size() >= 16 && step(
 		:x = 0
 		:n = 0
 	length = 0
@@ -97,7 +97,7 @@ sha1 = @
 	self
 
 hmac = @(hash, key, text)
-	if key.size() > 64: key = hash().bytes(key).done(
+	key.size() > 64 && (key = hash().bytes(key).done())
 	h0 = hash(
 	h1 = hash(
 	for i = 0; i < key.size(); i = i + 1
@@ -120,7 +120,7 @@ hotp = @(key, c)
 	ob = o & 3
 	(s[ox] << 8 * ob | (ob != 0 ? s[ox + 1] >> 8 * (4 - ob) : 0)) & 0x7FFFFFFF
 
-assert = @(x) if !x: throw Throwable("Assertion failed."
+assert = @(x) x || throw Throwable("Assertion failed."
 
 test_base32_decode = @(input, expected)
 	x = base32_decode(input

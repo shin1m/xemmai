@@ -11,9 +11,9 @@ Here is how it looks like:
 
     hanoi = @(towers, move)
         f = @(height, from, via, to)
-            if height > 1: f(height - 1, from, to, via
+            height > 1 && f(height - 1, from, to, via
             move(from, to
-            if height > 1: f(height - 1, via, from, to
+            height > 1 && f(height - 1, via, from, to
         f(towers[0].size(), towers[0], towers[1], towers[2]
 
     towers = '([3, 2, 1], [], []
@@ -61,7 +61,7 @@ It also has a concurrent garbage collector to utilize multiple processors.
 ## Documentation
 
  * [Walk Through](doc/WalkThrough.md)
- * [Expressions and Statements](doc/ExpressionsAndStatements.md)
+ * [Expressions](doc/Expressions.md)
  * [Object Traits](doc/ObjectTraits.md)
 
 

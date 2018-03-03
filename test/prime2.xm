@@ -13,7 +13,7 @@ sequence = @(n) generator(@(yield)
 sieve = @(n, ns) generator(@(yield)
 	while true
 		m = ns(
-		if m % n != 0: yield(m
+		m % n != 0 && yield(m
 
 primes = generator(@(yield)
 	ns = sequence(2

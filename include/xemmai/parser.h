@@ -68,7 +68,7 @@ class t_parser
 			v_lexer.f_next();
 		}
 	}
-	bool f_end_of_statement()
+	bool f_end_of_expression()
 	{
 		if (v_lexer.f_newline()) return true;
 		switch (v_lexer.f_token()) {
@@ -84,9 +84,8 @@ class t_parser
 			return false;
 		}
 	}
-	std::unique_ptr<ast::t_node> f_statement();
 	void f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	void f_statements(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_block_or_expression(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
 
 public:
 	struct t_error : t_throwable

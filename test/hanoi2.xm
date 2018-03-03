@@ -9,9 +9,9 @@ tower = @(height)
 	a
 
 hanoi = @(height, from, via, to, move)
-	if height > 1: hanoi(height - 1, from, to, via, move
+	height > 1 && hanoi(height - 1, from, to, via, move
 	move(from, to
-	if height > 1: hanoi(height - 1, via, from, to, move
+	height > 1 && hanoi(height - 1, via, from, to, move
 
 n = 5
 towers = [tower(n), tower(0), tower(0)

@@ -1,6 +1,6 @@
-# Expressions and Statements
+# Expressions
 
-This page explains expressions and statements.
+This page explains expressions.
 
 
 ## Expressions
@@ -48,34 +48,9 @@ See [TermExpressions](TermExpressions.md).
 
 ## Blocks
 
-    block: ':' statement | (indent statement+)? ;
-
-
-## Statements
-
-    statement: (term | assignment | compound | break | continue | return | throw) newline ;
-
-
-### The `break` Statement
-
-    break: 'break' expression? ;
-
-
-### The `continue` Statement
-
-    continue: 'continue' ;
-
-
-### The `return` Statement
-
-    return: 'return' expression? ;
-
-
-### The `throw` Statement
-
-    throw: 'throw' expression ;
+    block: ':' expression | (indent expression+)? ;
 
 
 ## Module Definitions
 
-    module: statement* ;
+    module: expression* ;
