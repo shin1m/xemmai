@@ -5,14 +5,14 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - automake
-      - g++-6
+      - g++-7
 before_install:
   - sudo add-apt-repository -y ppa:dns/gnu
   - sudo apt-get -qq update
   - sudo apt-get -qq install automake
 before_script:
   - autoreconf -is
-  - CXX=g++-6 ./configure
+  - CXX=g++-7 ./configure
   - make
 script:
   - make check
