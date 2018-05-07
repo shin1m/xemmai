@@ -27,10 +27,10 @@ struct t_enum : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_scoped f_as(const T& a_value) const
+	t_scoped f_as(T&& a_value) const
 	{
 		typedef t_type_of<typename t_fundamental<T>::t_type> t;
-		return t::f_transfer(f_extension<typename t::t_extension>(), a_value);
+		return t::f_transfer(f_extension<typename t::t_extension>(), std::forward<T>(a_value));
 	}
 };
 

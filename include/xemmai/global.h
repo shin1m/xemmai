@@ -241,10 +241,10 @@ public:
 		return v_symbol_push;
 	}
 	template<typename T>
-	t_scoped f_as(const T& a_value) const
+	t_scoped f_as(T&& a_value) const
 	{
 		typedef t_type_of<typename t_fundamental<T>::t_type> t;
-		return t::f_transfer(this, a_value);
+		return t::f_transfer(this, std::forward<T>(a_value));
 	}
 };
 

@@ -207,17 +207,10 @@ struct t_type_of<t_object>
 	bool v_shared = false;
 	bool v_immutable = false;
 
-	static t_scoped f_transfer(const t_global* a_extension, t_object* a_value)
+	template<typename T_extension, typename T>
+	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
 	{
-		return a_value;
-	}
-	static t_scoped f_transfer(const t_global* a_extension, const t_value& a_value)
-	{
-		return a_value;
-	}
-	static t_scoped f_transfer(const t_global* a_extension, t_scoped&& a_value)
-	{
-		return a_value;
+		return t_scoped(std::forward<T>(a_value));
 	}
 	XEMMAI__PORTABLE__EXPORT static bool f_derives(t_object* a_this, t_object* a_type);
 	static void f_initialize(t_object* a_module, t_stacked* a_stack, size_t a_n);

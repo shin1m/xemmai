@@ -100,11 +100,6 @@ struct t_type_of<intptr_t> : t_type
 		}
 	};
 
-	template<typename T_extension, typename T>
-	static t_scoped f_transfer(T_extension* a_extension, T a_value)
-	{
-		return t_value(static_cast<intptr_t>(a_value));
-	}
 	static t_scoped f_construct(t_object* a_class, intptr_t a_value)
 	{
 		return t_value(a_value);

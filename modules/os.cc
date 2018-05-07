@@ -17,9 +17,9 @@ struct t_os : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_scoped f_as(const T& a_value) const
+	t_scoped f_as(T&& a_value) const
 	{
-		return f_global()->f_as(a_value);
+		return f_global()->f_as(std::forward<T>(a_value));
 	}
 };
 

@@ -255,7 +255,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			std::wstring value(v_lexer.f_value().begin(), v_lexer.f_value().end());
 			v_lexer.f_next();
-			return std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_as(value))));
+			return std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_as(std::move(value)))));
 		}
 	case t_lexer::e_token__BREAK:
 		{

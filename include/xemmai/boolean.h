@@ -28,11 +28,6 @@ struct t_type_of<bool> : t_type
 		}
 	};
 
-	template<typename T_extension, typename T>
-	static t_scoped f_transfer(T_extension* a_extension, T a_value)
-	{
-		return t_value(static_cast<bool>(a_value));
-	}
 	static std::wstring f_string(bool a_self)
 	{
 		return a_self ? L"true" : L"false";
