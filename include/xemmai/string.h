@@ -26,9 +26,7 @@ struct t_type_of<std::wstring> : t_type
 	}
 	static intptr_t f_hash(const std::wstring& a_self)
 	{
-		intptr_t n = 0;
-		for (auto c : a_self) n ^= c;
-		return n;
+		return std::hash<std::wstring>{}(a_self);
 	}
 	static std::wstring f_add(const std::wstring& a_self, const t_value& a_value);
 	static bool f_less(const std::wstring& a_self, const std::wstring& a_value)
