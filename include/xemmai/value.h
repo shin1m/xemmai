@@ -187,8 +187,11 @@ protected:
 
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_copy(const t_value& a_value)
 	{
-		auto p = reinterpret_cast<const char*>(&a_value);
-		std::copy(p, p + sizeof(t_value), reinterpret_cast<char*>(this));
+		v_p = a_value.v_p;
+		if (sizeof(double) > sizeof(void*))
+			v_float = a_value.v_float;
+		else
+			v_pointer = a_value.v_pointer;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_copy_construct(const t_value& a_value)
 	{
