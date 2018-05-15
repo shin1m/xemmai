@@ -79,7 +79,7 @@ struct t_signature
 	static t_scoped f__call(t_object* a_module, const t_value& a_self, t_stacked* a_stack, T_ak&&... a_k)
 	{
 		++a_stack;
-		return f__call<A_function, T_am...>(a_module, a_self, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(*a_stack));
+		return f__call<A_function, T_am...>(a_module, a_self, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(std::move(*a_stack)));
 	}
 	template<t_scoped(*A_function)(t_object*, const t_value&, T_an&&...)>
 	static void f_call(t_object* a_module, const t_value& a_self, t_stacked* a_stack)
@@ -233,7 +233,7 @@ struct t_call_member<T_extension, void(T_self::*)(T_an...) const> : t_call_membe
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 
@@ -254,7 +254,7 @@ struct t_call_member<T_extension, void(T_self::*)(T_an...)> : t_call_member_base
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 
@@ -276,7 +276,7 @@ struct t_call_member<T_extension, void(T_self::*)(T_extension*, T_an...) const> 
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<const T_self&>(a_self).*A_function)(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 
@@ -298,7 +298,7 @@ struct t_call_member<T_extension, void(T_self::*)(T_extension*, T_an...)> : t_ca
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		(f_as<T_self&>(a_self).*A_function)(f_extension<T_extension>(a_module), std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 
@@ -319,7 +319,7 @@ struct t_call_member<T_extension, void(*)(T_self, T_an...)> : t_call_member_base
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 
@@ -341,7 +341,7 @@ struct t_call_member<T_extension, void(*)(T_extension*, T_self, T_an...)> : t_ca
 	static t_scoped f_call(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
 		A_function(f_extension<T_extension>(a_module), f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 
@@ -404,7 +404,7 @@ struct t_call_static<T_extension, void(*)(T_an...)>
 	static t_scoped f_call(T_extension* a_extension, T_an&&... a_n)
 	{
 		A_function(std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 
@@ -429,7 +429,7 @@ struct t_call_static<T_extension, void(*)(T_extension*, T_an...)>
 	static t_scoped f_call(T_extension* a_extension, T_an&&... a_n)
 	{
 		A_function(a_extension, std::forward<T_an>(a_n)...);
-		return t_value();
+		return {};
 	}
 };
 

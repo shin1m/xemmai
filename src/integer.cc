@@ -13,13 +13,13 @@ t_scoped t_type_of<intptr_t>::f_multiply(intptr_t a_self, const t_value& a_value
 	case t_value::e_tag__BOOLEAN:
 		break;
 	case t_value::e_tag__INTEGER:
-		return t_value(a_self * a_value.v_integer);
+		return t_scoped(a_self * a_value.v_integer);
 	case t_value::e_tag__FLOAT:
-		return t_value(a_self * a_value.v_float);
+		return t_scoped(a_self * a_value.v_float);
 	default:
 		{
 			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return t_value(a_self * p->f_integer());
+			if (f_is<intptr_t>(p)) return t_scoped(a_self * p->f_integer());
 		}
 	}
 	t_throwable::f_throw(L"not supported.");
@@ -32,13 +32,13 @@ t_scoped t_type_of<intptr_t>::f_divide(intptr_t a_self, const t_value& a_value)
 	case t_value::e_tag__BOOLEAN:
 		break;
 	case t_value::e_tag__INTEGER:
-		return t_value(a_self / a_value.v_integer);
+		return t_scoped(a_self / a_value.v_integer);
 	case t_value::e_tag__FLOAT:
-		return t_value(a_self / a_value.v_float);
+		return t_scoped(a_self / a_value.v_float);
 	default:
 		{
 			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return t_value(a_self / p->f_integer());
+			if (f_is<intptr_t>(p)) return t_scoped(a_self / p->f_integer());
 		}
 	}
 	t_throwable::f_throw(L"not supported.");
@@ -51,13 +51,13 @@ t_scoped t_type_of<intptr_t>::f_add(intptr_t a_self, const t_value& a_value)
 	case t_value::e_tag__BOOLEAN:
 		break;
 	case t_value::e_tag__INTEGER:
-		return t_value(a_self + a_value.v_integer);
+		return t_scoped(a_self + a_value.v_integer);
 	case t_value::e_tag__FLOAT:
-		return t_value(a_self + a_value.v_float);
+		return t_scoped(a_self + a_value.v_float);
 	default:
 		{
 			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return t_value(a_self + p->f_integer());
+			if (f_is<intptr_t>(p)) return t_scoped(a_self + p->f_integer());
 		}
 	}
 	t_throwable::f_throw(L"not supported.");
@@ -70,13 +70,13 @@ t_scoped t_type_of<intptr_t>::f_subtract(intptr_t a_self, const t_value& a_value
 	case t_value::e_tag__BOOLEAN:
 		break;
 	case t_value::e_tag__INTEGER:
-		return t_value(a_self - a_value.v_integer);
+		return t_scoped(a_self - a_value.v_integer);
 	case t_value::e_tag__FLOAT:
-		return t_value(a_self - a_value.v_float);
+		return t_scoped(a_self - a_value.v_float);
 	default:
 		{
 			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return t_value(a_self - p->f_integer());
+			if (f_is<intptr_t>(p)) return t_scoped(a_self - p->f_integer());
 		}
 	}
 	t_throwable::f_throw(L"not supported.");

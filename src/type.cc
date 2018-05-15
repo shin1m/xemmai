@@ -142,7 +142,7 @@ bool t_type::f_has(const t_value& a_this, t_object* a_key)
 		f_get(a_this, a_key);
 		return true;
 	} catch (const t_scoped&) {
-		f_as<t_fiber&>(t_fiber::f_current()).f_caught(t_value());
+		f_as<t_fiber&>(t_fiber::f_current()).f_caught({});
 		return false;
 	}
 }

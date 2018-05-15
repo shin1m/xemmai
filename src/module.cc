@@ -65,7 +65,7 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path)
 {
 	io::t_file stream(a_path, "r");
-	if (!stream) return t_value();
+	if (!stream) return {};
 	ast::t_scope scope(nullptr);
 	if (f_engine()->v_debugger) {
 		auto script = new t_debug_script(a_path);
@@ -119,7 +119,7 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 		}
 	}
 	t_throwable::f_throw(L"module \"" + a_name + L"\" not found.");
-	return t_value();
+	return {};
 }
 
 void t_module::f_main()

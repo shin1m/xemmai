@@ -170,7 +170,7 @@ void t_type_of<t_dictionary>::f__construct(t_object* a_module, t_stacked* a_stac
 	for (size_t i = 2; i < a_n; ++i) {
 		t_scoped x = std::move(a_stack[i]);
 		if (++i >= a_n) {
-			dictionary->f_put(x, t_value());
+			dictionary->f_put(x, {});
 			break;
 		}
 		try {
@@ -333,7 +333,7 @@ t_scoped t_type_of<t_dictionary>::f_construct(t_object* a_class, t_stacked* a_st
 	for (size_t i = 2; i < a_n; ++i) {
 		const auto& x = a_stack[i];
 		if (++i >= a_n) {
-			dictionary->f_put(x, t_value());
+			dictionary->f_put(x, {});
 			break;
 		}
 		dictionary->f_put(x, t_scoped(a_stack[i]));

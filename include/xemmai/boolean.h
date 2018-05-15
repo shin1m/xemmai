@@ -9,22 +9,22 @@ namespace xemmai
 template<>
 struct t_type_of<bool> : t_type
 {
-	template<typename T0, typename T1>
+	template<typename T0>
 	struct t_as
 	{
-		typedef bool t_type;
-
-		static bool f_call(T1 a_object)
+		template<typename T1>
+		static bool f_call(T1&& a_object)
 		{
 			return a_object.f_boolean();
 		}
 	};
-	template<typename T0, typename T1>
+	template<typename T0>
 	struct t_is
 	{
-		static bool f_call(T1 a_object)
+		template<typename T1>
+		static bool f_call(T1&& a_object)
 		{
-			return reinterpret_cast<size_t>(f_object(a_object)) == t_value::e_tag__BOOLEAN;
+			return reinterpret_cast<size_t>(f_object(std::forward<T1>(a_object))) == t_value::e_tag__BOOLEAN;
 		}
 	};
 

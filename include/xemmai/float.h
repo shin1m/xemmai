@@ -15,47 +15,38 @@ struct t_fundamental<float>
 template<>
 struct t_type_of<double> : t_type
 {
-	template<typename T0, typename T1>
+	template<typename T0>
 	struct t_as
 	{
 		typedef typename t_fundamental<T0>::t_type t_type;
 
-		static t_type f_call(T1 a_object)
+		template<typename T1>
+		static t_type f_call(T1&& a_object)
 		{
-			switch (reinterpret_cast<size_t>(f_object(a_object))) {
+			auto p = f_object(std::forward<T1>(a_object));
+			switch (reinterpret_cast<size_t>(p)) {
 			case t_value::e_tag__INTEGER:
 				return a_object.f_integer();
 			case t_value::e_tag__FLOAT:
 				return a_object.f_float();
 			default:
-				return f_object(a_object)->f_float();
+				return p->f_float();
 			}
 		}
-	};
-	template<typename T>
-	struct t_as<T, t_object*>
-	{
-		typedef typename t_fundamental<T>::t_type t_type;
-
 		static t_type f_call(t_object* a_object)
 		{
 			return a_object->f_float();
 		}
 	};
-	template<typename T0, typename T1>
-	struct t_of
+	template<typename T0>
+	struct t_is
 	{
-		static bool f_call(T1 a_object)
+		template<typename T1>
+		static bool f_call(T1&& a_object)
 		{
-			return reinterpret_cast<size_t>(f_object(a_object)) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != nullptr;
-		}
-	};
-	template<typename T>
-	struct t_of<double, T>
-	{
-		static bool f_call(T a_object)
-		{
-			switch (reinterpret_cast<size_t>(f_object(a_object))) {
+			auto p = f_object(std::forward<T1>(a_object));
+			if (!std::is_same<typename t_fundamental<T0>::t_type, double>::value) return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>(p->f_type())) != nullptr;
+			switch (reinterpret_cast<size_t>(p)) {
 			case t_value::e_tag__NULL:
 			case t_value::e_tag__BOOLEAN:
 				return false;
@@ -63,22 +54,14 @@ struct t_type_of<double> : t_type
 			case t_value::e_tag__FLOAT:
 				return true;
 			default:
-				return dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(f_object(a_object)->f_type())) != nullptr;
+				return dynamic_cast<t_type_of*>(&f_as<t_type&>(p->f_type())) != nullptr;
 			}
-		}
-	};
-	template<typename T0, typename T1>
-	struct t_is
-	{
-		static bool f_call(T1 a_object)
-		{
-			return t_of<typename t_fundamental<T0>::t_type, T1>::f_call(a_object);
 		}
 	};
 
 	static t_scoped f_construct(t_object* a_class, double a_value)
 	{
-		return t_value(a_value);
+		return t_scoped(a_value);
 	}
 	static t_scoped f_construct(t_object* a_class, intptr_t a_value)
 	{
