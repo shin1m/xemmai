@@ -263,16 +263,16 @@ class t_object
 	static XEMMAI__PORTABLE__EXPORT t_object* f_local_pool__allocate();
 #endif
 
+	t_slot v_type;
+	t_value::t_increments* v_owner;
+	t_structure* v_structure;
+	t_tuple* v_fields = nullptr;
+	t_lock v_lock;
 	t_object* v_next;
 	t_object* v_scan;
 	t_color v_color;
 	size_t v_count;
 	size_t v_cyclic;
-	t_slot v_type;
-	t_structure* v_structure;
-	t_tuple* v_fields = nullptr;
-	t_lock v_lock;
-	t_value::t_increments* v_owner;
 
 	template<void (t_object::*A_push)()>
 	void f_step()
