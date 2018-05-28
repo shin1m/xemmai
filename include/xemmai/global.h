@@ -586,7 +586,7 @@ inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
 	} while (a_n != size_t(-1));
 }
 
-inline void t_value::f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const
 {
 	if (f_tag() >= e_tag__OBJECT && v_p->f_owned()) {
 		intptr_t index = v_p->f_field_index(a_key);
@@ -1068,14 +1068,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 }
 
 template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_code::f_operator(t_object* a_this, t_stacked* a_stack)
-{
-	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack);
-	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
-}
-
-template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-XEMMAI__PORTABLE__NOINLINE size_t t_context::f_tail(size_t a_privates, t_object* a_this)
+size_t t_context::f_tail(size_t a_privates, t_object* a_this)
 {
 	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, v_base + a_privates);
 	if (n == size_t(-1))

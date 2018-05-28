@@ -185,7 +185,7 @@ protected:
 		void* v_pointer;
 	};
 
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_copy(const t_value& a_value)
+	void f_copy(const t_value& a_value)
 	{
 		v_p = a_value.v_p;
 		if (sizeof(double) > sizeof(void*))
@@ -198,34 +198,34 @@ protected:
 		if (reinterpret_cast<size_t>(a_value.v_p) >= e_tag__OBJECT) f_increments()->f_push(a_value.v_p);
 		f_copy(a_value);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_move_construct(t_value& a_value)
+	void f_move_construct(t_value& a_value)
 	{
 		f_copy(a_value);
 		a_value.v_p = nullptr;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_value(t_object* a_p, const t_own&) : v_p(a_p)
+	t_value(t_object* a_p, const t_own&) : v_p(a_p)
 	{
 		if (v_p) f_increments()->f_push(v_p);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_value(t_object& a_p) : v_p(&a_p)
+	t_value(t_object& a_p) : v_p(&a_p)
 	{
 		f_increments()->f_push(v_p);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_value(const t_value& a_value, const t_own&)
+	t_value(const t_value& a_value, const t_own&)
 	{
 		f_copy_construct(a_value);
 	}
 	t_value(const t_pass&)
 	{
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_object* a_p)
+	void f_assign(t_object* a_p)
 	{
 		if (a_p) f_increments()->f_push(a_p);
 		t_object* p = v_p;
 		v_p = a_p;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_object& a_p)
+	void f_assign(t_object& a_p)
 	{
 		f_increments()->f_push(&a_p);
 		t_object* p = v_p;
@@ -244,7 +244,7 @@ protected:
 		f_move_construct(a_value);
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_stacked&& a_value);
+	void f_assign(t_stacked&& a_value);
 
 public:
 	static const t_value v_null;
@@ -371,7 +371,7 @@ public:
 		f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(const t_value& a_value)
+	void f_construct(const t_value& a_value)
 	{
 		assert(f_tag() < e_tag__OBJECT);
 		f_copy_construct(a_value);
@@ -401,7 +401,7 @@ public:
 		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
 		v_float = a_value;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(t_value&& a_value)
+	void f_construct(t_value&& a_value)
 	{
 		f_construct(a_value);
 		a_value.f_destruct();
@@ -426,7 +426,7 @@ struct t_slot : t_value
 	t_slot(const t_slot& a_value) : t_value(a_value, t_own())
 	{
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_object* a_p)
+	t_slot& operator=(t_object* a_p)
 	{
 		f_assign(a_p);
 		return *this;
@@ -442,7 +442,7 @@ struct t_slot : t_value
 		a_value.f_destruct();
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_slot& a_value)
+	t_slot& operator=(const t_slot& a_value)
 	{
 		f_assign(a_value);
 		return *this;
@@ -459,21 +459,21 @@ class t_scoped : public t_value
 
 public:
 	using t_value::t_value;
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped(t_object* a_p = nullptr) : t_value(a_p, t_own())
+	t_scoped(t_object* a_p = nullptr) : t_value(a_p, t_own())
 	{
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped(t_object& a_p) : t_value(&a_p)
+	t_scoped(t_object& a_p) : t_value(&a_p)
 	{
 		f_increments()->f_push(v_p);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped(const t_value& a_value) : t_value(a_value, t_own())
+	t_scoped(const t_value& a_value) : t_value(a_value, t_own())
 	{
 	}
 	t_scoped(t_value&& a_value) : t_value(t_pass())
 	{
 		f_move_construct(a_value);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped(const t_scoped& a_value) : t_value(a_value, t_own())
+	t_scoped(const t_scoped& a_value) : t_value(a_value, t_own())
 	{
 	}
 	t_scoped(t_scoped&& a_value) : t_value(t_pass())
@@ -485,7 +485,7 @@ public:
 	{
 		if (f_tag() >= e_tag__OBJECT) f_decrements()->f_push(v_p);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_object* a_p)
+	t_scoped& operator=(t_object* a_p)
 	{
 		f_assign(a_p);
 		return *this;
@@ -495,22 +495,22 @@ public:
 		f_assign(a_value);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_value&& a_value)
+	t_scoped& operator=(t_value&& a_value)
 	{
 		f_assign(std::move(a_value));
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(const t_scoped& a_value)
+	t_scoped& operator=(const t_scoped& a_value)
 	{
 		f_assign(a_value);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_scoped&& a_value)
+	t_scoped& operator=(t_scoped&& a_value)
 	{
 		f_assign(std::move(a_value));
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_scoped& operator=(t_stacked&& a_value)
+	t_scoped& operator=(t_stacked&& a_value)
 	{
 		f_assign(std::move(a_value));
 		return *this;
@@ -530,7 +530,7 @@ class t_stacked : public t_value
 
 public:
 	~t_stacked() = delete;
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_stacked& operator=(bool a_value)
+	t_stacked& operator=(bool a_value)
 	{
 		t_object* p = v_p;
 		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
@@ -538,7 +538,7 @@ public:
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_stacked& operator=(intptr_t a_value)
+	t_stacked& operator=(intptr_t a_value)
 	{
 		t_object* p = v_p;
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
@@ -546,7 +546,7 @@ public:
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_stacked& operator=(double a_value)
+	t_stacked& operator=(double a_value)
 	{
 		t_object* p = v_p;
 		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
@@ -554,12 +554,12 @@ public:
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_stacked& operator=(t_object* a_p)
+	t_stacked& operator=(t_object* a_p)
 	{
 		f_assign(a_p);
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_stacked& operator=(t_object& a_p)
+	t_stacked& operator=(t_object& a_p)
 	{
 		f_assign(a_p);
 		return *this;
@@ -574,7 +574,7 @@ public:
 		f_assign(std::move(a_value));
 		return *this;
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_stacked& operator=(const t_stacked& a_value)
+	t_stacked& operator=(const t_stacked& a_value)
 	{
 		f_assign(a_value);
 		return *this;

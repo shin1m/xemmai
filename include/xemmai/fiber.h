@@ -61,7 +61,7 @@ struct t_context
 		while (i < a_privates) v_base[i++].f_destruct();
 		f_stack()->v_used = f_previous();
 	}
-	void f_tail(size_t a_privates, size_t a_n)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_tail(size_t a_privates, size_t a_n)
 	{
 		v_base[-1].f_destruct();
 		for (size_t i = 0; i < a_privates; ++i) v_base[i].f_destruct();

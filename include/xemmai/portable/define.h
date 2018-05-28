@@ -7,7 +7,6 @@
 #define XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 #define XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 #define XEMMAI__PORTABLE__ALWAYS_INLINE __attribute__((always_inline))
-#define XEMMAI__PORTABLE__NOINLINE __attribute__((noinline))
 #define XEMMAI__PORTABLE__FORCE_INLINE
 #define XEMMAI__PORTABLE__DEFINE_EXPORT
 #endif
@@ -17,7 +16,6 @@
 #define XEMMAI__PORTABLE__EXPORT __declspec(dllimport)
 #endif
 #define XEMMAI__PORTABLE__ALWAYS_INLINE
-#define XEMMAI__PORTABLE__NOINLINE
 #define XEMMAI__PORTABLE__FORCE_INLINE __forceinline
 #define XEMMAI__PORTABLE__DEFINE_EXPORT __declspec(dllexport)
 #endif

@@ -243,10 +243,6 @@ struct t_code
 	static void f_object_put(t_stacked* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
 	static void f_object_put_clear(t_stacked* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
 	static void f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
-	static void f_method_bind(t_stacked* a_stack);
-	static size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n);
-	template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-	static void f_operator(t_object* a_this, t_stacked* a_stack);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static const void** v_labels;

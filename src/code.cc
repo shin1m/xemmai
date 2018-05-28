@@ -20,11 +20,63 @@ inline void f_put_or_clear(t_stacked& a_top, t_object* a_key, t_stacked& a_value
 	}
 }
 
+void f_method_bind(t_stacked* a_stack)
+{
+	t_scoped x = std::move(a_stack[0]);
+	a_stack[2].f_construct(std::move(a_stack[1]));
+	auto p = static_cast<t_object*>(x);
+	size_t n = f_as<t_type&>(p->f_type()).f_get_at(p, a_stack);
+	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
+	a_stack[1].f_construct();
+}
+
 inline void f_allocate(t_stacked* a_stack, size_t a_n)
 {
 	t_stack* stack = f_stack();
 	t_stacked* used = a_stack + a_n;
 	if (used > stack->v_used) stack->v_used = used;
+}
+
+size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n)
+{
+	assert(a_n > 0);
+	a_stack += a_n + 1;
+	t_scoped x = std::move(a_stack[0]);
+	size_t n;
+	if (f_is<t_tuple>(x)) {
+		auto& tuple = f_as<const t_tuple&>(x);
+		n = tuple.f_size();
+		f_allocate(a_stack, n);
+		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(tuple[i]);
+	} else if (f_is<t_array>(x)) {
+		t_with_lock_for_read lock(x);
+		auto& array = f_as<const t_array&>(x);
+		n = array.f_size();
+		f_allocate(a_stack, n);
+		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(array[i]);
+	} else {
+		size_t i = 0;
+		try {
+			t_scoped size = x.f_get(f_global()->f_symbol_size())();
+			f_check<size_t>(size, L"size");
+			n = f_as<size_t>(size);
+			f_allocate(a_stack, n);
+			for (; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
+		} catch (...) {
+			a_stack -= a_n + 1;
+			i += a_n + 1;
+			while (i > 0) a_stack[--i].f_destruct();
+			throw;
+		}
+	}
+	return a_n - 1 + n;
+}
+
+template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+void f_operator(t_object* a_this, t_stacked* a_stack)
+{
+	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack);
+	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
 }
 
 }
@@ -178,51 +230,6 @@ void t_code::f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 	} else {
 		top.f_get(key, stack);
 	}
-}
-
-XEMMAI__PORTABLE__NOINLINE void t_code::f_method_bind(t_stacked* a_stack)
-{
-	t_scoped x = std::move(a_stack[0]);
-	a_stack[2].f_construct(std::move(a_stack[1]));
-	auto p = static_cast<t_object*>(x);
-	size_t n = f_as<t_type&>(p->f_type()).f_get_at(p, a_stack);
-	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
-	a_stack[1].f_construct();
-}
-
-size_t t_code::f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n)
-{
-	assert(a_n > 0);
-	a_stack += a_n + 1;
-	t_scoped x = std::move(a_stack[0]);
-	size_t n;
-	if (f_is<t_tuple>(x)) {
-		auto& tuple = f_as<const t_tuple&>(x);
-		n = tuple.f_size();
-		f_allocate(a_stack, n);
-		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(tuple[i]);
-	} else if (f_is<t_array>(x)) {
-		t_with_lock_for_read lock(x);
-		auto& array = f_as<const t_array&>(x);
-		n = array.f_size();
-		f_allocate(a_stack, n);
-		for (size_t i = 0; i < n; ++i) a_stack[i].f_construct(array[i]);
-	} else {
-		size_t i = 0;
-		try {
-			t_scoped size = x.f_get(f_global()->f_symbol_size())();
-			f_check<size_t>(size, L"size");
-			n = f_as<size_t>(size);
-			f_allocate(a_stack, n);
-			for (; i < n; ++i) a_stack[i].f_construct(x.f_get_at(t_value(i)));
-		} catch (...) {
-			a_stack -= a_n + 1;
-			i += a_n + 1;
-			while (i > 0) a_stack[--i].f_destruct();
-			throw;
-		}
-	}
-	return a_n - 1 + n;
 }
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
