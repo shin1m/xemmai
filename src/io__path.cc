@@ -16,9 +16,9 @@ void t_type_of<portable::t_path>::f_define(t_io* a_extension)
 	;
 }
 
-t_type* t_type_of<portable::t_path>::f_derive(t_object* a_this)
+t_type* t_type_of<portable::t_path>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
+	return new t_derived<t_type_of>(t_scoped(v_module), this);
 }
 
 void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
@@ -26,9 +26,9 @@ void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
 	delete &f_as<portable::t_path&>(a_this);
 }
 
-t_scoped t_type_of<portable::t_path>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<portable::t_path>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<const std::wstring&>::t_bind<portable::t_path>::f_do(a_class, a_stack, a_n);
+	return t_construct<const std::wstring&>::t_bind<portable::t_path>::f_do(v_this, a_stack, a_n);
 }
 
 size_t t_type_of<portable::t_path>::f_divide(t_object* a_this, t_stacked* a_stack)

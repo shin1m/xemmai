@@ -79,13 +79,6 @@ t_scoped t_fiber::f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_ma
 	return object;
 }
 
-void t_fiber::f_define(t_object* a_class)
-{
-	t_define<t_fiber, t_object>(f_global(), L"Fiber", a_class)
-		(L"current", t_static<t_object*(*)(), f_current>())
-	;
-}
-
 void t_fiber::f_run()
 {
 	std::list<t_object*>::iterator i;
@@ -131,7 +124,15 @@ void t_fiber::f_caught(const t_value& a_value, void** a_pc)
 	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, t_context::v_instance->v_lambda, a_pc);
 }
 
-t_type* t_type_of<t_fiber>::f_derive(t_object* a_this)
+void t_type_of<t_fiber>::f_define()
+{
+	v_builtin = true;
+	t_define<t_fiber, t_object>(f_global(), L"Fiber", v_this)
+		(L"current", t_static<t_object*(*)(), t_fiber::f_current>())
+	;
+}
+
+t_type* t_type_of<t_fiber>::f_derive()
 {
 	return nullptr;
 }
@@ -146,7 +147,7 @@ void t_type_of<t_fiber>::f_finalize(t_object* a_this)
 	delete &f_as<t_fiber&>(a_this);
 }
 
-void t_type_of<t_fiber>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_fiber>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");
 	t_scoped a0 = std::move(a_stack[2]);

@@ -5,14 +5,15 @@
 namespace xemmai
 {
 
-t_scoped t_class::f_instantiate(t_type* a_type)
+t_class::t_type_of(t_type* a_super) : t_type(a_super)
 {
-	t_scoped object = t_object::f_allocate(f_engine()->v_type_class);
-	object.f_pointer__(a_type);
-	return object;
+	t_value::f_increments()->f_push(v_this);
+	t_value::f_increments()->f_push(v_this);
+	static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super)->v_type = this;
+	v_fixed = v_shared = true;
 }
 
-t_type* t_class::f_derive(t_object* a_this)
+t_type* t_class::f_derive()
 {
 	return nullptr;
 }
@@ -21,6 +22,7 @@ void t_class::f_scan(t_object* a_this, t_scan a_scan)
 {
 	auto& p = f_as<t_type&>(a_this);
 	if (p.v_builtin && f_engine()->f_module_global()) return;
+	a_scan(p.v_this);
 	a_scan(p.v_module);
 	a_scan(p.v_super);
 }
@@ -30,7 +32,7 @@ void t_class::f_finalize(t_object* a_this)
 	delete &f_as<t_type&>(a_this);
 }
 
-void t_class::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_class::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n > 1) t_throwable::f_throw(a_stack, a_n, L"must be called with or without an argument.");
 	t_scoped x;
@@ -38,11 +40,11 @@ void t_class::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
 		x = std::move(a_stack[2]);
 		if (x.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
 	} else {
-		x = f_global()->f_type<t_object>();
+		x = f_global()->f_type<t_object>()->v_this;
 	}
-	t_type* type = f_as<t_type&>(x).f_derive(x);
+	auto type = f_as<t_type&>(x).f_derive();
 	if (!type) t_throwable::f_throw(L"underivable.");
-	a_stack[0].f_construct(f_instantiate(type));
+	a_stack[0].f_construct(type->v_this);
 }
 
 t_scoped t_class::f_get(const t_value& a_this, t_object* a_key)
@@ -105,7 +107,7 @@ t_scoped t_class::f_remove(t_object* a_this, t_object* a_key)
 
 size_t t_class::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
-	f_as<t_type&>(a_this).f_instantiate(a_this, a_stack, a_n);
+	f_as<t_type&>(a_this).f_instantiate(a_stack, a_n);
 	return -1;
 }
 

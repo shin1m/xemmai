@@ -88,7 +88,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			{
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
-				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_tuple>())))));
+				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_tuple>()->v_this)))));
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) call->v_expand = f_expressions(indent, call->v_arguments);
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_PARENTHESIS) v_lexer.f_next();
 				return std::move(call);
@@ -195,7 +195,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_array>())))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_array>()->v_this)))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) call->v_expand = f_expressions(indent, call->v_arguments);
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_BRACKET) v_lexer.f_next();
 			return std::move(call);
@@ -204,7 +204,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_dictionary>())))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_dictionary>()->v_this)))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
 				size_t i = v_lexer.f_indent();
 				while (true) {
@@ -840,12 +840,12 @@ void t_parser::t_error::f_dump() const
 	t_throwable::f_dump();
 }
 
-t_type* t_type_of<t_parser::t_error>::f_derive(t_object* a_this)
+t_type* t_type_of<t_parser::t_error>::f_derive()
 {
 	return nullptr;
 }
 
-void t_type_of<t_parser::t_error>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_parser::t_error>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }

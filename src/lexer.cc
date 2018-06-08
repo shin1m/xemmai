@@ -668,12 +668,12 @@ void t_lexer::t_error::f_dump() const
 	t_throwable::f_dump();
 }
 
-t_type* t_type_of<t_lexer::t_error>::f_derive(t_object* a_this)
+t_type* t_type_of<t_lexer::t_error>::f_derive()
 {
 	return nullptr;
 }
 
-void t_type_of<t_lexer::t_error>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_lexer::t_error>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }

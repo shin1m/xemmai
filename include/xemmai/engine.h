@@ -13,6 +13,33 @@ class t_symbol;
 class t_global;
 struct t_safe_region;
 
+template<typename T>
+class t_slot_of
+{
+	T* v_p;
+	t_slot v_slot;
+
+public:
+	t_slot_of& operator=(const t_value& a_slot)
+	{
+		v_p = &f_as<T&>(a_slot);
+		v_slot = a_slot;
+		return *this;
+	}
+	operator T*() const
+	{
+		return v_p;
+	}
+	T* operator->() const
+	{
+		return v_p;
+	}
+	operator t_slot&()
+	{
+		return v_slot;
+	}
+};
+
 struct t_debugger
 {
 	virtual void f_stopped(t_object* a_thread) = 0;
@@ -26,7 +53,7 @@ t_engine_jit* f_jit();
 class t_engine : public t_value::t_collector
 {
 	friend class t_object;
-	friend struct t_type_of<t_type>;
+	friend struct t_type_of<t_object>;
 	friend class t_structure;
 	friend struct t_type_of<t_structure>;
 	friend struct t_module;
@@ -121,7 +148,7 @@ class t_engine : public t_value::t_collector
 	volatile size_t v_synchronizer__wake = 0;
 	std::mutex v_synchronizer__mutex;
 	//std::condition_variable v_synchronizer__condition;
-	t_object* v_type_class;
+	t_type* v_type_class;
 	std::map<std::wstring, t_slot> v_module__instances;
 	std::map<std::wstring, t_slot>::iterator v_module__instances__null;
 	std::mutex v_module__mutex;
@@ -286,13 +313,11 @@ inline void t_object::f_decrement_step()
 		delete v_fields;
 		v_fields = nullptr;
 	}
-	t_type* type = f_type_as_type();
-	if (!type->v_primitive) {
-		type->f_scan(this, f_push_and_clear<&t_object::f_decrement_push>);
-		type->f_finalize(this);
+	if (!v_type->v_primitive) {
+		v_type->f_scan(this, f_push_and_clear<&t_object::f_decrement_push>);
+		v_type->f_finalize(this);
 	}
-	f_type()->f_decrement_push();
-	v_type.v_p = nullptr;
+	static_cast<t_object*>(v_type->v_this)->f_decrement_push();
 	v_color = e_color__BLACK;
 	if (!v_next) f_engine()->f_free_as_release(this);
 }
@@ -312,28 +337,30 @@ inline void t_object::f_collect_white()
 	f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
 }
 
-inline t_scoped t_object::f_allocate_uninitialized(t_object* a_type)
+inline t_scoped t_object::f_allocate_uninitialized(t_type* a_type)
 {
 	t_object* p = f_local_pool__allocate();
 	p->v_next = nullptr;
 	p->v_count = 1;
-	p->v_type.f_construct_nonnull(a_type);
+	t_value::f_increments()->f_push(a_type->v_this);
+	p->v_type = a_type;
 	t_value::f_increments()->f_push(f_engine()->v_structure_root);
-	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::f_increments();
+	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->v_pointer);
+	p->v_owner = a_type->v_shared ? nullptr : t_value::f_increments();
 	return t_scoped(p, t_scoped::t_pass());
 }
 
-inline t_scoped t_object::f_allocate(t_object* a_type)
+inline t_scoped t_object::f_allocate(t_type* a_type)
 {
 	t_object* p = f_local_pool__allocate();
 	p->v_next = nullptr;
 	p->v_count = 1;
-	p->v_type.f_construct_nonnull(a_type);
-	p->v_type.v_pointer = nullptr;
+	t_value::f_increments()->f_push(a_type->v_this);
+	p->v_type = a_type;
+	p->v_pointer = nullptr;
 	t_value::f_increments()->f_push(f_engine()->v_structure_root);
-	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->f_pointer());
-	p->v_owner = static_cast<t_type*>(a_type->f_pointer())->v_shared ? nullptr : t_value::f_increments();
+	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->v_pointer);
+	p->v_owner = a_type->v_shared ? nullptr : t_value::f_increments();
 	return t_scoped(p, t_scoped::t_pass());
 }
 

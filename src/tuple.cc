@@ -112,7 +112,7 @@ void t_tuple::f_each(const t_value& a_callable) const
 void t_type_of<t_tuple>::f__construct(t_object* a_module, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
-	t_scoped p = t_object::f_allocate(a_stack[1]);
+	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
 	a_stack[1].f_destruct();
 	auto tuple = new(a_n) t_tuple(a_n);
 	p.f_pointer__(tuple);
@@ -120,9 +120,10 @@ void t_type_of<t_tuple>::f__construct(t_object* a_module, t_stacked* a_stack, si
 	a_stack[0].f_construct(std::move(p));
 }
 
-void t_type_of<t_tuple>::f_define(t_object* a_class)
+void t_type_of<t_tuple>::f_define()
 {
-	t_define<t_tuple, t_object>(f_global(), L"Tuple", a_class)
+	v_builtin = true;
+	t_define<t_tuple, t_object>(f_global(), L"Tuple", v_this)
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring(t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_tuple::*)() const, &t_tuple::f_hash>())
@@ -138,9 +139,9 @@ void t_type_of<t_tuple>::f_define(t_object* a_class)
 	;
 }
 
-t_type* t_type_of<t_tuple>::f_derive(t_object* a_this)
+t_type* t_type_of<t_tuple>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
+	return new t_derived<t_type_of>(t_scoped(v_module), this);
 }
 
 void t_type_of<t_tuple>::f_scan(t_object* a_this, t_scan a_scan)
@@ -153,9 +154,9 @@ void t_type_of<t_tuple>::f_finalize(t_object* a_this)
 	delete &f_as<t_tuple&>(a_this);
 }
 
-t_scoped t_type_of<t_tuple>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_tuple>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	t_scoped p = t_object::f_allocate(a_class);
+	t_scoped p = t_object::f_allocate(this);
 	auto tuple = new(a_n) t_tuple(a_n);
 	p.f_pointer__(tuple);
 	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 2]);

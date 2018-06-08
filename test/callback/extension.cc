@@ -17,9 +17,9 @@ struct t_type_of<t_client> : t_type
 	static void f_define(t_callback_extension* a_extension);
 
 	using t_type::t_type;
-	virtual t_type* f_derive(t_object* a_this);
+	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
 template<>
@@ -30,9 +30,9 @@ struct t_type_of<t_server> : t_type
 	static void f_define(t_callback_extension* a_extension);
 
 	using t_type::t_type;
-	virtual t_type* f_derive(t_object* a_this);
+	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }
@@ -40,11 +40,11 @@ struct t_type_of<t_server> : t_type
 struct t_callback_extension : t_extension
 {
 	t_slot v_symbol_on_message;
-	t_slot v_type_client;
-	t_slot v_type_server;
+	t_slot_of<t_type> v_type_client;
+	t_slot_of<t_type> v_type_server;
 
 	template<typename T>
-	void f_type__(t_scoped&& a_type);
+	void f_type__(t_type* a_type);
 
 	t_callback_extension(t_object* a_module) : t_extension(a_module)
 	{
@@ -54,7 +54,7 @@ struct t_callback_extension : t_extension
 	}
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
-	t_object* f_type() const
+	t_type* f_type() const
 	{
 		return f_global()->f_type<T>();
 	}
@@ -67,25 +67,25 @@ struct t_callback_extension : t_extension
 };
 
 template<>
-inline void t_callback_extension::f_type__<t_client>(t_scoped&& a_type)
+inline void t_callback_extension::f_type__<t_client>(t_type* a_type)
 {
-	v_type_client = std::move(a_type);
+	v_type_client = a_type->v_this;
 }
 
 template<>
-inline void t_callback_extension::f_type__<t_server>(t_scoped&& a_type)
+inline void t_callback_extension::f_type__<t_server>(t_type* a_type)
 {
-	v_type_server = std::move(a_type);
+	v_type_server = a_type->v_this;
 }
 
 template<>
-inline t_object* t_callback_extension::f_type<t_client>() const
+inline t_type* t_callback_extension::f_type<t_client>() const
 {
 	return v_type_client;
 }
 
 template<>
-inline t_object* t_callback_extension::f_type<t_server>() const
+inline t_type* t_callback_extension::f_type<t_server>() const
 {
 	return v_type_server;
 }
@@ -99,7 +99,7 @@ class t_client_wrapper : public t_client
 public:
 	static t_scoped f_construct(t_object* a_class)
 	{
-		t_scoped object = t_object::f_allocate(a_class);
+		t_scoped object = t_object::f_allocate(&f_as<t_type&>(a_class));
 		object.f_pointer__(new t_client_wrapper(object));
 		return object;
 	}
@@ -119,7 +119,7 @@ public:
 
 void t_client_wrapper::f_on_message(const std::wstring& a_message)
 {
-	t_callback_extension* extension = f_extension<t_callback_extension>(f_as<t_type&>(v_self->f_type()).v_module);
+	auto extension = f_extension<t_callback_extension>(v_self->f_type()->v_module);
 	v_self->f_get(extension->v_symbol_on_message)(extension->f_as(a_message));
 }
 
@@ -134,9 +134,9 @@ void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 	;
 }
 
-t_type* t_type_of<t_client>::f_derive(t_object* a_this)
+t_type* t_type_of<t_client>::f_derive()
 {
-	return new t_type_of(t_scoped(v_module), a_this);
+	return new t_type_of(t_scoped(v_module), this);
 }
 
 void t_type_of<t_client>::f_finalize(t_object* a_this)
@@ -144,9 +144,9 @@ void t_type_of<t_client>::f_finalize(t_object* a_this)
 	delete dynamic_cast<t_client_wrapper*>(&f_as<t_client&>(a_this));
 }
 
-t_scoped t_type_of<t_client>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_client>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct_with<t_scoped(*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(a_class, a_stack, a_n);
+	return t_construct_with<t_scoped(*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(v_this, a_stack, a_n);
 }
 
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
@@ -158,9 +158,9 @@ void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 	;
 }
 
-t_type* t_type_of<t_server>::f_derive(t_object* a_this)
+t_type* t_type_of<t_server>::f_derive()
 {
-	return new t_type_of(t_scoped(v_module), a_this);
+	return new t_type_of(t_scoped(v_module), this);
 }
 
 void t_type_of<t_server>::f_finalize(t_object* a_this)
@@ -168,9 +168,9 @@ void t_type_of<t_server>::f_finalize(t_object* a_this)
 	delete &f_as<t_server&>(a_this);
 }
 
-t_scoped t_type_of<t_server>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_server>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<>::t_bind<t_server>::f_do(a_class, a_stack, a_n);
+	return t_construct<>::t_bind<t_server>::f_do(v_this, a_stack, a_n);
 }
 
 }

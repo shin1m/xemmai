@@ -190,7 +190,7 @@ struct t_construct
 	static t_scoped f_default(t_object* a_class, T_an&&... a_an)
 	{
 		auto p = new T_self(std::forward<T_an>(a_an)...);
-		t_scoped object = t_object::f_allocate(a_class);
+		t_scoped object = t_object::f_allocate(&f_as<t_type&>(a_class));
 		object.f_pointer__(p);
 		return object;
 	}
@@ -551,9 +551,9 @@ class t_define
 
 public:
 	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name) :
-	v_extension(a_extension), v_type(t_class::f_instantiate(new t_type_of<T>(v_extension->f_module(), a_extension->template f_type<T_super>())))
+	v_extension(a_extension), v_type((new t_type_of<T>(v_extension->f_module(), a_extension->template f_type<T_super>()))->v_this)
 	{
-		v_extension->template f_type__<T>(static_cast<t_object*>(v_type));
+		v_extension->template f_type__<T>(&f_as<t_type&>(v_type));
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
 	}
 	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name, t_object* a_type) : v_extension(a_extension), v_type(a_type)
@@ -650,17 +650,17 @@ struct t_enum_of : t_type_of<intptr_t>
 
 	static t_scoped f_transfer(const T_extension* a_extension, T a_value)
 	{
-		return f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
+		return f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>()->v_this, a_value);
 	}
 
 	using t_type_of<intptr_t>::t_type_of;
-	virtual t_type* f_derive(t_object* a_this);
+	virtual t_type* f_derive();
 };
 
 template<typename T, typename T_extension>
-t_type* t_enum_of<T, T_extension>::f_derive(t_object* a_this)
+t_type* t_enum_of<T, T_extension>::f_derive()
 {
-	return new t_type_of<T>(t_scoped(v_module), a_this);
+	return new t_type_of<T>(t_scoped(v_module), this);
 }
 
 }

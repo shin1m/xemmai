@@ -53,9 +53,6 @@ struct t_fundamental<t_scoped>
 	typedef t_object t_type;
 };
 
-template<typename T>
-struct t_type_of;
-
 template<>
 struct t_type_of<t_object>
 {
@@ -70,7 +67,7 @@ struct t_type_of<t_object>
 		template<typename T1>
 		static T0 f_call(T1&& a_object)
 		{
-			return *static_cast<typename t_fundamental<T0>::t_type*>(f_object(std::forward<T1>(a_object))->f_pointer());
+			return *static_cast<typename t_fundamental<T0>::t_type*>(f_object(std::forward<T1>(a_object))->v_pointer);
 		}
 	};
 	template<typename T0>
@@ -82,7 +79,7 @@ struct t_type_of<t_object>
 		static T0* f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : static_cast<T0*>(p->f_pointer());
+			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : static_cast<T0*>(p->v_pointer);
 		}
 	};
 	template<typename T0>
@@ -93,7 +90,7 @@ struct t_type_of<t_object>
 		{
 			if (std::is_same<typename t_fundamental<T0>::t_type, t_object>::value) return true;
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type_as_type()) != nullptr;
+			return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type()) != nullptr;
 		}
 	};
 	template<typename T0>
@@ -113,12 +110,13 @@ struct t_type_of<t_object>
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type_as_type()) != nullptr;
+				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type()) != nullptr;
 			}
 		}
 	};
 	typedef t_global t_extension;
 
+	t_slot v_this;
 	t_slot v_module;
 	t_slot v_super;
 	bool v_builtin = false;
@@ -133,7 +131,6 @@ struct t_type_of<t_object>
 	{
 		return t_scoped(std::forward<T>(a_value));
 	}
-	XEMMAI__PORTABLE__EXPORT static bool f_derives(t_object* a_this, t_object* a_type);
 	static void f_initialize(t_object* a_module, t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT static std::wstring f_string(const t_value& a_self)
 	{
@@ -155,17 +152,18 @@ struct t_type_of<t_object>
 	}
 	XEMMAI__PORTABLE__EXPORT static void f_own(const t_value& a_self);
 	XEMMAI__PORTABLE__EXPORT static void f_share(const t_value& a_self);
-	XEMMAI__PORTABLE__EXPORT static void f_define(t_object* a_class);
+	XEMMAI__PORTABLE__EXPORT void f_define();
 
-	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : v_module(std::move(a_module)), v_super(std::move(a_super))
-	{
-	}
+	t_type_of();
+	t_type_of(t_type* a_super);
+	t_type_of(t_scoped&& a_module, t_type* a_super);
 	XEMMAI__PORTABLE__EXPORT virtual ~t_type_of() = default;
-	XEMMAI__PORTABLE__EXPORT virtual t_type_of* f_derive(t_object* a_this);
+	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
+	XEMMAI__PORTABLE__EXPORT bool f_derives(t_type* a_type);
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_get(const t_value& a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
 	XEMMAI__PORTABLE__EXPORT virtual bool f_has(const t_value& a_this, t_object* a_key);
@@ -224,8 +222,6 @@ struct t_type_of<t_object>::t_as<t_scoped&&>
 		return static_cast<t_value&&>(a_object);
 	}
 };
-
-typedef t_type_of<t_object> t_type;
 
 template<typename T0, typename T1>
 inline decltype(auto) f_as(T1&& a_object)

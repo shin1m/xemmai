@@ -23,13 +23,13 @@ struct t_type_of<portable::t_path> : t_type
 	}
 	static void f_define(t_io* a_extension);
 
-	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
+	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type(std::move(a_module), a_super)
 	{
 		v_fixed = v_shared = v_immutable = true;
 	}
-	virtual t_type* f_derive(t_object* a_this);
+	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 	virtual size_t f_divide(t_object* a_this, t_stacked* a_stack);
 };
 

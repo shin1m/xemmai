@@ -37,18 +37,18 @@ void t_type_of<double>::f_define()
 	;
 }
 
-t_type* t_type_of<double>::f_derive(t_object* a_this)
+t_type* t_type_of<double>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), a_this);
+	return new t_derived<t_type_of>(t_scoped(v_module), this);
 }
 
-t_scoped t_type_of<double>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<double>::f_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct_with<t_scoped(*)(t_object*, double), f_construct>,
 		t_construct_with<t_scoped(*)(t_object*, intptr_t), f_construct>,
 		t_construct_with<t_scoped(*)(t_object*, const std::wstring&), f_construct>
-	>::t_bind<double>::f_do(a_class, a_stack, a_n);
+	>::t_bind<double>::f_do(v_this, a_stack, a_n);
 }
 
 }

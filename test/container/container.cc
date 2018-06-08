@@ -10,12 +10,12 @@ t_scoped t_type_of<t_pair>::f_instantiate(t_container* a_extension, t_scoped&& a
 	return object;
 }
 
-t_scoped t_type_of<t_pair>::f_define(t_container* a_extension)
+t_type* t_type_of<t_pair>::f_define(t_container* a_extension)
 {
-	return t_class::f_instantiate(new t_type_of(a_extension->f_module(), a_extension->f_type<t_object>()));
+	return new t_type_of(a_extension->f_module(), a_extension->f_type<t_object>());
 }
 
-t_type* t_type_of<t_pair>::f_derive(t_object* a_this)
+t_type* t_type_of<t_pair>::f_derive()
 {
 	return nullptr;
 }
@@ -30,7 +30,7 @@ void t_type_of<t_pair>::f_finalize(t_object* a_this)
 	delete &f_as<t_pair&>(a_this);
 }
 
-void t_type_of<t_pair>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_pair>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }
@@ -45,9 +45,9 @@ void t_type_of<t_queue>::f_define(t_container* a_extension)
 	;
 }
 
-t_type* t_type_of<t_queue>::f_derive(t_object* a_this)
+t_type* t_type_of<t_queue>::f_derive()
 {
-	return new t_type_of(t_scoped(v_module), a_this);
+	return new t_type_of(t_scoped(v_module), this);
 }
 
 void t_type_of<t_queue>::f_scan(t_object* a_this, t_scan a_scan)
@@ -60,19 +60,19 @@ void t_type_of<t_queue>::f_finalize(t_object* a_this)
 	delete &f_as<t_queue&>(a_this);
 }
 
-t_scoped t_type_of<t_queue>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_queue>::f_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct<>,
 		t_construct<const std::wstring&>
-	>::t_bind<t_queue>::f_do(a_class, a_stack, a_n);
+	>::t_bind<t_queue>::f_do(v_this, a_stack, a_n);
 }
 
 }
 
 t_container::t_container(t_object* a_module) : t_extension(a_module)
 {
-	v_type_pair = t_type_of<t_pair>::f_define(this);
+	v_type_pair = t_type_of<t_pair>::f_define(this)->v_this;
 	t_type_of<t_queue>::f_define(this);
 }
 

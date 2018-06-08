@@ -25,7 +25,7 @@ void f_method_bind(t_stacked* a_stack)
 	t_scoped x = std::move(a_stack[0]);
 	a_stack[2].f_construct(std::move(a_stack[1]));
 	auto p = static_cast<t_object*>(x);
-	size_t n = f_as<t_type&>(p->f_type()).f_get_at(p, a_stack);
+	size_t n = p->f_type()->f_get_at(p, a_stack);
 	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
 	a_stack[1].f_construct();
 }
@@ -75,7 +75,7 @@ size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n)
 template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
 void f_operator(t_object* a_this, t_stacked* a_stack)
 {
-	size_t n = (f_as<t_type&>(a_this->f_type()).*A_function)(a_this, a_stack);
+	size_t n = (a_this->f_type()->*A_function)(a_this, a_stack);
 	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
 }
 
@@ -98,7 +98,8 @@ void t_code::f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 			if (index < 0) {
 				f_engine()->f_synchronize();
 				pc0[0] = a_class;
-				t_scoped value = p->f_type()->f_get(key);
+				auto& type = p->f_type()->v_this;
+				t_scoped value = static_cast<t_object*>(type)->f_type()->f_get(type, key);
 				top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(p)) : std::move(value);
 			} else {
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
@@ -208,7 +209,8 @@ void t_code::f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 			if (index < 0) {
 				f_engine()->f_synchronize();
 				pc0[0] = a_class;
-				t_scoped value = p->f_type()->f_get(key);
+				auto& type = p->f_type()->v_this;
+				t_scoped value = static_cast<t_object*>(type)->f_type()->f_get(type, key);
 				if (value.f_type() == f_global()->f_type<t_method>()) {
 					stack[0].f_construct_nonnull(f_as<t_method&>(value).f_function());
 					stack[1].f_construct_nonnull(p);
@@ -465,7 +467,8 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked& top = stack[0];
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
-					t_scoped value = p->f_type()->f_get(key);
+					auto& type = p->f_type()->v_this;
+					t_scoped value = static_cast<t_object*>(type)->f_type()->f_get(type, key);
 					top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(p)) : value;
 				} else {
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
@@ -720,7 +723,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_scoped top = std::move(stack[0]);
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
-					t_scoped value = p->f_type()->f_get(key);
+					t_scoped value = static_cast<t_object*>(p->f_type()->v_this)->f_get(key);
 					if (value.f_type() == f_global()->f_type<t_method>()) {
 						stack[0].f_construct_nonnull(f_as<t_method&>(value).f_function());
 						stack[1].f_construct_nonnull(p);
@@ -981,7 +984,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				++pc;
 				t_stacked& top = stack[0];
-				top = top.f_type();
+				top = top.f_type()->v_this;
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SUPER)
@@ -1648,7 +1651,7 @@ void t_code::f_try(t_context* a_context)
 					if (try0 != e_try__CATCH) break;
 					++pc;
 					t_scoped type = std::move(stack[0]);
-					if (thrown != f_engine()->v_fiber_exit && thrown.f_is(type)) {
+					if (thrown != f_engine()->v_fiber_exit && thrown.f_is(&f_as<t_type&>(type))) {
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						p.f_caught(thrown, caught);
@@ -1749,7 +1752,7 @@ void t_code::f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_sta
 	a_stack[0].f_construct();
 }
 
-t_type* t_type_of<t_code>::f_derive(t_object* a_this)
+t_type* t_type_of<t_code>::f_derive()
 {
 	return nullptr;
 }
@@ -1764,7 +1767,7 @@ void t_type_of<t_code>::f_finalize(t_object* a_this)
 	delete &f_as<t_code&>(a_this);
 }
 
-void t_type_of<t_code>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_code>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }

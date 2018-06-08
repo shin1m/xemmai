@@ -16,13 +16,13 @@ template<>
 struct t_type_of<t_pair> : t_type
 {
 	static t_scoped f_instantiate(t_container* a_extension, t_scoped&& a_value);
-	static t_scoped f_define(t_container* a_extension);
+	static t_type* f_define(t_container* a_extension);
 
 	using t_type::t_type;
-	virtual t_type* f_derive(t_object* a_this);
+	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 };
 
 template<>
@@ -33,26 +33,26 @@ struct t_type_of<t_queue> : t_type
 	static void f_define(t_container* a_extension);
 
 	using t_type::t_type;
-	virtual t_type* f_derive(t_object* a_this);
+	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }
 
 struct t_container : t_extension
 {
-	t_slot v_type_pair;
-	t_slot v_type_queue;
+	t_slot_of<t_type> v_type_pair;
+	t_slot_of<t_type> v_type_queue;
 
 	template<typename T>
-	void f_type__(t_scoped&& a_type);
+	void f_type__(t_type* a_type);
 
 	t_container(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
-	t_object* f_type() const
+	t_type* f_type() const
 	{
 		return f_global()->f_type<T>();
 	}
@@ -64,25 +64,25 @@ struct t_container : t_extension
 };
 
 template<>
-inline void t_container::f_type__<t_pair>(t_scoped&& a_type)
+inline void t_container::f_type__<t_pair>(t_type* a_type)
 {
-	v_type_pair = std::move(a_type);
+	v_type_pair = a_type->v_this;
 }
 
 template<>
-inline void t_container::f_type__<t_queue>(t_scoped&& a_type)
+inline void t_container::f_type__<t_queue>(t_type* a_type)
 {
-	v_type_queue = std::move(a_type);
+	v_type_queue = a_type->v_this;
 }
 
 template<>
-inline t_object* t_container::f_type<t_pair>() const
+inline t_type* t_container::f_type<t_pair>() const
 {
 	return v_type_pair;
 }
 
 template<>
-inline t_object* t_container::f_type<t_queue>() const
+inline t_type* t_container::f_type<t_queue>() const
 {
 	return v_type_queue;
 }

@@ -12,13 +12,13 @@ t_io::t_io(t_object* a_module) : t_extension(a_module)
 	v_symbol_read_line = t_symbol::f_instantiate(L"read_line");
 	v_symbol_write_line = t_symbol::f_instantiate(L"write_line");
 	t_type_of<io::t_file>::f_define(this);
-	xemmai::f_as<t_type&>(v_type_file).v_builtin = true;
+	v_type_file->v_builtin = true;
 	t_type_of<io::t_reader>::f_define(this);
-	xemmai::f_as<t_type&>(v_type_reader).v_builtin = true;
+	v_type_reader->v_builtin = true;
 	t_type_of<io::t_writer>::f_define(this);
-	xemmai::f_as<t_type&>(v_type_writer).v_builtin = true;
+	v_type_writer->v_builtin = true;
 	t_type_of<portable::t_path>::f_define(this);
-	xemmai::f_as<t_type&>(v_type_path).v_builtin = true;
+	v_type_path->v_builtin = true;
 }
 
 void t_io::f_scan(t_scan a_scan)

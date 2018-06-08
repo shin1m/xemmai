@@ -10,8 +10,8 @@ template<typename T>
 struct t_derived : T
 {
 	using T::T;
-	virtual t_type* f_derive(t_object* a_this);
-	virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual t_type* f_derive();
+	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_stacked* a_stack);
 	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
@@ -40,15 +40,15 @@ struct t_derived : T
 };
 
 template<typename T>
-t_type* t_derived<T>::f_derive(t_object* a_this)
+t_type* t_derived<T>::f_derive()
 {
-	return new t_derived(t_scoped(T::v_module), a_this);
+	return new t_derived(t_scoped(T::v_module), this);
 }
 
 template<typename T>
-t_scoped t_derived<T>::f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n)
+t_scoped t_derived<T>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return a_class->f_get(f_global()->f_symbol_construct()).f_call_with_same(a_stack, a_n);
+	return static_cast<t_object*>(T::v_this)->f_type()->f_get(T::v_this, f_global()->f_symbol_construct()).f_call_with_same(a_stack, a_n);
 }
 
 template<typename T>

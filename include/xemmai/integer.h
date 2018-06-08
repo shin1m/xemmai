@@ -1,7 +1,7 @@
 #ifndef XEMMAI__INTEGER_H
 #define XEMMAI__INTEGER_H
 
-#include "object.h"
+#include "class.h"
 #include "macro.h"
 
 namespace xemmai
@@ -68,7 +68,7 @@ struct t_type_of<intptr_t> : t_type
 		static bool f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			if (!std::is_same<typename t_fundamental<T0>::t_type, intptr_t>::value) return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(&f_as<t_type&>(p->f_type())) != nullptr;
+			if (!std::is_same<typename t_fundamental<T0>::t_type, intptr_t>::value) return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type()) != nullptr;
 			switch (reinterpret_cast<size_t>(p)) {
 			case t_value::e_tag__INTEGER:
 				return true;
@@ -77,7 +77,7 @@ struct t_type_of<intptr_t> : t_type
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of*>(&f_as<t_type&>(p->f_type())) != nullptr;
+				return dynamic_cast<t_type_of*>(p->f_type()) != nullptr;
 			}
 		}
 	};
@@ -96,7 +96,7 @@ struct t_type_of<intptr_t> : t_type
 	}
 	static t_scoped f_construct_derived(t_object* a_class, intptr_t a_value)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(a_class);
+		t_scoped object = t_object::f_allocate_uninitialized(&f_as<t_type&>(a_class));
 		object.f_integer__(a_value);
 		return object;
 	}
@@ -164,12 +164,12 @@ struct t_type_of<intptr_t> : t_type
 	}
 	static void f_define();
 
-	t_type_of(t_scoped&& a_module, t_scoped&& a_super) : t_type(std::move(a_module), std::move(a_super))
+	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type(std::move(a_module), a_super)
 	{
 		v_shared = v_immutable = true;
 	}
-	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive(t_object* a_this);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }

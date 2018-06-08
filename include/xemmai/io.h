@@ -20,13 +20,13 @@ class t_io : public t_extension
 	t_slot v_symbol_flush;
 	t_slot v_symbol_read_line;
 	t_slot v_symbol_write_line;
-	t_slot v_type_file;
-	t_slot v_type_reader;
-	t_slot v_type_writer;
-	t_slot v_type_path;
+	t_slot_of<t_type> v_type_file;
+	t_slot_of<t_type> v_type_reader;
+	t_slot_of<t_type> v_type_writer;
+	t_slot_of<t_type> v_type_path;
 
 	template<typename T>
-	void f_type__(t_scoped&& a_type);
+	void f_type__(t_type* a_type);
 
 public:
 	t_io(t_object* a_module);
@@ -61,7 +61,7 @@ public:
 		return v_symbol_write_line;
 	}
 	template<typename T>
-	t_object* f_type() const
+	t_type* f_type() const
 	{
 		return f_global()->f_type<T>();
 	}
@@ -74,27 +74,27 @@ public:
 };
 
 template<>
-inline void t_io::f_type__<io::t_file>(t_scoped&& a_type)
+inline void t_io::f_type__<io::t_file>(t_type* a_type)
 {
-	v_type_file = std::move(a_type);
+	v_type_file = a_type->v_this;
 }
 
 template<>
-inline void t_io::f_type__<io::t_reader>(t_scoped&& a_type)
+inline void t_io::f_type__<io::t_reader>(t_type* a_type)
 {
-	v_type_reader = std::move(a_type);
+	v_type_reader = a_type->v_this;
 }
 
 template<>
-inline void t_io::f_type__<io::t_writer>(t_scoped&& a_type)
+inline void t_io::f_type__<io::t_writer>(t_type* a_type)
 {
-	v_type_writer = std::move(a_type);
+	v_type_writer = a_type->v_this;
 }
 
 template<>
-inline void t_io::f_type__<portable::t_path>(t_scoped&& a_type)
+inline void t_io::f_type__<portable::t_path>(t_type* a_type)
 {
-	v_type_path = std::move(a_type);
+	v_type_path = a_type->v_this;
 }
 
 template<>
@@ -104,25 +104,25 @@ inline const t_io* t_io::f_extension<t_io>() const
 }
 
 template<>
-inline t_object* t_io::f_type<io::t_file>() const
+inline t_type* t_io::f_type<io::t_file>() const
 {
 	return v_type_file;
 }
 
 template<>
-inline t_object* t_io::f_type<io::t_reader>() const
+inline t_type* t_io::f_type<io::t_reader>() const
 {
 	return v_type_reader;
 }
 
 template<>
-inline t_object* t_io::f_type<io::t_writer>() const
+inline t_type* t_io::f_type<io::t_writer>() const
 {
 	return v_type_writer;
 }
 
 template<>
-inline t_object* t_io::f_type<portable::t_path>() const
+inline t_type* t_io::f_type<portable::t_path>() const
 {
 	return v_type_path;
 }

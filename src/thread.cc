@@ -108,14 +108,6 @@ t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 	return object;
 }
 
-void t_thread::f_define(t_object* a_class)
-{
-	t_define<t_thread, t_object>(f_global(), L"Thread", a_class)
-		(L"current", t_static<t_object*(*)(), f_current>())
-		(L"join", t_member<void(t_thread::*)(), &t_thread::f_join>())
-	;
-}
-
 void t_thread::f_join()
 {
 	if (this == &f_as<t_thread&>(v_current)) t_throwable::f_throw(L"current thread can not be joined.");
@@ -128,7 +120,16 @@ void t_thread::f_join()
 	f_cache_acquire();
 }
 
-t_type* t_type_of<t_thread>::f_derive(t_object* a_this)
+void t_type_of<t_thread>::f_define()
+{
+	v_builtin = true;
+	t_define<t_thread, t_object>(f_global(), L"Thread", v_this)
+		(L"current", t_static<t_object*(*)(), t_thread::f_current>())
+		(L"join", t_member<void(t_thread::*)(), &t_thread::f_join>())
+	;
+}
+
+t_type* t_type_of<t_thread>::f_derive()
 {
 	return nullptr;
 }
@@ -143,7 +144,7 @@ void t_type_of<t_thread>::f_finalize(t_object* a_this)
 	delete &f_as<t_thread&>(a_this);
 }
 
-void t_type_of<t_thread>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_thread>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");
 	size_t size = f_engine()->v_stack_size;

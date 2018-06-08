@@ -71,7 +71,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer * a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer * p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -87,7 +87,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float * a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float * p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -112,7 +112,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer / a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer / p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -128,7 +128,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float / a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float / p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -163,7 +163,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer + a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer + p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -179,7 +179,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float + a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float + p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -204,7 +204,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer - a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer - p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -220,7 +220,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float - a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float - p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -265,7 +265,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer < a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer < p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -281,7 +281,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float < a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float < p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -306,7 +306,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer <= a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer <= p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -322,7 +322,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float <= a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float <= p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -347,7 +347,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer > a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer > p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -363,7 +363,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float > a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float > p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -388,7 +388,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer >= a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_integer >= p->f_integer())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -404,7 +404,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float >= a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+						if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 							XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_float >= p->f_float())
 						} else {
 							goto label__THROW_NOT_SUPPORTED_M1;
@@ -432,7 +432,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer == a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_integer == p->f_integer())
+						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(p->f_type()) != nullptr && a0.v_integer == p->f_integer())
 					} else {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, false)
 					}
@@ -444,7 +444,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float == a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0.v_float == p->f_float())
+						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(p->f_type()) != nullptr && a0.v_float == p->f_float())
 					} else {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, false)
 					}
@@ -468,7 +468,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_integer != a1.v_float)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_integer != p->f_integer())
+						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(p->f_type()) == nullptr || a0.v_integer != p->f_integer())
 					} else {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, true)
 					}
@@ -480,7 +480,7 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0.v_float != a1.v_integer)
 					} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 						t_object* p = a1;
-						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0.v_float != p->f_float())
+						XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(p->f_type()) == nullptr || a0.v_float != p->f_float())
 					} else {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PP, true)
 					}
@@ -736,7 +736,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 * a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 * p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -752,7 +752,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 / a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 / p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -772,7 +772,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 + a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 + p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -788,7 +788,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 - a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 - p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -812,7 +812,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 < a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 < p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -828,7 +828,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 <= a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 <= p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -844,7 +844,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 > a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 > p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -860,7 +860,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 >= a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<intptr_t>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 >= p->f_integer())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -876,7 +876,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 == a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0 == p->f_integer())
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(p->f_type()) != nullptr && a0 == p->f_integer())
 				} else {
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, false)
 				}
@@ -888,7 +888,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 != a1.v_float)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0 != p->f_integer())
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<intptr_t>*>(p->f_type()) == nullptr || a0 != p->f_integer())
 				} else {
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, true)
 				}
@@ -1080,7 +1080,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 * a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 * p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1096,7 +1096,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 / a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 / p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1113,7 +1113,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 + a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 + p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1129,7 +1129,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 - a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 - p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1147,7 +1147,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 < a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 < p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1163,7 +1163,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 <= a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 <= p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1179,7 +1179,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 > a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 > p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1195,7 +1195,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 >= a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					if (dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type()))) {
+					if (dynamic_cast<t_type_of<double>*>(p->f_type())) {
 						XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0 >= p->f_float())
 					} else {
 						goto label__THROW_NOT_SUPPORTED_M1;
@@ -1211,7 +1211,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 == a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) != nullptr && a0 == p->f_float())
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(p->f_type()) != nullptr && a0 == p->f_float())
 				} else {
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, false)
 				}
@@ -1223,7 +1223,7 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, a0 != a1.v_integer)
 				} else if (a1.f_tag() >= t_value::e_tag__OBJECT) {
 					t_object* p = a1;
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(&f_as<t_type&>(p->f_type())) == nullptr || a0 != p->f_float())
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, dynamic_cast<t_type_of<double>*>(p->f_type()) == nullptr || a0 != p->f_float())
 				} else {
 					XEMMAI__CODE__PRIMITIVE_CALL(_PP, true)
 				}

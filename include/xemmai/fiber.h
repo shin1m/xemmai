@@ -109,7 +109,6 @@ struct t_fiber
 {
 	static t_object* f_current();
 	static t_scoped f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main = false, bool a_active = false);
-	static void f_define(t_object* a_class);
 	template<typename T_main>
 	static intptr_t f_main(T_main a_main);
 	static void f_run();
@@ -134,11 +133,13 @@ struct t_fiber
 template<>
 struct t_type_of<t_fiber> : t_type
 {
+	void f_define();
+
 	using t_type::t_type;
-	virtual t_type* f_derive(t_object* a_this);
+	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n);
+	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 };
 

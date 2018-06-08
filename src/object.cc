@@ -19,7 +19,7 @@ void t_object::f_collect()
 		t_object* p = cycle;
 		do {
 			p = p->v_next;
-			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && p->f_type_as_type()->v_revive) {
+			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && p->v_type->v_revive) {
 				p = nullptr;
 				break;
 			}
@@ -175,12 +175,15 @@ void t_object::f_cyclic_decrement()
 		delete v_fields;
 		v_fields = nullptr;
 	}
-	f_type_as_type()->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
-	if (static_cast<t_object*>(v_type) != f_engine()->v_type_class) {
-		f_type_as_type()->f_finalize(this);
-		v_type.v_pointer = nullptr;
+	v_type->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
+	if (v_type != f_engine()->v_type_class) {
+		v_type->f_finalize(this);
+		v_pointer = nullptr;
 	}
-	f_push_and_clear<&t_object::f_cyclic_decrement_push>(v_type);
+	{
+		t_object* p = v_type->v_this;
+		if (p) p->f_cyclic_decrement_push();
+	}
 }
 
 void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
@@ -204,20 +207,19 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 	t_value::v_decrements->f_push(structure0);
 }
 
-t_scoped t_object::f_allocate_on_boot(t_object* a_type)
+t_scoped t_object::f_allocate_on_boot()
 {
 	t_object* p = f_local_pool__allocate();
 	p->v_next = nullptr;
 	p->v_count = 1;
-	p->v_type.f_construct(a_type);
-	p->v_type.v_pointer = nullptr;
+	p->v_pointer = nullptr;
 	p->v_owner = nullptr;
 	return t_scoped(p, t_scoped::t_pass());
 }
 
 void t_object::f_own()
 {
-	if (f_type_as_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
+	if (f_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
 	{
 		t_scoped_lock_for_write lock(v_lock);
 		if (v_owner) t_throwable::f_throw(L"already owned.");
@@ -236,7 +238,7 @@ void t_object::f_own()
 
 void t_object::f_share()
 {
-	if (f_type_as_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
+	if (f_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
 	if (v_owner != t_value::v_increments) t_throwable::f_throw(L"not owned.");
 	t_scoped_lock_for_write lock(v_lock);
 	v_owner = nullptr;

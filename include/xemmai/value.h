@@ -30,6 +30,8 @@ t_engine* f_engine();
 struct t_engine_jit;
 #endif
 
+typedef t_type_of<t_object> t_type;
+
 class t_value
 {
 	template<typename T>
@@ -317,8 +319,8 @@ public:
 	double f_float() const;
 	void f_float__(double a_value);
 	void f_pointer__(void* a_value);
-	t_object* f_type() const;
-	bool f_is(t_object* a_class) const;
+	t_type_of<t_object>* f_type() const;
+	bool f_is(t_type* a_class) const;
 	t_scoped f_get(t_object* a_key) const;
 	void f_put(t_object* a_key, t_scoped&& a_value) const;
 	bool f_has(t_object* a_key) const;

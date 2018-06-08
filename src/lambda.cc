@@ -13,7 +13,7 @@ t_scoped t_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code)
 	return object;
 }
 
-t_type* t_type_of<t_lambda>::f_derive(t_object* a_this)
+t_type* t_type_of<t_lambda>::f_derive()
 {
 	return nullptr;
 }
@@ -30,7 +30,7 @@ void t_type_of<t_lambda>::f_finalize(t_object* a_this)
 	delete &f_as<t_lambda&>(a_this);
 }
 
-void t_type_of<t_lambda>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_lambda>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }

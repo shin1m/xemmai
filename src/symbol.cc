@@ -26,13 +26,6 @@ t_scoped t_symbol::f_instantiate(const std::wstring& a_value)
 	return object;
 }
 
-void t_symbol::f_define(t_object* a_class)
-{
-	t_define<t_symbol, t_object>(f_global(), L"Symbol", a_class)
-		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
-	;
-}
-
 void t_symbol::f_revise(t_object* a_this)
 {
 	if (f_atomic_increment(f_as<t_symbol&>(a_this).v_revision) != 0) return;
@@ -43,7 +36,15 @@ void t_symbol::f_revise(t_object* a_this)
 	}
 }
 
-t_type* t_type_of<t_symbol>::f_derive(t_object* a_this)
+void t_type_of<t_symbol>::f_define()
+{
+	v_builtin = true;
+	t_define<t_symbol, t_object>(f_global(), L"Symbol", v_this)
+		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
+	;
+}
+
+t_type* t_type_of<t_symbol>::f_derive()
 {
 	return nullptr;
 }
@@ -60,7 +61,7 @@ void t_type_of<t_symbol>::f_finalize(t_object* a_this)
 	delete &p;
 }
 
-void t_type_of<t_symbol>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_symbol>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
 	t_destruct<> a0(a_stack[2]);

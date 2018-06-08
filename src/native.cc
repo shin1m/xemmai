@@ -12,7 +12,7 @@ t_scoped t_native::f_instantiate(t_scoped&& a_module, t_function a_function)
 	return object;
 }
 
-t_type* t_type_of<t_native>::f_derive(t_object* a_this)
+t_type* t_type_of<t_native>::f_derive()
 {
 	return nullptr;
 }
@@ -27,7 +27,7 @@ void t_type_of<t_native>::f_finalize(t_object* a_this)
 	delete &f_as<t_native&>(a_this);
 }
 
-void t_type_of<t_native>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_native>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }

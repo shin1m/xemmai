@@ -172,7 +172,7 @@ class t_debugger : public xemmai::t_debugger
 	template<typename T>
 	bool f_is(t_object* a_object)
 	{
-		return dynamic_cast<t_type_of<T>*>(a_object->f_type_as_type()) != nullptr;
+		return dynamic_cast<t_type_of<T>*>(a_object->f_type()) != nullptr;
 	}
 	template<typename T>
 	void f_print_sequence(t_object* a_value, size_t a_depth)

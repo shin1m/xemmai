@@ -197,7 +197,7 @@ void t_library::f_initialize(t_object* a_this)
 	v_extension = factory(a_this);
 }
 
-t_type* t_type_of<t_module>::f_derive(t_object* a_this)
+t_type* t_type_of<t_module>::f_derive()
 {
 	return nullptr;
 }
@@ -213,7 +213,7 @@ void t_type_of<t_module>::f_finalize(t_object* a_this)
 	delete &f_as<t_module&>(a_this);
 }
 
-void t_type_of<t_module>::f_instantiate(t_object* a_class, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_module>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
 	t_destruct<> a0(a_stack[2]);

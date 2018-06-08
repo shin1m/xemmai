@@ -204,6 +204,8 @@ class t_object
 	template<typename T, size_t A_size> friend class t_shared_pool;
 	friend class t_local_pool<t_object>;
 	friend struct t_type_of<t_object>;
+	friend struct t_type_of<t_type>;
+	friend struct t_type_of<t_structure>;
 	friend struct t_code;
 	friend class t_engine;
 	friend class t_with_lock_for_read;
@@ -263,7 +265,13 @@ class t_object
 	static XEMMAI__PORTABLE__EXPORT t_object* f_local_pool__allocate();
 #endif
 
-	t_slot v_type;
+	t_type* v_type;
+	union
+	{
+		intptr_t v_integer;
+		double v_float;
+		void* v_pointer;
+	};
 	t_value::t_increments* v_owner;
 	t_structure* v_structure;
 	t_tuple* v_fields = nullptr;
@@ -279,8 +287,8 @@ class t_object
 	{
 		(static_cast<t_object*>(v_structure->v_this)->*A_push)();
 		if (v_fields) v_fields->f_scan(f_push<A_push>);
-		f_type_as_type()->f_scan(this, f_push<A_push>);
-		f_push<A_push>(v_type);
+		v_type->f_scan(this, f_push<A_push>);
+		(static_cast<t_object*>(v_type->v_this)->*A_push)();
 	}
 	template<void (t_object::*A_step)()>
 	void f_loop()
@@ -419,33 +427,25 @@ class t_object
 	void f_field_add(t_scoped&& a_structure, t_scoped&& a_value);
 
 public:
-	static t_scoped f_allocate_on_boot(t_object* a_type);
-	static t_scoped f_allocate_uninitialized(t_object* a_type);
-	static t_scoped f_allocate(t_object* a_type);
+	static t_scoped f_allocate_on_boot();
+	static t_scoped f_allocate_uninitialized(t_type* a_type);
+	static t_scoped f_allocate(t_type* a_type);
 
-	t_object* f_type() const
+	t_type* f_type() const
 	{
 		return v_type;
 	}
-	t_type* f_type_as_type() const
-	{
-		return static_cast<t_type*>(f_type()->f_pointer());
-	}
 	intptr_t f_integer() const
 	{
-		return v_type.v_integer;
+		return v_integer;
 	}
 	double f_float() const
 	{
-		return v_type.v_float;
+		return v_float;
 	}
-	void* f_pointer() const
+	bool f_is(t_type* a_class) const
 	{
-		return v_type.v_pointer;
-	}
-	bool f_is(t_object* a_class) const
-	{
-		return t_type::f_derives(f_type(), a_class);
+		return v_type->f_derives(a_class);
 	}
 	bool f_owned() const
 	{
@@ -477,23 +477,23 @@ public:
 	void f_field_remove(size_t a_index);
 	t_scoped f_get(t_object* a_key)
 	{
-		return f_type_as_type()->f_get(this, a_key);
+		return v_type->f_get(this, a_key);
 	}
 	void f_put(t_object* a_key, t_scoped&& a_value)
 	{
-		f_type_as_type()->f_put(this, a_key, std::move(a_value));
+		v_type->f_put(this, a_key, std::move(a_value));
 	}
 	bool f_has(t_object* a_key)
 	{
-		return f_type_as_type()->f_has(this, a_key);
+		return v_type->f_has(this, a_key);
 	}
 	t_scoped f_remove(t_object* a_key)
 	{
-		return f_type_as_type()->f_remove(this, a_key);
+		return v_type->f_remove(this, a_key);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_stacked* a_stack, size_t a_n)
 	{
-		return f_type_as_type()->f_call(this, a_stack, a_n);
+		return v_type->f_call(this, a_stack, a_n);
 	}
 	void f_get_owned(t_object* a_key, t_stacked* a_stack);
 	void f_get(t_object* a_key, t_stacked* a_stack);
