@@ -19,7 +19,7 @@ bool t_type_of<double>::f_not_equals(double a_self, const t_value& a_value)
 void t_type_of<double>::f_define()
 {
 	t_define<double, t_object>(f_global(), L"Float")
-		(t_construct_with<t_scoped(*)(t_object*, double), f_construct_derived>())
+		(t_construct_with<t_scoped(*)(t_type*, double), f_construct_derived>())
 		(f_global()->f_symbol_string(), t_member<std::wstring(*)(double), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(double), f_hash>())
 		(f_global()->f_symbol_plus(), t_member<double(*)(double), f_plus>())
@@ -45,10 +45,10 @@ t_type* t_type_of<double>::f_derive()
 t_scoped t_type_of<double>::f_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct_with<t_scoped(*)(t_object*, double), f_construct>,
-		t_construct_with<t_scoped(*)(t_object*, intptr_t), f_construct>,
-		t_construct_with<t_scoped(*)(t_object*, const std::wstring&), f_construct>
-	>::t_bind<double>::f_do(v_this, a_stack, a_n);
+		t_construct_with<t_scoped(*)(t_type*, double), f_construct>,
+		t_construct_with<t_scoped(*)(t_type*, intptr_t), f_construct>,
+		t_construct_with<t_scoped(*)(t_type*, const std::wstring&), f_construct>
+	>::t_bind<double>::f_do(this, a_stack, a_n);
 }
 
 }

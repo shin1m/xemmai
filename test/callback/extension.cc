@@ -69,13 +69,13 @@ struct t_callback_extension : t_extension
 template<>
 inline void t_callback_extension::f_type__<t_client>(t_type* a_type)
 {
-	v_type_client = a_type->v_this;
+	v_type_client.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_callback_extension::f_type__<t_server>(t_type* a_type)
 {
-	v_type_server = a_type->v_this;
+	v_type_server.f_construct(a_type->v_this);
 }
 
 template<>
@@ -97,9 +97,9 @@ class t_client_wrapper : public t_client
 	t_object* v_self;
 
 public:
-	static t_scoped f_construct(t_object* a_class)
+	static t_scoped f_construct(t_type* a_class)
 	{
-		t_scoped object = t_object::f_allocate(&f_as<t_type&>(a_class));
+		t_scoped object = t_object::f_allocate(a_class);
 		object.f_pointer__(new t_client_wrapper(object));
 		return object;
 	}
@@ -146,7 +146,7 @@ void t_type_of<t_client>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<t_client>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct_with<t_scoped(*)(t_object*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(v_this, a_stack, a_n);
+	return t_construct_with<t_scoped(*)(t_type*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(this, a_stack, a_n);
 }
 
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
@@ -170,7 +170,7 @@ void t_type_of<t_server>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<t_server>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<>::t_bind<t_server>::f_do(v_this, a_stack, a_n);
+	return t_construct<>::t_bind<t_server>::f_do(this, a_stack, a_n);
 }
 
 }

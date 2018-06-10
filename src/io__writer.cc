@@ -156,7 +156,7 @@ void t_type_of<io::t_writer>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<io::t_writer>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<t_scoped&&, const std::wstring&>::t_bind<io::t_writer>::f_do(v_this, a_stack, a_n);
+	return t_construct<t_scoped&&, const std::wstring&>::t_bind<io::t_writer>::f_do(this, a_stack, a_n);
 }
 
 }

@@ -66,13 +66,13 @@ struct t_container : t_extension
 template<>
 inline void t_container::f_type__<t_pair>(t_type* a_type)
 {
-	v_type_pair = a_type->v_this;
+	v_type_pair.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_container::f_type__<t_queue>(t_type* a_type)
 {
-	v_type_queue = a_type->v_this;
+	v_type_queue.f_construct(a_type->v_this);
 }
 
 template<>

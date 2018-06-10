@@ -71,13 +71,13 @@ public:
 template<>
 inline void t_threading::f_type__<std::mutex>(t_type* a_type)
 {
-	v_type_mutex = a_type->v_this;
+	v_type_mutex.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_threading::f_type__<std::condition_variable>(t_type* a_type)
 {
-	v_type_condition = a_type->v_this;
+	v_type_condition.f_construct(a_type->v_this);
 }
 
 template<>
@@ -125,7 +125,7 @@ void t_type_of<std::mutex>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<std::mutex>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<>::t_bind<std::mutex>::f_do(v_this, a_stack, a_n);
+	return t_construct<>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
 }
 
 void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex)
@@ -186,7 +186,7 @@ void t_type_of<std::condition_variable>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<std::condition_variable>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<>::t_bind<std::condition_variable>::f_do(v_this, a_stack, a_n);
+	return t_construct<>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
 }
 
 t_threading::t_threading(t_object* a_module) : t_extension(a_module)

@@ -82,21 +82,21 @@ struct t_type_of<intptr_t> : t_type
 		}
 	};
 
-	static t_scoped f_construct(t_object* a_class, intptr_t a_value)
+	static t_scoped f_construct(t_type* a_class, intptr_t a_value)
 	{
 		return t_scoped(a_value);
 	}
-	static t_scoped f_construct(t_object* a_class, double a_value)
+	static t_scoped f_construct(t_type* a_class, double a_value)
 	{
-		return f_construct(a_class, static_cast<intptr_t>(a_value));
+		return t_scoped(static_cast<intptr_t>(a_value));
 	}
-	static t_scoped f_construct(t_object* a_class, const std::wstring& a_value)
+	static t_scoped f_construct(t_type* a_class, const std::wstring& a_value)
 	{
-		return f_construct(a_class, f_parse(a_value.c_str()));
+		return t_scoped(f_parse(a_value.c_str()));
 	}
-	static t_scoped f_construct_derived(t_object* a_class, intptr_t a_value)
+	static t_scoped f_construct_derived(t_type* a_class, intptr_t a_value)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(&f_as<t_type&>(a_class));
+		t_scoped object = t_object::f_allocate_uninitialized(a_class);
 		object.f_integer__(a_value);
 		return object;
 	}

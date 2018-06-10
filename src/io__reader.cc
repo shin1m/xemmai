@@ -139,7 +139,7 @@ t_scoped t_type_of<io::t_reader>::f_construct(t_stacked* a_stack, size_t a_n)
 	return t_overload<
 		t_construct<t_scoped&&, const std::wstring&>,
 		t_construct<t_scoped&&, const std::wstring&, size_t>
-	>::t_bind<io::t_reader>::f_do(v_this, a_stack, a_n);
+	>::t_bind<io::t_reader>::f_do(this, a_stack, a_n);
 }
 
 }

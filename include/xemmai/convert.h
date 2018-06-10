@@ -132,12 +132,12 @@ public:
 template<typename T_function, T_function A_function>
 struct t_call_construct;
 
-template<typename... T_an, t_scoped(*A_function)(t_object*, T_an...)>
-struct t_call_construct<t_scoped(*)(t_object*, T_an...), A_function>
+template<typename... T_an, t_scoped(*A_function)(t_type*, T_an...)>
+struct t_call_construct<t_scoped(*)(t_type*, T_an...), A_function>
 {
 	static t_scoped f_function(t_object* a_module, const t_value& a_self, T_an&&... a_n)
 	{
-		return A_function(a_self, std::forward<T_an>(a_n)...);
+		return A_function(&f_as<t_type&>(a_self), std::forward<T_an>(a_n)...);
 	}
 	static void f_call(t_object* a_module, t_stacked* a_stack, size_t a_n)
 	{
@@ -153,23 +153,23 @@ struct t_call_construct<t_scoped(*)(t_object*, T_an...), A_function>
 		t_signature<T_an...>::template f_call<f_function>(a_module, a_stack[1], a_stack);
 	}
 	template<typename...>
-	static t_scoped f__do(t_object* a_class, t_stacked* a_stack, T_an&&... a_n)
+	static t_scoped f__do(t_type* a_class, t_stacked* a_stack, T_an&&... a_n)
 	{
 		return A_function(a_class, std::forward<T_an>(a_n)...);
 	}
 	template<typename T_a0, typename... T_am, typename... T_ak>
-	static t_scoped f__do(t_object* a_class, t_stacked* a_stack, T_ak&&... a_k)
+	static t_scoped f__do(t_type* a_class, t_stacked* a_stack, T_ak&&... a_k)
 	{
 		++a_stack;
 		return f__do<T_am...>(a_class, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(*a_stack));
 	}
-	static t_scoped f_do(t_object* a_class, t_stacked* a_stack, size_t a_n)
+	static t_scoped f_do(t_type* a_class, t_stacked* a_stack, size_t a_n)
 	{
 		if (a_n != sizeof...(T_an)) t_throwable::f_throw(t_signature<T_an...>::f_error());
 		t_signature<T_an...>::f_check(a_stack);
 		return f__do<T_an...>(a_class, a_stack + 1);
 	}
-	static t_scoped f_do(t_object* a_class, t_stacked* a_stack)
+	static t_scoped f_do(t_type* a_class, t_stacked* a_stack)
 	{
 		return f__do<T_an...>(a_class, a_stack + 1);
 	}
@@ -187,16 +187,16 @@ template<typename... T_an>
 struct t_construct
 {
 	template<typename T_self>
-	static t_scoped f_default(t_object* a_class, T_an&&... a_an)
+	static t_scoped f_default(t_type* a_class, T_an&&... a_an)
 	{
 		auto p = new T_self(std::forward<T_an>(a_an)...);
-		t_scoped object = t_object::f_allocate(&f_as<t_type&>(a_class));
+		t_scoped object = t_object::f_allocate(a_class);
 		object.f_pointer__(p);
 		return object;
 	}
 
 	template<typename T_self>
-	using t_bind = t_call_construct<t_scoped (*)(t_object*, T_an&&...), f_default<T_self>>;
+	using t_bind = t_call_construct<t_scoped (*)(t_type*, T_an&&...), f_default<T_self>>;
 };
 
 template<typename T_function, T_function A_function>
@@ -478,7 +478,7 @@ struct t_overload<>
 		{
 			t_throwable::f_throw(a_stack, a_n, L"no method matching signature is found.");
 		}
-		static t_scoped f_do(t_object* a_class, t_stacked* a_stack, size_t a_n)
+		static t_scoped f_do(t_type* a_class, t_stacked* a_stack, size_t a_n)
 		{
 			t_throwable::f_throw(L"no method matching signature is found.");
 		}
@@ -500,7 +500,7 @@ struct t_overload<T, T_next...>
 			else
 				t_overload<T_next...>::template t_bind<T_self>::f_call(a_module, a_stack, a_n);
 		}
-		static t_scoped f_do(t_object* a_class, t_stacked* a_stack, size_t a_n)
+		static t_scoped f_do(t_type* a_class, t_stacked* a_stack, size_t a_n)
 		{
 			return t_bound::f__match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : t_overload<T_next...>::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
 		}
@@ -650,7 +650,7 @@ struct t_enum_of : t_type_of<intptr_t>
 
 	static t_scoped f_transfer(const T_extension* a_extension, T a_value)
 	{
-		return f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>()->v_this, a_value);
+		return f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
 	}
 
 	using t_type_of<intptr_t>::t_type_of;

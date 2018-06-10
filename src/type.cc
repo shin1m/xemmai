@@ -42,13 +42,15 @@ t_type::t_type_of() : v_this(t_object::f_allocate_on_boot())
 	v_this.f_pointer__(this);
 }
 
-t_type::t_type_of(t_type* a_super) : v_this(t_object::f_allocate_on_boot()), v_super(a_super->v_this)
+t_type::t_type_of(t_type* a_super) : v_this(t_object::f_allocate_on_boot())
 {
+	v_super.f_construct(a_super->v_this);
 	v_this.f_pointer__(this);
 }
 
-t_type::t_type_of(t_scoped&& a_module, t_type* a_super) : v_this(t_object::f_allocate(f_engine()->v_type_class)), v_module(std::move(a_module)), v_super(a_super->v_this)
+t_type::t_type_of(t_scoped&& a_module, t_type* a_super) : v_this(t_object::f_allocate(f_engine()->v_type_class)), v_module(std::move(a_module))
 {
+	v_super.f_construct(a_super->v_this);
 	v_this.f_pointer__(this);
 }
 
@@ -62,11 +64,10 @@ t_type* t_type::f_derive()
 bool t_type::f_derives(t_type* a_type)
 {
 	auto p = this;
-	while (true) {
+	do {
 		if (p == a_type) return true;
-		if (!p->v_super) break;
-		p = &f_as<t_type&>(p->v_super);
-	}
+		p = p->v_super;
+	} while (p);
 	return false;
 }
 

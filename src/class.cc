@@ -9,7 +9,7 @@ t_class::t_type_of(t_type* a_super) : t_type(a_super)
 {
 	t_value::f_increments()->f_push(v_this);
 	t_value::f_increments()->f_push(v_this);
-	static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super)->v_type = this;
+	static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super->v_this)->v_type = this;
 	v_fixed = v_shared = true;
 }
 
@@ -74,7 +74,7 @@ t_scoped t_class::f_get(const t_value& a_this, t_object* a_key)
 				break;
 			}
 		}
-		type = f_as<t_type&>(type).v_super;
+		type = static_cast<t_slot&>(f_as<t_type&>(type).v_super);
 		if (!type) t_throwable::f_throw(f_as<t_symbol&>(a_key).f_string());
 	}
 	cache.v_object = a_this;

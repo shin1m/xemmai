@@ -76,25 +76,25 @@ public:
 template<>
 inline void t_io::f_type__<io::t_file>(t_type* a_type)
 {
-	v_type_file = a_type->v_this;
+	v_type_file.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_io::f_type__<io::t_reader>(t_type* a_type)
 {
-	v_type_reader = a_type->v_this;
+	v_type_reader.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_io::f_type__<io::t_writer>(t_type* a_type)
 {
-	v_type_writer = a_type->v_this;
+	v_type_writer.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_io::f_type__<portable::t_path>(t_type* a_type)
 {
-	v_type_path = a_type->v_this;
+	v_type_path.f_construct(a_type->v_this);
 }
 
 template<>

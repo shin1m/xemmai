@@ -292,7 +292,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 
 void t_type_of<t_dictionary>::f_define()
 {
-	f_global()->v_type_dictionary__table = (new t_type_of<t_dictionary::t_table>(f_global()->f_module(), f_global()->f_type<t_object>()))->v_this;
+	f_global()->v_type_dictionary__table.f_construct((new t_type_of<t_dictionary::t_table>(f_global()->f_module(), f_global()->f_type<t_object>()))->v_this);
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())

@@ -59,7 +59,7 @@ void t_type_of<std::wstring>::f_finalize(t_object* a_this)
 
 t_scoped t_type_of<std::wstring>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<const std::wstring&>::t_bind<std::wstring>::f_do(v_this, a_stack, a_n);
+	return t_construct<const std::wstring&>::t_bind<std::wstring>::f_do(this, a_stack, a_n);
 }
 
 void t_type_of<std::wstring>::f_hash(t_object* a_this, t_stacked* a_stack)

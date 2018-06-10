@@ -53,6 +53,28 @@ struct t_fundamental<t_scoped>
 	typedef t_object t_type;
 };
 
+template<typename T>
+class t_slot_of
+{
+	T* v_p = nullptr;
+	t_slot v_slot;
+
+public:
+	void f_construct(t_object* a_value);
+	operator T*() const
+	{
+		return v_p;
+	}
+	T* operator->() const
+	{
+		return v_p;
+	}
+	operator t_slot&()
+	{
+		return v_slot;
+	}
+};
+
 template<>
 struct t_type_of<t_object>
 {
@@ -118,7 +140,7 @@ struct t_type_of<t_object>
 
 	t_slot v_this;
 	t_slot v_module;
-	t_slot v_super;
+	t_slot_of<t_type> v_super;
 	bool v_builtin = false;
 	bool v_primitive = false;
 	bool v_revive = false;
@@ -247,6 +269,13 @@ template<typename T>
 inline void f_check(const t_value& a_object, const wchar_t* a_name)
 {
 	if (!f_is<T>(a_object)) f_throw_type_error<T>(a_name);
+}
+
+template<typename T>
+inline void t_slot_of<T>::f_construct(t_object* a_value)
+{
+	v_p = &f_as<T&>(a_value);
+	v_slot.f_construct(a_value);
 }
 
 }

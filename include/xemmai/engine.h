@@ -13,33 +13,6 @@ class t_symbol;
 class t_global;
 struct t_safe_region;
 
-template<typename T>
-class t_slot_of
-{
-	T* v_p;
-	t_slot v_slot;
-
-public:
-	t_slot_of& operator=(const t_value& a_slot)
-	{
-		v_p = &f_as<T&>(a_slot);
-		v_slot = a_slot;
-		return *this;
-	}
-	operator T*() const
-	{
-		return v_p;
-	}
-	T* operator->() const
-	{
-		return v_p;
-	}
-	operator t_slot&()
-	{
-		return v_slot;
-	}
-};
-
 struct t_debugger
 {
 	virtual void f_stopped(t_object* a_thread) = 0;

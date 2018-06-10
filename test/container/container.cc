@@ -65,14 +65,14 @@ t_scoped t_type_of<t_queue>::f_construct(t_stacked* a_stack, size_t a_n)
 	return t_overload<
 		t_construct<>,
 		t_construct<const std::wstring&>
-	>::t_bind<t_queue>::f_do(v_this, a_stack, a_n);
+	>::t_bind<t_queue>::f_do(this, a_stack, a_n);
 }
 
 }
 
 t_container::t_container(t_object* a_module) : t_extension(a_module)
 {
-	v_type_pair = t_type_of<t_pair>::f_define(this)->v_this;
+	v_type_pair.f_construct(t_type_of<t_pair>::f_define(this)->v_this);
 	t_type_of<t_queue>::f_define(this);
 }
 

@@ -993,7 +993,7 @@ size_t t_code::f_loop(t_context* a_context)
 				++pc;
 				t_stacked& top = stack[0];
 				if (top.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"not class.");
-				top = f_as<t_type&>(top).v_super;
+				top = static_cast<t_slot&>(f_as<t_type&>(top).v_super);
 				if (!top) t_throwable::f_throw(L"no more super class.");
 			}
 			XEMMAI__CODE__BREAK

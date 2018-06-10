@@ -37,7 +37,7 @@ struct t_enum : t_extension
 template<>
 inline void t_enum::f_type__<t_number>(t_type* a_type)
 {
-	v_type_number = a_type->v_this;
+	v_type_number.f_construct(a_type->v_this);
 }
 
 template<>

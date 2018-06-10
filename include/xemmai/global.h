@@ -16,12 +16,6 @@ class t_tuple;
 class t_array;
 class t_bytes;
 
-#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_global* f_global();
-#else
-XEMMAI__PORTABLE__EXPORT t_global* f_global();
-#endif
-
 class t_global : public t_extension
 {
 	friend struct t_thread;
@@ -251,91 +245,91 @@ public:
 template<>
 inline void t_global::f_type__<t_scope>(t_type* a_type)
 {
-	v_type_scope = a_type->v_this;
+	v_type_scope.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_code>(t_type* a_type)
 {
-	v_type_code = a_type->v_this;
+	v_type_code.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_lambda>(t_type* a_type)
 {
-	v_type_lambda = a_type->v_this;
+	v_type_lambda.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_advanced_lambda>(t_type* a_type)
 {
-	v_type_advanced_lambda = a_type->v_this;
+	v_type_advanced_lambda.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_throwable>(t_type* a_type)
 {
-	v_type_throwable = a_type->v_this;
+	v_type_throwable.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<std::nullptr_t>(t_type* a_type)
 {
-	v_type_null = a_type->v_this;
+	v_type_null.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<bool>(t_type* a_type)
 {
-	v_type_boolean = a_type->v_this;
+	v_type_boolean.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<intptr_t>(t_type* a_type)
 {
-	v_type_integer = a_type->v_this;
+	v_type_integer.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<double>(t_type* a_type)
 {
-	v_type_float = a_type->v_this;
+	v_type_float.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<std::wstring>(t_type* a_type)
 {
-	v_type_string = a_type->v_this;
+	v_type_string.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_array>(t_type* a_type)
 {
-	v_type_array = a_type->v_this;
+	v_type_array.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_dictionary>(t_type* a_type)
 {
-	v_type_dictionary = a_type->v_this;
+	v_type_dictionary.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_bytes>(t_type* a_type)
 {
-	v_type_bytes = a_type->v_this;
+	v_type_bytes.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_lexer::t_error>(t_type* a_type)
 {
-	v_type_lexer__error = a_type->v_this;
+	v_type_lexer__error.f_construct(a_type->v_this);
 }
 
 template<>
 inline void t_global::f_type__<t_parser::t_error>(t_type* a_type)
 {
-	v_type_parser__error = a_type->v_this;
+	v_type_parser__error.f_construct(a_type->v_this);
 }
 
 template<>
