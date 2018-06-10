@@ -9,6 +9,7 @@
 namespace xemmai
 {
 
+class t_extension;
 class t_global;
 
 template<typename T>
@@ -153,7 +154,7 @@ struct t_type_of<t_object>
 	{
 		return t_scoped(std::forward<T>(a_value));
 	}
-	static void f_initialize(t_object* a_module, t_stacked* a_stack, size_t a_n);
+	static void f_initialize(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT static std::wstring f_string(const t_value& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];

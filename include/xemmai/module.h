@@ -4,7 +4,6 @@
 #include "portable/library.h"
 #include "symbol.h"
 #include "code.h"
-#include "native.h"
 
 namespace xemmai
 {
@@ -88,6 +87,8 @@ class XEMMAI__PORTABLE__EXPORT t_extension
 	t_object* v_module;
 
 public:
+	typedef void (*t_function)(t_extension*, t_stacked*, size_t);
+
 	t_extension(t_object* a_module) : v_module(a_module)
 	{
 	}
@@ -97,10 +98,6 @@ public:
 		return v_module;
 	}
 	virtual void f_scan(t_scan a_scan) = 0;
-	t_scoped f_function(t_native::t_function a_function)
-	{
-		return t_native::f_instantiate(v_module, a_function);
-	}
 };
 
 struct t_library : t_module

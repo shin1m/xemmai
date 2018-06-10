@@ -1,7 +1,7 @@
 #ifndef XEMMAI__NATIVE_H
 #define XEMMAI__NATIVE_H
 
-#include "object.h"
+#include "module.h"
 
 namespace xemmai
 {
@@ -10,20 +10,17 @@ class t_native
 {
 	friend struct t_type_of<t_native>;
 
-public:
-	typedef void (*t_function)(t_object*, t_stacked*, size_t);
-
-private:
+	t_extension::t_function v_function;
+	t_extension* v_extension;
 	t_slot v_module;
-	t_function v_function;
 
-	t_native(t_scoped&& a_module, t_function a_function) : v_module(std::move(a_module)), v_function(a_function)
+	t_native(t_extension::t_function a_function, t_extension* a_extension) : v_function(a_function), v_extension(a_extension), v_module(a_extension->f_module())
 	{
 	}
 	~t_native() = default;
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(t_scoped&& a_module, t_function a_function);
+	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(t_extension::t_function a_function, t_extension* a_extension);
 };
 
 template<>

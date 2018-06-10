@@ -206,7 +206,7 @@ t_scoped t_array::f_remove(intptr_t a_index)
 	return q;
 }
 
-void t_type_of<t_array>::f__construct(t_object* a_module, t_stacked* a_stack, size_t a_n)
+void t_type_of<t_array>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));

@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "class.h"
 #include "method.h"
+#include "native.h"
 #include "null.h"
 #include "boolean.h"
 #include "string.h"

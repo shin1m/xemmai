@@ -6,7 +6,7 @@
 namespace xemmai
 {
 
-void t_type::f_initialize(t_object* a_module, t_stacked* a_stack, size_t a_n)
+void t_type::f_initialize(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	a_n += 2;
 	for (size_t i = 1; i < a_n; ++i) a_stack[i].f_destruct();

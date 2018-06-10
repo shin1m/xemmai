@@ -5,10 +5,10 @@
 namespace xemmai
 {
 
-t_scoped t_native::f_instantiate(t_scoped&& a_module, t_function a_function)
+t_scoped t_native::f_instantiate(t_extension::t_function a_function, t_extension* a_extension)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_native>());
-	object.f_pointer__(new t_native(std::move(a_module), a_function));
+	object.f_pointer__(new t_native(a_function, a_extension));
 	return object;
 }
 
@@ -35,7 +35,7 @@ void t_type_of<t_native>::f_instantiate(t_stacked* a_stack, size_t a_n)
 size_t t_type_of<t_native>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
 	auto& p = f_as<t_native&>(a_this);
-	p.v_function(p.v_module, a_stack, a_n);
+	p.v_function(p.v_extension, a_stack, a_n);
 	return -1;
 }
 

@@ -141,7 +141,7 @@ struct t_type_of<t_dictionary::t_table> : t_type
 template<>
 struct t_type_of<t_dictionary> : t_type
 {
-	static void f__construct(t_object* a_module, t_stacked* a_stack, size_t a_n);
+	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
 	static intptr_t f_hash(const t_value& a_self);
 	static bool f_equals(const t_value& a_self, const t_value& a_other);
