@@ -12,8 +12,6 @@ namespace xemmai
 
 class t_io : public t_extension
 {
-	template<typename T, typename T_super> friend class t_define;
-
 	t_slot v_symbol_close;
 	t_slot v_symbol_read;
 	t_slot v_symbol_write;
@@ -24,9 +22,6 @@ class t_io : public t_extension
 	t_slot_of<t_type> v_type_reader;
 	t_slot_of<t_type> v_type_writer;
 	t_slot_of<t_type> v_type_path;
-
-	template<typename T>
-	void f_type__(t_type* a_type);
 
 public:
 	t_io(t_object* a_module);
@@ -61,9 +56,14 @@ public:
 		return v_symbol_write_line;
 	}
 	template<typename T>
+	t_slot_of<t_type>& f_type_slot()
+	{
+		return f_global()->f_type_slot<T>();
+	}
+	template<typename T>
 	t_type* f_type() const
 	{
-		return f_global()->f_type<T>();
+		return const_cast<t_io*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
 	t_scoped f_as(T&& a_value) const
@@ -74,55 +74,31 @@ public:
 };
 
 template<>
-inline void t_io::f_type__<io::t_file>(t_type* a_type)
-{
-	v_type_file.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_io::f_type__<io::t_reader>(t_type* a_type)
-{
-	v_type_reader.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_io::f_type__<io::t_writer>(t_type* a_type)
-{
-	v_type_writer.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_io::f_type__<portable::t_path>(t_type* a_type)
-{
-	v_type_path.f_construct(a_type->v_this);
-}
-
-template<>
 inline const t_io* t_io::f_extension<t_io>() const
 {
 	return this;
 }
 
 template<>
-inline t_type* t_io::f_type<io::t_file>() const
+inline t_slot_of<t_type>& t_io::f_type_slot<io::t_file>()
 {
 	return v_type_file;
 }
 
 template<>
-inline t_type* t_io::f_type<io::t_reader>() const
+inline t_slot_of<t_type>& t_io::f_type_slot<io::t_reader>()
 {
 	return v_type_reader;
 }
 
 template<>
-inline t_type* t_io::f_type<io::t_writer>() const
+inline t_slot_of<t_type>& t_io::f_type_slot<io::t_writer>()
 {
 	return v_type_writer;
 }
 
 template<>
-inline t_type* t_io::f_type<portable::t_path>() const
+inline t_slot_of<t_type>& t_io::f_type_slot<portable::t_path>()
 {
 	return v_type_path;
 }

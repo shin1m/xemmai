@@ -45,21 +45,21 @@ struct t_type_of<std::condition_variable> : t_type
 
 class t_threading : public t_extension
 {
-	template<typename T, typename T_super> friend class t_define;
-
 	t_slot_of<t_type> v_type_mutex;
 	t_slot_of<t_type> v_type_condition;
-
-	template<typename T>
-	void f_type__(t_type* a_type);
 
 public:
 	t_threading(t_object* a_module);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
+	t_slot_of<t_type>& f_type_slot()
+	{
+		return f_global()->f_type_slot<T>();
+	}
+	template<typename T>
 	t_type* f_type() const
 	{
-		return f_global()->f_type<T>();
+		return const_cast<t_threading*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
 	t_scoped f_as(T&& a_value) const
@@ -69,25 +69,13 @@ public:
 };
 
 template<>
-inline void t_threading::f_type__<std::mutex>(t_type* a_type)
-{
-	v_type_mutex.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_threading::f_type__<std::condition_variable>(t_type* a_type)
-{
-	v_type_condition.f_construct(a_type->v_this);
-}
-
-template<>
-inline t_type* t_threading::f_type<std::mutex>() const
+inline t_slot_of<t_type>& t_threading::f_type_slot<std::mutex>()
 {
 	return v_type_mutex;
 }
 
 template<>
-inline t_type* t_threading::f_type<std::condition_variable>() const
+inline t_slot_of<t_type>& t_threading::f_type_slot<std::condition_variable>()
 {
 	return v_type_condition;
 }

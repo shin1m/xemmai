@@ -43,9 +43,6 @@ struct t_callback_extension : t_extension
 	t_slot_of<t_type> v_type_client;
 	t_slot_of<t_type> v_type_server;
 
-	template<typename T>
-	void f_type__(t_type* a_type);
-
 	t_callback_extension(t_object* a_module) : t_extension(a_module)
 	{
 		v_symbol_on_message = t_symbol::f_instantiate(L"on_message");
@@ -54,9 +51,14 @@ struct t_callback_extension : t_extension
 	}
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
+	t_slot_of<t_type>& f_type_slot()
+	{
+		return f_global()->f_type_slot<T>();
+	}
+	template<typename T>
 	t_type* f_type() const
 	{
-		return f_global()->f_type<T>();
+		return const_cast<t_callback_extension*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
 	t_scoped f_as(T&& a_value) const
@@ -67,25 +69,13 @@ struct t_callback_extension : t_extension
 };
 
 template<>
-inline void t_callback_extension::f_type__<t_client>(t_type* a_type)
-{
-	v_type_client.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_callback_extension::f_type__<t_server>(t_type* a_type)
-{
-	v_type_server.f_construct(a_type->v_this);
-}
-
-template<>
-inline t_type* t_callback_extension::f_type<t_client>() const
+inline t_slot_of<t_type>& t_callback_extension::f_type_slot<t_client>()
 {
 	return v_type_client;
 }
 
 template<>
-inline t_type* t_callback_extension::f_type<t_server>() const
+inline t_slot_of<t_type>& t_callback_extension::f_type_slot<t_server>()
 {
 	return v_type_server;
 }

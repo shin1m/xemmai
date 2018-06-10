@@ -20,7 +20,6 @@ class t_global : public t_extension
 {
 	friend struct t_thread;
 	friend struct t_type_of<t_dictionary>;
-	template<typename T, typename T_super> friend class t_define;
 #ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
 	friend t_global* f_global();
 #else
@@ -90,14 +89,16 @@ class t_global : public t_extension
 	t_slot v_symbol_size;
 	t_slot v_symbol_push;
 
-	template<typename T>
-	void f_type__(t_type* a_type);
-
 public:
 	t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_class, t_type* a_type_structure, t_type* a_type_module, t_type* a_type_fiber, t_type* a_type_thread);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
-	t_type* f_type() const;
+	t_slot_of<t_type>& f_type_slot();
+	template<typename T>
+	t_type* f_type() const
+	{
+		return const_cast<t_global*>(this)->f_type_slot<T>();
+	}
 	t_object* f_symbol_construct() const
 	{
 		return v_symbol_construct;
@@ -243,247 +244,157 @@ public:
 };
 
 template<>
-inline void t_global::f_type__<t_scope>(t_type* a_type)
-{
-	v_type_scope.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_code>(t_type* a_type)
-{
-	v_type_code.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_lambda>(t_type* a_type)
-{
-	v_type_lambda.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_advanced_lambda>(t_type* a_type)
-{
-	v_type_advanced_lambda.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_throwable>(t_type* a_type)
-{
-	v_type_throwable.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<std::nullptr_t>(t_type* a_type)
-{
-	v_type_null.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<bool>(t_type* a_type)
-{
-	v_type_boolean.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<intptr_t>(t_type* a_type)
-{
-	v_type_integer.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<double>(t_type* a_type)
-{
-	v_type_float.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<std::wstring>(t_type* a_type)
-{
-	v_type_string.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_array>(t_type* a_type)
-{
-	v_type_array.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_dictionary>(t_type* a_type)
-{
-	v_type_dictionary.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_bytes>(t_type* a_type)
-{
-	v_type_bytes.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_lexer::t_error>(t_type* a_type)
-{
-	v_type_lexer__error.f_construct(a_type->v_this);
-}
-
-template<>
-inline void t_global::f_type__<t_parser::t_error>(t_type* a_type)
-{
-	v_type_parser__error.f_construct(a_type->v_this);
-}
-
-template<>
-inline t_type* t_global::f_type<t_object>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_object>()
 {
 	return v_type_object;
 }
 
 template<>
-inline t_type* t_global::f_type<t_class>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_class>()
 {
 	return v_type_class;
 }
 
 template<>
-inline t_type* t_global::f_type<t_structure>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_structure>()
 {
 	return v_type_structure;
 }
 
 template<>
-inline t_type* t_global::f_type<t_module>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_module>()
 {
 	return v_type_module;
 }
 
 template<>
-inline t_type* t_global::f_type<t_fiber>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_fiber>()
 {
 	return v_type_fiber;
 }
 
 template<>
-inline t_type* t_global::f_type<t_thread>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_thread>()
 {
 	return v_type_thread;
 }
 
 template<>
-inline t_type* t_global::f_type<t_tuple>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_tuple>()
 {
 	return v_type_tuple;
 }
 
 template<>
-inline t_type* t_global::f_type<t_symbol>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_symbol>()
 {
 	return v_type_symbol;
 }
 
 template<>
-inline t_type* t_global::f_type<t_scope>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_scope>()
 {
 	return v_type_scope;
 }
 
 template<>
-inline t_type* t_global::f_type<t_method>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_method>()
 {
 	return v_type_method;
 }
 
 template<>
-inline t_type* t_global::f_type<t_code>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_code>()
 {
 	return v_type_code;
 }
 
 template<>
-inline t_type* t_global::f_type<t_lambda>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_lambda>()
 {
 	return v_type_lambda;
 }
 
 template<>
-inline t_type* t_global::f_type<t_advanced_lambda>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_advanced_lambda>()
 {
 	return v_type_advanced_lambda;
 }
 
 template<>
-inline t_type* t_global::f_type<t_native>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_native>()
 {
 	return v_type_native;
 }
 
 template<>
-inline t_type* t_global::f_type<t_throwable>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_throwable>()
 {
 	return v_type_throwable;
 }
 
 template<>
-inline t_type* t_global::f_type<std::nullptr_t>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<std::nullptr_t>()
 {
 	return v_type_null;
 }
 
 template<>
-inline t_type* t_global::f_type<bool>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<bool>()
 {
 	return v_type_boolean;
 }
 
 template<>
-inline t_type* t_global::f_type<intptr_t>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<intptr_t>()
 {
 	return v_type_integer;
 }
 
 template<>
-inline t_type* t_global::f_type<double>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<double>()
 {
 	return v_type_float;
 }
 
 template<>
-inline t_type* t_global::f_type<std::wstring>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<std::wstring>()
 {
 	return v_type_string;
 }
 
 template<>
-inline t_type* t_global::f_type<t_array>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_array>()
 {
 	return v_type_array;
 }
 
 template<>
-inline t_type* t_global::f_type<t_dictionary::t_table>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_dictionary::t_table>()
 {
 	return v_type_dictionary__table;
 }
 
 template<>
-inline t_type* t_global::f_type<t_dictionary>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_dictionary>()
 {
 	return v_type_dictionary;
 }
 
 template<>
-inline t_type* t_global::f_type<t_bytes>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_bytes>()
 {
 	return v_type_bytes;
 }
 
 template<>
-inline t_type* t_global::f_type<t_lexer::t_error>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_lexer::t_error>()
 {
 	return v_type_lexer__error;
 }
 
 template<>
-inline t_type* t_global::f_type<t_parser::t_error>() const
+inline t_slot_of<t_type>& t_global::f_type_slot<t_parser::t_error>()
 {
 	return v_type_parser__error;
 }
