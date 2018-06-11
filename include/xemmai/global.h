@@ -455,7 +455,7 @@ inline bool t_value::f_is(t_type* a_class) const
 
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_value::f_get(t_object* a_key) const
 {
-	return f_type()->f_get(*this, a_key);
+	return f_tag() < e_tag__OBJECT ? f_get_primitive(a_key) : v_p->f_get(a_key);
 }
 
 inline void t_value::f_put(t_object* a_key, t_scoped&& a_value) const
@@ -466,7 +466,7 @@ inline void t_value::f_put(t_object* a_key, t_scoped&& a_value) const
 
 inline bool t_value::f_has(t_object* a_key) const
 {
-	return f_type()->f_has(*this, a_key);
+	return f_tag() >= e_tag__OBJECT && v_p->f_has(a_key);
 }
 
 inline t_scoped t_value::f_remove(t_object* a_key) const
@@ -494,22 +494,25 @@ inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
 
 XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const
 {
-	if (f_tag() >= e_tag__OBJECT && v_p->f_owned()) {
-		intptr_t index = v_p->f_field_index(a_key);
-		if (index < 0) {
-			auto& type = v_p->f_type()->v_this;
-			t_scoped value = static_cast<t_object*>(type)->f_type()->f_get(type, a_key);
-			if (value.f_type() == f_global()->f_type<t_method>()) {
-				a_stack[1] = *v_p;
-				f_as<t_method&>(value).f_function().f_call(a_stack, a_n);
+	if (f_tag() >= e_tag__OBJECT) {
+		if (v_p->f_owned()) {
+			intptr_t index = v_p->f_field_index(a_key);
+			if (index < 0) {
+				t_scoped value = static_cast<t_object*>(v_p->f_type()->v_this)->f_get(a_key);
+				if (value.f_type() == f_global()->f_type<t_method>()) {
+					a_stack[1] = *v_p;
+					f_as<t_method&>(value).f_function().f_call(a_stack, a_n);
+				} else {
+					value.f_call(a_stack, a_n);
+				}
 			} else {
-				value.f_call(a_stack, a_n);
+				v_p->f_field_get(index).f_call(a_stack, a_n);
 			}
 		} else {
-			v_p->f_field_get(index).f_call(a_stack, a_n);
+			v_p->f_get(a_key).f_call(a_stack, a_n);
 		}
 	} else {
-		f_get(a_key).f_call(a_stack, a_n);
+		f_get_primitive(a_key).f_call(a_stack, a_n);
 	}
 }
 
@@ -517,8 +520,7 @@ inline void t_object::f_get_owned(t_object* a_key, t_stacked* a_stack)
 {
 	intptr_t index = f_field_index(a_key);
 	if (index < 0) {
-		auto& type = v_type->v_this;
-		t_scoped value = static_cast<t_object*>(type)->f_type()->f_get(type, a_key);
+		t_scoped value = static_cast<t_object*>(v_type->v_this)->f_get(a_key);
 		if (value.f_type() == f_global()->f_type<t_method>()) {
 			a_stack[0].f_construct_nonnull(f_as<t_method&>(value).f_function());
 			a_stack[1].f_construct_nonnull(this);
@@ -544,10 +546,10 @@ inline void t_object::f_get(t_object* a_key, t_stacked* a_stack)
 
 inline void t_value::f_get(t_object* a_key, t_stacked* a_stack) const
 {
-	if (f_tag() >= e_tag__OBJECT && v_p->f_owned()) {
-		v_p->f_get_owned(a_key, a_stack);
+	if (f_tag() >= e_tag__OBJECT) {
+		v_p->f_get(a_key, a_stack);
 	} else {
-		a_stack[0].f_construct(f_get(a_key));
+		a_stack[0].f_construct(f_get_primitive(a_key));
 		a_stack[1].f_construct();
 	}
 }

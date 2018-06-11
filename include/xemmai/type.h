@@ -187,9 +187,9 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_get(const t_value& a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_get(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
-	XEMMAI__PORTABLE__EXPORT virtual bool f_has(const t_value& a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT virtual bool f_has(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_stacked* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);

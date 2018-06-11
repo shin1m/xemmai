@@ -321,6 +321,7 @@ public:
 	void f_pointer__(void* a_value);
 	t_type_of<t_object>* f_type() const;
 	bool f_is(t_type* a_class) const;
+	t_scoped f_get_primitive(t_object* a_key) const;
 	t_scoped f_get(t_object* a_key) const;
 	void f_put(t_object* a_key, t_scoped&& a_value) const;
 	bool f_has(t_object* a_key) const;

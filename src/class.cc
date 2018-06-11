@@ -47,12 +47,12 @@ void t_class::f_instantiate(t_stacked* a_stack, size_t a_n)
 	a_stack[0].f_construct(type->v_this);
 }
 
-t_scoped t_class::f_get(const t_value& a_this, t_object* a_key)
+t_scoped t_class::f_get(t_object* a_this, t_object* a_key)
 {
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	auto& cache = t_thread::v_cache[i];
 	auto& symbol = f_as<t_symbol&>(a_key);
-	if (cache.v_object == a_this && static_cast<t_object*>(cache.v_key) == a_key && cache.v_key_revision == symbol.v_revision) {
+	if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key && cache.v_key_revision == symbol.v_revision) {
 		++t_thread::v_cache_hit;
 		return cache.v_value;
 	}
@@ -68,7 +68,7 @@ t_scoped t_class::f_get(const t_value& a_this, t_object* a_key)
 				const t_slot& slot = type->f_field_get(index);
 				t_object* p = slot;
 				if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && (f_is<t_lambda>(p) || p->f_type() == f_global()->f_type<t_native>()))
-					value = t_method::f_instantiate(p, t_scoped(a_this));
+					value = t_method::f_instantiate(p, a_this);
 				else
 					value = slot;
 				break;

@@ -97,22 +97,20 @@ void t_type::f_instantiate(t_stacked* a_stack, size_t a_n)
 	a_stack[0] = std::move(object);
 }
 
-t_scoped t_type::f_get(const t_value& a_this, t_object* a_key)
+t_scoped t_type::f_get(t_object* a_this, t_object* a_key)
 {
-	t_object* p = a_this;
-	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
-		if (p->f_owned()) {
-			intptr_t index = p->f_field_index(a_key);
-			if (index >= 0) return p->f_field_get(index);
-			t_scoped value = static_cast<t_object*>(v_this)->f_type()->f_get(v_this, a_key);
-			return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(a_this)) : value;
-		}
-		if (!p->f_shared()) t_throwable::f_throw(L"owned by another thread.");
+	assert(reinterpret_cast<size_t>(a_this) >= t_value::e_tag__OBJECT);
+	if (a_this->f_owned()) {
+		intptr_t index = a_this->f_field_index(a_key);
+		if (index >= 0) return a_this->f_field_get(index);
+		t_scoped value = static_cast<t_object*>(v_this)->f_get(a_key);
+		return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(a_this)) : value;
 	}
+	if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	auto& cache = t_thread::v_cache[i];
 	auto& symbol = f_as<t_symbol&>(a_key);
-	if (cache.v_object == a_this && static_cast<t_object*>(cache.v_key) == a_key && cache.v_key_revision == symbol.v_revision) {
+	if (static_cast<t_object*>(cache.v_object) == a_this && static_cast<t_object*>(cache.v_key) == a_key && cache.v_key_revision == symbol.v_revision) {
 		++t_thread::v_cache_hit;
 		return cache.v_value;
 	}
@@ -120,14 +118,14 @@ t_scoped t_type::f_get(const t_value& a_this, t_object* a_key)
 	cache.v_key_revision = symbol.v_revision;
 	intptr_t index = -1;
 	t_scoped value;
-	if (a_this.f_tag() >= t_value::e_tag__OBJECT) {
+	{
 		t_with_lock_for_read lock(a_this);
-		if (!p->f_shared()) t_throwable::f_throw(L"owned by another thread.");
-		index = p->f_field_index(a_key);
-		if (index >= 0) value = p->f_field_get(index);
+		if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
+		index = a_this->f_field_index(a_key);
+		if (index >= 0) value = a_this->f_field_get(index);
 	}
 	if (index < 0) {
-		value = static_cast<t_object*>(v_this)->f_type()->f_get(v_this, a_key);
+		value = static_cast<t_object*>(v_this)->f_get(a_key);
 		if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(t_scoped(a_this));
 	}
 	cache.v_object = a_this;
@@ -154,7 +152,7 @@ void t_type::f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
 	}
 }
 
-bool t_type::f_has(const t_value& a_this, t_object* a_key)
+bool t_type::f_has(t_object* a_this, t_object* a_key)
 {
 	try {
 		f_get(a_this, a_key);

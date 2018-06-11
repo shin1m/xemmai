@@ -8,6 +8,7 @@ namespace xemmai
 
 class t_symbol
 {
+	friend class t_value;
 	friend class t_object;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_type>;
