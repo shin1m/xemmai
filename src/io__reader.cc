@@ -17,7 +17,7 @@ size_t t_reader::f_read(t_io* a_extension)
 	auto p = reinterpret_cast<char*>(&buffer[0]);
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;
-	t_scoped n = v_stream.f_get(a_extension->f_symbol_read())(v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
+	t_scoped n = v_stream.f_invoke(a_extension->f_symbol_read(), v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
 	f_check<size_t>(n, L"result of read");
 	v_n += f_as<size_t>(n);
 	return f_as<size_t>(n);
@@ -69,7 +69,7 @@ t_reader::t_reader(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a
 void t_reader::f_close(t_io* a_extension)
 {
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
-	v_stream.f_get(a_extension->f_symbol_close())();
+	v_stream.f_invoke(a_extension->f_symbol_close());
 	v_stream = nullptr;
 }
 

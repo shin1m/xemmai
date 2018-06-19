@@ -110,7 +110,7 @@ public:
 void t_client_wrapper::f_on_message(const std::wstring& a_message)
 {
 	auto extension = f_extension<t_callback_extension>(v_self->f_type()->v_module);
-	v_self->f_get(extension->v_symbol_on_message)(extension->f_as(a_message));
+	v_self->f_invoke(extension->v_symbol_on_message, extension->f_as(a_message));
 }
 
 namespace xemmai

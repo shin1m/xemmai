@@ -9,7 +9,7 @@ namespace xemmai
 std::wstring t_type_of<std::wstring>::f_add(const std::wstring& a_self, const t_value& a_value)
 {
 	if (f_is<std::wstring>(a_value)) return a_self + f_as<const std::wstring&>(a_value);
-	t_scoped x = a_value.f_get(f_global()->f_symbol_string())();
+	t_scoped x = a_value.f_invoke(f_global()->f_symbol_string());
 	f_check<std::wstring>(x, L"argument0");
 	return a_self + f_as<const std::wstring&>(x);
 }

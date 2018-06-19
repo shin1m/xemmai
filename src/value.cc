@@ -1,6 +1,6 @@
 #include <xemmai/value.h>
 
-#include <xemmai/global.h>
+#include <xemmai/engine.h>
 
 namespace xemmai
 {
@@ -86,24 +86,5 @@ t_stack* f_stack()
 	return t_stack::v_instance;
 }
 #endif
-
-t_scoped t_value::f_get_primitive(t_object* a_key) const
-{
-	assert(f_tag() < t_value::e_tag__OBJECT);
-	size_t i = t_thread::t_cache::f_index(*this, a_key);
-	auto& cache = t_thread::v_cache[i];
-	auto& symbol = f_as<t_symbol&>(a_key);
-	if (cache.v_object == *this && static_cast<t_object*>(cache.v_key) == a_key && cache.v_key_revision == symbol.v_revision) {
-		++t_thread::v_cache_hit;
-		return cache.v_value;
-	}
-	++t_thread::v_cache_missed;
-	cache.v_key_revision = symbol.v_revision;
-	t_scoped value = static_cast<t_object*>(f_type()->v_this)->f_get(a_key);
-	if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(*this);
-	cache.v_object = *this;
-	cache.v_key = a_key;
-	return cache.v_value = std::move(value);
-}
 
 }

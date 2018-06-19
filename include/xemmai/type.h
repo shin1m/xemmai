@@ -147,7 +147,6 @@ struct t_type_of<t_object>
 	bool v_revive = false;
 	bool v_fixed = false;
 	bool v_shared = false;
-	bool v_immutable = false;
 
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
@@ -187,11 +186,14 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
+	t_scoped f_get_nonowned(t_object* a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT virtual void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_get(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
 	XEMMAI__PORTABLE__EXPORT virtual bool f_has(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
 	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_stacked* a_stack);
+	XEMMAI__PORTABLE__EXPORT virtual void f_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual size_t f_set_at(t_object* a_this, t_stacked* a_stack);
@@ -278,6 +280,17 @@ inline void t_slot_of<T>::f_construct(t_object* a_value)
 	v_p = &f_as<T&>(a_value);
 	v_slot.f_construct(a_value);
 }
+
+struct t_type_immutable : t_type
+{
+	using t_type::t_type;
+	virtual void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
+	virtual t_scoped f_get(t_object* a_this, t_object* a_key);
+	virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
+	virtual bool f_has(t_object* a_this, t_object* a_key);
+	virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
+	virtual void f_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
+};
 
 }
 

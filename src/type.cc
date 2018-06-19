@@ -86,26 +86,16 @@ t_scoped t_type::f_construct(t_stacked* a_stack, size_t a_n)
 
 void t_type::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	t_scoped object;
-	try {
-		object = f_construct(a_stack, a_n);
-	} catch (...) {
-		t_destruct_n(a_stack, a_n);
-		throw;
-	}
-	object.f_call(f_global()->f_symbol_initialize(), a_stack, a_n);
-	a_stack[0] = std::move(object);
+	t_scoped value = f_do_or_destruct([&]
+	{
+		return f_construct(a_stack, a_n);
+	}, a_stack, a_n);
+	value.f_call(f_global()->f_symbol_initialize(), a_stack, a_n);
+	a_stack[0] = std::move(value);
 }
 
-t_scoped t_type::f_get(t_object* a_this, t_object* a_key)
+t_scoped t_type::f_get_nonowned(t_object* a_this, t_object* a_key)
 {
-	assert(reinterpret_cast<size_t>(a_this) >= t_value::e_tag__OBJECT);
-	if (a_this->f_owned()) {
-		intptr_t index = a_this->f_field_index(a_key);
-		if (index >= 0) return a_this->f_field_get(index);
-		t_scoped value = static_cast<t_object*>(v_this)->f_get(a_key);
-		return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(a_this)) : value;
-	}
 	if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	auto& cache = t_thread::v_cache[i];
@@ -126,11 +116,27 @@ t_scoped t_type::f_get(t_object* a_this, t_object* a_key)
 	}
 	if (index < 0) {
 		value = static_cast<t_object*>(v_this)->f_get(a_key);
-		if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(t_scoped(a_this));
+		if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(a_this);
 	}
 	cache.v_object = a_this;
 	cache.v_key = a_key;
 	return cache.v_value = std::move(value);
+}
+
+void t_type::f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack)
+{
+	a_stack[0].f_construct(f_get_nonowned(a_this, a_key));
+	a_stack[1].f_construct();
+}
+
+t_scoped t_type::f_get(t_object* a_this, t_object* a_key)
+{
+	assert(reinterpret_cast<size_t>(a_this) >= t_value::e_tag__OBJECT);
+	if (!a_this->f_owned()) return f_get_nonowned(a_this, a_key);
+	intptr_t index = a_this->f_field_index(a_key);
+	if (index >= 0) return a_this->f_field_get(index);
+	t_scoped value = static_cast<t_object*>(v_this)->f_get(a_key);
+	return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(a_this) : value;
 }
 
 void t_type::f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
@@ -138,7 +144,6 @@ void t_type::f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
 	if (a_this->f_owned()) {
 		a_this->f_field_put(a_key, std::move(a_value));
 	} else {
-		if (v_immutable) t_throwable::f_throw(L"immutable.");
 		{
 			t_with_lock_for_write lock(a_this);
 			if (!a_this->f_shared()) t_throwable::f_throw(L"owned by another thread.");
@@ -172,7 +177,6 @@ t_scoped t_type::f_remove(t_object* a_this, t_object* a_key)
 		a_this->f_field_remove(index);
 		return value;
 	} else {
-		if (v_immutable) t_throwable::f_throw(L"immutable.");
 		t_scoped value;
 		{
 			t_with_lock_for_write lock(a_this);
@@ -196,6 +200,14 @@ void t_type::f_hash(t_object* a_this, t_stacked* a_stack)
 	a_this->f_get(f_global()->f_symbol_hash(), a_stack);
 	t_scoped x = std::move(a_stack[0]);
 	x.f_call(a_stack, 0);
+}
+
+void t_type::f_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n)
+{
+	f_do_or_destruct([&]
+	{
+		return f_get_nonowned(a_this, a_key);
+	}, a_stack, a_n).f_call(a_stack, a_n);
 }
 
 size_t t_type::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
@@ -250,6 +262,38 @@ XEMMAI__TYPE__METHOD(send, 1)
 void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name)
 {
 	t_throwable::f_throw(std::wstring(a_name) + L" must be " + portable::f_convert(a_type.name()) + L'.');
+}
+
+void t_type_immutable::f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack)
+{
+	f_get_of_type(*a_this, a_key, a_stack);
+}
+
+t_scoped t_type_immutable::f_get(t_object* a_this, t_object* a_key)
+{
+	assert(reinterpret_cast<size_t>(a_this) >= t_value::e_tag__OBJECT);
+	t_scoped value = static_cast<t_object*>(v_this)->f_get(a_key);
+	return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(a_this) : value;
+}
+
+void t_type_immutable::f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
+{
+	t_throwable::f_throw(L"immutable.");
+}
+
+bool t_type_immutable::f_has(t_object* a_this, t_object* a_key)
+{
+	return false;
+}
+
+t_scoped t_type_immutable::f_remove(t_object* a_this, t_object* a_key)
+{
+	t_throwable::f_throw(L"immutable.");
+}
+
+void t_type_immutable::f_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n)
+{
+	f_call_of_type(*a_this, a_key, a_stack, a_n);
 }
 
 }

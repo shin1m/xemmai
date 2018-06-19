@@ -10,7 +10,7 @@ namespace xemmai
 class t_io;
 
 template<>
-struct t_type_of<portable::t_path> : t_type
+struct t_type_of<portable::t_path> : t_type_immutable
 {
 	typedef t_io t_extension;
 
@@ -23,9 +23,9 @@ struct t_type_of<portable::t_path> : t_type
 	}
 	static void f_define(t_io* a_extension);
 
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type(std::move(a_module), a_super)
+	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type_immutable(std::move(a_module), a_super)
 	{
-		v_fixed = v_shared = v_immutable = true;
+		v_fixed = v_shared = true;
 	}
 	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);

@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<bool> : t_type
+struct t_type_of<bool> : t_type_immutable
 {
 	template<typename T0>
 	struct t_as
@@ -54,9 +54,9 @@ struct t_type_of<bool> : t_type
 	}
 	static void f_define();
 
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type(std::move(a_module), a_super)
+	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type_immutable(std::move(a_module), a_super)
 	{
-		v_shared = v_immutable = true;
+		v_shared = true;
 	}
 	virtual t_type* f_derive();
 	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);

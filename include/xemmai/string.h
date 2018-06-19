@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<std::wstring> : t_type
+struct t_type_of<std::wstring> : t_type_immutable
 {
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
@@ -61,9 +61,9 @@ struct t_type_of<std::wstring> : t_type
 	}
 	static void f_define();
 
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type(std::move(a_module), a_super)
+	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type_immutable(std::move(a_module), a_super)
 	{
-		v_fixed = v_shared = v_immutable = true;
+		v_fixed = v_shared = true;
 	}
 	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);

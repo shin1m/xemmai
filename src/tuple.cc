@@ -22,11 +22,11 @@ const t_value& t_tuple::f_get_at(size_t a_index) const
 std::wstring t_tuple::f_string() const
 {
 	if (v_size <= 0) return L"'()";
-	t_scoped x = (*this)[0].f_get(f_global()->f_symbol_string())();
+	t_scoped x = (*this)[0].f_invoke(f_global()->f_symbol_string());
 	f_check<const std::wstring&>(x, L"value");
 	std::wstring s = f_as<const std::wstring&>(x);
 	for (size_t i = 1; i < v_size; ++i) {
-		x = (*this)[i].f_get(f_global()->f_symbol_string())();
+		x = (*this)[i].f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(x, L"value");
 		s += L", " + f_as<const std::wstring&>(x);
 	}
@@ -106,7 +106,8 @@ bool t_tuple::f_equals(const t_value& a_other) const
 
 void t_tuple::f_each(const t_value& a_callable) const
 {
-	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
+//	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
+	for (size_t i = 0; i < v_size; ++i) a_callable.f_just_call((*this)[i]);
 }
 
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)

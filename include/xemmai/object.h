@@ -198,6 +198,11 @@ public:
 	void f_each(const t_value& a_callable) const;
 };
 
+template<typename T>
+void f_get_of_type(T& a_this, t_object* a_key, t_stacked* a_stack);
+template<typename T>
+void f_call_of_type(T& a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
+
 class t_object
 {
 	friend class t_value;
@@ -479,6 +484,23 @@ public:
 	{
 		return v_type->f_get(this, a_key);
 	}
+	void f_get_owned(t_object* a_key, t_stacked* a_stack)
+	{
+		intptr_t index = f_field_index(a_key);
+		if (index < 0) {
+			f_get_of_type(*this, a_key, a_stack);
+		} else {
+			a_stack[0].f_construct(f_field_get(index));
+			a_stack[1].f_construct();
+		}
+	}
+	void f_get(t_object* a_key, t_stacked* a_stack)
+	{
+		if (f_owned())
+			f_get_owned(a_key, a_stack);
+		else
+			v_type->f_get_nonowned(this, a_key, a_stack);
+	}
 	void f_put(t_object* a_key, t_scoped&& a_value)
 	{
 		v_type->f_put(this, a_key, std::move(a_value));
@@ -495,8 +517,35 @@ public:
 	{
 		return v_type->f_call(this, a_stack, a_n);
 	}
-	void f_get_owned(t_object* a_key, t_stacked* a_stack);
-	void f_get(t_object* a_key, t_stacked* a_stack);
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_object* a_key, t_stacked* a_stack, size_t a_n)
+	{
+		if (f_owned()) {
+			intptr_t index = f_field_index(a_key);
+			if (index < 0)
+				f_call_of_type(*this, a_key, a_stack, a_n);
+			else
+				f_field_get(index).f_call(a_stack, a_n);
+		} else {
+			v_type->f_call_nonowned(this, a_key, a_stack, a_n);
+		}
+	}
+	template<typename... T>
+	t_scoped f_invoke(t_object* a_key, T&&... a_arguments)
+	{
+		t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+		stack[1].f_construct();
+		f_call(a_key, stack, sizeof...(a_arguments));
+		return stack.f_return();
+	}
+	t_scoped f_call_preserved(t_object* a_key, t_stacked* a_stack, size_t a_n)
+	{
+		size_t n = a_n + 2;
+		t_scoped_stack stack(n);
+		stack[1].f_construct();
+		for (size_t i = 2; i < n; ++i) stack[i].f_construct(a_stack[i]);
+		f_call(a_key, stack, a_n);
+		return stack.f_return();
+	}
 };
 
 }

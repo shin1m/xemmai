@@ -196,9 +196,9 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 		x = i.f_entry()->f_key();
 		y = i.f_entry()->v_value;
 	}
-	x = x.f_get(f_global()->f_symbol_string())();
+	x = x.f_invoke(f_global()->f_symbol_string());
 	f_check<const std::wstring&>(x, L"value");
-	y = y.f_get(f_global()->f_symbol_string())();
+	y = y.f_invoke(f_global()->f_symbol_string());
 	f_check<const std::wstring&>(y, L"value");
 	std::wstring s = f_as<const std::wstring&>(x) + L": " + f_as<const std::wstring&>(y);
 	while (true) {
@@ -209,9 +209,9 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 			x = i.f_entry()->f_key();
 			y = i.f_entry()->v_value;
 		}
-		x = x.f_get(f_global()->f_symbol_string())();
+		x = x.f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(x, L"value");
-		y = y.f_get(f_global()->f_symbol_string())();
+		y = y.f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(y, L"value");
 		s += L", " + f_as<const std::wstring&>(x) + L": " + f_as<const std::wstring&>(y);
 	}
@@ -286,7 +286,8 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 			value = i.f_entry()->v_value;
 			i.f_next();
 		}
-		a_callable(std::move(key), std::move(value));
+//		a_callable(std::move(key), std::move(value));
+		a_callable.f_just_call(std::move(key), std::move(value));
 	}
 }
 

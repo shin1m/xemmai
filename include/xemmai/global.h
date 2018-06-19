@@ -455,7 +455,33 @@ inline bool t_value::f_is(t_type* a_class) const
 
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_value::f_get(t_object* a_key) const
 {
-	return f_tag() < e_tag__OBJECT ? f_get_primitive(a_key) : v_p->f_get(a_key);
+	if (f_tag() < e_tag__OBJECT) {
+		t_scoped value = static_cast<t_object*>(f_type()->v_this)->f_get(a_key);
+		return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(*this) : value;
+	} else {
+		return v_p->f_get(a_key);
+	}
+}
+
+template<typename T>
+inline void f_get_of_type(T& a_this, t_object* a_key, t_stacked* a_stack)
+{
+	t_scoped value = static_cast<t_object*>(a_this.f_type()->v_this)->f_get(a_key);
+	if (value.f_type() == f_global()->f_type<t_method>()) {
+		a_stack[0].f_construct(*f_as<t_method&>(value).f_function());
+		a_stack[1].f_construct(a_this);
+	} else {
+		a_stack[0].f_construct(std::move(value));
+		a_stack[1].f_construct();
+	}
+}
+
+inline void t_value::f_get(t_object* a_key, t_stacked* a_stack) const
+{
+	if (f_tag() >= e_tag__OBJECT)
+		v_p->f_get(a_key, a_stack);
+	else
+		f_get_of_type(*this, a_key, a_stack);
 }
 
 inline void t_value::f_put(t_object* a_key, t_scoped&& a_value) const
@@ -492,76 +518,27 @@ inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
 	} while (a_n != size_t(-1));
 }
 
+template<typename T>
+inline void f_call_of_type(T& a_this, t_object* a_key, t_stacked* a_stack, size_t a_n)
+{
+	t_scoped value = f_do_or_destruct([&]
+	{
+		return static_cast<t_object*>(a_this.f_type()->v_this)->f_get(a_key);
+	}, a_stack, a_n);
+	if (value.f_type() == f_global()->f_type<t_method>()) {
+		a_stack[1] = a_this;
+		f_as<t_method&>(value).f_function().f_call(a_stack, a_n);
+	} else {
+		value.f_call(a_stack, a_n);
+	}
+}
+
 XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const
 {
-	if (f_tag() >= e_tag__OBJECT) {
-		if (v_p->f_owned()) {
-			intptr_t index = v_p->f_field_index(a_key);
-			if (index < 0) {
-				t_scoped value = static_cast<t_object*>(v_p->f_type()->v_this)->f_get(a_key);
-				if (value.f_type() == f_global()->f_type<t_method>()) {
-					a_stack[1] = *v_p;
-					f_as<t_method&>(value).f_function().f_call(a_stack, a_n);
-				} else {
-					value.f_call(a_stack, a_n);
-				}
-			} else {
-				v_p->f_field_get(index).f_call(a_stack, a_n);
-			}
-		} else {
-			v_p->f_get(a_key).f_call(a_stack, a_n);
-		}
-	} else {
-		f_get_primitive(a_key).f_call(a_stack, a_n);
-	}
-}
-
-inline void t_object::f_get_owned(t_object* a_key, t_stacked* a_stack)
-{
-	intptr_t index = f_field_index(a_key);
-	if (index < 0) {
-		t_scoped value = static_cast<t_object*>(v_type->v_this)->f_get(a_key);
-		if (value.f_type() == f_global()->f_type<t_method>()) {
-			a_stack[0].f_construct_nonnull(f_as<t_method&>(value).f_function());
-			a_stack[1].f_construct_nonnull(this);
-		} else {
-			a_stack[0].f_construct(std::move(value));
-			a_stack[1].f_construct();
-		}
-	} else {
-		a_stack[0].f_construct(f_field_get(index));
-		a_stack[1].f_construct();
-	}
-}
-
-inline void t_object::f_get(t_object* a_key, t_stacked* a_stack)
-{
-	if (f_owned()) {
-		f_get_owned(a_key, a_stack);
-	} else {
-		a_stack[0].f_construct(f_get(a_key));
-		a_stack[1].f_construct();
-	}
-}
-
-inline void t_value::f_get(t_object* a_key, t_stacked* a_stack) const
-{
-	if (f_tag() >= e_tag__OBJECT) {
-		v_p->f_get(a_key, a_stack);
-	} else {
-		a_stack[0].f_construct(f_get_primitive(a_key));
-		a_stack[1].f_construct();
-	}
-}
-
-inline t_scoped t_value::f_call_with_same(t_stacked* a_stack, size_t a_n) const
-{
-	size_t n = a_n + 2;
-	t_scoped_stack stack(n);
-	stack[1].f_construct();
-	for (size_t i = 2; i < n; ++i) stack[i].f_construct(a_stack[i]);
-	f_call(stack, a_n);
-	return stack.f_return();
+	if (f_tag() >= e_tag__OBJECT)
+		v_p->f_call(a_key, a_stack, a_n);
+	else
+		f_call_of_type(*this, a_key, a_stack, a_n);
 }
 
 #define XEMMAI__VALUE__UNARY(a_method)\
@@ -601,11 +578,21 @@ inline t_scoped t_value::f_hash() const
 }
 
 template<typename... T>
-inline t_scoped t_value::operator()(T&&... a_arguments) const
+//inline t_scoped t_value::operator()(T&&... a_arguments) const
+inline t_scoped t_value::f_just_call(T&&... a_arguments) const
 {
 	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
 	stack[1].f_construct();
 	f_call(stack, sizeof...(a_arguments));
+	return stack.f_return();
+}
+
+template<typename... T>
+inline t_scoped t_value::f_invoke(t_object* a_key, T&&... a_arguments) const
+{
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	stack[1].f_construct();
+	f_call(a_key, stack, sizeof...(a_arguments));
 	return stack.f_return();
 }
 
@@ -963,12 +950,12 @@ intptr_t t_fiber::f_main(T_main a_main)
 			f_as<t_fiber&>(f_current()).f_caught(thrown);
 			std::wstring s = L"<unprintable>";
 			try {
-				t_scoped p = thrown.f_get(f_global()->f_symbol_string())();
+				t_scoped p = thrown.f_invoke(f_global()->f_symbol_string());
 				if (f_is<std::wstring>(p)) s = f_as<const std::wstring&>(p);
 			} catch (...) {
 			}
 			std::fprintf(stderr, "caught: %ls\n", s.c_str());
-			if (f_is<t_throwable>(thrown)) thrown.f_get(t_symbol::f_instantiate(L"dump"))();
+			if (f_is<t_throwable>(thrown)) thrown.f_invoke(t_symbol::f_instantiate(L"dump"));
 		}
 	} catch (...) {
 		std::fprintf(stderr, "caught <unexpected>.\n");

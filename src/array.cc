@@ -228,7 +228,7 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 		if (array.f_size() <= 0) return L"[]";
 		x = array[0];
 	}
-	x = x.f_get(f_global()->f_symbol_string())();
+	x = x.f_invoke(f_global()->f_symbol_string());
 	f_check<const std::wstring&>(x, L"value");
 	std::wstring s = f_as<const std::wstring&>(x);
 	size_t i = 1;
@@ -238,7 +238,7 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 			if (i >= array.f_size()) break;
 			x = array[i];
 		}
-		x = x.f_get(f_global()->f_symbol_string())();
+		x = x.f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(x, L"value");
 		s += L", " + f_as<const std::wstring&>(x);
 		++i;
@@ -417,7 +417,8 @@ void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
-		a_callable(std::move(x));
+//		a_callable(std::move(x));
+		a_callable.f_just_call(std::move(x));
 		++i;
 	}
 }
@@ -440,7 +441,8 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 	head = 0;
 	std::sort(a.begin(), a.end(), [&a_callable](const t_scoped& a_x, const t_scoped& a_y)
 	{
-		return f_as<bool>(a_callable(a_x, a_y));
+//		return f_as<bool>(a_callable(a_x, a_y));
+		return f_as<bool>(a_callable.f_just_call(a_x, a_y));
 	});
 	for (size_t i = 0; i < size; ++i) t[i] = std::move(a[i]);
 	{

@@ -57,7 +57,7 @@ size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n)
 	} else {
 		size_t i = 0;
 		try {
-			t_scoped size = x.f_get(f_global()->f_symbol_size())();
+			t_scoped size = x.f_invoke(f_global()->f_symbol_size());
 			f_check<size_t>(size, L"size");
 			n = f_as<size_t>(size);
 			f_allocate(a_stack, n);
@@ -99,7 +99,7 @@ void t_code::f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 				f_engine()->f_synchronize();
 				pc0[0] = a_class;
 				t_scoped value = static_cast<t_object*>(p->f_type()->v_this)->f_get(key);
-				top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(p)) : std::move(value);
+				top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(p) : std::move(value);
 			} else {
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
 				f_engine()->f_synchronize();
@@ -208,14 +208,7 @@ void t_code::f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 			if (index < 0) {
 				f_engine()->f_synchronize();
 				pc0[0] = a_class;
-				t_scoped value = static_cast<t_object*>(p->f_type()->v_this)->f_get(key);
-				if (value.f_type() == f_global()->f_type<t_method>()) {
-					stack[0].f_construct_nonnull(f_as<t_method&>(value).f_function());
-					stack[1].f_construct_nonnull(p);
-				} else {
-					stack[0].f_construct(std::move(value));
-					stack[1].f_construct();
-				}
+				f_get_of_type(*p, key, stack);
 			} else {
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
 				f_engine()->f_synchronize();
@@ -466,7 +459,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
 					t_scoped value = static_cast<t_object*>(p->f_type()->v_this)->f_get(key);
-					top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(t_scoped(p)) : value;
+					top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(p) : value;
 				} else {
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
 					top = top.f_get(key);
@@ -720,14 +713,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_scoped top = std::move(stack[0]);
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
-					t_scoped value = static_cast<t_object*>(p->f_type()->v_this)->f_get(key);
-					if (value.f_type() == f_global()->f_type<t_method>()) {
-						stack[0].f_construct_nonnull(f_as<t_method&>(value).f_function());
-						stack[1].f_construct_nonnull(p);
-					} else {
-						stack[0].f_construct(std::move(value));
-						stack[1].f_construct();
-					}
+					f_get_of_type(*p, key, stack);
 				} else {
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
 					top.f_get(key, stack);

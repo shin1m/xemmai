@@ -321,8 +321,8 @@ public:
 	void f_pointer__(void* a_value);
 	t_type_of<t_object>* f_type() const;
 	bool f_is(t_type* a_class) const;
-	t_scoped f_get_primitive(t_object* a_key) const;
 	t_scoped f_get(t_object* a_key) const;
+	void f_get(t_object* a_key, t_stacked* a_stack) const;
 	void f_put(t_object* a_key, t_scoped&& a_value) const;
 	bool f_has(t_object* a_key) const;
 	t_scoped f_remove(t_object* a_key) const;
@@ -334,11 +334,13 @@ public:
 		if (n != size_t(-1)) f_loop(a_stack, n);
 	}
 	void f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const;
-	void f_get(t_object* a_key, t_stacked* a_stack) const;
-	t_scoped f_call_with_same(t_stacked* a_stack, size_t a_n) const;
 	t_scoped f_hash() const;
+//	template<typename... T>
+//	t_scoped operator()(T&&... a_arguments) const;
 	template<typename... T>
-	t_scoped operator()(T&&... a_arguments) const;
+	t_scoped f_just_call(T&&... a_arguments) const;
+	template<typename... T>
+	t_scoped f_invoke(t_object* a_key, T&&... a_arguments) const;
 	t_scoped f_get_at(const t_value& a_index) const;
 	t_scoped f_set_at(const t_value& a_index, const t_value& a_value) const;
 	t_scoped f_plus() const;
@@ -368,12 +370,12 @@ public:
 		if (a_p) f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
-	void f_construct_nonnull(t_object* a_p)
+/*	void f_construct_nonnull(t_object* a_p)
 	{
 		assert(f_tag() < e_tag__OBJECT);
 		f_increments()->f_push(a_p);
 		v_p = a_p;
-	}
+	}*/
 	void f_construct(const t_value& a_value)
 	{
 		assert(f_tag() < e_tag__OBJECT);
@@ -592,10 +594,10 @@ public:
 		if (a_p) f_increments()->f_push(a_p);
 		v_p = a_p;
 	}
-	void f_construct_nonnull(t_object* a_p)
+	void f_construct(t_object& a_p)
 	{
-		f_increments()->f_push(a_p);
-		v_p = a_p;
+		f_increments()->f_push(&a_p);
+		v_p = &a_p;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_construct(const t_value& a_value)
 	{
@@ -770,6 +772,17 @@ struct t_destruct_n
 		for (size_t i = 0; i < v_n; ++i) (++v_p)->f_destruct();
 	}
 };
+
+template<typename T>
+inline auto f_do_or_destruct(T a_do, t_stacked* a_stack, size_t a_n) -> decltype(a_do())
+{
+	try {
+		return a_do();
+	} catch (...) {
+		t_destruct_n(a_stack, a_n);
+		throw;
+	}
+}
 
 }
 

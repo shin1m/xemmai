@@ -15,7 +15,7 @@ void t_writer::f_write(t_io* a_extension)
 {
 	auto& buffer = f_as<t_bytes&>(v_buffer);
 	auto p = reinterpret_cast<char*>(&buffer[0]);
-	v_stream.f_get(a_extension->f_symbol_write())(v_buffer, f_global()->f_as(0), f_global()->f_as(v_p - p));
+	v_stream.f_invoke(a_extension->f_symbol_write(), v_buffer, f_global()->f_as(0), f_global()->f_as(v_p - p));
 	v_p = p;
 	v_n = buffer.f_size();
 }
@@ -74,7 +74,7 @@ void t_writer::f_close(t_io* a_extension)
 {
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	f_unshift(a_extension);
-	v_stream.f_get(a_extension->f_symbol_close())();
+	v_stream.f_invoke(a_extension->f_symbol_close());
 	v_stream = nullptr;
 }
 
@@ -84,7 +84,7 @@ void t_writer::f_write(t_io* a_extension, const t_value& a_value)
 	if (f_is<const std::wstring&>(a_value)) {
 		f_write(a_extension, f_as<const std::wstring&>(a_value));
 	} else {
-		t_scoped x = a_value.f_get(f_global()->f_symbol_string())();
+		t_scoped x = a_value.f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(x, L"value");
 		f_write(a_extension, f_as<const std::wstring&>(x));
 	}
@@ -95,7 +95,7 @@ void t_writer::f_write_line(t_io* a_extension)
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	f_write(a_extension, L"\n", 1);
 	f_unshift(a_extension);
-	v_stream.f_get(a_extension->f_symbol_flush())();
+	v_stream.f_invoke(a_extension->f_symbol_flush());
 }
 
 void t_writer::f_write_line(t_io* a_extension, const t_value& a_value)
@@ -104,20 +104,20 @@ void t_writer::f_write_line(t_io* a_extension, const t_value& a_value)
 	if (f_is<const std::wstring&>(a_value)) {
 		f_write(a_extension, f_as<const std::wstring&>(a_value));
 	} else {
-		t_scoped x = a_value.f_get(f_global()->f_symbol_string())();
+		t_scoped x = a_value.f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(x, L"value");
 		f_write(a_extension, f_as<const std::wstring&>(x));
 	}
 	f_write(a_extension, L"\n", 1);
 	f_unshift(a_extension);
-	v_stream.f_get(a_extension->f_symbol_flush())();
+	v_stream.f_invoke(a_extension->f_symbol_flush());
 }
 
 void t_writer::f_flush(t_io* a_extension)
 {
 	if (!v_stream) t_throwable::f_throw(L"already closed.");
 	f_unshift(a_extension);
-	v_stream.f_get(a_extension->f_symbol_flush())();
+	v_stream.f_invoke(a_extension->f_symbol_flush());
 }
 
 }

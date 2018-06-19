@@ -48,7 +48,8 @@ t_type* t_derived<T>::f_derive()
 template<typename T>
 t_scoped t_derived<T>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	return static_cast<t_object*>(T::v_this)->f_get(f_global()->f_symbol_construct()).f_call_with_same(a_stack, a_n);
+//	return static_cast<t_object*>(T::v_this)->f_get(f_global()->f_symbol_construct()).f_call_with_same(a_stack, a_n);
+	return static_cast<t_object*>(T::v_this)->f_call_preserved(f_global()->f_symbol_construct(), a_stack, a_n);
 }
 
 template<typename T>

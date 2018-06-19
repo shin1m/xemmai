@@ -55,7 +55,8 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
 	t_scoped lambda = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), a_code);
 	t_scoped_stack stack(2);
-	stack[1].f_construct_nonnull(a_this);
+//	stack[1].f_construct_nonnull(a_this);
+	stack[1].f_construct(*a_this);
 	auto& p = f_as<t_lambda&>(lambda);
 	t_context context(lambda, stack, p.v_size, p.v_shareds, p.v_scope);
 	t_code::f_loop(&context, p);
@@ -103,7 +104,7 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 	f_engine()->v_module__mutex.unlock();
 	f_engine()->v_object__reviving__mutex.unlock();
 	t_scoped paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
-	t_scoped n = paths.f_get(f_global()->f_symbol_size())();
+	t_scoped n = paths.f_invoke(f_global()->f_symbol_size());
 	f_check<size_t>(n, L"size");
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
 		t_scoped x = paths.f_get_at(f_global()->f_as(i));
