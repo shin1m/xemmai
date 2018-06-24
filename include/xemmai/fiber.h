@@ -74,11 +74,11 @@ struct t_context
 	void f_backtrace(const t_value& a_value);
 	t_stacked*& f_previous()
 	{
-		return *reinterpret_cast<t_stacked**>(&v_lambda.v_pointer);
+		return *reinterpret_cast<t_stacked**>(&v_lambda.v_integer);
 	}
 	void**& f_pc()
 	{
-		return *reinterpret_cast<void***>(&v_scope.v_pointer);
+		return *reinterpret_cast<void***>(&v_scope.v_integer);
 	}
 	const t_value* f_variable(const std::wstring& a_name) const;
 };
@@ -92,11 +92,11 @@ struct t_backtrace
 
 	t_backtrace(t_backtrace* a_next, const t_scoped& a_lambda, void** a_pc) : v_next(a_next), v_lambda(a_lambda)
 	{
-		*reinterpret_cast<void***>(&v_lambda.v_pointer) = a_pc;
+		*reinterpret_cast<void***>(&v_lambda.v_integer) = a_pc;
 	}
 	void** const& f_pc() const
 	{
-		return *reinterpret_cast<void** const*>(&v_lambda.v_pointer);
+		return *reinterpret_cast<void** const*>(&v_lambda.v_integer);
 	}
 	void f_scan(t_scan a_scan)
 	{

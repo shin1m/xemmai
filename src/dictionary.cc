@@ -286,8 +286,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 			value = i.f_entry()->v_value;
 			i.f_next();
 		}
-//		a_callable(std::move(key), std::move(value));
-		a_callable.f_just_call(std::move(key), std::move(value));
+		a_callable(std::move(key), std::move(value));
 	}
 }
 

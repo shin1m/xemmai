@@ -555,8 +555,7 @@ class t_define
 	}
 
 public:
-	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name) :
-	v_extension(a_extension), v_type((new t_type_of<T>(v_extension->f_module(), a_extension->template f_type<T_super>()))->v_this)
+	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name) : v_extension(a_extension), v_type((new t_type_of<T>(v_extension->f_module(), a_extension->template f_type<T_super>()))->v_this)
 	{
 		v_extension->template f_type_slot<T>().f_construct(v_type);
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
@@ -564,10 +563,6 @@ public:
 	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name, t_object* a_type) : v_extension(a_extension), v_type(a_type)
 	{
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
-	}
-	operator t_scoped() const
-	{
-		return std::move(v_type);
 	}
 	template<typename T_value>
 	t_define& operator()(t_object* a_name, T_value a_value)

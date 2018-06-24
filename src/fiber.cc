@@ -92,8 +92,7 @@ void t_fiber::f_run()
 	{
 		t_context context;
 		try {
-//			x = q.v_callable(std::move(x));
-			x = q.v_callable.f_just_call(std::move(x));
+			x = q.v_callable(std::move(x));
 		} catch (const t_scoped& thrown) {
 			q.f_caught(thrown);
 			b = true;

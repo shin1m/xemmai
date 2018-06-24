@@ -448,6 +448,10 @@ public:
 	{
 		return v_float;
 	}
+	void* f_pointer() const
+	{
+		return v_pointer;
+	}
 	bool f_is(t_type* a_class) const
 	{
 		return v_type->f_derives(a_class);

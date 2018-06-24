@@ -417,8 +417,7 @@ void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable
 			if (i >= a0.f_size()) break;
 			x = a0[i];
 		}
-//		a_callable(std::move(x));
-		a_callable.f_just_call(std::move(x));
+		a_callable(std::move(x));
 		++i;
 	}
 }
@@ -441,8 +440,7 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 	head = 0;
 	std::sort(a.begin(), a.end(), [&a_callable](const t_scoped& a_x, const t_scoped& a_y)
 	{
-//		return f_as<bool>(a_callable(a_x, a_y));
-		return f_as<bool>(a_callable.f_just_call(a_x, a_y));
+		return f_as<bool>(a_callable(a_x, a_y));
 	});
 	for (size_t i = 0; i < size; ++i) t[i] = std::move(a[i]);
 	{

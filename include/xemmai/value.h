@@ -38,9 +38,6 @@ class t_value
 	friend struct t_type_of;
 	friend class t_engine;
 	friend class t_object;
-	friend struct t_slot;
-	friend class t_scoped;
-	friend class t_stacked;
 	friend struct t_context;
 	friend struct t_backtrace;
 	friend struct t_fiber;
@@ -184,16 +181,15 @@ protected:
 		bool v_boolean;
 		intptr_t v_integer;
 		double v_float;
-		void* v_pointer;
 	};
 
 	void f_copy(const t_value& a_value)
 	{
 		v_p = a_value.v_p;
-		if (sizeof(double) > sizeof(void*))
+		if (sizeof(double) > sizeof(intptr_t))
 			v_float = a_value.v_float;
 		else
-			v_pointer = a_value.v_pointer;
+			v_integer = a_value.v_integer;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_copy_construct(const t_value& a_value)
 	{
@@ -335,10 +331,8 @@ public:
 	}
 	void f_call(t_object* a_key, t_stacked* a_stack, size_t a_n) const;
 	t_scoped f_hash() const;
-//	template<typename... T>
-//	t_scoped operator()(T&&... a_arguments) const;
 	template<typename... T>
-	t_scoped f_just_call(T&&... a_arguments) const;
+	t_scoped operator()(T&&... a_arguments) const;
 	template<typename... T>
 	t_scoped f_invoke(t_object* a_key, T&&... a_arguments) const;
 	t_scoped f_get_at(const t_value& a_index) const;
@@ -364,59 +358,16 @@ public:
 	t_scoped f_xor(const t_value& a_value) const;
 	t_scoped f_or(const t_value& a_value) const;
 	t_scoped f_send(const t_value& a_value) const;
-	void f_construct(t_object* a_p = nullptr)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		if (a_p) f_increments()->f_push(a_p);
-		v_p = a_p;
-	}
-/*	void f_construct_nonnull(t_object* a_p)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		f_increments()->f_push(a_p);
-		v_p = a_p;
-	}*/
-	void f_construct(const t_value& a_value)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		f_copy_construct(a_value);
-	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_destruct()
 	{
 		if (f_tag() < e_tag__OBJECT) return;
 		f_decrements()->f_push(v_p);
 		v_p = nullptr;
 	}
-	void f_construct(bool a_value)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
-		v_boolean = a_value;
-	}
-	template<typename T>
-	typename std::enable_if<std::is_integral<T>::value>::type f_construct(T a_value)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
-		v_integer = a_value;
-	}
-	void f_construct(double a_value)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
-		v_float = a_value;
-	}
-	void f_construct(t_value&& a_value)
-	{
-		f_construct(a_value);
-		a_value.f_destruct();
-	}
 };
 
 struct t_slot : t_value
 {
-	friend class t_object;
-
 	using t_value::t_value;
 	explicit t_slot(t_object* a_p = nullptr) : t_value(a_p, t_own())
 	{
@@ -451,6 +402,41 @@ struct t_slot : t_value
 	{
 		f_assign(a_value);
 		return *this;
+	}
+	void f_construct(t_object* a_p = nullptr)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		if (a_p) f_increments()->f_push(a_p);
+		v_p = a_p;
+	}
+	void f_construct(const t_value& a_value)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		f_copy_construct(a_value);
+	}
+	void f_construct(bool a_value)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
+		v_boolean = a_value;
+	}
+	template<typename T>
+	typename std::enable_if<std::is_integral<T>::value>::type f_construct(T a_value)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
+		v_integer = a_value;
+	}
+	void f_construct(double a_value)
+	{
+		assert(f_tag() < e_tag__OBJECT);
+		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
+		v_float = a_value;
+	}
+	void f_construct(t_value&& a_value)
+	{
+		f_construct(a_value);
+		a_value.f_destruct();
 	}
 };
 
@@ -520,13 +506,6 @@ public:
 		f_assign(std::move(a_value));
 		return *this;
 	}
-	using t_value::f_construct;
-	void f_construct(t_value&& a_value)
-	{
-		assert(f_tag() < e_tag__OBJECT);
-		f_move_construct(a_value);
-	}
-	void f_construct(t_stacked&& a_value);
 };
 
 class t_stacked : public t_value
@@ -659,12 +638,6 @@ inline XEMMAI__PORTABLE__ALWAYS_INLINE void t_value::f_assign(t_stacked&& a_valu
 
 inline t_scoped::t_scoped(t_stacked&& a_value) : t_value(t_pass())
 {
-	f_copy(a_value);
-}
-
-inline void t_scoped::f_construct(t_stacked&& a_value)
-{
-	assert(f_tag() < e_tag__OBJECT);
 	f_copy(a_value);
 }
 

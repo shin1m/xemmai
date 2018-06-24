@@ -106,8 +106,7 @@ bool t_tuple::f_equals(const t_value& a_other) const
 
 void t_tuple::f_each(const t_value& a_callable) const
 {
-//	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
-	for (size_t i = 0; i < v_size; ++i) a_callable.f_just_call((*this)[i]);
+	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
 }
 
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)

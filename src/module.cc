@@ -55,7 +55,6 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
 	t_scoped lambda = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), a_code);
 	t_scoped_stack stack(2);
-//	stack[1].f_construct_nonnull(a_this);
 	stack[1].f_construct(*a_this);
 	auto& p = f_as<t_lambda&>(lambda);
 	t_context context(lambda, stack, p.v_size, p.v_shareds, p.v_scope);
