@@ -464,7 +464,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_value::f_get(t_object* a_key) 
 }
 
 template<typename T>
-inline void f_get_of_type(T& a_this, t_object* a_key, t_stacked* a_stack)
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void f_get_of_type(T& a_this, t_object* a_key, t_stacked* a_stack)
 {
 	t_scoped value = static_cast<t_object*>(a_this.f_type()->v_this)->f_get(a_key);
 	if (value.f_type() == f_global()->f_type<t_method>()) {
@@ -476,7 +476,7 @@ inline void f_get_of_type(T& a_this, t_object* a_key, t_stacked* a_stack)
 	}
 }
 
-inline void t_value::f_get(t_object* a_key, t_stacked* a_stack) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value::f_get(t_object* a_key, t_stacked* a_stack) const
 {
 	if (f_tag() >= e_tag__OBJECT)
 		v_p->f_get(a_key, a_stack);
@@ -519,7 +519,7 @@ inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
 }
 
 template<typename T>
-inline void f_call_of_type(T& a_this, t_object* a_key, t_stacked* a_stack, size_t a_n)
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void f_call_of_type(T& a_this, t_object* a_key, t_stacked* a_stack, size_t a_n)
 {
 	t_scoped value = f_do_or_destruct([&]
 	{
