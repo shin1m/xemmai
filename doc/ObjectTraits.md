@@ -75,8 +75,8 @@ Only the owning thread of the object can call it.
     Method      no         yes    immutable  *1
     Lambda      no         no     shared     *1
     Native      no         no     shared     *1
-    Null        no         -      immutable  *1
-    Boolean     no         -      immutable  *1
+    Null        no         yes    immutable  *1
+    Boolean     no         yes    immutable  *1
     Lexer       no         no     owned      *1
     Parser      no         no     owned      *1
     Object      yes        no     owned      *2
@@ -90,8 +90,8 @@ Only the owning thread of the object can call it.
     io.Reader   yes        no     owned      *3
     io.Writer   yes        no     owned      *3
     io.Path     yes        yes    immutable  *3
-    Integer     yes        -      immutable  *4
-    Float       yes        -      immutable  *4
+    Integer     yes        yes    immutable  *4
+    Float       yes        yes    immutable  *4
 
 * \*1 It overrides `f_instantiate` to skip normal instantiation process because it is not derivable.
 * \*2 It overrides `f_construct` and manually constructs its native part.

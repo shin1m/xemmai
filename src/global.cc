@@ -18,10 +18,10 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_type_module.f_construct(a_type_module->v_this);
 	v_type_fiber.f_construct(a_type_fiber->v_this);
 	v_type_thread.f_construct(a_type_thread->v_this);
-	v_type_tuple.f_construct((new t_type_of<t_tuple>(a_module, v_type_object))->v_this);
-	v_type_symbol.f_construct((new t_type_of<t_symbol>(a_module, v_type_object))->v_this);
-	v_type_method.f_construct((new t_type_of<t_method>(a_module, v_type_object))->v_this);
-	v_type_native.f_construct((new t_type_of<t_native>(a_module, v_type_object))->v_this);
+	v_type_tuple.f_construct((new t_type_of<t_tuple>(t_type_of<t_tuple>::V_ids, v_type_object, a_module))->v_this);
+	v_type_symbol.f_construct((new t_type_of<t_symbol>(t_type_of<t_symbol>::V_ids, v_type_object, a_module))->v_this);
+	v_type_method.f_construct((new t_type_of<t_method>(t_type_of<t_method>::V_ids, v_type_object, a_module))->v_this);
+	v_type_native.f_construct((new t_type_of<t_native>(t_type_of<t_native>::V_ids, v_type_object, a_module))->v_this);
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct");
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize");
 	v_symbol_string = t_symbol::f_instantiate(L"__string");
@@ -66,7 +66,7 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	static_cast<t_type_of<t_thread>*>(static_cast<t_type*>(v_type_thread))->f_define();
 	static_cast<t_type_of<t_tuple>*>(static_cast<t_type*>(v_type_tuple))->f_define();
 	static_cast<t_type_of<t_symbol>*>(static_cast<t_type*>(v_type_symbol))->f_define();
-	v_type_scope.f_construct((new t_type_of<t_scope>(a_module, v_type_object))->v_this);
+	v_type_scope.f_construct((new t_type_of<t_scope>(t_type_of<t_scope>::V_ids, v_type_object, a_module))->v_this);
 	v_type_scope->v_builtin = true;
 	t_define<t_method, t_object>(this, L"Method", v_type_method->v_this);
 	v_type_method->v_builtin = true;
@@ -74,7 +74,7 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_type_code->v_builtin = true;
 	t_define<t_lambda, t_object>(this, L"Lambda");
 	v_type_lambda->v_builtin = true;
-	v_type_advanced_lambda.f_construct((new t_type_of<t_advanced_lambda>(a_module, v_type_lambda))->v_this);
+	v_type_advanced_lambda.f_construct((new t_type_of<t_advanced_lambda>(t_type_of<t_advanced_lambda>::V_ids, v_type_lambda, a_module))->v_this);
 	v_type_advanced_lambda->v_builtin = true;
 	a_module->f_put(t_symbol::f_instantiate(L"Native"), v_type_native->v_this);
 	v_type_native->v_builtin = true;

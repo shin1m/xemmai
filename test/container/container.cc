@@ -3,6 +3,8 @@
 namespace xemmai
 {
 
+constexpr decltype(t_type_of<t_pair>::V_ids) t_type_of<t_pair>::V_ids;
+
 t_scoped t_type_of<t_pair>::f_instantiate(t_container* a_extension, t_scoped&& a_value)
 {
 	t_scoped object = t_object::f_allocate(a_extension->v_type_pair);
@@ -12,7 +14,7 @@ t_scoped t_type_of<t_pair>::f_instantiate(t_container* a_extension, t_scoped&& a
 
 t_type* t_type_of<t_pair>::f_define(t_container* a_extension)
 {
-	return new t_type_of(a_extension->f_module(), a_extension->f_type<t_object>());
+	return new t_type_of(V_ids, a_extension->f_type<t_object>(), a_extension->f_module());
 }
 
 t_type* t_type_of<t_pair>::f_derive()
@@ -35,6 +37,8 @@ void t_type_of<t_pair>::f_instantiate(t_stacked* a_stack, size_t a_n)
 	t_throwable::f_throw(L"uninstantiatable.");
 }
 
+constexpr decltype(t_type_of<t_queue>::V_ids) t_type_of<t_queue>::V_ids;
+
 void t_type_of<t_queue>::f_define(t_container* a_extension)
 {
 	t_define<t_queue, t_object>(a_extension, L"Queue")
@@ -47,7 +51,7 @@ void t_type_of<t_queue>::f_define(t_container* a_extension)
 
 t_type* t_type_of<t_queue>::f_derive()
 {
-	return new t_type_of(t_scoped(v_module), this);
+	return new t_type_of(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_queue>::f_scan(t_object* a_this, t_scan a_scan)

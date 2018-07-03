@@ -15,6 +15,8 @@ namespace xemmai
 template<>
 struct t_type_of<t_pair> : t_type
 {
+	static constexpr auto V_ids = f_ids<t_pair, t_object>();
+
 	static t_scoped f_instantiate(t_container* a_extension, t_scoped&& a_value);
 	static t_type* f_define(t_container* a_extension);
 
@@ -29,6 +31,8 @@ template<>
 struct t_type_of<t_queue> : t_type
 {
 	typedef t_container t_extension;
+
+	static constexpr auto V_ids = f_ids<t_queue, t_object>();
 
 	static void f_define(t_container* a_extension);
 

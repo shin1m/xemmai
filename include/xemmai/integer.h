@@ -68,7 +68,7 @@ struct t_type_of<intptr_t> : t_type_immutable
 		static bool f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			if (!std::is_same<typename t_fundamental<T0>::t_type, intptr_t>::value) return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type()) != nullptr;
+			if (!std::is_same<typename t_fundamental<T0>::t_type, intptr_t>::value) return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
 			switch (reinterpret_cast<size_t>(p)) {
 			case t_value::e_tag__INTEGER:
 				return true;
@@ -77,10 +77,12 @@ struct t_type_of<intptr_t> : t_type_immutable
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of*>(p->f_type()) != nullptr;
+				return p->f_type()->template f_derives<intptr_t>();
 			}
 		}
 	};
+
+	static constexpr auto V_ids = f_ids<intptr_t, t_object>();
 
 	static t_scoped f_construct(t_type* a_class, intptr_t a_value)
 	{
@@ -164,10 +166,7 @@ struct t_type_of<intptr_t> : t_type_immutable
 	}
 	static void f_define();
 
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type_immutable(std::move(a_module), a_super)
-	{
-		v_fixed = v_shared = true;
-	}
+	using t_type_immutable::t_type_immutable;
 	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };

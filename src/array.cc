@@ -206,6 +206,8 @@ t_scoped t_array::f_remove(intptr_t a_index)
 	return q;
 }
 
+constexpr decltype(t_type_of<t_array>::V_ids) t_type_of<t_array>::V_ids;
+
 void t_type_of<t_array>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");
@@ -478,7 +480,7 @@ void t_type_of<t_array>::f_define()
 
 t_type* t_type_of<t_array>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), this);
+	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_array>::f_scan(t_object* a_this, t_scan a_scan)

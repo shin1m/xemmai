@@ -168,9 +168,9 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	thread->v_internal->f_initialize();
 	thread->v_internal->v_next = v_thread__internals;
 	v_thread__internals = thread->v_internal;
-	auto type_object = new t_type();
-	v_type_class = new t_class(type_object);
-	auto type_structure = new t_type_of<t_structure>(type_object);
+	auto type_object = new t_type(t_type::V_ids);
+	v_type_class = new t_class(t_class::V_ids, type_object);
+	auto type_structure = new t_type_of<t_structure>(t_type_of<t_structure>::V_ids, type_object);
 	v_structure_root = t_object::f_allocate_on_boot();
 	t_value::v_increments->f_push(type_structure->v_this);
 	static_cast<t_object*>(v_structure_root)->v_type = type_structure;
@@ -184,7 +184,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	static_cast<t_object*>(type_structure->v_this)->v_structure = root;
 	t_value::v_increments->f_push(v_structure_root);
 	static_cast<t_object*>(v_structure_root)->v_structure = root;
-	auto type_module = new t_type_of<t_module>(nullptr, type_object);
+	auto type_module = new t_type_of<t_module>(t_type_of<t_module>::V_ids, type_object, nullptr);
 	v_module_global = t_object::f_allocate(type_module);
 	auto library = new t_library(std::wstring(), nullptr);
 	v_module_global.f_pointer__(library);
@@ -195,9 +195,9 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	v_type_class->v_module = v_module_global;
 	type_structure->v_module = v_module_global;
 	type_module->v_module = v_module_global;
-	auto type_fiber = new t_type_of<t_fiber>(t_scoped(v_module_global), type_object);
+	auto type_fiber = new t_type_of<t_fiber>(t_type_of<t_fiber>::V_ids, type_object, t_scoped(v_module_global));
 	v_fiber_exit = t_object::f_allocate(type_object);
-	auto type_thread = new t_type_of<t_thread>(t_scoped(v_module_global), type_object);
+	auto type_thread = new t_type_of<t_thread>(t_type_of<t_thread>::V_ids, type_object, t_scoped(v_module_global));
 	v_thread = t_object::f_allocate(type_thread);
 	v_thread.f_pointer__(thread);
 	thread->v_internal->v_thread = t_thread::v_current = v_thread;

@@ -36,6 +36,8 @@ void t_symbol::f_revise(t_object* a_this)
 	}
 }
 
+constexpr decltype(t_type_of<t_symbol>::V_ids) t_type_of<t_symbol>::V_ids;
+
 void t_type_of<t_symbol>::f_define()
 {
 	v_builtin = true;

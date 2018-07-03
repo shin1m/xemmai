@@ -5,13 +5,7 @@
 namespace xemmai
 {
 
-t_class::t_type_of(t_type* a_super) : t_type(a_super)
-{
-	t_value::f_increments()->f_push(v_this);
-	t_value::f_increments()->f_push(v_this);
-	static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super->v_this)->v_type = this;
-	v_fixed = v_shared = true;
-}
+constexpr decltype(t_class::V_ids) t_class::V_ids;
 
 t_type* t_class::f_derive()
 {

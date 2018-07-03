@@ -65,6 +65,8 @@ void t_bytes::f_copy(intptr_t a_index0, size_t a_size, t_bytes& a_other, intptr_
 	std::copy(p, p + a_size, a_other.f_entries() + a_index1);
 }
 
+constexpr decltype(t_type_of<t_bytes>::V_ids) t_type_of<t_bytes>::V_ids;
+
 void t_type_of<t_bytes>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
@@ -107,7 +109,7 @@ void t_type_of<t_bytes>::f_define()
 
 t_type* t_type_of<t_bytes>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), this);
+	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_bytes>::f_finalize(t_object* a_this)

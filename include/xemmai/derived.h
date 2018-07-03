@@ -42,7 +42,7 @@ struct t_derived : T
 template<typename T>
 t_type* t_derived<T>::f_derive()
 {
-	return new t_derived(t_scoped(T::v_module), this);
+	return new t_derived(T::V_ids, this, t_scoped(T::v_module));
 }
 
 template<typename T>

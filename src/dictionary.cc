@@ -159,6 +159,8 @@ void t_type_of<t_dictionary::t_table>::f_instantiate(t_stacked* a_stack, size_t 
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
+constexpr decltype(t_type_of<t_dictionary>::V_ids) t_type_of<t_dictionary>::V_ids;
+
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");
@@ -292,7 +294,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 
 void t_type_of<t_dictionary>::f_define()
 {
-	f_global()->v_type_dictionary__table.f_construct((new t_type_of<t_dictionary::t_table>(f_global()->f_module(), f_global()->f_type<t_object>()))->v_this);
+	f_global()->v_type_dictionary__table.f_construct((new t_type_of<t_dictionary::t_table>(t_type_of<t_dictionary::t_table>::V_ids, f_global()->f_type<t_object>(), f_global()->f_module()))->v_this);
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
@@ -311,7 +313,7 @@ void t_type_of<t_dictionary>::f_define()
 
 t_type* t_type_of<t_dictionary>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), this);
+	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_dictionary>::f_scan(t_object* a_this, t_scan a_scan)

@@ -39,6 +39,8 @@ public:
 template<>
 struct t_type_of<t_throwable> : t_type
 {
+	static constexpr auto V_ids = f_ids<t_throwable, t_object>();
+
 	static void f_define();
 
 	using t_type::t_type;

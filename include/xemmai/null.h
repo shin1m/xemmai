@@ -9,16 +9,15 @@ namespace xemmai
 template<>
 struct t_type_of<std::nullptr_t> : t_type_immutable
 {
+	static constexpr auto V_ids = f_ids<std::nullptr_t, t_object>();
+
 	static std::wstring f_string(const t_value& a_self)
 	{
 		return L"null";
 	}
 	static void f_define();
 
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type_immutable(std::move(a_module), a_super)
-	{
-		v_shared = true;
-	}
+	using t_type_immutable::t_type_immutable;
 	virtual t_type* f_derive();
 	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 };

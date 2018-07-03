@@ -9,13 +9,12 @@ namespace xemmai
 template<>
 struct t_type_of<t_tuple> : t_type_immutable
 {
+	static constexpr auto V_ids = f_ids<t_tuple, t_object>();
+
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	void f_define();
 
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type_immutable(std::move(a_module), a_super)
-	{
-		v_fixed = v_shared = true;
-	}
+	using t_type_immutable::t_type_immutable;
 	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

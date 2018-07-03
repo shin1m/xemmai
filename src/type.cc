@@ -6,6 +6,8 @@
 namespace xemmai
 {
 
+constexpr decltype(t_type::V_ids) t_type::V_ids;
+
 void t_type::f_initialize(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	a_n += 2;
@@ -37,26 +39,9 @@ void t_type::f_define()
 	;
 }
 
-t_type::t_type_of() : v_this(t_object::f_allocate_on_boot())
-{
-	v_this.f_pointer__(this);
-}
-
-t_type::t_type_of(t_type* a_super) : v_this(t_object::f_allocate_on_boot())
-{
-	v_super.f_construct(a_super->v_this);
-	v_this.f_pointer__(this);
-}
-
-t_type::t_type_of(t_scoped&& a_module, t_type* a_super) : v_this(t_object::f_allocate(f_engine()->v_type_class)), v_module(std::move(a_module))
-{
-	v_super.f_construct(a_super->v_this);
-	v_this.f_pointer__(this);
-}
-
 t_type* t_type::f_derive()
 {
-	auto p = new t_type(t_scoped(v_module), this);
+	auto p = new t_type(V_ids, this, t_scoped(v_module));
 	p->v_primitive = true;
 	return p;
 }

@@ -5,6 +5,8 @@
 namespace xemmai
 {
 
+constexpr decltype(t_type_of<bool>::V_ids) t_type_of<bool>::V_ids;
+
 void t_type_of<bool>::f_define()
 {
 	t_define<bool, t_object>(f_global(), L"Boolean")

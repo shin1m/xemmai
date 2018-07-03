@@ -26,7 +26,10 @@ public:
 template<>
 struct t_type_of<t_native> : t_type
 {
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type(std::move(a_module), a_super)
+	static constexpr auto V_ids = f_ids<t_native, t_object>();
+
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type(a_ids, a_super, std::move(a_module))
 	{
 		v_shared = true;
 	}

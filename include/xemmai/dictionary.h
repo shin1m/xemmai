@@ -141,6 +141,8 @@ struct t_type_of<t_dictionary::t_table> : t_type
 template<>
 struct t_type_of<t_dictionary> : t_type
 {
+	static constexpr auto V_ids = f_ids<t_dictionary, t_object>();
+
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
 	static intptr_t f_hash(const t_value& a_self);

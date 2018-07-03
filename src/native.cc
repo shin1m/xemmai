@@ -12,6 +12,8 @@ t_scoped t_native::f_instantiate(t_extension::t_function a_function, t_extension
 	return object;
 }
 
+constexpr decltype(t_type_of<t_native>::V_ids) t_type_of<t_native>::V_ids;
+
 t_type* t_type_of<t_native>::f_derive()
 {
 	return nullptr;

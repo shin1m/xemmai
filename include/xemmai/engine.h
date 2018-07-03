@@ -337,6 +337,19 @@ inline t_scoped t_object::f_allocate(t_type* a_type)
 	return t_scoped(p, t_scoped::t_pass());
 }
 
+template<size_t A_n>
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids) : v_this(t_object::f_allocate_on_boot()), v_depth(A_n - 1), v_ids(a_ids.data())
+{
+	v_this.f_pointer__(this);
+}
+
+template<size_t A_n>
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : v_this(t_object::f_allocate(f_engine()->v_type_class)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(std::move(a_module))
+{
+	v_super.f_construct(a_super->v_this);
+	v_this.f_pointer__(this);
+}
+
 inline t_object* t_fiber::f_current()
 {
 	return f_as<t_thread&>(t_thread::v_current).v_active;

@@ -45,7 +45,7 @@ struct t_type_of<double> : t_type_immutable
 		static bool f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			if (!std::is_same<typename t_fundamental<T0>::t_type, double>::value) return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type()) != nullptr;
+			if (!std::is_same<typename t_fundamental<T0>::t_type, double>::value) return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
 			switch (reinterpret_cast<size_t>(p)) {
 			case t_value::e_tag__NULL:
 			case t_value::e_tag__BOOLEAN:
@@ -54,10 +54,12 @@ struct t_type_of<double> : t_type_immutable
 			case t_value::e_tag__FLOAT:
 				return true;
 			default:
-				return dynamic_cast<t_type_of*>(p->f_type()) != nullptr;
+				return p->f_type()->template f_derives<double>();
 			}
 		}
 	};
+
+	static constexpr auto V_ids = f_ids<double, t_object>();
 
 	static t_scoped f_construct(t_type* a_class, double a_value)
 	{
@@ -145,10 +147,7 @@ struct t_type_of<double> : t_type_immutable
 	static bool f_not_equals(double a_self, const t_value& a_value);
 	static void f_define();
 
-	t_type_of(t_scoped&& a_module, t_type* a_super) : t_type_immutable(std::move(a_module), a_super)
-	{
-		v_fixed = v_shared = true;
-	}
+	using t_type_immutable::t_type_immutable;
 	virtual t_type* f_derive();
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };

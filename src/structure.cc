@@ -55,14 +55,6 @@ t_scoped t_structure::f_remove(size_t a_index)
 	return q;
 }
 
-t_type_of<t_structure>::t_type_of(t_type* a_super) : t_type(a_super)
-{
-	auto type = static_cast<t_object*>(static_cast<t_slot&>(v_super))->v_type;
-	t_value::f_increments()->f_push(type->v_this);
-	static_cast<t_object*>(v_this)->v_type = type;
-	v_revive = v_shared = true;
-}
-
 t_type* t_type_of<t_structure>::f_derive()
 {
 	return nullptr;

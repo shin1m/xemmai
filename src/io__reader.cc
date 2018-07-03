@@ -103,6 +103,8 @@ std::wstring t_reader::f_read_line(t_io* a_extension)
 
 }
 
+constexpr decltype(t_type_of<io::t_reader>::V_ids) t_type_of<io::t_reader>::V_ids;
+
 void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader")
@@ -118,7 +120,7 @@ void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 
 t_type* t_type_of<io::t_reader>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), this);
+	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<io::t_reader>::f_scan(t_object* a_this, t_scan a_scan)

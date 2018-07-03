@@ -12,6 +12,8 @@ t_scoped t_method::f_instantiate(t_scoped&& a_function, t_scoped&& a_self)
 	return object;
 }
 
+constexpr decltype(t_type_of<t_method>::V_ids) t_type_of<t_method>::V_ids;
+
 t_type* t_type_of<t_method>::f_derive()
 {
 	return nullptr;

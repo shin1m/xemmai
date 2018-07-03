@@ -32,6 +32,8 @@ void t_throwable::f_dump() const
 	if (v_backtrace) v_backtrace->f_dump();
 }
 
+constexpr decltype(t_type_of<t_throwable>::V_ids) t_type_of<t_throwable>::V_ids;
+
 void t_type_of<t_throwable>::f_define()
 {
 	t_define<t_throwable, t_object>(f_global(), L"Throwable")
@@ -43,7 +45,7 @@ void t_type_of<t_throwable>::f_define()
 
 t_type* t_type_of<t_throwable>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), this);
+	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_throwable>::f_scan(t_object* a_this, t_scan a_scan)

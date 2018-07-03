@@ -133,6 +133,8 @@ struct t_fiber
 template<>
 struct t_type_of<t_fiber> : t_type
 {
+	static constexpr auto V_ids = f_ids<t_fiber, t_object>();
+
 	void f_define();
 
 	using t_type::t_type;

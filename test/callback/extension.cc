@@ -14,6 +14,8 @@ struct t_type_of<t_client> : t_type
 {
 	typedef t_callback_extension t_extension;
 
+	static constexpr auto V_ids = f_ids<t_client, t_object>();
+
 	static void f_define(t_callback_extension* a_extension);
 
 	using t_type::t_type;
@@ -26,6 +28,8 @@ template<>
 struct t_type_of<t_server> : t_type
 {
 	typedef t_callback_extension t_extension;
+
+	static constexpr auto V_ids = f_ids<t_server, t_object>();
 
 	static void f_define(t_callback_extension* a_extension);
 
@@ -116,6 +120,8 @@ void t_client_wrapper::f_on_message(const std::wstring& a_message)
 namespace xemmai
 {
 
+constexpr decltype(t_type_of<t_client>::V_ids) t_type_of<t_client>::V_ids;
+
 void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_client, t_object>(a_extension, L"Client")
@@ -126,7 +132,7 @@ void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 
 t_type* t_type_of<t_client>::f_derive()
 {
-	return new t_type_of(t_scoped(v_module), this);
+	return new t_type_of(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_client>::f_finalize(t_object* a_this)
@@ -139,6 +145,8 @@ t_scoped t_type_of<t_client>::f_construct(t_stacked* a_stack, size_t a_n)
 	return t_construct_with<t_scoped(*)(t_type*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(this, a_stack, a_n);
 }
 
+constexpr decltype(t_type_of<t_server>::V_ids) t_type_of<t_server>::V_ids;
+
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_server, t_object>(a_extension, L"Server")
@@ -150,7 +158,7 @@ void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 
 t_type* t_type_of<t_server>::f_derive()
 {
-	return new t_type_of(t_scoped(v_module), this);
+	return new t_type_of(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_server>::f_finalize(t_object* a_this)

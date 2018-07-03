@@ -6,6 +6,8 @@
 namespace xemmai
 {
 
+constexpr decltype(t_type_of<double>::V_ids) t_type_of<double>::V_ids;
+
 bool t_type_of<double>::f_equals(double a_self, const t_value& a_value)
 {
 	return f_is<double>(a_value) && a_self == f_as<double>(a_value);
@@ -39,7 +41,7 @@ void t_type_of<double>::f_define()
 
 t_type* t_type_of<double>::f_derive()
 {
-	return new t_derived<t_type_of>(t_scoped(v_module), this);
+	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
 }
 
 t_scoped t_type_of<double>::f_construct(t_stacked* a_stack, size_t a_n)

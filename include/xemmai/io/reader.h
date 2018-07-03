@@ -49,6 +49,8 @@ struct t_type_of<io::t_reader> : t_type
 {
 	typedef t_io t_extension;
 
+	static constexpr auto V_ids = f_ids<io::t_reader, t_object>();
+
 	static void f_define(t_io* a_extension);
 
 	using t_type::t_type;

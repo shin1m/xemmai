@@ -54,6 +54,25 @@ struct t_fundamental<t_scoped>
 	typedef t_object t_type;
 };
 
+template<typename T, size_t... Is>
+static constexpr std::array<T, sizeof...(Is) + 1> f_appended(const std::array<T, sizeof...(Is)>& a_xs, T a_x, std::index_sequence<Is...>)
+{
+	return {a_xs[Is]..., a_x};
+}
+
+template<typename T, size_t N>
+static constexpr std::array<T, N + 1> f_appended(const std::array<T, N>& a_xs, T a_x)
+{
+	return f_appended(a_xs, a_x, std::make_index_sequence<N>());
+}
+
+using t_type_id = void(*)();
+
+template<typename T>
+void f_type_id()
+{
+}
+
 template<typename T>
 class t_slot_of
 {
@@ -113,7 +132,7 @@ struct t_type_of<t_object>
 		{
 			if (std::is_same<typename t_fundamental<T0>::t_type, t_object>::value) return true;
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type()) != nullptr;
+			return reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
 		}
 	};
 	template<typename T0>
@@ -133,20 +152,19 @@ struct t_type_of<t_object>
 			case t_value::e_tag__FLOAT:
 				return false;
 			default:
-				return dynamic_cast<t_type_of<typename t_fundamental<T0>::t_type>*>(p->f_type()) != nullptr;
+				return p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
 			}
 		}
 	};
 	typedef t_global t_extension;
 
-	t_slot v_this;
-	t_slot v_module;
-	t_slot_of<t_type> v_super;
-	bool v_builtin = false;
-	bool v_primitive = false;
-	bool v_revive = false;
-	bool v_fixed = false;
-	bool v_shared = false;
+	static constexpr std::array<t_type_id, 1> V_ids{f_type_id<void*>};
+
+	template<typename T, typename U>
+	static constexpr auto f_ids()
+	{
+		return f_appended(t_type_of<U>::V_ids, static_cast<t_type_id>(f_type_id<T>));
+	}
 
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
@@ -154,32 +172,55 @@ struct t_type_of<t_object>
 		return t_scoped(std::forward<T>(a_value));
 	}
 	static void f_initialize(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT static std::wstring f_string(const t_value& a_self)
+	static std::wstring f_string(const t_value& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];
 		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
 		return cs;
 	}
-	XEMMAI__PORTABLE__EXPORT static intptr_t f_hash(const t_value& a_self)
+	static intptr_t f_hash(const t_value& a_self)
 	{
 		return a_self.f_tag();
 	}
-	XEMMAI__PORTABLE__EXPORT static bool f_equals(const t_value& a_self, const t_value& a_other)
+	static bool f_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return a_self == a_other;
 	}
-	XEMMAI__PORTABLE__EXPORT static bool f_not_equals(const t_value& a_self, const t_value& a_other)
+	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return a_self != a_other;
 	}
-	XEMMAI__PORTABLE__EXPORT static void f_own(const t_value& a_self);
-	XEMMAI__PORTABLE__EXPORT static void f_share(const t_value& a_self);
-	XEMMAI__PORTABLE__EXPORT void f_define();
+	static void f_own(const t_value& a_self);
+	static void f_share(const t_value& a_self);
+	void f_define();
 
-	t_type_of();
-	t_type_of(t_type* a_super);
-	t_type_of(t_scoped&& a_module, t_type* a_super);
+	t_slot v_this;
+	size_t v_depth;
+	const t_type_id* v_ids;
+	t_slot_of<t_type> v_super;
+	t_slot v_module;
+	bool v_builtin = false;
+	bool v_primitive = false;
+	bool v_revive = false;
+	bool v_fixed = false;
+	bool v_shared = false;
+
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : t_type_of(a_ids)
+	{
+		v_super.f_construct(a_super->v_this);
+	}
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module);
 	XEMMAI__PORTABLE__EXPORT virtual ~t_type_of() = default;
+	template<typename T>
+	bool f_derives() const
+	{
+		size_t i = t_type_of<T>::V_ids.size() - 1;
+		return i <= v_depth && v_ids[i] == static_cast<t_type_id>(f_type_id<T>);
+	}
 	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
 	XEMMAI__PORTABLE__EXPORT bool f_derives(t_type* a_type);
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
@@ -248,6 +289,12 @@ struct t_type_of<t_object>::t_as<t_scoped&&>
 	}
 };
 
+template<>
+inline bool t_type_of<t_object>::f_derives<t_object>() const
+{
+	return true;
+}
+
 template<typename T0, typename T1>
 inline decltype(auto) f_as(T1&& a_object)
 {
@@ -283,7 +330,11 @@ inline void t_slot_of<T>::f_construct(t_object* a_value)
 
 struct t_type_immutable : t_type
 {
-	using t_type::t_type;
+	template<size_t A_n>
+	t_type_immutable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type(a_ids, a_super, std::move(a_module))
+	{
+		v_fixed = v_shared = true;
+	}
 	virtual void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
 	virtual t_scoped f_get(t_object* a_this, t_object* a_key);
 	virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
