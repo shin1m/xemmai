@@ -24,15 +24,9 @@ public:
 };
 
 template<>
-struct t_type_of<t_native> : t_type
+struct t_type_of<t_native> : t_with_traits<t_with_ids<t_native>, false, true>
 {
-	static constexpr auto V_ids = f_ids<t_native, t_object>();
-
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type(a_ids, a_super, std::move(a_module))
-	{
-		v_shared = true;
-	}
+	using t_with_traits<t_with_ids<t_native>, false, true>::t_with_traits;
 	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

@@ -13,7 +13,7 @@ struct t_fundamental<float>
 };
 
 template<>
-struct t_type_of<double> : t_type_immutable
+struct t_type_of<double> : t_with_ids<double, t_type_immutable>
 {
 	template<typename T0>
 	struct t_as
@@ -58,8 +58,6 @@ struct t_type_of<double> : t_type_immutable
 			}
 		}
 	};
-
-	static constexpr auto V_ids = f_ids<double, t_object>();
 
 	static t_scoped f_construct(t_type* a_class, double a_value)
 	{
@@ -147,7 +145,7 @@ struct t_type_of<double> : t_type_immutable
 	static bool f_not_equals(double a_self, const t_value& a_value);
 	static void f_define();
 
-	using t_type_immutable::t_type_immutable;
+	using t_with_ids<double, t_type_immutable>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };

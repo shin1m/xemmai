@@ -5,8 +5,6 @@
 namespace xemmai
 {
 
-constexpr decltype(t_class::V_ids) t_class::V_ids;
-
 t_type* t_class::f_derive()
 {
 	return nullptr;

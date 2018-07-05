@@ -131,13 +131,11 @@ struct t_fiber
 };
 
 template<>
-struct t_type_of<t_fiber> : t_type
+struct t_type_of<t_fiber> : t_with_ids<t_fiber>
 {
-	static constexpr auto V_ids = f_ids<t_fiber, t_object>();
-
 	void f_define();
 
-	using t_type::t_type;
+	using t_with_ids<t_fiber>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

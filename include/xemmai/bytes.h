@@ -63,10 +63,8 @@ public:
 };
 
 template<>
-struct t_type_of<t_bytes> : t_type
+struct t_type_of<t_bytes> : t_with_ids<t_bytes>
 {
-	static constexpr auto V_ids = f_ids<t_bytes, t_object>();
-
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static bool f_equals(const t_value& a_self, const t_value& a_other);
 	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
@@ -75,7 +73,7 @@ struct t_type_of<t_bytes> : t_type
 	}
 	static void f_define();
 
-	using t_type::t_type;
+	using t_with_ids<t_bytes>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);

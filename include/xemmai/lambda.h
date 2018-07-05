@@ -54,15 +54,9 @@ public:
 };
 
 template<>
-struct t_type_of<t_lambda> : t_type
+struct t_type_of<t_lambda> : t_with_traits<t_with_ids<t_lambda>, false, true>
 {
-	static constexpr auto V_ids = f_ids<t_lambda, t_object>();
-
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type(a_ids, a_super, std::move(a_module))
-	{
-		v_shared = true;
-	}
+	using t_with_traits<t_with_ids<t_lambda>, false, true>::t_with_traits;
 	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
@@ -92,11 +86,9 @@ public:
 };
 
 template<>
-struct t_type_of<t_advanced_lambda> : t_type_of<t_lambda>
+struct t_type_of<t_advanced_lambda> : t_with_ids<t_advanced_lambda, t_type_of<t_lambda>>
 {
-	static constexpr auto V_ids = f_ids<t_advanced_lambda, t_lambda>();
-
-	using t_type_of<t_lambda>::t_type_of;
+	using t_with_ids<t_advanced_lambda, t_type_of<t_lambda>>::t_with_ids;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);

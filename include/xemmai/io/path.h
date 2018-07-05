@@ -10,11 +10,9 @@ namespace xemmai
 class t_io;
 
 template<>
-struct t_type_of<portable::t_path> : t_type_immutable
+struct t_type_of<portable::t_path> : t_with_ids<portable::t_path, t_type_immutable>
 {
 	typedef t_io t_extension;
-
-	static constexpr auto V_ids = f_ids<portable::t_path, t_object>();
 
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
@@ -25,7 +23,7 @@ struct t_type_of<portable::t_path> : t_type_immutable
 	}
 	static void f_define(t_io* a_extension);
 
-	using t_type_immutable::t_type_immutable;
+	using t_with_ids<portable::t_path, t_type_immutable>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);

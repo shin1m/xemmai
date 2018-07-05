@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<bool> : t_type_immutable
+struct t_type_of<bool> : t_with_ids<bool, t_type_immutable>
 {
 	template<typename T0>
 	struct t_as
@@ -27,8 +27,6 @@ struct t_type_of<bool> : t_type_immutable
 			return reinterpret_cast<size_t>(f_object(std::forward<T1>(a_object))) == t_value::e_tag__BOOLEAN;
 		}
 	};
-
-	static constexpr auto V_ids = f_ids<bool, t_object>();
 
 	static std::wstring f_string(bool a_self)
 	{
@@ -56,7 +54,7 @@ struct t_type_of<bool> : t_type_immutable
 	}
 	static void f_define();
 
-	using t_type_immutable::t_type_immutable;
+	using t_with_ids<bool, t_type_immutable>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 };

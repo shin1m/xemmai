@@ -13,8 +13,6 @@ t_scoped t_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code)
 	return object;
 }
 
-constexpr decltype(t_type_of<t_lambda>::V_ids) t_type_of<t_lambda>::V_ids;
-
 t_type* t_type_of<t_lambda>::f_derive()
 {
 	return nullptr;
@@ -72,8 +70,6 @@ t_scoped t_advanced_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code,
 	object.f_pointer__(new t_advanced_lambda(std::move(a_scope), std::move(a_code), std::move(defaults)));
 	return object;
 }
-
-constexpr decltype(t_type_of<t_advanced_lambda>::V_ids) t_type_of<t_advanced_lambda>::V_ids;
 
 void t_type_of<t_advanced_lambda>::f_scan(t_object* a_this, t_scan a_scan)
 {

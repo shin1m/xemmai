@@ -120,8 +120,6 @@ void t_thread::f_join()
 	f_cache_acquire();
 }
 
-constexpr decltype(t_type_of<t_thread>::V_ids) t_type_of<t_thread>::V_ids;
-
 void t_type_of<t_thread>::f_define()
 {
 	v_builtin = true;

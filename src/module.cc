@@ -197,8 +197,6 @@ void t_library::f_initialize(t_object* a_this)
 	v_extension = factory(a_this);
 }
 
-constexpr decltype(t_type_of<t_module>::V_ids) t_type_of<t_module>::V_ids;
-
 t_type* t_type_of<t_module>::f_derive()
 {
 	return nullptr;

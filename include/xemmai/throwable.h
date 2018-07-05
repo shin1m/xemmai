@@ -37,13 +37,11 @@ public:
 };
 
 template<>
-struct t_type_of<t_throwable> : t_type
+struct t_type_of<t_throwable> : t_with_ids<t_throwable>
 {
-	static constexpr auto V_ids = f_ids<t_throwable, t_object>();
-
 	static void f_define();
 
-	using t_type::t_type;
+	using t_with_ids<t_throwable>::t_with_ids;
 	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);

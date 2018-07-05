@@ -122,8 +122,6 @@ void t_writer::f_flush(t_io* a_extension)
 
 }
 
-constexpr decltype(t_type_of<io::t_writer>::V_ids) t_type_of<io::t_writer>::V_ids;
-
 void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
 	t_define<io::t_writer, t_object>(a_extension, L"Writer")

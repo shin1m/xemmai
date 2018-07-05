@@ -6,8 +6,6 @@
 namespace xemmai
 {
 
-constexpr decltype(t_type_of<double>::V_ids) t_type_of<double>::V_ids;
-
 bool t_type_of<double>::f_equals(double a_self, const t_value& a_value)
 {
 	return f_is<double>(a_value) && a_self == f_as<double>(a_value);

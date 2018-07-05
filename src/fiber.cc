@@ -124,8 +124,6 @@ void t_fiber::f_caught(const t_value& a_value, void** a_pc)
 	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, t_context::v_instance->v_lambda, a_pc);
 }
 
-constexpr decltype(t_type_of<t_fiber>::V_ids) t_type_of<t_fiber>::V_ids;
-
 void t_type_of<t_fiber>::f_define()
 {
 	v_builtin = true;

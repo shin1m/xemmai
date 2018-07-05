@@ -7,8 +7,6 @@
 namespace xemmai
 {
 
-constexpr decltype(t_type_of<portable::t_path>::V_ids) t_type_of<portable::t_path>::V_ids;
-
 void t_type_of<portable::t_path>::f_define(t_io* a_extension)
 {
 	t_define<portable::t_path, t_object>(a_extension, L"Path")

@@ -159,8 +159,6 @@ void t_type_of<t_dictionary::t_table>::f_instantiate(t_stacked* a_stack, size_t 
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
-constexpr decltype(t_type_of<t_dictionary>::V_ids) t_type_of<t_dictionary>::V_ids;
-
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");

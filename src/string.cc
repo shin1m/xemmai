@@ -6,8 +6,6 @@
 namespace xemmai
 {
 
-constexpr decltype(t_type_of<std::wstring>::V_ids) t_type_of<std::wstring>::V_ids;
-
 std::wstring t_type_of<std::wstring>::f_add(const std::wstring& a_self, const t_value& a_value)
 {
 	if (f_is<std::wstring>(a_value)) return a_self + f_as<const std::wstring&>(a_value);

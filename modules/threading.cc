@@ -6,32 +6,24 @@ namespace xemmai
 class t_threading;
 
 template<>
-struct t_type_of<std::mutex> : t_type
+struct t_type_of<std::mutex> : t_with_traits<t_with_ids<std::mutex>, true, true>
 {
 	typedef t_threading t_extension;
-
-	static constexpr auto V_ids = f_ids<std::mutex, t_object>();
 
 	static void f_acquire(std::mutex& a_self);
 	static void f_release(std::mutex& a_self);
 	static void f_define(t_threading* a_extension);
 
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type(a_ids, a_super, std::move(a_module))
-	{
-		v_fixed = v_shared = true;
-	}
+	using t_with_traits<t_with_ids<std::mutex>, true, true>::t_with_traits;
 	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
 template<>
-struct t_type_of<std::condition_variable> : t_type
+struct t_type_of<std::condition_variable> : t_with_traits<t_with_ids<std::condition_variable>, true, true>
 {
 	typedef t_threading t_extension;
-
-	static constexpr auto V_ids = f_ids<std::condition_variable, t_object>();
 
 	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex);
 	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds);
@@ -39,11 +31,7 @@ struct t_type_of<std::condition_variable> : t_type
 	static void f_broadcast(std::condition_variable& a_self);
 	static void f_define(t_threading* a_extension);
 
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type(a_ids, a_super, std::move(a_module))
-	{
-		v_fixed = v_shared = true;
-	}
+	using t_with_traits<t_with_ids<std::condition_variable>, true, true>::t_with_traits;
 	virtual t_type* f_derive();
 	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
@@ -86,8 +74,6 @@ inline t_slot_of<t_type>& t_threading::f_type_slot<std::condition_variable>()
 	return v_type_condition;
 }
 
-constexpr decltype(t_type_of<std::mutex>::V_ids) t_type_of<std::mutex>::V_ids;
-
 void t_type_of<std::mutex>::f_acquire(std::mutex& a_self)
 {
 	t_safe_region region;
@@ -123,8 +109,6 @@ t_scoped t_type_of<std::mutex>::f_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
 }
-
-constexpr decltype(t_type_of<std::condition_variable>::V_ids) t_type_of<std::condition_variable>::V_ids;
 
 void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex)
 {

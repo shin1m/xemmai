@@ -134,8 +134,6 @@ void t_file::f_blocking__(bool a_value)
 
 }
 
-constexpr decltype(t_type_of<io::t_file>::V_ids) t_type_of<io::t_file>::V_ids;
-
 void t_type_of<io::t_file>::f_define(t_io* a_extension)
 {
 	t_define<io::t_file, t_object>(a_extension, L"File")

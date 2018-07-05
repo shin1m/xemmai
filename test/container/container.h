@@ -13,14 +13,12 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_pair> : t_type
+struct t_type_of<t_pair> : t_with_ids<t_pair>
 {
-	static constexpr auto V_ids = f_ids<t_pair, t_object>();
-
 	static t_scoped f_instantiate(t_container* a_extension, t_scoped&& a_value);
 	static t_type* f_define(t_container* a_extension);
 
-	using t_type::t_type;
+	using t_with_ids<t_pair>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
@@ -28,15 +26,13 @@ struct t_type_of<t_pair> : t_type
 };
 
 template<>
-struct t_type_of<t_queue> : t_type
+struct t_type_of<t_queue> : t_with_ids<t_queue>
 {
 	typedef t_container t_extension;
 
-	static constexpr auto V_ids = f_ids<t_queue, t_object>();
-
 	static void f_define(t_container* a_extension);
 
-	using t_type::t_type;
+	using t_with_ids<t_queue>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

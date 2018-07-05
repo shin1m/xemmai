@@ -44,7 +44,7 @@ struct t_fundamental<unsigned long>
 };
 
 template<>
-struct t_type_of<intptr_t> : t_type_immutable
+struct t_type_of<intptr_t> : t_with_ids<intptr_t, t_type_immutable>
 {
 	template<typename T0>
 	struct t_as
@@ -81,8 +81,6 @@ struct t_type_of<intptr_t> : t_type_immutable
 			}
 		}
 	};
-
-	static constexpr auto V_ids = f_ids<intptr_t, t_object>();
 
 	static t_scoped f_construct(t_type* a_class, intptr_t a_value)
 	{
@@ -166,7 +164,7 @@ struct t_type_of<intptr_t> : t_type_immutable
 	}
 	static void f_define();
 
-	using t_type_immutable::t_type_immutable;
+	using t_with_ids<intptr_t, t_type_immutable>::t_with_ids;
 	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };

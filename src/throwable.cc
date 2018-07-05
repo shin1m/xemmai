@@ -32,8 +32,6 @@ void t_throwable::f_dump() const
 	if (v_backtrace) v_backtrace->f_dump();
 }
 
-constexpr decltype(t_type_of<t_throwable>::V_ids) t_type_of<t_throwable>::V_ids;
-
 void t_type_of<t_throwable>::f_define()
 {
 	t_define<t_throwable, t_object>(f_global(), L"Throwable")

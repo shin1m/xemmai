@@ -54,16 +54,10 @@ struct t_fundamental<t_scoped>
 	typedef t_object t_type;
 };
 
-template<typename T, size_t... Is>
-static constexpr std::array<T, sizeof...(Is) + 1> f_appended(const std::array<T, sizeof...(Is)>& a_xs, T a_x, std::index_sequence<Is...>)
+template<typename T, size_t... A_Is>
+static constexpr std::array<T, sizeof...(A_Is) + 1> f_append(const std::array<T, sizeof...(A_Is)>& a_xs, std::index_sequence<A_Is...>, T a_x)
 {
-	return {a_xs[Is]..., a_x};
-}
-
-template<typename T, size_t N>
-static constexpr std::array<T, N + 1> f_appended(const std::array<T, N>& a_xs, T a_x)
-{
-	return f_appended(a_xs, a_x, std::make_index_sequence<N>());
+	return {a_xs[A_Is]..., a_x};
 }
 
 using t_type_id = void(*)();
@@ -158,13 +152,7 @@ struct t_type_of<t_object>
 	};
 	typedef t_global t_extension;
 
-	static constexpr std::array<t_type_id, 1> V_ids{f_type_id<void*>};
-
-	template<typename T, typename U>
-	static constexpr auto f_ids()
-	{
-		return f_appended(t_type_of<U>::V_ids, static_cast<t_type_id>(f_type_id<T>));
-	}
+	static constexpr std::array<t_type_id, 1> V_ids{f_type_id<t_object>};
 
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
@@ -328,13 +316,31 @@ inline void t_slot_of<T>::f_construct(t_object* a_value)
 	v_slot.f_construct(a_value);
 }
 
-struct t_type_immutable : t_type
+template<typename T, typename T_base = t_type>
+struct t_with_ids : T_base
+{
+	static constexpr std::array<t_type_id, T_base::V_ids.size() + 1> V_ids = f_append(T_base::V_ids, std::make_index_sequence<T_base::V_ids.size()>(), static_cast<t_type_id>(f_type_id<T>));
+
+	using T_base::T_base;
+};
+
+template<typename T, typename T_base>
+constexpr std::array<t_type_id, T_base::V_ids.size() + 1> t_with_ids<T, T_base>::V_ids;
+
+template<typename T_base, bool A_fixed, bool A_shared>
+struct t_with_traits : T_base
 {
 	template<size_t A_n>
-	t_type_immutable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type(a_ids, a_super, std::move(a_module))
+	t_with_traits(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
-		v_fixed = v_shared = true;
+		T_base::v_fixed = A_fixed;
+		T_base::v_shared = A_shared;
 	}
+};
+
+struct t_type_immutable : t_with_traits<t_type, true, true>
+{
+	using t_with_traits<t_type, true, true>::t_with_traits;
 	virtual void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
 	virtual t_scoped f_get(t_object* a_this, t_object* a_key);
 	virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);

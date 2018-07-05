@@ -33,14 +33,12 @@ public:
 };
 
 template<>
-struct t_type_of<t_symbol> : t_type_immutable
+struct t_type_of<t_symbol> : t_with_ids<t_symbol, t_type_immutable>
 {
-	static constexpr auto V_ids = f_ids<t_symbol, t_object>();
-
 	void f_define();
 
 	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type_immutable(a_ids, a_super, std::move(a_module))
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_with_ids<t_symbol, t_type_immutable>(a_ids, a_super, std::move(a_module))
 	{
 		v_revive = true;
 	}

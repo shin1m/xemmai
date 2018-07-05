@@ -3,8 +3,6 @@
 namespace xemmai
 {
 
-constexpr decltype(t_type_of<t_pair>::V_ids) t_type_of<t_pair>::V_ids;
-
 t_scoped t_type_of<t_pair>::f_instantiate(t_container* a_extension, t_scoped&& a_value)
 {
 	t_scoped object = t_object::f_allocate(a_extension->v_type_pair);
@@ -36,8 +34,6 @@ void t_type_of<t_pair>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	t_throwable::f_throw(L"uninstantiatable.");
 }
-
-constexpr decltype(t_type_of<t_queue>::V_ids) t_type_of<t_queue>::V_ids;
 
 void t_type_of<t_queue>::f_define(t_container* a_extension)
 {

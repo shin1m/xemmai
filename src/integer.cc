@@ -6,8 +6,6 @@
 namespace xemmai
 {
 
-constexpr decltype(t_type_of<intptr_t>::V_ids) t_type_of<intptr_t>::V_ids;
-
 t_scoped t_type_of<intptr_t>::f_multiply(intptr_t a_self, const t_value& a_value)
 {
 	switch (a_value.f_tag()) {

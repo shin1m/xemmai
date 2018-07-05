@@ -643,29 +643,24 @@ inline void f_define(T_extension* a_extension, const std::wstring& a_name)
 }
 
 template<typename T, typename T_extension>
-struct t_enum_of : t_type_of<intptr_t>
+struct t_enum_of : t_with_ids<T, t_type_of<intptr_t>>
 {
 	typedef T_extension t_extension;
 	typedef t_enum_of t_base;
 
-	static constexpr std::array<t_type_id, t_type_of<intptr_t>::V_ids.size() + 1> V_ids = f_ids<T, intptr_t>();
-
 	static t_scoped f_transfer(const T_extension* a_extension, T a_value)
 	{
-		return f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
+		return t_with_ids<T, t_type_of<intptr_t>>::f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
 	}
 
-	using t_type_of<intptr_t>::t_type_of;
+	using t_with_ids<T, t_type_of<intptr_t>>::t_with_ids;
 	virtual t_type* f_derive();
 };
 
 template<typename T, typename T_extension>
-constexpr decltype(t_enum_of<T, T_extension>::V_ids) t_enum_of<T, T_extension>::V_ids;
-
-template<typename T, typename T_extension>
 t_type* t_enum_of<T, T_extension>::f_derive()
 {
-	return new t_type_of<T>(V_ids, this, t_scoped(v_module));
+	return new t_type_of<T>(t_with_ids<T, t_type_of<intptr_t>>::V_ids, this, t_scoped(t_with_ids<T, t_type_of<intptr_t>>::v_module));
 }
 
 }

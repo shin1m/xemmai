@@ -45,15 +45,13 @@ public:
 }
 
 template<>
-struct t_type_of<io::t_reader> : t_type
+struct t_type_of<io::t_reader> : t_with_ids<io::t_reader>
 {
 	typedef t_io t_extension;
 
-	static constexpr auto V_ids = f_ids<io::t_reader, t_object>();
-
 	static void f_define(t_io* a_extension);
 
-	using t_type::t_type;
+	using t_with_ids<io::t_reader>::t_with_ids;
 	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);

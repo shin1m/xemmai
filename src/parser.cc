@@ -840,8 +840,6 @@ void t_parser::t_error::f_dump() const
 	t_throwable::f_dump();
 }
 
-constexpr decltype(t_type_of<t_parser::t_error>::V_ids) t_type_of<t_parser::t_error>::V_ids;
-
 t_type* t_type_of<t_parser::t_error>::f_derive()
 {
 	return nullptr;

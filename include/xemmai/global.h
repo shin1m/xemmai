@@ -13,7 +13,6 @@
 namespace xemmai
 {
 
-class t_tuple;
 class t_array;
 class t_bytes;
 
