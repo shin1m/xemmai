@@ -319,6 +319,8 @@ inline void t_slot_of<T>::f_construct(t_object* a_value)
 template<typename T, typename T_base = t_type>
 struct t_with_ids : T_base
 {
+	typedef t_with_ids t_base;
+
 	static constexpr std::array<t_type_id, T_base::V_ids.size() + 1> V_ids = f_append(T_base::V_ids, std::make_index_sequence<T_base::V_ids.size()>(), static_cast<t_type_id>(f_type_id<T>));
 
 	using T_base::T_base;
@@ -330,12 +332,44 @@ constexpr std::array<t_type_id, T_base::V_ids.size() + 1> t_with_ids<T, T_base>:
 template<typename T_base, bool A_fixed, bool A_shared>
 struct t_with_traits : T_base
 {
+	typedef t_with_traits t_base;
+
 	template<size_t A_n>
 	t_with_traits(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
 		T_base::v_fixed = A_fixed;
 		T_base::v_shared = A_shared;
 	}
+};
+
+template<typename T, typename T_base>
+struct t_derivable : T_base
+{
+	typedef t_derivable t_base;
+
+	using T_base::T_base;
+	virtual t_type* f_derive();
+};
+
+template<typename T_base>
+struct t_underivable : T_base
+{
+	typedef t_underivable t_base;
+
+	using T_base::T_base;
+	virtual t_type* f_derive()
+	{
+		return nullptr;
+	}
+};
+
+template<typename T_base>
+struct t_uninstantiatable : T_base
+{
+	typedef t_uninstantiatable t_base;
+
+	using T_base::T_base;
+	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 };
 
 struct t_type_immutable : t_with_traits<t_type, true, true>

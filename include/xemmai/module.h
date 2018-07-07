@@ -120,10 +120,9 @@ struct t_library : t_module
 };
 
 template<>
-struct t_type_of<t_module> : t_with_traits<t_with_ids<t_module>, true, true>
+struct t_type_of<t_module> : t_underivable<t_with_traits<t_with_ids<t_module>, true, true>>
 {
-	using t_with_traits<t_with_ids<t_module>, true, true>::t_with_traits;
-	virtual t_type* f_derive();
+	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);

@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<bool> : t_with_ids<bool, t_type_immutable>
+struct t_type_of<bool> : t_uninstantiatable<t_underivable<t_with_ids<bool, t_type_immutable>>>
 {
 	template<typename T0>
 	struct t_as
@@ -54,9 +54,7 @@ struct t_type_of<bool> : t_with_ids<bool, t_type_immutable>
 	}
 	static void f_define();
 
-	using t_with_ids<bool, t_type_immutable>::t_with_ids;
-	virtual t_type* f_derive();
-	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
+	using t_base::t_base;
 };
 
 }

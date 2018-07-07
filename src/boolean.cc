@@ -17,14 +17,4 @@ void t_type_of<bool>::f_define()
 	;
 }
 
-t_type* t_type_of<bool>::f_derive()
-{
-	return nullptr;
-}
-
-void t_type_of<bool>::f_instantiate(t_stacked* a_stack, size_t a_n)
-{
-	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
-}
-
 }

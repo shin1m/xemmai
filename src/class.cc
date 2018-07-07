@@ -5,11 +5,6 @@
 namespace xemmai
 {
 
-t_type* t_class::f_derive()
-{
-	return nullptr;
-}
-
 void t_class::f_scan(t_object* a_this, t_scan a_scan)
 {
 	auto& p = f_as<t_type&>(a_this);

@@ -155,11 +155,9 @@ public:
 };
 
 template<>
-struct t_type_of<t_lexer::t_error> : t_with_ids<t_lexer::t_error, t_type_of<t_throwable>>
+struct t_type_of<t_lexer::t_error> : t_uninstantiatable<t_underivable<t_with_ids<t_lexer::t_error, t_type_of<t_throwable>>>>
 {
-	using t_with_ids<t_lexer::t_error, t_type_of<t_throwable>>::t_with_ids;
-	virtual t_type* f_derive();
-	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
+	using t_base::t_base;
 };
 
 }

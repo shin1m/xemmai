@@ -37,11 +37,6 @@ void t_type_of<double>::f_define()
 	;
 }
 
-t_type* t_type_of<double>::f_derive()
-{
-	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
-}
-
 t_scoped t_type_of<double>::f_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<

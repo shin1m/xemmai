@@ -110,6 +110,12 @@ XEMMAI__DERIVED__METHOD(xor, 1)
 XEMMAI__DERIVED__METHOD(or, 1)
 XEMMAI__DERIVED__METHOD(send, 1)
 
+template<typename T, typename T_base>
+t_type* t_derivable<T, T_base>::f_derive()
+{
+	return new t_derived<t_type_of<T>>(t_type_of<T>::V_ids, this, t_scoped(this->v_module));
+}
+
 }
 
 #endif

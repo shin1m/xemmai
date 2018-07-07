@@ -16,11 +16,6 @@ void t_type_of<portable::t_path>::f_define(t_io* a_extension)
 	;
 }
 
-t_type* t_type_of<portable::t_path>::f_derive()
-{
-	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
-}
-
 void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
 {
 	delete &f_as<portable::t_path&>(a_this);

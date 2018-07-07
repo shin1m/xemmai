@@ -139,11 +139,6 @@ void t_type_of<t_tuple>::f_define()
 	;
 }
 
-t_type* t_type_of<t_tuple>::f_derive()
-{
-	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
-}
-
 void t_type_of<t_tuple>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	f_as<t_tuple&>(a_this).f_scan(a_scan);

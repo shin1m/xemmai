@@ -33,16 +33,15 @@ public:
 };
 
 template<>
-struct t_type_of<t_symbol> : t_with_ids<t_symbol, t_type_immutable>
+struct t_type_of<t_symbol> : t_underivable<t_with_ids<t_symbol, t_type_immutable>>
 {
 	void f_define();
 
 	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_with_ids<t_symbol, t_type_immutable>(a_ids, a_super, std::move(a_module))
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
 	{
 		v_revive = true;
 	}
-	virtual t_type* f_derive();
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);

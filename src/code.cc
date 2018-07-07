@@ -1735,11 +1735,6 @@ void t_code::f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_sta
 	a_stack[0].f_construct();
 }
 
-t_type* t_type_of<t_code>::f_derive()
-{
-	return nullptr;
-}
-
 void t_type_of<t_code>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	f_as<t_code&>(a_this).f_scan(a_scan);
@@ -1748,11 +1743,6 @@ void t_type_of<t_code>::f_scan(t_object* a_this, t_scan a_scan)
 void t_type_of<t_code>::f_finalize(t_object* a_this)
 {
 	delete &f_as<t_code&>(a_this);
-}
-
-void t_type_of<t_code>::f_instantiate(t_stacked* a_stack, size_t a_n)
-{
-	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
 }

@@ -12,11 +12,6 @@ t_scoped t_method::f_instantiate(t_scoped&& a_function, t_scoped&& a_self)
 	return object;
 }
 
-t_type* t_type_of<t_method>::f_derive()
-{
-	return nullptr;
-}
-
 void t_type_of<t_method>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	auto& p = f_as<t_method&>(a_this);
@@ -27,11 +22,6 @@ void t_type_of<t_method>::f_scan(t_object* a_this, t_scan a_scan)
 void t_type_of<t_method>::f_finalize(t_object* a_this)
 {
 	delete &f_as<t_method&>(a_this);
-}
-
-void t_type_of<t_method>::f_instantiate(t_stacked* a_stack, size_t a_n)
-{
-	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
 size_t t_type_of<t_method>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)

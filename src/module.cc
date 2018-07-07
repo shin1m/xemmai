@@ -197,11 +197,6 @@ void t_library::f_initialize(t_object* a_this)
 	v_extension = factory(a_this);
 }
 
-t_type* t_type_of<t_module>::f_derive()
-{
-	return nullptr;
-}
-
 void t_type_of<t_module>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	if (a_this == f_engine()->f_module_global()) return;

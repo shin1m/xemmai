@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<std::wstring> : t_with_ids<std::wstring, t_type_immutable>
+struct t_type_of<std::wstring> : t_derivable<std::wstring, t_with_ids<std::wstring, t_type_immutable>>
 {
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
@@ -61,8 +61,7 @@ struct t_type_of<std::wstring> : t_with_ids<std::wstring, t_type_immutable>
 	}
 	static void f_define();
 
-	using t_with_ids<std::wstring, t_type_immutable>::t_with_ids;
-	virtual t_type* f_derive();
+	using t_base::t_base;
 	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_stacked* a_stack);

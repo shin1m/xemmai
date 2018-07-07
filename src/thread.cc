@@ -129,11 +129,6 @@ void t_type_of<t_thread>::f_define()
 	;
 }
 
-t_type* t_type_of<t_thread>::f_derive()
-{
-	return nullptr;
-}
-
 void t_type_of<t_thread>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	a_scan(f_as<t_thread&>(a_this).v_fiber);

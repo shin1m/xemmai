@@ -47,11 +47,6 @@ void t_type_of<std::wstring>::f_define()
 	;
 }
 
-t_type* t_type_of<std::wstring>::f_derive()
-{
-	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
-}
-
 void t_type_of<std::wstring>::f_finalize(t_object* a_this)
 {
 	delete &f_as<std::wstring&>(a_this);

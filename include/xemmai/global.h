@@ -935,6 +935,12 @@ inline t_scoped t_value::f_send(const t_value& a_value) const
 	XEMMAI__VALUE__BINARY(f_send)
 }
 
+template<typename T_base>
+void t_uninstantiatable<T_base>::f_instantiate(t_stacked* a_stack, size_t a_n)
+{
+	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
+}
+
 template<typename T_main>
 intptr_t t_fiber::f_main(T_main a_main)
 {

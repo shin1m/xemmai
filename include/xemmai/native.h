@@ -24,13 +24,11 @@ public:
 };
 
 template<>
-struct t_type_of<t_native> : t_with_traits<t_with_ids<t_native>, false, true>
+struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_with_traits<t_with_ids<t_native>, false, true>>>
 {
-	using t_with_traits<t_with_ids<t_native>, false, true>::t_with_traits;
-	virtual t_type* f_derive();
+	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
-	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
 };

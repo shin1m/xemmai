@@ -55,11 +55,6 @@ t_scoped t_structure::f_remove(size_t a_index)
 	return q;
 }
 
-t_type* t_type_of<t_structure>::f_derive()
-{
-	return nullptr;
-}
-
 void t_type_of<t_structure>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	f_as<t_structure&>(a_this).f_scan(a_scan);
@@ -71,11 +66,6 @@ void t_type_of<t_structure>::f_finalize(t_object* a_this)
 	if (p.v_parent1) p.v_parent1->v_children.erase(p.v_iterator);
 	p.v_parent1 = f_engine()->v_structure__finalizing;
 	f_engine()->v_structure__finalizing = &p;
-}
-
-void t_type_of<t_structure>::f_instantiate(t_stacked* a_stack, size_t a_n)
-{
-	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
 }

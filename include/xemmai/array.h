@@ -56,7 +56,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_array> : t_with_ids<t_array>
+struct t_type_of<t_array> : t_derivable<t_array, t_with_ids<t_array>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
@@ -74,8 +74,7 @@ struct t_type_of<t_array> : t_with_ids<t_array>
 	static void f_sort(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
-	using t_with_ids<t_array>::t_with_ids;
-	virtual t_type* f_derive();
+	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
 	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);

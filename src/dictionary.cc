@@ -139,11 +139,6 @@ t_scoped t_dictionary::f_remove(const t_value& a_key)
 	return value;
 }
 
-t_type* t_type_of<t_dictionary::t_table>::f_derive()
-{
-	return nullptr;
-}
-
 void t_type_of<t_dictionary::t_table>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	f_as<t_dictionary::t_table&>(a_this).f_scan(a_scan);
@@ -152,11 +147,6 @@ void t_type_of<t_dictionary::t_table>::f_scan(t_object* a_this, t_scan a_scan)
 void t_type_of<t_dictionary::t_table>::f_finalize(t_object* a_this)
 {
 	delete &f_as<t_dictionary::t_table&>(a_this);
-}
-
-void t_type_of<t_dictionary::t_table>::f_instantiate(t_stacked* a_stack, size_t a_n)
-{
-	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
@@ -307,11 +297,6 @@ void t_type_of<t_dictionary>::f_define()
 		(L"remove", t_member<t_scoped(t_dictionary::*)(const t_value&), &t_dictionary::f_remove, t_with_lock_for_write>())
 		(L"each", t_member<void(*)(const t_value&, const t_value&), f_each>())
 	;
-}
-
-t_type* t_type_of<t_dictionary>::f_derive()
-{
-	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
 }
 
 void t_type_of<t_dictionary>::f_scan(t_object* a_this, t_scan a_scan)
