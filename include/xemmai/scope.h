@@ -76,11 +76,10 @@ public:
 };
 
 template<>
-struct t_type_of<t_scope> : t_uninstantiatable<t_underivable<t_with_traits<t_type, false, true>>>
+struct t_type_of<t_scope> : t_uninstantiatable<t_underivable<t_with_traits<t_finalizes<t_scope>, false, true>>>
 {
 	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 };
 
 }

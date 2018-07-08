@@ -1,7 +1,6 @@
 #include <xemmai/string.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 
 namespace xemmai
 {
@@ -45,11 +44,6 @@ void t_type_of<std::wstring>::f_define()
 		)
 		(L"code_at", t_member<intptr_t(*)(const std::wstring&, size_t), f_code_at>())
 	;
-}
-
-void t_type_of<std::wstring>::f_finalize(t_object* a_this)
-{
-	delete &f_as<std::wstring&>(a_this);
 }
 
 t_scoped t_type_of<std::wstring>::f_construct(t_stacked* a_stack, size_t a_n)

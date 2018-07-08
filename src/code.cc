@@ -1740,9 +1740,4 @@ void t_type_of<t_code>::f_scan(t_object* a_this, t_scan a_scan)
 	f_as<t_code&>(a_this).f_scan(a_scan);
 }
 
-void t_type_of<t_code>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_code&>(a_this);
-}
-
 }

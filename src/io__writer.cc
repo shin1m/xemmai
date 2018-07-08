@@ -2,7 +2,6 @@
 
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 #include <xemmai/io.h>
 
 namespace xemmai
@@ -142,11 +141,6 @@ void t_type_of<io::t_writer>::f_scan(t_object* a_this, t_scan a_scan)
 	if (!p) return;
 	a_scan(p->v_stream);
 	a_scan(p->v_buffer);
-}
-
-void t_type_of<io::t_writer>::f_finalize(t_object* a_this)
-{
-	delete &f_as<io::t_writer&>(a_this);
 }
 
 t_scoped t_type_of<io::t_writer>::f_construct(t_stacked* a_stack, size_t a_n)

@@ -8,6 +8,7 @@ namespace xemmai
 
 class t_native
 {
+	friend struct t_finalizes<t_native, t_bears<t_native>>;
 	friend struct t_type_of<t_native>;
 
 	t_extension::t_function v_function;
@@ -24,11 +25,10 @@ public:
 };
 
 template<>
-struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_with_traits<t_with_ids<t_native>, false, true>>>
+struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_native>, false, true>>>
 {
 	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
 };

@@ -12,6 +12,7 @@ class t_lambda
 {
 	friend struct t_code;
 	friend struct t_context;
+	friend struct t_finalizes<t_lambda, t_bears<t_lambda>>;
 	friend struct t_type_of<t_lambda>;
 	friend struct t_module;
 
@@ -54,17 +55,17 @@ public:
 };
 
 template<>
-struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_with_traits<t_with_ids<t_lambda>, false, true>>>
+struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_lambda>, false, true>>>
 {
 	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
 };
 
 class t_advanced_lambda : public t_lambda
 {
+	friend struct t_finalizes<t_advanced_lambda, t_bears<t_advanced_lambda, t_type_of<t_lambda>>>;
 	friend struct t_type_of<t_advanced_lambda>;
 
 	t_slot v_defaults;
@@ -84,11 +85,10 @@ public:
 };
 
 template<>
-struct t_type_of<t_advanced_lambda> : t_with_ids<t_advanced_lambda, t_type_of<t_lambda>>
+struct t_type_of<t_advanced_lambda> : t_underivable<t_holds<t_advanced_lambda, t_type_of<t_lambda>>>
 {
-	using t_with_ids<t_advanced_lambda, t_type_of<t_lambda>>::t_with_ids;
+	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 };
 

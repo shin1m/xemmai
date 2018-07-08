@@ -317,9 +317,10 @@ inline void t_slot_of<T>::f_construct(t_object* a_value)
 }
 
 template<typename T, typename T_base = t_type>
-struct t_with_ids : T_base
+struct t_bears : T_base
 {
-	typedef t_with_ids t_base;
+	typedef T t_what;
+	typedef t_bears t_base;
 
 	static constexpr std::array<t_type_id, T_base::V_ids.size() + 1> V_ids = f_append(T_base::V_ids, std::make_index_sequence<T_base::V_ids.size()>(), static_cast<t_type_id>(f_type_id<T>));
 
@@ -327,7 +328,27 @@ struct t_with_ids : T_base
 };
 
 template<typename T, typename T_base>
-constexpr std::array<t_type_id, T_base::V_ids.size() + 1> t_with_ids<T, T_base>::V_ids;
+constexpr std::array<t_type_id, T_base::V_ids.size() + 1> t_bears<T, T_base>::V_ids;
+
+template<typename T, typename T_base = t_type>
+struct t_finalizes : T_base
+{
+	typedef t_finalizes t_base;
+
+	using T_base::T_base;
+	virtual void f_finalize(t_object* a_this)
+	{
+		delete &f_as<T&>(a_this);
+	}
+};
+
+template<typename T, typename T_base = t_type>
+struct t_holds : t_finalizes<T, t_bears<T, T_base>>
+{
+	typedef t_holds t_base;
+
+	using t_finalizes<T, t_bears<T, T_base>>::t_finalizes;
+};
 
 template<typename T_base, bool A_fixed, bool A_shared>
 struct t_with_traits : T_base
@@ -342,7 +363,7 @@ struct t_with_traits : T_base
 	}
 };
 
-template<typename T, typename T_base>
+template<typename T_base>
 struct t_derivable : T_base
 {
 	typedef t_derivable t_base;

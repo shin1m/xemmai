@@ -108,7 +108,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_parser::t_error> : t_uninstantiatable<t_underivable<t_with_ids<t_parser::t_error, t_type_of<t_throwable>>>>
+struct t_type_of<t_parser::t_error> : t_uninstantiatable<t_underivable<t_bears<t_parser::t_error, t_type_of<t_throwable>>>>
 {
 	using t_base::t_base;
 };

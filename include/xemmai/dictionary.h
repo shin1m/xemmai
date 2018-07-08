@@ -129,15 +129,14 @@ public:
 };
 
 template<>
-struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_type>>
+struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_finalizes<t_dictionary::t_table>>>
 {
 	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 };
 
 template<>
-struct t_type_of<t_dictionary> : t_derivable<t_dictionary, t_with_ids<t_dictionary>>
+struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
@@ -152,7 +151,6 @@ struct t_type_of<t_dictionary> : t_derivable<t_dictionary, t_with_ids<t_dictiona
 
 	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_stacked* a_stack);
 	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);

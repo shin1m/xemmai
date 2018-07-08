@@ -1,7 +1,6 @@
 #include <xemmai/io/path.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 #include <xemmai/io.h>
 
 namespace xemmai
@@ -14,11 +13,6 @@ void t_type_of<portable::t_path>::f_define(t_io* a_extension)
 		(f_global()->f_symbol_string(), t_member<const std::wstring&(portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
 		(f_global()->f_symbol_divide(), t_member<portable::t_path(portable::t_path::*)(const std::wstring&) const, &portable::t_path::operator/>())
 	;
-}
-
-void t_type_of<portable::t_path>::f_finalize(t_object* a_this)
-{
-	delete &f_as<portable::t_path&>(a_this);
 }
 
 t_scoped t_type_of<portable::t_path>::f_construct(t_stacked* a_stack, size_t a_n)

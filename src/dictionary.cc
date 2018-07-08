@@ -1,7 +1,6 @@
 #include <xemmai/dictionary.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 
 namespace xemmai
 {
@@ -142,11 +141,6 @@ t_scoped t_dictionary::f_remove(const t_value& a_key)
 void t_type_of<t_dictionary::t_table>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	f_as<t_dictionary::t_table&>(a_this).f_scan(a_scan);
-}
-
-void t_type_of<t_dictionary::t_table>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_dictionary::t_table&>(a_this);
 }
 
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
@@ -302,11 +296,6 @@ void t_type_of<t_dictionary>::f_define()
 void t_type_of<t_dictionary>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	a_scan(f_as<t_dictionary&>(a_this).v_table);
-}
-
-void t_type_of<t_dictionary>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_dictionary&>(a_this);
 }
 
 t_scoped t_type_of<t_dictionary>::f_construct(t_stacked* a_stack, size_t a_n)

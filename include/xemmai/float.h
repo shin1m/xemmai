@@ -13,7 +13,7 @@ struct t_fundamental<float>
 };
 
 template<>
-struct t_type_of<double> : t_derivable<double, t_with_ids<double, t_type_immutable>>
+struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 {
 	template<typename T0>
 	struct t_as

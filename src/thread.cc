@@ -134,11 +134,6 @@ void t_type_of<t_thread>::f_scan(t_object* a_this, t_scan a_scan)
 	a_scan(f_as<t_thread&>(a_this).v_fiber);
 }
 
-void t_type_of<t_thread>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_thread&>(a_this);
-}
-
 void t_type_of<t_thread>::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1 && a_n != 2) t_throwable::f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");

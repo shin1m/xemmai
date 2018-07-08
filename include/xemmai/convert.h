@@ -1,7 +1,7 @@
 #ifndef XEMMAI__CONVERT_H
 #define XEMMAI__CONVERT_H
 
-#include "global.h"
+#include "derived.h"
 
 namespace xemmai
 {
@@ -643,25 +643,18 @@ inline void f_define(T_extension* a_extension, const std::wstring& a_name)
 }
 
 template<typename T, typename T_extension>
-struct t_enum_of : t_with_ids<T, t_type_of<intptr_t>>
+struct t_enum_of : t_derivable<t_bears<T, t_type_of<intptr_t>>>
 {
 	typedef T_extension t_extension;
 	typedef t_enum_of t_base;
 
 	static t_scoped f_transfer(const T_extension* a_extension, T a_value)
 	{
-		return t_with_ids<T, t_type_of<intptr_t>>::f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
+		return t_enum_of::f_construct_derived(a_extension->template f_type<typename t_fundamental<T>::t_type>(), a_value);
 	}
 
-	using t_with_ids<T, t_type_of<intptr_t>>::t_with_ids;
-	virtual t_type* f_derive();
+	using t_derivable<t_bears<T, t_type_of<intptr_t>>>::t_derivable;
 };
-
-template<typename T, typename T_extension>
-t_type* t_enum_of<T, T_extension>::f_derive()
-{
-	return new t_type_of<T>(t_with_ids<T, t_type_of<intptr_t>>::V_ids, this, t_scoped(t_with_ids<T, t_type_of<intptr_t>>::v_module));
-}
 
 }
 

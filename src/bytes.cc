@@ -1,7 +1,6 @@
 #include <xemmai/bytes.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 
 namespace xemmai
 {
@@ -103,11 +102,6 @@ void t_type_of<t_bytes>::f_define()
 		(L"size", t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())
 		(L"copy", t_member<void(t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
 	;
-}
-
-void t_type_of<t_bytes>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_bytes&>(a_this);
 }
 
 t_scoped t_type_of<t_bytes>::f_construct(t_stacked* a_stack, size_t a_n)

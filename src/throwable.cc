@@ -1,7 +1,6 @@
 #include <xemmai/throwable.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 
 namespace xemmai
 {
@@ -41,19 +40,9 @@ void t_type_of<t_throwable>::f_define()
 	;
 }
 
-t_type* t_type_of<t_throwable>::f_derive()
-{
-	return new t_derived<t_type_of>(V_ids, this, t_scoped(v_module));
-}
-
 void t_type_of<t_throwable>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	for (t_backtrace* p = f_as<t_throwable&>(a_this).v_backtrace; p; p = p->v_next) p->f_scan(a_scan);
-}
-
-void t_type_of<t_throwable>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_throwable&>(a_this);
 }
 
 t_scoped t_type_of<t_throwable>::f_construct(t_stacked* a_stack, size_t a_n)

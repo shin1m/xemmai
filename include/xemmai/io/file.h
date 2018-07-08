@@ -72,14 +72,13 @@ public:
 }
 
 template<>
-struct t_type_of<io::t_file> : t_derivable<io::t_file, t_with_ids<io::t_file>>
+struct t_type_of<io::t_file> : t_derivable<t_holds<io::t_file>>
 {
 	typedef t_io t_extension;
 
 	static void f_define(t_io* a_extension);
 
 	using t_base::t_base;
-	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 

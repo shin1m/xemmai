@@ -33,7 +33,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_symbol> : t_underivable<t_with_ids<t_symbol, t_type_immutable>>
+struct t_type_of<t_symbol> : t_underivable<t_bears<t_symbol, t_type_immutable>>
 {
 	void f_define();
 

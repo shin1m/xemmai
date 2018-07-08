@@ -10,28 +10,24 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_client> : t_with_ids<t_client>
+struct t_type_of<t_client> : t_derivable<t_holds<t_client>>
 {
 	typedef t_callback_extension t_extension;
 
 	static void f_define(t_callback_extension* a_extension);
 
-	using t_with_ids<t_client>::t_with_ids;
-	virtual t_type* f_derive();
-	virtual void f_finalize(t_object* a_this);
+	using t_base::t_base;
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
 template<>
-struct t_type_of<t_server> : t_with_ids<t_server>
+struct t_type_of<t_server> : t_derivable<t_holds<t_server>>
 {
 	typedef t_callback_extension t_extension;
 
 	static void f_define(t_callback_extension* a_extension);
 
-	using t_with_ids<t_server>::t_with_ids;
-	virtual t_type* f_derive();
-	virtual void f_finalize(t_object* a_this);
+	using t_base::t_base;
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
@@ -119,19 +115,10 @@ namespace xemmai
 void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_client, t_object>(a_extension, L"Client")
+		(t_construct_with<t_scoped(*)(t_type*), t_client_wrapper::f_construct>())
 		(a_extension->v_symbol_on_message, t_member<void(*)(t_client*, const std::wstring&), t_client_wrapper::f_super__on_message>())
 		(L"remove", t_member<void(t_client::*)(), &t_client::f_remove>())
 	;
-}
-
-t_type* t_type_of<t_client>::f_derive()
-{
-	return new t_type_of(V_ids, this, t_scoped(v_module));
-}
-
-void t_type_of<t_client>::f_finalize(t_object* a_this)
-{
-	delete dynamic_cast<t_client_wrapper*>(&f_as<t_client&>(a_this));
 }
 
 t_scoped t_type_of<t_client>::f_construct(t_stacked* a_stack, size_t a_n)
@@ -142,20 +129,11 @@ t_scoped t_type_of<t_client>::f_construct(t_stacked* a_stack, size_t a_n)
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_server, t_object>(a_extension, L"Server")
+		(t_construct<>())
 		(L"add", t_member<void(t_server::*)(t_client&), &t_server::f_add>())
 		(L"post", t_member<void(t_server::*)(const std::wstring&), &t_server::f_post>())
 		(L"run", t_member<void(t_server::*)(), &t_server::f_run>())
 	;
-}
-
-t_type* t_type_of<t_server>::f_derive()
-{
-	return new t_type_of(V_ids, this, t_scoped(v_module));
-}
-
-void t_type_of<t_server>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_server&>(a_this);
 }
 
 t_scoped t_type_of<t_server>::f_construct(t_stacked* a_stack, size_t a_n)

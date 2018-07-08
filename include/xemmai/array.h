@@ -8,6 +8,7 @@ namespace xemmai
 
 class t_array
 {
+	friend struct t_finalizes<t_array, t_bears<t_array>>;
 	friend struct t_type_of<t_array>;
 
 	static t_slot* f_move_forward(t_slot* a_p, t_slot* a_q);
@@ -56,7 +57,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_array> : t_derivable<t_array, t_with_ids<t_array>>
+struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
@@ -76,7 +77,6 @@ struct t_type_of<t_array> : t_derivable<t_array, t_with_ids<t_array>>
 
 	using t_base::t_base;
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 	virtual void f_hash(t_object* a_this, t_stacked* a_stack);
 	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);

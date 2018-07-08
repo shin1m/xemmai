@@ -1,7 +1,6 @@
 #include <xemmai/float.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 
 namespace xemmai
 {

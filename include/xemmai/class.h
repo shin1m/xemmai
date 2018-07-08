@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_type> : t_underivable<t_with_ids<t_type>>
+struct t_type_of<t_type> : t_underivable<t_holds<t_type>>
 {
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : t_base(a_ids, a_super)
@@ -18,7 +18,6 @@ struct t_type_of<t_type> : t_underivable<t_with_ids<t_type>>
 		v_fixed = v_shared = true;
 	}
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual void f_finalize(t_object* a_this);
 	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
 	virtual void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
 	virtual t_scoped f_get(t_object* a_this, t_object* a_key);

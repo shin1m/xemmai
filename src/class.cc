@@ -14,11 +14,6 @@ void t_class::f_scan(t_object* a_this, t_scan a_scan)
 	a_scan(p.v_super);
 }
 
-void t_class::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_type&>(a_this);
-}
-
 void t_class::f_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n > 1) t_throwable::f_throw(a_stack, a_n, L"must be called with or without an argument.");

@@ -20,11 +20,6 @@ void t_type_of<t_lambda>::f_scan(t_object* a_this, t_scan a_scan)
 	a_scan(p.v_code);
 }
 
-void t_type_of<t_lambda>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_lambda&>(a_this);
-}
-
 size_t t_type_of<t_lambda>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
 	auto& p = f_as<t_lambda&>(a_this);
@@ -65,11 +60,6 @@ void t_type_of<t_advanced_lambda>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	t_type_of<t_lambda>::f_scan(a_this, a_scan);
 	a_scan(f_as<t_advanced_lambda&>(a_this).v_defaults);
-}
-
-void t_type_of<t_advanced_lambda>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_advanced_lambda&>(a_this);
 }
 
 size_t t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)

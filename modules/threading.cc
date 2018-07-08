@@ -6,7 +6,7 @@ namespace xemmai
 class t_threading;
 
 template<>
-struct t_type_of<std::mutex> : t_with_traits<t_with_ids<std::mutex>, true, true>
+struct t_type_of<std::mutex> : t_underivable<t_with_traits<t_holds<std::mutex>, true, true>>
 {
 	typedef t_threading t_extension;
 
@@ -14,14 +14,12 @@ struct t_type_of<std::mutex> : t_with_traits<t_with_ids<std::mutex>, true, true>
 	static void f_release(std::mutex& a_self);
 	static void f_define(t_threading* a_extension);
 
-	using t_with_traits<t_with_ids<std::mutex>, true, true>::t_with_traits;
-	virtual t_type* f_derive();
-	virtual void f_finalize(t_object* a_this);
+	using t_base::t_base;
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
 template<>
-struct t_type_of<std::condition_variable> : t_with_traits<t_with_ids<std::condition_variable>, true, true>
+struct t_type_of<std::condition_variable> : t_underivable<t_with_traits<t_holds<std::condition_variable>, true, true>>
 {
 	typedef t_threading t_extension;
 
@@ -31,9 +29,7 @@ struct t_type_of<std::condition_variable> : t_with_traits<t_with_ids<std::condit
 	static void f_broadcast(std::condition_variable& a_self);
 	static void f_define(t_threading* a_extension);
 
-	using t_with_traits<t_with_ids<std::condition_variable>, true, true>::t_with_traits;
-	virtual t_type* f_derive();
-	virtual void f_finalize(t_object* a_this);
+	using t_base::t_base;
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 
@@ -95,16 +91,6 @@ void t_type_of<std::mutex>::f_define(t_threading* a_extension)
 	;
 }
 
-t_type* t_type_of<std::mutex>::f_derive()
-{
-	return nullptr;
-}
-
-void t_type_of<std::mutex>::f_finalize(t_object* a_this)
-{
-	delete &f_as<std::mutex&>(a_this);
-}
-
 t_scoped t_type_of<std::mutex>::f_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
@@ -154,16 +140,6 @@ void t_type_of<std::condition_variable>::f_define(t_threading* a_extension)
 		(L"signal", t_member<void(*)(std::condition_variable&), f_signal>())
 		(L"broadcast", t_member<void(*)(std::condition_variable&), f_broadcast>())
 	;
-}
-
-t_type* t_type_of<std::condition_variable>::f_derive()
-{
-	return nullptr;
-}
-
-void t_type_of<std::condition_variable>::f_finalize(t_object* a_this)
-{
-	delete &f_as<std::condition_variable&>(a_this);
 }
 
 t_scoped t_type_of<std::condition_variable>::f_construct(t_stacked* a_stack, size_t a_n)

@@ -1,7 +1,6 @@
 #include <xemmai/tuple.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 
 namespace xemmai
 {
@@ -142,11 +141,6 @@ void t_type_of<t_tuple>::f_define()
 void t_type_of<t_tuple>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	f_as<t_tuple&>(a_this).f_scan(a_scan);
-}
-
-void t_type_of<t_tuple>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_tuple&>(a_this);
 }
 
 t_scoped t_type_of<t_tuple>::f_construct(t_stacked* a_stack, size_t a_n)

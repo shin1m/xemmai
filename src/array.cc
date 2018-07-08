@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 
 namespace xemmai
 {
@@ -479,11 +478,6 @@ void t_type_of<t_array>::f_define()
 void t_type_of<t_array>::f_scan(t_object* a_this, t_scan a_scan)
 {
 	a_scan(f_as<t_array&>(a_this).v_tuple);
-}
-
-void t_type_of<t_array>::f_finalize(t_object* a_this)
-{
-	delete &f_as<t_array&>(a_this);
 }
 
 t_scoped t_type_of<t_array>::f_construct(t_stacked* a_stack, size_t a_n)

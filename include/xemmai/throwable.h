@@ -9,6 +9,7 @@ namespace xemmai
 class t_throwable
 {
 	friend struct t_backtrace;
+	friend struct t_finalizes<t_throwable, t_bears<t_throwable>>;
 	friend struct t_type_of<t_throwable>;
 
 	t_backtrace* v_backtrace = nullptr;
@@ -37,14 +38,12 @@ public:
 };
 
 template<>
-struct t_type_of<t_throwable> : t_with_ids<t_throwable>
+struct t_type_of<t_throwable> : t_derivable<t_holds<t_throwable>>
 {
 	static void f_define();
 
-	using t_with_ids<t_throwable>::t_with_ids;
-	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
+	using t_base::t_base;
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
-	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
 };
 

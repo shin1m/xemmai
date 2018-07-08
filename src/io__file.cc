@@ -1,7 +1,6 @@
 #include <xemmai/io/file.h>
 
 #include <xemmai/convert.h>
-#include <xemmai/derived.h>
 #include <xemmai/io.h>
 #ifdef __unix__
 #include <unistd.h>
@@ -154,11 +153,6 @@ void t_type_of<io::t_file>::f_define(t_io* a_extension)
 		(L"blocking__", t_member<void(io::t_file::*)(bool), &io::t_file::f_blocking__, t_with_lock_for_write>())
 #endif
 	;
-}
-
-void t_type_of<io::t_file>::f_finalize(t_object* a_this)
-{
-	delete &f_as<io::t_file&>(a_this);
 }
 
 t_scoped t_type_of<io::t_file>::f_construct(t_stacked* a_stack, size_t a_n)
