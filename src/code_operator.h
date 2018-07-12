@@ -420,10 +420,10 @@
 		XEMMAI__CODE__CASE_BEGIN(EQUALS)
 				switch (a0.f_tag()) {
 				case t_value::e_tag__NULL:
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_p == a1.v_p)
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a1.f_tag() == t_value::e_tag__NULL)
 					break;
 				case t_value::e_tag__BOOLEAN:
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_p == a1.v_p && a0.v_boolean == a1.v_boolean)
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a1.f_tag() == t_value::e_tag__BOOLEAN && a0.v_boolean == a1.v_boolean)
 					break;
 				case t_value::e_tag__INTEGER:
 					if (a1.f_tag() == t_value::e_tag__INTEGER) {
@@ -450,16 +450,20 @@
 					}
 					break;
 				default:
-					XEMMAI__CODE__OBJECT_CALL(f_equals)
+					if (a0.v_p == a1.v_p) {
+						XEMMAI__CODE__PRIMITIVE_CALL(, true)
+					} else {
+						XEMMAI__CODE__OBJECT_CALL(f_equals)
+					}
 				}
 		XEMMAI__CODE__CASE_END
 		XEMMAI__CODE__CASE_BEGIN(NOT_EQUALS)
 				switch (a0.f_tag()) {
 				case t_value::e_tag__NULL:
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_p != a1.v_p)
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a1.f_tag() != t_value::e_tag__NULL)
 					break;
 				case t_value::e_tag__BOOLEAN:
-					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a0.v_p != a1.v_p || a0.v_boolean != a1.v_boolean)
+					XEMMAI__CODE__PRIMITIVE_CALL(_PO, a1.f_tag() != t_value::e_tag__BOOLEAN || a0.v_boolean != a1.v_boolean)
 					break;
 				case t_value::e_tag__INTEGER:
 					if (a1.f_tag() == t_value::e_tag__INTEGER) {
@@ -486,7 +490,11 @@
 					}
 					break;
 				default:
-					XEMMAI__CODE__OBJECT_CALL(f_not_equals)
+					if (a0.v_p == a1.v_p) {
+						XEMMAI__CODE__PRIMITIVE_CALL(, false)
+					} else {
+						XEMMAI__CODE__OBJECT_CALL(f_not_equals)
+					}
 				}
 		XEMMAI__CODE__CASE_END
 		XEMMAI__CODE__CASE_BEGIN(IDENTICAL)
