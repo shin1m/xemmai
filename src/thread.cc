@@ -37,10 +37,14 @@ void t_thread::f_main(t_object* a_p)
 	}
 	p.v_active = p.v_fiber;
 	t_global::v_instance = f_extension<t_global>(f_engine()->f_module_global());
-	t_fiber::f_main([]
+	auto main = []
 	{
 		f_as<t_fiber&>(t_fiber::f_current()).v_callable();
-	});
+	};
+	if (f_engine()->v_debugger)
+		t_fiber::f_main<t_debug_context>(main);
+	else
+		t_fiber::f_main<t_context>(main);
 	f_cache_clear();
 	p.v_active = nullptr;
 	p.v_internal = nullptr;

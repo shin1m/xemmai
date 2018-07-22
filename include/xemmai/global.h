@@ -941,17 +941,17 @@ void t_uninstantiatable<T_base>::f_instantiate(t_stacked* a_stack, size_t a_n)
 	t_throwable::f_throw(a_stack, a_n, L"uninstantiatable.");
 }
 
-template<typename T_main>
+template<typename T_context, typename T_main>
 intptr_t t_fiber::f_main(T_main a_main)
 {
 	intptr_t n = -1;
-	t_context context;
+	T_context context;
 	try {
 		try {
 			a_main();
 			n = 0;
 		} catch (const t_scoped& thrown) {
-			f_as<t_fiber&>(f_current()).f_caught(thrown);
+			f_as<t_fiber&>(f_current()).f_caught(thrown, nullptr);
 			std::wstring s = L"<unprintable>";
 			try {
 				t_scoped p = thrown.f_invoke(f_global()->f_symbol_string());
@@ -964,36 +964,25 @@ intptr_t t_fiber::f_main(T_main a_main)
 	} catch (...) {
 		std::fprintf(stderr, "caught <unexpected>.\n");
 	}
-	context.f_terminate();
+	auto& stack = f_as<t_fiber&>(f_current()).v_stack;
+	assert(stack.v_used == stack.f_head());
 	return n;
 }
 
-template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-size_t t_context::f_tail(size_t a_privates, t_object* a_this)
-{
-	size_t n = (a_this->f_type()->*A_function)(a_this, v_base + a_privates);
-	if (n == size_t(-1))
-		f_return(a_privates);
-	else
-		f_tail(a_privates, n);
-	return n;
-}
-
-inline size_t t_code::f_loop(t_context* a_context, t_lambda& a_lambda)
+inline size_t t_code::f_loop(t_context& a_context)
 {
 	try {
 #ifdef XEMMAI_ENABLE_JIT
-		return a_lambda.v_jit_loop(a_context);
+		return a_context.v_lambda->v_jit_loop(a_context);
 #else
-		a_context->f_pc() = a_lambda.v_instructions;
-		return f_loop(a_context);
+		return f_loop(&a_context);
 #endif
 	} catch (const t_scoped& thrown) {
-		a_context->f_backtrace(thrown);
+		a_context.f_backtrace(thrown);
 		throw thrown;
 	} catch (...) {
 		t_scoped thrown = t_throwable::f_instantiate(L"<unknown>.");
-		a_context->f_backtrace(thrown);
+		a_context.f_backtrace(thrown);
 		throw thrown;
 	}
 }

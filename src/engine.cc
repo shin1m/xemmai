@@ -384,7 +384,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		v_debugger->f_stopped(v_thread);
 		f_debug_wait_and_leave(lock);
 	}
-	intptr_t n = t_fiber::f_main(t_module::f_main);
+	intptr_t n = v_debugger ? t_fiber::f_main<t_debug_context>(t_module::f_main) : t_fiber::f_main<t_context>(t_module::f_main);
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
 	if (v_debugger) {
 		if (v_debug__stepping == t_thread::f_current()) v_debug__stepping = nullptr;
@@ -399,9 +399,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		v_thread__condition.wait(lock);
 	}
 	auto& fiber = f_as<t_fiber&>(thread.v_fiber);
-	fiber.v_context = t_context::v_instance;
-	fiber.v_used = ++fiber.v_stack.v_used;
-	fiber.v_return = fiber.v_used;
+	fiber.v_return = ++fiber.v_stack.v_used;
 	while (!v_fiber__runnings.empty()) {
 		t_object* x = v_fiber__runnings.front();
 		auto& p = f_as<t_fiber&>(x);
@@ -409,7 +407,6 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		fiber.v_active = false;
 		thread.v_active = x;
 		t_stack::v_instance = &p.v_stack;
-		t_context::v_instance = p.v_context;
 		p.v_throw = true;
 		p.v_return->f_construct(v_fiber_exit);
 		p.v_fiber.f_swap(fiber.v_fiber);
@@ -423,10 +420,10 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 	return n;
 }
 
-void t_engine::f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc)
+void t_engine::f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc)
 {
 	if (a_lambda) {
-		auto& code = f_as<t_code&>(f_as<t_lambda&>(a_lambda).f_code());
+		auto& code = f_as<t_code&>(a_lambda->f_code());
 		auto& path = f_as<t_module&>(code.v_module).v_path;
 		std::fprintf(a_out, "%ls", path.c_str());
 		const t_at* at = code.f_at(a_pc);

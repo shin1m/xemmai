@@ -258,7 +258,7 @@ struct t_code
 	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_context* a_context);
 #endif
 	static void f_try(t_context* a_context);
-	static size_t f_loop(t_context* a_context, t_lambda& a_lambda);
+	static size_t f_loop(t_context& a_context);
 #ifdef XEMMAI_ENABLE_JIT
 	static size_t f_jit_loop_nojit(t_context* a_context);
 	static t_try f_jit_try(t_context* a_context, t_stacked* a_stack, t_try (*a_try)(t_context*), t_try (*a_catch)(t_context*, const t_scoped&), void (*a_finally)(t_context*));

@@ -57,6 +57,7 @@ TESTS = $(scripts) \
 	callback/fiber.xm \
 	callback/fiber2.xm \
 	enum/test.xm \
+	backtrace.xmd \
 	hanoi3.xmd \
 	dump.xmo \
 	dump2.xmo \
@@ -66,6 +67,8 @@ EXTRA_DIST = $(scripts) \
 	list.xm \
 	run-xmd \
 	run-xmo \
+	backtrace.xmdi \
+	backtrace.xmde \
 	hanoi3.xmdi \
 	hanoi3.xmde \
 	dump.xmoe \

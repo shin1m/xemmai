@@ -18,32 +18,35 @@ class t_lambda
 
 protected:
 	t_slot v_scope;
-	t_slot v_code;
 	t_scope& v_as_scope;
+	t_slot v_code;
+	size_t v_arguments;
 #ifdef XEMMAI_ENABLE_JIT
 	size_t (*v_jit_loop)(t_context*);
 #endif
-	bool v_shared;
+	size_t (t_lambda::*v_call)(t_stacked*);
+	void** v_instructions;
 	size_t v_size;
 	size_t v_privates;
 	size_t v_shareds;
-	size_t v_arguments;
-	void** v_instructions;
+	t_object* v_this;
 
-	t_lambda(t_scoped&& a_scope, t_scoped&& a_code) : v_scope(std::move(a_scope)), v_code(std::move(a_code)), v_as_scope(f_as<t_scope&>(v_scope))
-	{
-		auto& code = f_as<t_code&>(v_code);
-#ifdef XEMMAI_ENABLE_JIT
-		v_jit_loop = code.v_jit_loop;
-#endif
-		v_shared = code.v_shared;
-		v_size = code.v_size;
-		v_privates = code.v_privates;
-		v_shareds = code.v_shareds;
-		v_arguments = code.v_arguments;
-		v_instructions = &code.v_instructions[0];
-	}
+	t_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_object* a_this);
 	~t_lambda() = default;
+	template<typename T_context>
+	size_t f_call_own(t_stacked* a_stack)
+	{
+		T_context context(this, a_stack);
+		return t_code::f_loop(context);
+	}
+	template<typename T_context>
+	size_t f_call_shared(t_stacked* a_stack)
+	{
+		t_scoped scope = t_scope::f_instantiate(v_shareds, t_scoped(v_scope));
+		T_context context(this, a_stack);
+		context.v_scope = scope;
+		return t_code::f_loop(context);
+	}
 
 public:
 	static t_scoped f_instantiate(t_scoped&& a_scope, t_scoped&& a_code);
@@ -72,7 +75,7 @@ class t_advanced_lambda : public t_lambda
 	bool v_variadic;
 	size_t v_minimum;
 
-	t_advanced_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_scoped&& a_defaults) : t_lambda(std::move(a_scope), std::move(a_code)), v_defaults(std::move(a_defaults))
+	t_advanced_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_object* a_this, t_scoped&& a_defaults) : t_lambda(std::move(a_scope), std::move(a_code), a_this), v_defaults(std::move(a_defaults))
 	{
 		auto& code = f_as<t_code&>(v_code);
 		v_variadic = code.v_variadic;

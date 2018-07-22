@@ -1,0 +1,19 @@
+^debugger stopped: 0x[0-9a-f]+
+debugger> debugger> debugger stopped: 0x[0-9a-f]+
+.*/backtrace\.xmd:2:7
+		", " \+ x
+		     \^
+debugger> .*/backtrace\.xmd:4:9
+		x \+ foo\(y
+		       \^
+debugger> .*/backtrace\.xmd:2:7
+		", " \+ x
+		     \^
+\* .*/backtrace\.xmd:4:9
+		x \+ foo\(y
+		       \^
+.*/backtrace\.xmd:5:4
+	bar\("a", "b"
+	   \^
+<fiber>
+debugger> 

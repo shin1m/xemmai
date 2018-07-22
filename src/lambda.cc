@@ -9,7 +9,7 @@ namespace xemmai
 t_scoped t_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_lambda>());
-	object.f_pointer__(new t_lambda(std::move(a_scope), std::move(a_code)));
+	object.f_pointer__(new t_lambda(std::move(a_scope), std::move(a_code), object));
 	return object;
 }
 
@@ -24,13 +24,7 @@ size_t t_type_of<t_lambda>::f_call(t_object* a_this, t_stacked* a_stack, size_t 
 {
 	auto& p = f_as<t_lambda&>(a_this);
 	if (a_n != p.v_arguments) t_throwable::f_throw(a_stack, a_n, L"invalid number of arguments.");
-	if (p.v_shared) {
-		t_context context(a_this, a_stack, p.v_size, p.v_shareds, p.v_scope);
-		return t_code::f_loop(&context, p);
-	} else {
-		t_context context(a_this, a_stack, p.v_size);
-		return t_code::f_loop(&context, p);
-	}
+	return (p.*p.v_call)(a_stack);
 }
 
 size_t t_type_of<t_lambda>::f_get_at(t_object* a_this, t_stacked* a_stack)
@@ -52,7 +46,7 @@ t_scoped t_advanced_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code,
 		for (size_t i = 0; i < n; ++i) tuple[i].f_construct(std::move(a_stack[i]));
 	}
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_advanced_lambda>());
-	object.f_pointer__(new t_advanced_lambda(std::move(a_scope), std::move(a_code), std::move(defaults)));
+	object.f_pointer__(new t_advanced_lambda(std::move(a_scope), std::move(a_code), object, std::move(defaults)));
 	return object;
 }
 
@@ -84,13 +78,7 @@ size_t t_type_of<t_advanced_lambda>::f_call(t_object* a_this, t_stacked* a_stack
 		for (size_t i = 0; i < n; ++i) t1[i].f_construct(std::move(t0[i]));
 		t0[0].f_construct(std::move(x));
 	}
-	if (p.v_shared) {
-		t_context context(a_this, a_stack, p.v_size, p.v_shareds, p.v_scope);
-		return t_code::f_loop(&context, p);
-	} else {
-		t_context context(a_this, a_stack, p.v_size);
-		return t_code::f_loop(&context, p);
-	}
+	return (p.*p.v_call)(a_stack);
 }
 
 }

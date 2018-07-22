@@ -57,8 +57,7 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	t_scoped_stack stack(2);
 	stack[1].f_construct(*a_this);
 	auto& p = f_as<t_lambda&>(lambda);
-	t_context context(lambda, stack, p.v_size, p.v_shareds, p.v_scope);
-	t_code::f_loop(&context, p);
+	(p.*p.v_call)(stack);
 	stack.f_return();
 }
 

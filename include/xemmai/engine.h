@@ -40,6 +40,7 @@ class t_engine : public t_value::t_collector
 	friend class t_symbol;
 	friend struct t_type_of<t_symbol>;
 	friend class t_code;
+	friend class t_lambda;
 	friend class t_dictionary;
 	friend class t_dictionary::t_entry;
 	friend class t_global;
@@ -233,7 +234,7 @@ public:
 	{
 		return v_module__instances;
 	}
-	void f_context_print(std::FILE* a_out, t_object* a_lambda, void** a_pc);
+	void f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc);
 	void f_debug_safe_point();
 	void f_debug_break_point();
 	void f_debug_safe_region_enter();
@@ -355,20 +356,20 @@ inline t_object* t_fiber::f_current()
 	return f_as<t_thread&>(t_thread::v_current).v_active;
 }
 
-inline t_context::t_context() : v_next(nullptr)
+inline t_lambda::t_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_object* a_this) : v_scope(std::move(a_scope)), v_as_scope(f_as<t_scope&>(v_scope)), v_code(std::move(a_code)), v_this(a_this)
 {
-	t_stack* stack = t_stack::v_instance = &f_as<t_fiber&>(t_fiber::f_current()).v_stack;
-	v_base = stack->f_head();
-	f_pc() = nullptr;
-	v_instance = this;
-}
-
-inline void t_context::f_terminate()
-{
-	assert(!v_next);
-	auto& fiber = f_as<t_fiber&>(t_fiber::f_current());
-	assert(fiber.v_stack.v_used == fiber.v_stack.f_head());
-	fiber.v_context = nullptr;
+	auto& code = f_as<t_code&>(v_code);
+	v_size = code.v_size;
+	v_arguments = code.v_arguments;
+	v_privates = code.v_privates;
+	v_shareds = code.v_shareds;
+	v_instructions = &code.v_instructions[0];
+#ifdef XEMMAI_ENABLE_JIT
+	v_jit_loop = code.v_jit_loop;
+#endif
+	v_call = f_engine()->v_debugger
+		? code.v_shared ? &t_lambda::f_call_shared<t_debug_context> : &t_lambda::f_call_own<t_debug_context>
+		: code.v_shared ? &t_lambda::f_call_shared<t_context> : &t_lambda::f_call_own<t_context>;
 }
 
 inline t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
