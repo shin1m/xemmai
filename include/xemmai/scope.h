@@ -8,31 +8,43 @@ namespace xemmai
 
 class t_scope
 {
+	friend class t_lambda;
+	friend class t_module;
+	friend class t_type_of<t_scope>;
+
+	static t_scoped f_instantiate(t_scope* a_scope);
+
 	size_t v_size;
+	t_slot v_outer;
+	t_slot* v_outer_entries;
+	t_object* v_this;
 
-	t_slot* f_entries() const
+	t_scope() : v_size(0)
 	{
-		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
 	}
-	void f_initialize()
+	t_scope(size_t a_size, t_slot* a_outer) : v_size(a_size), v_outer(f_this(a_outer)), v_outer_entries(a_outer)
 	{
-		t_slot* p = f_entries();
-		t_slot* q = p + v_size;
-		while (p < q) {
-			new(p) t_slot();
-			++p;
-		}
+		auto p = f_entries();
+		auto q = p + v_size;
+		for (; p < q; ++p) new(p) t_slot();
 	}
-
-	t_scope(size_t a_size) : v_size(a_size)
+	void f_scan(t_scan a_scan)
 	{
-		f_initialize();
+		a_scan(v_outer);
+		auto p = f_entries();
+		auto q = p + v_size;
+		for (; p < q; ++p) if (*p) a_scan(*p);
 	}
 
 public:
-	static t_scoped f_instantiate(size_t a_size, t_scoped&& a_outer);
-
-	t_slot v_outer;
+	static t_slot* f_outer(t_slot* a_entries)
+	{
+		return reinterpret_cast<t_scope*>(a_entries)[-1].v_outer_entries;
+	}
+	static t_object* f_this(t_slot* a_entries)
+	{
+		return reinterpret_cast<t_scope*>(a_entries)[-1].v_this;
+	}
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
@@ -47,31 +59,9 @@ public:
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_scope(size_t a_size, t_scoped&& a_outer) : v_size(a_size), v_outer(std::move(a_outer))
+	t_slot* f_entries()
 	{
-		f_initialize();
-	}
-	void f_scan(t_scan a_scan)
-	{
-		a_scan(v_outer);
-		t_slot* p = f_entries();
-		t_slot* q = p + v_size;
-		while (p < q) {
-			if (*p) a_scan(*p);
-			++p;
-		}
-	}
-	size_t f_size() const
-	{
-		return v_size;
-	}
-	const t_slot& operator[](size_t a_index) const
-	{
-		return f_entries()[a_index];
-	}
-	t_slot& operator[](size_t a_index)
-	{
-		return f_entries()[a_index];
+		return reinterpret_cast<t_slot*>(this + 1);
 	}
 };
 

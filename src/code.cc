@@ -277,7 +277,9 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__SCOPE_GET1_WITHOUT_LOCK,
 			&&label__SCOPE_GET2_WITHOUT_LOCK,
 			&&label__SCOPE_GET_WITHOUT_LOCK,
+			&&label__SCOPE_PUT0,
 			&&label__SCOPE_PUT,
+			&&label__SCOPE_PUT0_CLEAR,
 			&&label__SCOPE_PUT_CLEAR,
 			&&label__LAMBDA,
 			&&label__ADVANCED_LAMBDA,
@@ -298,7 +300,10 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__RETURN_T,
 			&&label__CALL,
 			&&label__CALL_WITH_EXPANSION,
-			&&label__CALL_OUTER,
+			&&label__STACK_CALL,
+			&&label__SCOPE_CALL0,
+			&&label__SCOPE_CALL1,
+			&&label__SCOPE_CALL2,
 			&&label__GET_AT,
 			&&label__SET_AT,
 #define XEMMAI__CODE__LABEL_UNARY(a_name)\
@@ -356,7 +361,10 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__SEND,
 			&&label__CALL_TAIL,
 			&&label__CALL_WITH_EXPANSION_TAIL,
-			&&label__CALL_OUTER_TAIL,
+			&&label__STACK_CALL_TAIL,
+			&&label__SCOPE_CALL0_TAIL,
+			&&label__SCOPE_CALL1_TAIL,
+			&&label__SCOPE_CALL2_TAIL,
 			&&label__GET_AT_TAIL,
 			&&label__SET_AT_TAIL,
 			XEMMAI__CODE__LABEL_UNARY(PLUS_TAIL)
@@ -825,8 +833,8 @@ size_t t_code::f_loop(t_context* a_context)
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
 				auto scope = a_context->v_scope;
-				t_with_lock_for_read lock(scope);
-				stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
+				t_with_lock_for_read lock(t_scope::f_this(scope));
+				stack[0].f_construct(scope[index]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET1)
@@ -836,7 +844,7 @@ size_t t_code::f_loop(t_context* a_context)
 				++pc;
 				auto lambda = a_context->v_lambda;
 				t_with_lock_for_read lock(lambda->v_scope);
-				stack[0].f_construct(lambda->v_as_scope[index]);
+				stack[0].f_construct(lambda->v_scope_entries[index]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET2)
@@ -844,9 +852,9 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				t_object* scope = a_context->v_lambda->v_as_scope.v_outer;
-				t_with_lock_for_read lock(scope);
-				stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
+				auto scope = t_scope::f_outer(a_context->v_lambda->v_scope_entries);
+				t_with_lock_for_read lock(t_scope::f_this(scope));
+				stack[0].f_construct(scope[index]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET)
@@ -856,10 +864,10 @@ size_t t_code::f_loop(t_context* a_context)
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
 				assert(outer >= 3);
-				t_object* scope = f_as<const t_scope&>(a_context->v_lambda->v_as_scope.v_outer).v_outer;
-				for (size_t i = 3; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
-				t_with_lock_for_read lock(scope);
-				stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
+				auto scope = t_scope::f_outer(t_scope::f_outer(a_context->v_lambda->v_scope_entries));
+				for (size_t i = 3; i < outer; ++i) scope = t_scope::f_outer(scope);
+				t_with_lock_for_read lock(t_scope::f_this(scope));
+				stack[0].f_construct(scope[index]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET0_WITHOUT_LOCK)
@@ -867,7 +875,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				stack[0].f_construct(f_as<const t_scope&>(a_context->v_scope)[index]);
+				stack[0].f_construct(a_context->v_scope[index]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET1_WITHOUT_LOCK)
@@ -875,7 +883,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				stack[0].f_construct(a_context->v_lambda->v_as_scope[index]);
+				stack[0].f_construct(a_context->v_lambda->v_scope_entries[index]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET2_WITHOUT_LOCK)
@@ -883,7 +891,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				stack[0].f_construct(f_as<const t_scope&>(a_context->v_lambda->v_as_scope.v_outer)[index]);
+				stack[0].f_construct(t_scope::f_outer(a_context->v_lambda->v_scope_entries)[index]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET_WITHOUT_LOCK)
@@ -893,9 +901,19 @@ size_t t_code::f_loop(t_context* a_context)
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
 				assert(outer >= 3);
-				t_object* scope = f_as<const t_scope&>(a_context->v_lambda->v_as_scope.v_outer).v_outer;
-				for (size_t i = 3; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
-				stack[0].f_construct(f_as<const t_scope&>(scope)[index]);
+				auto scope = t_scope::f_outer(t_scope::f_outer(a_context->v_lambda->v_scope_entries));
+				for (size_t i = 3; i < outer; ++i) scope = t_scope::f_outer(scope);
+				stack[0].f_construct(scope[index]);
+			}
+			XEMMAI__CODE__BREAK
+		XEMMAI__CODE__CASE(SCOPE_PUT0)
+			{
+				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				++pc;
+				auto scope = a_context->v_scope;
+				t_with_lock_for_write lock(t_scope::f_this(scope));
+				scope[index] = stack[0];
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_PUT)
@@ -904,15 +922,21 @@ size_t t_code::f_loop(t_context* a_context)
 				size_t outer = reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				t_object* scope;
-				if (outer > 0) {
-					scope = a_context->v_lambda->v_scope;
-					for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
-				} else {
-					scope = a_context->v_scope;
-				}
-				t_with_lock_for_write lock(scope);
-				f_as<t_scope&>(scope)[index] = stack[0];
+				assert(outer >= 1);
+				auto scope = a_context->v_lambda->v_scope_entries;
+				for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
+				t_with_lock_for_write lock(t_scope::f_this(scope));
+				scope[index] = stack[0];
+			}
+			XEMMAI__CODE__BREAK
+		XEMMAI__CODE__CASE(SCOPE_PUT0_CLEAR)
+			{
+				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				++pc;
+				auto scope = a_context->v_scope;
+				t_with_lock_for_write lock(t_scope::f_this(scope));
+				scope[index] = std::move(stack[0]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_PUT_CLEAR)
@@ -921,15 +945,11 @@ size_t t_code::f_loop(t_context* a_context)
 				size_t outer = reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				t_object* scope;
-				if (outer > 0) {
-					scope = a_context->v_lambda->v_scope;
-					for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
-				} else {
-					scope = a_context->v_scope;
-				}
-				t_with_lock_for_write lock(scope);
-				f_as<t_scope&>(scope)[index] = std::move(stack[0]);
+				assert(outer >= 1);
+				auto scope = a_context->v_lambda->v_scope_entries;
+				for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
+				t_with_lock_for_write lock(t_scope::f_this(scope));
+				scope[index] = std::move(stack[0]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(LAMBDA)
@@ -951,15 +971,8 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(SELF)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
-				size_t outer = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				if (outer > 0) {
-					t_object* scope = a_context->v_lambda->v_scope;
-					for (size_t i = 1; i < outer; ++i) scope = f_as<const t_scope&>(scope).v_outer;
-					stack[0].f_construct(f_as<const t_scope&>(scope)[0]);
-				} else {
-					stack[0].f_construct(base[-1]);
-				}
+				stack[0].f_construct(base[-1]);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CLASS)
@@ -1069,15 +1082,44 @@ size_t t_code::f_loop(t_context* a_context)
 				x.f_call(stack, n);
 			}
 			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(CALL_OUTER)
+		XEMMAI__CODE__CASE(STACK_CALL)
 			{
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				size_t n = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				t_slot& x = a_context->v_lambda->v_as_scope[index];
 				stack[1].f_construct();
-				x.f_call(stack, n);
+				base[index].f_call(stack, n);
+			}
+			XEMMAI__CODE__BREAK
+		XEMMAI__CODE__CASE(SCOPE_CALL0)
+			{
+				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				size_t n = reinterpret_cast<size_t>(*++pc);
+				++pc;
+				stack[1].f_construct();
+				a_context->v_scope[index].f_call(stack, n);
+			}
+			XEMMAI__CODE__BREAK
+		XEMMAI__CODE__CASE(SCOPE_CALL1)
+			{
+				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				size_t n = reinterpret_cast<size_t>(*++pc);
+				++pc;
+				stack[1].f_construct();
+				a_context->v_lambda->v_scope_entries[index].f_call(stack, n);
+			}
+			XEMMAI__CODE__BREAK
+		XEMMAI__CODE__CASE(SCOPE_CALL2)
+			{
+				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				size_t n = reinterpret_cast<size_t>(*++pc);
+				++pc;
+				stack[1].f_construct();
+				t_scope::f_outer(a_context->v_lambda->v_scope_entries)[index].f_call(stack, n);
 			}
 			XEMMAI__CODE__BREAK
 #define XEMMAI__CODE__FETCH()
@@ -1388,13 +1430,44 @@ size_t t_code::f_loop(t_context* a_context)
 				a_context->f_tail(n);
 				return n;
 			}
-		XEMMAI__CODE__CASE(CALL_OUTER_TAIL)
+		XEMMAI__CODE__CASE(STACK_CALL_TAIL)
+			{
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				size_t n = reinterpret_cast<size_t>(*++pc);
+				t_stacked* stack = base + a_context->v_lambda->v_privates;
+				stack[0].f_construct(base[index]);
+				stack[1].f_construct();
+				a_context->f_tail(n);
+				return n;
+			}
+		XEMMAI__CODE__CASE(SCOPE_CALL0_TAIL)
+			{
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				size_t n = reinterpret_cast<size_t>(*++pc);
+				t_stacked* stack = base + a_context->v_lambda->v_privates;
+				stack[0].f_construct(a_context->v_scope[index]);
+				stack[1].f_construct();
+				a_context->f_tail(n);
+				return n;
+			}
+		XEMMAI__CODE__CASE(SCOPE_CALL1_TAIL)
 			{
 				size_t index = reinterpret_cast<size_t>(*++pc);
 				size_t n = reinterpret_cast<size_t>(*++pc);
 				auto lambda = a_context->v_lambda;
 				t_stacked* stack = base + lambda->v_privates;
-				stack[0].f_construct(lambda->v_as_scope[index]);
+				stack[0].f_construct(lambda->v_scope_entries[index]);
+				stack[1].f_construct();
+				a_context->f_tail(n);
+				return n;
+			}
+		XEMMAI__CODE__CASE(SCOPE_CALL2_TAIL)
+			{
+				size_t index = reinterpret_cast<size_t>(*++pc);
+				size_t n = reinterpret_cast<size_t>(*++pc);
+				auto lambda = a_context->v_lambda;
+				t_stacked* stack = base + lambda->v_privates;
+				stack[0].f_construct(t_scope::f_outer(lambda->v_scope_entries)[index]);
 				stack[1].f_construct();
 				a_context->f_tail(n);
 				return n;
@@ -1624,8 +1697,8 @@ void t_code::f_try(t_context* a_context)
 						p.f_caught(thrown, a_context->v_lambda->v_this, caught);
 						if ((index & ~(~0 >> 1)) != 0) {
 							auto scope = a_context->v_scope;
-							t_with_lock_for_write lock(scope);
-							f_as<t_scope&>(scope)[~index] = thrown;
+							t_with_lock_for_write lock(t_scope::f_this(scope));
+							scope[~index] = thrown;
 						} else {
 							base[index] = thrown;
 						}

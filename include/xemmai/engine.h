@@ -356,7 +356,7 @@ inline t_object* t_fiber::f_current()
 	return f_as<t_thread&>(t_thread::v_current).v_active;
 }
 
-inline t_lambda::t_lambda(t_scoped&& a_scope, t_scoped&& a_code, t_object* a_this) : v_scope(std::move(a_scope)), v_as_scope(f_as<t_scope&>(v_scope)), v_code(std::move(a_code)), v_this(a_this)
+inline t_lambda::t_lambda(t_slot* a_scope, t_scoped&& a_code, t_object* a_this) : v_scope_entries(a_scope), v_scope(t_scope::f_this(a_scope)), v_code(std::move(a_code)), v_this(a_this)
 {
 	auto& code = f_as<t_code&>(v_code);
 	v_size = code.v_size;

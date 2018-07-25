@@ -136,12 +136,12 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions1;
 	a_emit.v_safe_positions = &safe_positions1;
 	if (v_self_shared) a_emit
-		<< e_instruction__SELF << a_emit.f_stack() << 0
-		<< e_instruction__SCOPE_PUT_CLEAR << a_emit.f_stack() << 0 << 0;
+		<< e_instruction__SELF << a_emit.f_stack()
+		<< e_instruction__SCOPE_PUT0_CLEAR << a_emit.f_stack() << 0;
 	for (size_t i = 0; i < v_arguments; ++i)
 		if (v_privates[i]->v_shared) a_emit
 			<< e_instruction__STACK_GET << a_emit.f_stack() << i
-			<< e_instruction__SCOPE_PUT_CLEAR << a_emit.f_stack() << 0 << v_privates[i]->v_index;
+			<< e_instruction__SCOPE_PUT0_CLEAR << a_emit.f_stack() << v_privates[i]->v_index;
 	f_emit_block(a_emit, v_block, true, false);
 	a_emit.f_pop();
 	a_emit.f_target(return0);
@@ -746,7 +746,10 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	if (v_variable.v_shared) {
-		a_emit << (a_clear ? e_instruction__SCOPE_PUT_CLEAR : e_instruction__SCOPE_PUT) << a_emit.f_stack() - 1 << v_outer;
+		if (v_outer > 0)
+			a_emit << (a_clear ? e_instruction__SCOPE_PUT_CLEAR : e_instruction__SCOPE_PUT) << a_emit.f_stack() - 1 << v_outer;
+		else
+			a_emit << (a_clear ? e_instruction__SCOPE_PUT0_CLEAR : e_instruction__SCOPE_PUT0) << a_emit.f_stack() - 1;
 	} else {
 		int i = v_variable.v_index - a_emit.v_arguments;
 		if (i < 0 || (*a_emit.v_stack)[i]) {
@@ -767,7 +770,13 @@ t_operand t_self::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 {
 	if (a_clear) return t_operand();
 	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__SELF << a_emit.f_stack() << v_outer;
+	if (v_outer > 0) {
+		a_emit << static_cast<t_instruction>(e_instruction__SCOPE_GET0_WITHOUT_LOCK + (v_outer < 3 ? v_outer : 3)) << a_emit.f_stack();
+		if (v_outer >= 3) a_emit << v_outer;
+		a_emit << 0;
+	} else {
+		a_emit << e_instruction__SELF << a_emit.f_stack();
+	}
 	a_emit.f_push(true);
 	a_emit.f_at(this);
 	return t_operand();
@@ -1113,13 +1122,13 @@ void t_call::f_flow(t_flow& a_flow)
 t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
-	const t_code::t_variable* variable = nullptr;
-	if (auto get = v_expand ? nullptr : dynamic_cast<t_symbol_get*>(v_target.get())) {
-		get->f_resolve();
-		if (get->v_resolved == 1 && get->v_variable && !get->v_variable->v_varies) variable = get->v_variable;
+	t_symbol_get* get = nullptr;
+	if (auto p = v_expand ? nullptr : dynamic_cast<t_symbol_get*>(v_target.get())) {
+		p->f_resolve();
+		if (p->v_variable && (!p->v_variable->v_shared || p->v_resolved < 3 && !p->v_variable->v_varies)) get = p;
 	}
-	if (variable) {
-		instruction = e_instruction__CALL_OUTER;
+	if (get) {
+		instruction = get->v_variable->v_shared ? e_instruction__SCOPE_CALL0 + get->v_resolved : e_instruction__STACK_CALL;
 		a_emit.f_push(false).f_push(false);
 	} else if (auto p = dynamic_cast<t_object_get*>(v_target.get())) {
 		p->f_method(a_emit);
@@ -1140,7 +1149,7 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	a_emit << static_cast<t_instruction>(instruction);
 	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
 	if (!a_tail) a_emit << a_emit.f_stack();
-	if (variable) a_emit << variable->v_index;
+	if (get) a_emit << get->v_variable->v_index;
 	a_emit << v_arguments.size();
 	a_emit.f_stack_map().f_push(true);
 	a_emit.f_at(this);
@@ -1230,7 +1239,7 @@ t_scoped t_emit::operator()(ast::t_scope& a_scope)
 	v_safe_positions = &safe_positions;
 	if (a_scope.v_self_shared) *this
 		<< e_instruction__STACK_GET << f_stack() << 0
-		<< e_instruction__SCOPE_PUT_CLEAR << f_stack() << 0 << 0;
+		<< e_instruction__SCOPE_PUT0_CLEAR << f_stack() << 0;
 	ast::f_emit_block_without_value(*this, a_scope.v_block);
 	*this << e_instruction__END;
 	f_resolve();

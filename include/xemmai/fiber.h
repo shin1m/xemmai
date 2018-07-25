@@ -76,7 +76,7 @@ struct t_context
 	t_stacked* v_base;
 	t_lambda* v_lambda;
 	t_stacked* v_previous;
-	t_object* v_scope;
+	t_slot* v_scope;
 
 	t_context() : v_pc(nullptr), v_lambda(nullptr)
 	{

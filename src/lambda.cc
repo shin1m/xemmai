@@ -6,10 +6,10 @@
 namespace xemmai
 {
 
-t_scoped t_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code)
+t_scoped t_lambda::f_instantiate(t_slot* a_scope, t_scoped&& a_code)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_lambda>());
-	object.f_pointer__(new t_lambda(std::move(a_scope), std::move(a_code), object));
+	object.f_pointer__(new t_lambda(a_scope, std::move(a_code), object));
 	return object;
 }
 
@@ -34,7 +34,7 @@ size_t t_type_of<t_lambda>::f_get_at(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-t_scoped t_advanced_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code, t_stacked* a_stack)
+t_scoped t_advanced_lambda::f_instantiate(t_slot* a_scope, t_scoped&& a_code, t_stacked* a_stack)
 {
 	auto& code = f_as<t_code&>(a_code);
 	t_scoped defaults;
@@ -46,7 +46,7 @@ t_scoped t_advanced_lambda::f_instantiate(t_scoped&& a_scope, t_scoped&& a_code,
 		for (size_t i = 0; i < n; ++i) tuple[i].f_construct(std::move(a_stack[i]));
 	}
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_advanced_lambda>());
-	object.f_pointer__(new t_advanced_lambda(std::move(a_scope), std::move(a_code), object, std::move(defaults)));
+	object.f_pointer__(new t_advanced_lambda(a_scope, std::move(a_code), object, std::move(defaults)));
 	return object;
 }
 

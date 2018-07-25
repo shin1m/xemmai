@@ -53,7 +53,9 @@ t_library* t_module::f_load_library(const std::wstring& a_path)
 
 void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
-	t_scoped lambda = t_lambda::f_instantiate(t_scope::f_instantiate(0, nullptr), a_code);
+	auto q = new(0) t_scope();
+	t_scoped scope = t_scope::f_instantiate(q);
+	t_scoped lambda = t_lambda::f_instantiate(q->f_entries(), a_code);
 	t_scoped_stack stack(2);
 	stack[1].f_construct(*a_this);
 	auto& p = f_as<t_lambda&>(lambda);
