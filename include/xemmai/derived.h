@@ -9,7 +9,11 @@ namespace xemmai
 template<typename T>
 struct t_derived : T
 {
-	using T::T;
+	template<size_t A_n>
+	t_derived(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T(a_ids, a_super, std::move(a_module))
+	{
+		this->f_call = t_type::f_do_call;
+	}
 	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n)
 	{
 		return static_cast<t_object*>(T::v_this)->f_call_preserved(f_global()->f_symbol_construct(), a_stack, a_n);
@@ -19,18 +23,6 @@ struct t_derived : T
 		a_this->f_get(f_global()->f_symbol_hash(), a_stack);
 		t_scoped x = std::move(a_stack[0]);
 		x.f_call(a_stack, 0);
-	}
-	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
-	{
-		try {
-			a_this->f_get(f_global()->f_symbol_call(), a_stack);
-		} catch (...) {
-			a_n += 2;
-			for (size_t i = 2; i < a_n; ++i) a_stack[i].f_destruct();
-			throw;
-		}
-		t_scoped x = std::move(a_stack[0]);
-		return x.f_call_without_loop(a_stack, a_n);
 	}
 #define XEMMAI__DERIVED__METHOD(a_method, a_n)\
 	virtual size_t f_##a_method(t_object* a_this, t_stacked* a_stack)\

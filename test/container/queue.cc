@@ -39,7 +39,7 @@ void t_queue::f_push(t_container* a_extension, t_scoped&& a_value)
 t_scoped t_queue::f_pop()
 {
 	t_scoped_lock_for_write lock(v_lock);
-	if (!v_head) t_throwable::f_throw(L"empty queue.");
+	if (!v_head) f_throw(L"empty queue.");
 	t_scoped pair = std::move(f_as<t_pair&>(v_head).v_next);
 	if (pair == v_head)
 		v_head = nullptr;

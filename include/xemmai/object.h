@@ -184,7 +184,11 @@ public:
 	{
 		return f_entries()[a_index];
 	}
-	const t_value& f_get_at(size_t a_index) const;
+	const t_value& f_get_at(size_t a_index) const
+	{
+		if (a_index >= v_size) f_throw(L"out of range.");
+		return (*this)[a_index];
+	}
 	std::wstring f_string() const;
 	intptr_t f_hash() const;
 	bool f_less(const t_tuple& a_other) const;
@@ -552,6 +556,189 @@ public:
 		return stack.f_return();
 	}
 };
+
+inline intptr_t t_value::f_integer() const
+{
+	return f_tag() < e_tag__OBJECT ? v_integer : v_p->v_integer;
+}
+
+inline void t_value::f_integer__(intptr_t a_value)
+{
+	v_p->v_integer = a_value;
+}
+
+inline double t_value::f_float() const
+{
+	return f_tag() < e_tag__OBJECT ? v_float : v_p->v_float;
+}
+
+inline void t_value::f_float__(double a_value)
+{
+	v_p->v_float = a_value;
+}
+
+inline void t_value::f_pointer__(void* a_value)
+{
+	v_p->v_pointer = a_value;
+}
+
+inline bool t_value::f_is(t_type* a_class) const
+{
+	return f_type()->f_derives(a_class);
+}
+
+inline void t_value::f_put(t_object* a_key, t_scoped&& a_value) const
+{
+	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported.");
+	v_p->f_type()->f_put(v_p, a_key, std::move(a_value));
+}
+
+inline bool t_value::f_has(t_object* a_key) const
+{
+	return f_tag() >= e_tag__OBJECT && v_p->f_has(a_key);
+}
+
+inline t_scoped t_value::f_remove(t_object* a_key) const
+{
+	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported.");
+	return v_p->f_type()->f_remove(v_p, a_key);
+}
+
+XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_stacked* a_stack, size_t a_n) const
+{
+	if (f_tag() < e_tag__OBJECT) {
+		t_destruct_n(a_stack, a_n);
+		f_throw(L"not supported.");
+	}
+	return v_p->f_call_without_loop(a_stack, a_n);
+}
+
+inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
+{
+	do {
+		t_scoped x = std::move(a_stack[0]);
+		a_n = x.f_call_without_loop(a_stack, a_n);
+	} while (a_n != size_t(-1));
+}
+
+#define XEMMAI__VALUE__UNARY(a_method)\
+		{\
+			t_scoped_stack stack(2);\
+			size_t n = v_p->f_type()->a_method(v_p, stack);\
+			if (n != size_t(-1)) f_loop(stack, n);\
+			return stack.f_return();\
+		}
+#define XEMMAI__VALUE__BINARY(a_method)\
+		{\
+			t_scoped_stack stack(3);\
+			stack[2].f_construct(a_value);\
+			size_t n = v_p->f_type()->a_method(v_p, stack);\
+			if (n != size_t(-1)) f_loop(stack, n);\
+			return stack.f_return();\
+		}
+
+template<typename... T>
+inline t_scoped t_value::operator()(T&&... a_arguments) const
+{
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	stack[1].f_construct();
+	f_call(stack, sizeof...(a_arguments));
+	return stack.f_return();
+}
+
+template<typename... T>
+inline t_scoped t_value::f_invoke(t_object* a_key, T&&... a_arguments) const
+{
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	stack[1].f_construct();
+	f_call(a_key, stack, sizeof...(a_arguments));
+	return stack.f_return();
+}
+
+inline t_scoped t_value::f_get_at(const t_value& a_index) const
+{
+	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported.");
+	t_scoped_stack stack(3);
+	stack[2].f_construct(a_index);
+	size_t n = v_p->f_type()->f_get_at(v_p, stack);
+	if (n != size_t(-1)) f_loop(stack, n);
+	return stack.f_return();
+}
+
+inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
+{
+	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported.");
+	t_scoped_stack stack(4);
+	stack[2].f_construct(a_index);
+	stack[3].f_construct(a_value);
+	size_t n = v_p->f_type()->f_set_at(v_p, stack);
+	if (n != size_t(-1)) f_loop(stack, n);
+	return stack.f_return();
+}
+
+inline t_scoped t_value::f_plus() const
+{
+	switch (f_tag()) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		f_throw(L"not supported.");
+	case e_tag__INTEGER:
+		return t_scoped(v_integer);
+	case e_tag__FLOAT:
+		return t_scoped(v_float);
+	default:
+		XEMMAI__VALUE__UNARY(f_plus)
+	}
+}
+
+inline t_scoped t_value::f_minus() const
+{
+	switch (f_tag()) {
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+		f_throw(L"not supported.");
+	case e_tag__INTEGER:
+		return t_scoped(-v_integer);
+	case e_tag__FLOAT:
+		return t_scoped(-v_float);
+	default:
+		XEMMAI__VALUE__UNARY(f_minus)
+	}
+}
+
+inline t_scoped t_value::f_not() const
+{
+	switch (f_tag()) {
+	case e_tag__BOOLEAN:
+		return t_scoped(!v_boolean);
+	case e_tag__NULL:
+	case e_tag__INTEGER:
+	case e_tag__FLOAT:
+		f_throw(L"not supported.");
+	default:
+		XEMMAI__VALUE__UNARY(f_not)
+	}
+}
+
+inline t_scoped t_value::f_complement() const
+{
+	switch (f_tag()) {
+	case e_tag__INTEGER:
+		return t_scoped(~v_integer);
+	case e_tag__NULL:
+	case e_tag__BOOLEAN:
+	case e_tag__FLOAT:
+		f_throw(L"not supported.");
+	default:
+		XEMMAI__VALUE__UNARY(f_complement)
+	}
+}
+
+inline t_scoped t_value::f_send(const t_value& a_value) const
+{
+	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported.");
+	XEMMAI__VALUE__BINARY(f_send)
+}
 
 }
 

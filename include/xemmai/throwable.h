@@ -20,12 +20,6 @@ protected:
 
 public:
 	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_message);
-	XEMMAI__PORTABLE__EXPORT static void f_throw [[noreturn]] (const std::wstring& a_message);
-	static void f_throw [[noreturn]] (t_stacked* a_stack, size_t a_n, const std::wstring& a_message)
-	{
-		t_destruct_n(a_stack, a_n);
-		f_throw(a_message);
-	}
 
 	t_throwable(const std::wstring& a_message) : v_message(a_message)
 	{

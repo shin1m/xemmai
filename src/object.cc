@@ -219,10 +219,10 @@ t_scoped t_object::f_allocate_on_boot()
 
 void t_object::f_own()
 {
-	if (f_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
+	if (f_type()->v_fixed) f_throw(L"thread mode is fixed.");
 	{
 		t_scoped_lock_for_write lock(v_lock);
-		if (v_owner) t_throwable::f_throw(L"already owned.");
+		if (v_owner) f_throw(L"already owned.");
 		v_owner = t_value::v_increments;
 	}
 	t_slot* p = v_structure->f_fields();
@@ -238,8 +238,8 @@ void t_object::f_own()
 
 void t_object::f_share()
 {
-	if (f_type()->v_fixed) t_throwable::f_throw(L"thread mode is fixed.");
-	if (v_owner != t_value::v_increments) t_throwable::f_throw(L"not owned.");
+	if (f_type()->v_fixed) f_throw(L"thread mode is fixed.");
+	if (v_owner != t_value::v_increments) f_throw(L"not owned.");
 	t_scoped_lock_for_write lock(v_lock);
 	v_owner = nullptr;
 }

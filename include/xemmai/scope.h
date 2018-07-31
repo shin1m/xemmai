@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_scope
 {
-	friend class t_lambda;
+	friend class t_lambda_shared;
 	friend class t_module;
 	friend class t_type_of<t_scope>;
 

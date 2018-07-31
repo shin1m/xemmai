@@ -30,14 +30,14 @@ t_file::t_file(const std::wstring& a_path, const char* a_mode) : v_stream(std::f
 
 t_file::t_file(const std::wstring& a_path, const std::wstring& a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str())), v_own(true)
 {
-	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+	if (v_stream == NULL) f_throw(L"failed to open.");
 	std::setbuf(v_stream, NULL);
 }
 
 #ifdef __unix__
 t_file::t_file(int a_fd, const char* a_mode) : v_stream(fdopen(a_fd, a_mode)), v_own(true)
 {
-	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+	if (v_stream == NULL) f_throw(L"failed to open.");
 	std::setbuf(v_stream, NULL);
 }
 
@@ -49,85 +49,57 @@ t_file::t_file(int a_fd, const std::wstring& a_mode) : t_file(a_fd, portable::f_
 void t_file::f_reopen(const std::wstring& a_path, const std::wstring& a_mode)
 {
 	v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
-	if (v_stream == NULL) t_throwable::f_throw(L"failed to open.");
+	if (v_stream == NULL) f_throw(L"failed to open.");
 	std::setbuf(v_stream, NULL);
-}
-
-void t_file::f_close()
-{
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
-	if (!v_own) t_throwable::f_throw(L"can not close unown.");
-	std::fclose(v_stream);
-	v_stream = NULL;
-}
-
-void t_file::f_seek(intptr_t a_offset, int a_whence)
-{
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
-	if (std::fseek(v_stream, a_offset, a_whence) == -1) t_throwable::f_throw(L"failed to seek.");
-}
-
-intptr_t t_file::f_tell() const
-{
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
-	intptr_t n = std::ftell(v_stream);
-	if (n == -1) t_throwable::f_throw(L"failed to tell.");
-	return n;
 }
 
 size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
 	t_safe_region region;
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
-	if (a_offset + a_size > a_bytes.f_size()) t_throwable::f_throw(L"out of range.");
+	if (v_stream == NULL) f_throw(L"already closed.");
+	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range.");
 	size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
-	if (n <= 0 && std::ferror(v_stream)) t_throwable::f_throw(L"failed to read.");
+	if (n <= 0 && std::ferror(v_stream)) f_throw(L"failed to read.");
 	return n;
 }
 
 void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
 	t_safe_region region;
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
-	if (a_offset + a_size > a_bytes.f_size()) t_throwable::f_throw(L"out of range.");
+	if (v_stream == NULL) f_throw(L"already closed.");
+	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range.");
 	unsigned char* p = &a_bytes[0] + a_offset;
 	while (true) {
 		size_t n = std::fwrite(p, 1, a_size, v_stream);
-		if (n <= 0 && std::ferror(v_stream)) t_throwable::f_throw(L"failed to write.");
+		if (n <= 0 && std::ferror(v_stream)) f_throw(L"failed to write.");
 		a_size -= n;
 		if (a_size <= 0) break;
 		p += n;
 	}
 }
 
-void t_file::f_flush()
-{
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
-	std::fflush(v_stream);
-}
-
 bool t_file::f_tty() const
 {
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	if (v_stream == NULL) f_throw(L"already closed.");
 	return isatty(fileno(v_stream)) == 1;
 }
 
 #ifdef __unix__
 bool t_file::f_blocking() const
 {
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	if (v_stream == NULL) f_throw(L"already closed.");
 	return (fcntl(fileno(v_stream), F_GETFL) & O_NONBLOCK) == 0;
 }
 
 void t_file::f_blocking__(bool a_value)
 {
-	if (v_stream == NULL) t_throwable::f_throw(L"already closed.");
+	if (v_stream == NULL) f_throw(L"already closed.");
 	int flags = fcntl(fileno(v_stream), F_GETFL);
 	if (a_value)
 		flags &= ~O_NONBLOCK;
 	else
 		flags |= O_NONBLOCK;
-	if (fcntl(fileno(v_stream), F_SETFL, flags) == -1) t_throwable::f_throw(L"failed to F_SETFL.");
+	if (fcntl(fileno(v_stream), F_SETFL, flags) == -1) f_throw(L"failed to F_SETFL.");
 }
 #endif
 

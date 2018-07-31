@@ -19,7 +19,7 @@ void t_type_of<t_method>::f_scan(t_object* a_this, t_scan a_scan)
 	a_scan(p.v_self);
 }
 
-size_t t_type_of<t_method>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
+size_t t_type_of<t_method>::f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
 	auto& p = f_as<t_method&>(a_this);
 	a_stack[1].f_construct(p.v_self);

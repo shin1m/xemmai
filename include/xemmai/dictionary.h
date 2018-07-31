@@ -119,7 +119,12 @@ public:
 
 	void f_clear();
 	size_t f_size() const;
-	const t_value& f_get(const t_value& a_key) const;
+	const t_value& f_get(const t_value& a_key) const
+	{
+		t_entry* field = f_find(a_key);
+		if (!field) f_throw(L"key not found.");
+		return field->v_value;
+	}
 	t_scoped f_put(const t_value& a_key, t_scoped&& a_value);
 	bool f_has(const t_value& a_key) const
 	{

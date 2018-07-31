@@ -17,7 +17,7 @@ void t_type_of<t_native>::f_scan(t_object* a_this, t_scan a_scan)
 	a_scan(f_as<t_native&>(a_this).v_module);
 }
 
-size_t t_type_of<t_native>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
+size_t t_type_of<t_native>::f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
 	auto& p = f_as<t_native&>(a_this);
 	p.v_function(p.v_extension, a_stack, a_n);

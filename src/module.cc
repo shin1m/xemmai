@@ -58,8 +58,7 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	t_scoped lambda = t_lambda::f_instantiate(q->f_entries(), a_code);
 	t_scoped_stack stack(2);
 	stack[1].f_construct(*a_this);
-	auto& p = f_as<t_lambda&>(lambda);
-	(p.*p.v_call)(stack);
+	static_cast<t_object*>(lambda)->f_call_without_loop(stack, 0);
 	stack.f_return();
 }
 
@@ -119,7 +118,7 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 			return module;
 		}
 	}
-	t_throwable::f_throw(L"module \"" + a_name + L"\" not found.");
+	f_throw(L"module \"" + a_name + L"\" not found.");
 	return {};
 }
 
@@ -128,8 +127,8 @@ void t_module::f_main()
 	t_scoped x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
 	f_check<std::wstring>(x, L"script");
 	auto& path = f_as<const std::wstring&>(x);
-	if (path.empty()) t_throwable::f_throw(L"script path is empty.");
-	if (!f_load_and_execute_script(L"__main", path)) t_throwable::f_throw(L"file \"" + path + L"\" not found.");
+	if (path.empty()) f_throw(L"script path is empty.");
+	if (!f_load_and_execute_script(L"__main", path)) f_throw(L"file \"" + path + L"\" not found.");
 }
 
 t_module::t_module(const std::wstring& a_path) : v_path(a_path), v_iterator(f_engine()->v_module__instances__null)
@@ -194,7 +193,7 @@ void t_library::f_scan(t_scan a_scan)
 void t_library::f_initialize(t_object* a_this)
 {
 	auto factory = v_handle->v_library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
-	if (!factory) t_throwable::f_throw(L"f_factory not found.");
+	if (!factory) f_throw(L"f_factory not found.");
 	v_extension = factory(a_this);
 }
 
@@ -204,9 +203,9 @@ void t_type_of<t_module>::f_scan(t_object* a_this, t_scan a_scan)
 	f_as<t_module&>(a_this).f_scan(a_scan);
 }
 
-void t_type_of<t_module>::f_instantiate(t_stacked* a_stack, size_t a_n)
+void t_type_of<t_module>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
+	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
 	t_destruct<> a0(a_stack[2]);
 	f_check<std::wstring>(a0.v_p, L"argument0");
 	a_stack[0].f_construct(t_module::f_instantiate(f_as<const std::wstring&>(a0.v_p)));

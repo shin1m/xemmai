@@ -54,7 +54,7 @@ struct t_signature
 	}
 	static void f_check(t_stacked* a_stack, size_t a_n)
 	{
-		if (a_n != sizeof...(T_an)) t_throwable::f_throw(a_stack, a_n, f_error());
+		if (a_n != sizeof...(T_an)) f_throw(a_stack, a_n, f_error());
 	}
 	template<size_t A_i>
 	static void f_check__(t_stacked* a_stack)
@@ -143,7 +143,7 @@ struct t_call_construct<t_scoped(*)(t_type*, T_an...), A_function>
 	{
 		t_signature<T_an...>::f_check(a_stack, a_n);
 		t_destruct<sizeof...(T_an)> destruct(a_stack);
-		if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+		if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class.");
 		t_signature<T_an...>::f_check(a_stack);
 		t_signature<T_an...>::template f_call<f_function>(a_extension, a_stack[1], a_stack);
 	}
@@ -165,7 +165,7 @@ struct t_call_construct<t_scoped(*)(t_type*, T_an...), A_function>
 	}
 	static t_scoped f_do(t_type* a_class, t_stacked* a_stack, size_t a_n)
 	{
-		if (a_n != sizeof...(T_an)) t_throwable::f_throw(t_signature<T_an...>::f_error());
+		if (a_n != sizeof...(T_an)) f_throw(t_signature<T_an...>::f_error());
 		t_signature<T_an...>::f_check(a_stack);
 		return f__do<T_an...>(a_class, a_stack + 1);
 	}
@@ -476,11 +476,11 @@ struct t_overload<>
 	{
 		static void f_call(t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 		{
-			t_throwable::f_throw(a_stack, a_n, L"no method matching signature is found.");
+			f_throw(a_stack, a_n, L"no method matching signature is found.");
 		}
 		static t_scoped f_do(t_type* a_class, t_stacked* a_stack, size_t a_n)
 		{
-			t_throwable::f_throw(L"no method matching signature is found.");
+			f_throw(L"no method matching signature is found.");
 		}
 	};
 };

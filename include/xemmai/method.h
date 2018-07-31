@@ -35,9 +35,13 @@ public:
 template<>
 struct t_type_of<t_method> : t_uninstantiatable<t_underivable<t_holds<t_method, t_type_immutable>>>
 {
-	using t_base::t_base;
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		f_call = f_do_call;
+	}
 	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
+	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
 };
 

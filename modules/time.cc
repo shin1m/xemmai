@@ -82,7 +82,7 @@ const size_t v_month_base_days[] = {
 double f_compose(const t_tuple& a_value)
 {
 	size_t n = a_value.f_size();
-	if (n < 3) t_throwable::f_throw(L"must have at least 3 items.");
+	if (n < 3) f_throw(L"must have at least 3 items.");
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1) - 1;
 	year += month / 12;
@@ -405,18 +405,18 @@ t_scoped f_parse_rfc2822(const std::wstring& a_value)
 	intptr_t minute;
 	int i;
 	int n = std::swscanf(s, XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR "%n"), &day, month, &year, &hour, &minute, &i);
-	if (n < 5) t_throwable::f_throw(L"invalid format.");
+	if (n < 5) f_throw(L"invalid format.");
 	intptr_t m = f_month_name_to_number(month);
-	if (m <= 0) t_throwable::f_throw(L"invalid format.");
+	if (m <= 0) f_throw(L"invalid format.");
 	intptr_t second;
 	wchar_t zone[6];
 	if (s[i] == L':') {
 		n = std::swscanf(s + ++i, XEMMAI__MACRO__L("%2" SCNdPTR " %5ls"), &second, zone);
-		if (n < 2) t_throwable::f_throw(L"invalid format.");
+		if (n < 2) f_throw(L"invalid format.");
 	} else {
 		second = 0;
 		n = std::swscanf(s + i, L" %5ls", zone);
-		if (n < 1) t_throwable::f_throw(L"invalid format.");
+		if (n < 1) f_throw(L"invalid format.");
 	}
 	if (year < 50)
 		year += 2000;
@@ -428,7 +428,7 @@ t_scoped f_parse_rfc2822(const std::wstring& a_value)
 std::wstring f_format_rfc2822(const t_tuple& a_value, intptr_t a_offset)
 {
 	size_t n = a_value.f_size();
-	if (n < 7) t_throwable::f_throw(L"must have at least 7 items.");
+	if (n < 7) f_throw(L"must have at least 7 items.");
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1);
 	intptr_t day = f_item(a_value, 2);
@@ -456,11 +456,11 @@ t_scoped f_parse_http(const std::wstring& a_value)
 		n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*l[A-Za-z], %2" SCNdPTR "-%3ls-%2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
 		if (n < 6) {
 			n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls %3ls %2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " %4" SCNdPTR), month, &day, &hour, &minute, &second, &year);
-			if (n < 6) t_throwable::f_throw(L"invalid format.");
+			if (n < 6) f_throw(L"invalid format.");
 		}
 	}
 	intptr_t m = f_month_name_to_number(month);
-	if (m <= 0) t_throwable::f_throw(L"invalid format.");
+	if (m <= 0) f_throw(L"invalid format.");
 	if (year < 50)
 		year += 2000;
 	else if (year < 1000)
@@ -470,7 +470,7 @@ t_scoped f_parse_http(const std::wstring& a_value)
 
 std::wstring f_format_http(const t_tuple& a_value)
 {
-	if (a_value.f_size() < 7) t_throwable::f_throw(L"must have at least 7 items.");
+	if (a_value.f_size() < 7) f_throw(L"must have at least 7 items.");
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1);
 	intptr_t day = f_item(a_value, 2);
@@ -493,13 +493,13 @@ t_scoped f_parse_xsd(const std::wstring& a_value)
 	double second;
 	wchar_t zone[7];
 	int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
-	if (n < 6) t_throwable::f_throw(L"invalid format.");
+	if (n < 6) f_throw(L"invalid format.");
 	return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
 }
 
 std::wstring f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_precision)
 {
-	if (a_value.f_size() < 6) t_throwable::f_throw(L"must have at least 6 items.");
+	if (a_value.f_size() < 6) f_throw(L"must have at least 6 items.");
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1);
 	intptr_t day = f_item(a_value, 2);

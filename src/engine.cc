@@ -374,15 +374,32 @@ t_engine::~t_engine()
 	}
 }
 
+namespace
+{
+
+template<typename T_context>
+void f_initialize_calls()
+{
+	f_global()->f_type<t_lambda>()->f_call = t_type_of<t_lambda>::f_do_call<t_lambda, T_context>;
+	f_global()->f_type<t_lambda_shared>()->f_call = t_type_of<t_lambda>::f_do_call<t_lambda_shared, T_context>;
+	f_global()->f_type<t_advanced_lambda<t_lambda>>()->f_call = t_type_of<t_advanced_lambda<t_lambda>>::f_do_call<T_context>;
+	f_global()->f_type<t_advanced_lambda<t_lambda_shared>>()->f_call = t_type_of<t_advanced_lambda<t_lambda_shared>>::f_do_call<T_context>;
+}
+
+}
+
 intptr_t t_engine::f_run(t_debugger* a_debugger)
 {
 	if (a_debugger) {
+		f_initialize_calls<t_debug_context>();
 		std::unique_lock<std::mutex> lock(v_thread__mutex);
 		v_debugger = a_debugger;
 		v_debug__stopping = true;
 		++v_debug__safe;
 		v_debugger->f_stopped(v_thread);
 		f_debug_wait_and_leave(lock);
+	} else {
+		f_initialize_calls<t_context>();
 	}
 	intptr_t n = v_debugger ? t_fiber::f_main<t_debug_context>(t_module::f_main) : t_fiber::f_main<t_context>(t_module::f_main);
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
@@ -440,7 +457,7 @@ void t_engine::f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc
 
 void t_engine::f_debug_safe_point()
 {
-	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
+	if (!v_debugger) f_throw(L"not in debug mode");
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
 	if (v_debug__stepping == t_thread::f_current())
 		f_debug_break_point(lock);
@@ -450,7 +467,7 @@ void t_engine::f_debug_safe_point()
 
 void t_engine::f_debug_break_point()
 {
-	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
+	if (!v_debugger) f_throw(L"not in debug mode");
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
 	f_debug_break_point(lock);
 }
@@ -470,7 +487,7 @@ void t_engine::f_debug_safe_region_leave()
 void t_engine::f_debug_stop()
 {
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
-	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
+	if (!v_debugger) f_throw(L"not in debug mode");
 	if (v_debug__stopping) return;
 	f_debug_stop_and_wait(lock);
 	v_debugger->f_stopped(v_thread);
@@ -479,8 +496,8 @@ void t_engine::f_debug_stop()
 void t_engine::f_debug_continue(t_object* a_stepping)
 {
 	std::lock_guard<std::mutex> lock(v_thread__mutex);
-	if (!v_debugger) t_throwable::f_throw(L"not in debug mode");
-	if (!v_debug__stopping) t_throwable::f_throw(L"already running");
+	if (!v_debugger) f_throw(L"not in debug mode");
+	if (!v_debug__stopping) f_throw(L"already running");
 	v_debug__stopping = false;
 	v_debug__stepping = a_stepping;
 	v_thread__condition.notify_all();

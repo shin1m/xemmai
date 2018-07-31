@@ -21,7 +21,7 @@ t_scoped t_type_of<intptr_t>::f_multiply(intptr_t a_self, const t_value& a_value
 			if (f_is<intptr_t>(p)) return t_scoped(a_self * p->f_integer());
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 t_scoped t_type_of<intptr_t>::f_divide(intptr_t a_self, const t_value& a_value)
@@ -40,7 +40,7 @@ t_scoped t_type_of<intptr_t>::f_divide(intptr_t a_self, const t_value& a_value)
 			if (f_is<intptr_t>(p)) return t_scoped(a_self / p->f_integer());
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 t_scoped t_type_of<intptr_t>::f_add(intptr_t a_self, const t_value& a_value)
@@ -59,7 +59,7 @@ t_scoped t_type_of<intptr_t>::f_add(intptr_t a_self, const t_value& a_value)
 			if (f_is<intptr_t>(p)) return t_scoped(a_self + p->f_integer());
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 t_scoped t_type_of<intptr_t>::f_subtract(intptr_t a_self, const t_value& a_value)
@@ -78,7 +78,7 @@ t_scoped t_type_of<intptr_t>::f_subtract(intptr_t a_self, const t_value& a_value
 			if (f_is<intptr_t>(p)) return t_scoped(a_self - p->f_integer());
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 bool t_type_of<intptr_t>::f_less(intptr_t a_self, const t_value& a_value)
@@ -97,7 +97,7 @@ bool t_type_of<intptr_t>::f_less(intptr_t a_self, const t_value& a_value)
 			if (f_is<intptr_t>(p)) return a_self < p->f_integer();
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 bool t_type_of<intptr_t>::f_less_equal(intptr_t a_self, const t_value& a_value)
@@ -116,7 +116,7 @@ bool t_type_of<intptr_t>::f_less_equal(intptr_t a_self, const t_value& a_value)
 			if (f_is<intptr_t>(p)) return a_self <= p->f_integer();
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 bool t_type_of<intptr_t>::f_greater(intptr_t a_self, const t_value& a_value)
@@ -135,7 +135,7 @@ bool t_type_of<intptr_t>::f_greater(intptr_t a_self, const t_value& a_value)
 			if (f_is<intptr_t>(p)) return a_self > p->f_integer();
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 bool t_type_of<intptr_t>::f_greater_equal(intptr_t a_self, const t_value& a_value)
@@ -154,7 +154,7 @@ bool t_type_of<intptr_t>::f_greater_equal(intptr_t a_self, const t_value& a_valu
 			if (f_is<intptr_t>(p)) return a_self >= p->f_integer();
 		}
 	}
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 bool t_type_of<intptr_t>::f_equals(intptr_t a_self, const t_value& a_value)

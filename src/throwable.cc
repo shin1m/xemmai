@@ -5,6 +5,11 @@
 namespace xemmai
 {
 
+void f_throw(const std::wstring& a_message)
+{
+	throw t_throwable::f_instantiate(a_message);
+}
+
 t_throwable::~t_throwable()
 {
 	while (v_backtrace) {
@@ -19,11 +24,6 @@ t_scoped t_throwable::f_instantiate(const std::wstring& a_message)
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_throwable>());
 	object.f_pointer__(new t_throwable(a_message));
 	return object;
-}
-
-void t_throwable::f_throw(const std::wstring& a_message)
-{
-	throw f_instantiate(a_message);
 }
 
 void t_throwable::f_dump() const

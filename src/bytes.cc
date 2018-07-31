@@ -5,25 +5,6 @@
 namespace xemmai
 {
 
-void t_bytes::f_validate(intptr_t& a_index) const
-{
-	if (a_index < 0) {
-		a_index += v_size;
-		if (a_index < 0) t_throwable::f_throw(L"out of range.");
-	} else {
-		if (a_index >= static_cast<intptr_t>(v_size)) t_throwable::f_throw(L"out of range.");
-	}
-}
-
-void t_bytes::f_validate(intptr_t& a_index, size_t a_size) const
-{
-	if (a_index < 0) {
-		a_index += v_size;
-		if (a_index < 0) t_throwable::f_throw(L"out of range.");
-	}
-	if (a_index + a_size > v_size) t_throwable::f_throw(L"out of range.");
-}
-
 t_scoped t_bytes::f_instantiate(size_t a_size)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_bytes>());
@@ -44,32 +25,12 @@ std::wstring t_bytes::f_string() const
 	return L'[' + s + L']';
 }
 
-intptr_t t_bytes::f_get_at(intptr_t a_index) const
-{
-	f_validate(a_index);
-	return (*this)[a_index];
-}
-
-intptr_t t_bytes::f_set_at(intptr_t a_index, intptr_t a_value)
-{
-	f_validate(a_index);
-	return (*this)[a_index] = a_value;
-}
-
-void t_bytes::f_copy(intptr_t a_index0, size_t a_size, t_bytes& a_other, intptr_t a_index1) const
-{
-	f_validate(a_index0, a_size);
-	a_other.f_validate(a_index1, a_size);
-	unsigned char* p = f_entries() + a_index0;
-	std::copy(p, p + a_size, a_other.f_entries() + a_index1);
-}
-
 void t_type_of<t_bytes>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
+	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
 	t_destruct<> self(a_stack[1]);
 	t_destruct<> a0(a_stack[2]);
-	if (self.v_p.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+	if (self.v_p.f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class.");
 	f_check<size_t>(a0.v_p, L"argument0");
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(self.v_p));
 	size_t n = f_as<size_t>(a0.v_p);
@@ -106,7 +67,7 @@ void t_type_of<t_bytes>::f_define()
 
 t_scoped t_type_of<t_bytes>::f_construct(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) t_throwable::f_throw(L"must be called with an argument.");
+	if (a_n != 1) f_throw(L"must be called with an argument.");
 	auto& a0 = a_stack[2];
 	f_check<size_t>(a0, L"argument0");
 	t_scoped p = t_object::f_allocate(this);

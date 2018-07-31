@@ -50,7 +50,7 @@ void f_sleep(intptr_t a_miliseconds)
 t_scoped f_pipe()
 {
 	int fds[2];
-	if (pipe(fds) != 0) t_throwable::f_throw(L"pipe failed.");
+	if (pipe(fds) != 0) f_throw(L"pipe failed.");
 	return f_tuple(fds[0], fds[1]);
 }
 #endif

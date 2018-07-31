@@ -214,16 +214,41 @@ struct t_type_of<t_object>
 	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
 	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
+	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
+	void f_dont_instantiate(t_stacked* a_stack, size_t a_n)
+	{
+		f_throw(a_stack, a_n, L"uninstantiatable.");
+	}
+	void (t_type::*v_instantiate)(t_stacked*, size_t) = &t_type::f_do_instantiate;
 	t_scoped f_get_nonowned(t_object* a_this, t_object* a_key);
-	XEMMAI__PORTABLE__EXPORT virtual void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_get(t_object* a_this, t_object* a_key);
-	XEMMAI__PORTABLE__EXPORT virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
-	XEMMAI__PORTABLE__EXPORT virtual bool f_has(t_object* a_this, t_object* a_key);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
+	void f_do_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
+	void (t_type::*v_get_nonowned)(t_object*, t_object*, t_stacked*) = &t_type::f_do_get_nonowned;
+	void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack)
+	{
+		(this->*v_get_nonowned)(a_this, a_key, a_stack);
+	}
+	t_scoped f_do_get(t_object* a_this, t_object* a_key);
+	t_scoped (t_type::*v_get)(t_object*, t_object*) = &t_type::f_do_get;
+	t_scoped f_get(t_object* a_this, t_object* a_key)
+	{
+		return (this->*v_get)(a_this, a_key);
+	}
+	t_scoped f_get_of_type(t_object* a_key);
+	static void f_do_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
+	void (*f_put)(t_object*, t_object*, t_scoped&&) = f_do_put;
+	bool f_do_has(t_object* a_this, t_object* a_key);
+	bool (t_type::*v_has)(t_object*, t_object*) = &t_type::f_do_has;
+	bool f_has(t_object* a_this, t_object* a_key)
+	{
+		return (this->*v_has)(a_this, a_key);
+	}
+	static t_scoped f_do_remove(t_object* a_this, t_object* a_key);
+	t_scoped (*f_remove)(t_object*, t_object*) = f_do_remove;
 	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual void f_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
+	static void f_do_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
+	void (*f_call_nonowned)(t_object*, t_object*, t_stacked*, size_t) = f_do_call_nonowned;
+	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
+	size_t (*f_call)(t_object*, t_stacked*, size_t) = f_do_call;
 	XEMMAI__PORTABLE__EXPORT virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual size_t f_set_at(t_object* a_this, t_stacked* a_stack);
 	XEMMAI__PORTABLE__EXPORT virtual size_t f_plus(t_object* a_this, t_stacked* a_stack);
@@ -389,19 +414,31 @@ struct t_uninstantiatable : T_base
 {
 	typedef t_uninstantiatable t_base;
 
-	using T_base::T_base;
-	virtual void f_instantiate(t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_uninstantiatable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	{
+		this->v_instantiate = &t_type::f_dont_instantiate;
+	}
 };
 
 struct t_type_immutable : t_with_traits<t_type, true, true>
 {
-	using t_with_traits<t_type, true, true>::t_with_traits;
-	virtual void f_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
-	virtual t_scoped f_get(t_object* a_this, t_object* a_key);
-	virtual void f_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
-	virtual bool f_has(t_object* a_this, t_object* a_key);
-	virtual t_scoped f_remove(t_object* a_this, t_object* a_key);
-	virtual void f_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_type_immutable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_get_nonowned = static_cast<void (t_type::*)(t_object*, t_object*, t_stacked*)>(&t_type_immutable::f_do_get_nonowned);
+		v_get = static_cast<t_scoped (t_type::*)(t_object*, t_object*)>(&t_type_immutable::f_do_get);
+		f_put = f_do_put;
+		v_has = static_cast<bool (t_type::*)(t_object*, t_object*)>(&t_type_immutable::f_do_has);
+		f_remove = f_do_remove;
+		f_call_nonowned = f_do_call_nonowned;
+	}
+	void f_do_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
+	t_scoped f_do_get(t_object* a_this, t_object* a_key);
+	static void f_do_put(t_object* a_this, t_object* a_key, t_scoped&& a_value);
+	bool f_do_has(t_object* a_this, t_object* a_key);
+	static t_scoped f_do_remove(t_object* a_this, t_object* a_key);
+	static void f_do_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
 };
 
 }

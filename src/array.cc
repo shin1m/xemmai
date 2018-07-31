@@ -6,24 +6,6 @@
 namespace xemmai
 {
 
-t_slot* t_array::f_move_forward(t_slot* a_p, t_slot* a_q)
-{
-	while (a_p < a_q) {
-		t_slot& s = *a_q;
-		s = std::move(*--a_q);
-	}
-	return a_q;
-}
-
-t_slot* t_array::f_move_backward(t_slot* a_p, t_slot* a_q)
-{
-	while (a_p < a_q) {
-		t_slot& s = *a_p;
-		s = std::move(*++a_p);
-	}
-	return a_p;
-}
-
 void t_array::f_resize()
 {
 	auto& tuple0 = f_as<t_tuple&>(v_tuple);
@@ -53,16 +35,6 @@ void t_array::f_shrink()
 	}
 }
 
-void t_array::f_validate(intptr_t& a_index) const
-{
-	if (a_index < 0) {
-		a_index += v_size;
-		if (a_index < 0) t_throwable::f_throw(L"out of range.");
-	} else {
-		if (a_index >= static_cast<intptr_t>(v_size)) t_throwable::f_throw(L"out of range.");
-	}
-}
-
 t_scoped t_array::f_instantiate()
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_array>());
@@ -70,75 +42,13 @@ t_scoped t_array::f_instantiate()
 	return object;
 }
 
-void t_array::f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size)
-{
-	t_scoped tuple = std::move(v_tuple);
-	v_tuple = std::move(a_tuple);
-	a_tuple = std::move(tuple);
-	std::swap(v_head, a_head);
-	std::swap(v_size, a_size);
-}
-
-const t_slot& t_array::operator[](intptr_t a_index) const
-{
-	f_validate(a_index);
-	auto& tuple = f_as<const t_tuple&>(v_tuple);
-	return tuple[(v_head + a_index) % tuple.f_size()];
-}
-
-t_slot& t_array::operator[](intptr_t a_index)
-{
-	f_validate(a_index);
-	auto& tuple = f_as<t_tuple&>(v_tuple);
-	return tuple[(v_head + a_index) % tuple.f_size()];
-}
-
-void t_array::f_push(t_scoped&& a_value)
-{
-	f_grow();
-	auto& tuple = f_as<t_tuple&>(v_tuple);
-	tuple[(v_head + v_size) % tuple.f_size()] = std::move(a_value);
-	++v_size;
-}
-
-t_scoped t_array::f_pop()
-{
-	if (v_size <= 0) t_throwable::f_throw(L"empty array.");
-	auto& tuple = f_as<t_tuple&>(v_tuple);
-	t_scoped p = std::move(tuple[(v_head + --v_size) % tuple.f_size()]);
-	f_shrink();
-	return p;
-}
-
-void t_array::f_unshift(t_scoped&& a_value)
-{
-	f_grow();
-	auto& tuple = f_as<t_tuple&>(v_tuple);
-	v_head += tuple.f_size() - 1;
-	v_head %= tuple.f_size();
-	tuple[v_head] = std::move(a_value);
-	++v_size;
-}
-
-t_scoped t_array::f_shift()
-{
-	if (v_size <= 0) t_throwable::f_throw(L"empty array.");
-	auto& tuple = f_as<t_tuple&>(v_tuple);
-	t_scoped p = std::move(tuple[v_head]);
-	++v_head;
-	v_head %= tuple.f_size();
-	--v_size;
-	f_shrink();
-	return p;
-}
-
 void t_array::f_insert(intptr_t a_index, t_scoped&& a_value)
 {
 	if (a_index < 0) {
 		a_index += v_size;
-		if (a_index < 0) t_throwable::f_throw(L"out of range.");
+		if (a_index < 0) f_throw(L"out of range.");
 	} else {
-		if (a_index > static_cast<intptr_t>(v_size)) t_throwable::f_throw(L"out of range.");
+		if (a_index > static_cast<intptr_t>(v_size)) f_throw(L"out of range.");
 	}
 	f_grow();
 	auto& tuple = f_as<t_tuple&>(v_tuple);
@@ -207,7 +117,7 @@ t_scoped t_array::f_remove(intptr_t a_index)
 
 void t_type_of<t_array>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");
+	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class.");
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
 	a_stack[1].f_destruct();
 	auto array = new t_array();

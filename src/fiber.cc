@@ -135,9 +135,9 @@ void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
 	a_scan(f_as<t_fiber&>(a_this).v_callable);
 }
 
-void t_type_of<t_fiber>::f_instantiate(t_stacked* a_stack, size_t a_n)
+void t_type_of<t_fiber>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1 && a_n != 2) t_throwable::f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");
+	if (a_n != 1 && a_n != 2) f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");
 	t_scoped a0 = std::move(a_stack[2]);
 	size_t size = f_engine()->v_stack_size;
 	if (a_n == 2) {
@@ -148,17 +148,17 @@ void t_type_of<t_fiber>::f_instantiate(t_stacked* a_stack, size_t a_n)
 	a_stack[0].f_construct(t_fiber::f_instantiate(std::move(a0), size));
 }
 
-size_t t_type_of<t_fiber>::f_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
+size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) t_throwable::f_throw(a_stack, a_n, L"must be called with an argument.");
+	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
 	t_scoped x = std::move(a_stack[2]);
 	auto& p = f_as<t_fiber&>(a_this);
 	auto& thread = f_as<t_thread&>(t_thread::v_current);
 	auto& q = f_as<t_fiber&>(thread.v_active);
-	if (p.v_main && a_this != static_cast<t_object*>(thread.v_fiber)) t_throwable::f_throw(L"can not yield to other thread.");
+	if (p.v_main && a_this != static_cast<t_object*>(thread.v_fiber)) f_throw(L"can not yield to other thread.");
 	{
 		t_with_lock_for_write lock(a_this);
-		if (p.v_active) t_throwable::f_throw(L"already active.");
+		if (p.v_active) f_throw(L"already active.");
 		p.v_active = true;
 	}
 	q.v_return = a_stack;

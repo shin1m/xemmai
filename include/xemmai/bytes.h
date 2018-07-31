@@ -33,8 +33,23 @@ class t_bytes
 	{
 		return const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(this + 1));
 	}
-	void f_validate(intptr_t& a_index) const;
-	void f_validate(intptr_t& a_index, size_t a_size) const;
+	void f_validate(intptr_t& a_index) const
+	{
+		if (a_index < 0) {
+			a_index += v_size;
+			if (a_index < 0) f_throw(L"out of range.");
+		} else {
+			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range.");
+		}
+	}
+	void f_validate(intptr_t& a_index, size_t a_size) const
+	{
+		if (a_index < 0) {
+			a_index += v_size;
+			if (a_index < 0) f_throw(L"out of range.");
+		}
+		if (a_index + a_size > v_size) f_throw(L"out of range.");
+	}
 
 public:
 	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
@@ -46,8 +61,16 @@ public:
 		for (size_t i = 1; i < v_size; ++i) n += (*this)[i];
 		return n;
 	}
-	XEMMAI__PORTABLE__EXPORT intptr_t f_get_at(intptr_t a_index) const;
-	XEMMAI__PORTABLE__EXPORT intptr_t f_set_at(intptr_t a_index, intptr_t a_value);
+	intptr_t f_get_at(intptr_t a_index) const
+	{
+		f_validate(a_index);
+		return (*this)[a_index];
+	}
+	intptr_t f_set_at(intptr_t a_index, intptr_t a_value)
+	{
+		f_validate(a_index);
+		return (*this)[a_index] = a_value;
+	}
 	size_t f_size() const
 	{
 		return v_size;
@@ -60,7 +83,13 @@ public:
 	{
 		return f_entries()[a_index];
 	}
-	XEMMAI__PORTABLE__EXPORT void f_copy(intptr_t a_index0, size_t a_size, t_bytes& a_other, intptr_t a_index1) const;
+	void f_copy(intptr_t a_index0, size_t a_size, t_bytes& a_other, intptr_t a_index1) const
+	{
+		f_validate(a_index0, a_size);
+		a_other.f_validate(a_index1, a_size);
+		unsigned char* p = f_entries() + a_index0;
+		std::copy(p, p + a_size, a_other.f_entries() + a_index1);
+	}
 };
 
 template<>

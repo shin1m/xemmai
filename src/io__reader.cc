@@ -32,14 +32,14 @@ wint_t t_reader::f_get(t_io* a_extension)
 		if (iconv(v_cd, &v_p, &v_n, &p, &n) == size_t(-1)) {
 			switch (errno) {
 			case EILSEQ:
-				t_throwable::f_throw(L"invalid sequence.");
+				f_throw(L"invalid sequence.");
 			case EINVAL:
-				if (f_read(a_extension) <= 0) t_throwable::f_throw(L"incomplete sequence.");
+				if (f_read(a_extension) <= 0) f_throw(L"incomplete sequence.");
 				continue;
 			case E2BIG:
 				break;
 			default:
-				t_throwable::f_throw(L"failed to iconv.");
+				f_throw(L"failed to iconv.");
 			}
 			break;
 		}
@@ -59,7 +59,7 @@ t_scoped t_reader::f_instantiate(t_scoped&& a_stream, const std::wstring& a_enco
 
 t_reader::t_reader(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
 {
-	if (v_cd == iconv_t(-1)) t_throwable::f_throw(L"failed to iconv_open.");
+	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open.");
 	v_stream = std::move(a_stream);
 	v_buffer = t_bytes::f_instantiate(std::max(a_buffer, size_t(1)));
 	static_cast<t_object*>(v_buffer)->f_share();
@@ -67,14 +67,14 @@ t_reader::t_reader(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a
 
 void t_reader::f_close(t_io* a_extension)
 {
-	if (!v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed.");
 	v_stream.f_invoke(a_extension->f_symbol_close());
 	v_stream = nullptr;
 }
 
 std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
 {
-	if (!v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed.");
 	std::wstring s(a_size, L'\0');
 	for (size_t i = 0; i < a_size; ++i) {
 		wint_t c = f_get(a_extension);
@@ -89,7 +89,7 @@ std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
 
 std::wstring t_reader::f_read_line(t_io* a_extension)
 {
-	if (!v_stream) t_throwable::f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed.");
 	std::vector<wchar_t> cs;
 	while (true) {
 		wint_t c = f_get(a_extension);

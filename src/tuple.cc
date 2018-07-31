@@ -12,12 +12,6 @@ t_scoped t_tuple::f_instantiate(size_t a_size)
 	return object;
 }
 
-const t_value& t_tuple::f_get_at(size_t a_index) const
-{
-	if (a_index >= v_size) t_throwable::f_throw(L"out of range.");
-	return (*this)[a_index];
-}
-
 std::wstring t_tuple::f_string() const
 {
 	if (v_size <= 0) return L"'()";
@@ -110,7 +104,7 @@ void t_tuple::f_each(const t_value& a_callable) const
 
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"must be class.");
+	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class.");
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
 	a_stack[1].f_destruct();
 	auto tuple = new(a_n) t_tuple(a_n);

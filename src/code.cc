@@ -965,7 +965,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				auto code = static_cast<t_object*>(*++pc);
 				++pc;
-				stack[0].f_construct(t_advanced_lambda::f_instantiate(a_context->v_scope, code, stack));
+				stack[0].f_construct(t_lambda::f_instantiate(a_context->v_scope, code, stack));
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SELF)
@@ -988,9 +988,9 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				++pc;
 				t_stacked& top = stack[0];
-				if (top.f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(L"not class.");
+				if (top.f_type() != f_global()->f_type<t_class>()) f_throw(L"not class.");
 				top = static_cast<t_slot&>(f_as<t_type&>(top).v_super);
-				if (!top) t_throwable::f_throw(L"no more super class.");
+				if (!top) f_throw(L"no more super class.");
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(NUL)
@@ -1657,7 +1657,7 @@ size_t t_code::f_loop(t_context* a_context)
 label__THROW_NOT_SUPPORTED_M1:
 	--pc;
 label__THROW_NOT_SUPPORTED:
-	t_throwable::f_throw(L"not supported.");
+	f_throw(L"not supported.");
 }
 
 void t_code::f_try(t_context* a_context)

@@ -40,7 +40,10 @@ class t_engine : public t_value::t_collector
 	friend class t_symbol;
 	friend struct t_type_of<t_symbol>;
 	friend class t_code;
-	friend class t_lambda;
+	friend struct t_type_of<t_lambda>;
+	friend struct t_type_of<t_lambda_shared>;
+	friend struct t_type_of<t_advanced_lambda<t_lambda>>;
+	friend struct t_type_of<t_advanced_lambda<t_lambda_shared>>;
 	friend class t_dictionary;
 	friend class t_dictionary::t_entry;
 	friend class t_global;
@@ -354,22 +357,6 @@ inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_supe
 inline t_object* t_fiber::f_current()
 {
 	return f_as<t_thread&>(t_thread::v_current).v_active;
-}
-
-inline t_lambda::t_lambda(t_slot* a_scope, t_scoped&& a_code, t_object* a_this) : v_scope_entries(a_scope), v_scope(t_scope::f_this(a_scope)), v_code(std::move(a_code)), v_this(a_this)
-{
-	auto& code = f_as<t_code&>(v_code);
-	v_size = code.v_size;
-	v_arguments = code.v_arguments;
-	v_privates = code.v_privates;
-	v_shareds = code.v_shareds;
-	v_instructions = &code.v_instructions[0];
-#ifdef XEMMAI_ENABLE_JIT
-	v_jit_loop = code.v_jit_loop;
-#endif
-	v_call = f_engine()->v_debugger
-		? code.v_shared ? &t_lambda::f_call_shared<t_debug_context> : &t_lambda::f_call_own<t_debug_context>
-		: code.v_shared ? &t_lambda::f_call_shared<t_context> : &t_lambda::f_call_own<t_context>;
 }
 
 inline t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()

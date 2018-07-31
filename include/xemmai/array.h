@@ -11,8 +11,22 @@ class t_array
 	friend struct t_finalizes<t_array, t_bears<t_array>>;
 	friend struct t_type_of<t_array>;
 
-	static t_slot* f_move_forward(t_slot* a_p, t_slot* a_q);
-	static t_slot* f_move_backward(t_slot* a_p, t_slot* a_q);
+	static t_slot* f_move_forward(t_slot* a_p, t_slot* a_q)
+	{
+		while (a_p < a_q) {
+			t_slot& s = *a_q;
+			s = std::move(*--a_q);
+		}
+		return a_q;
+	}
+	static t_slot* f_move_backward(t_slot* a_p, t_slot* a_q)
+	{
+		while (a_p < a_q) {
+			t_slot& s = *a_p;
+			s = std::move(*++a_p);
+		}
+		return a_p;
+	}
 
 	t_slot v_tuple;
 	size_t v_head = 0;
@@ -23,7 +37,15 @@ class t_array
 	void f_resize();
 	void f_grow();
 	void f_shrink();
-	void f_validate(intptr_t& a_index) const;
+	void f_validate(intptr_t& a_index) const
+	{
+		if (a_index < 0) {
+			a_index += v_size;
+			if (a_index < 0) f_throw(L"out of range.");
+		} else {
+			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range.");
+		}
+	}
 
 public:
 	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate();
@@ -37,9 +59,26 @@ public:
 	{
 		return v_size;
 	}
-	void f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size);
-	XEMMAI__PORTABLE__EXPORT const t_slot& operator[](intptr_t a_index) const;
-	XEMMAI__PORTABLE__EXPORT t_slot& operator[](intptr_t a_index);
+	void f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size)
+	{
+		t_scoped tuple = std::move(v_tuple);
+		v_tuple = std::move(a_tuple);
+		a_tuple = std::move(tuple);
+		std::swap(v_head, a_head);
+		std::swap(v_size, a_size);
+	}
+	const t_slot& operator[](intptr_t a_index) const
+	{
+		f_validate(a_index);
+		auto& tuple = f_as<const t_tuple&>(v_tuple);
+		return tuple[(v_head + a_index) % tuple.f_size()];
+	}
+	t_slot& operator[](intptr_t a_index)
+	{
+		f_validate(a_index);
+		auto& tuple = f_as<t_tuple&>(v_tuple);
+		return tuple[(v_head + a_index) % tuple.f_size()];
+	}
 	const t_value& f_get_at(intptr_t a_index) const
 	{
 		return (*this)[a_index];
@@ -48,10 +87,41 @@ public:
 	{
 		return (*this)[a_index] = std::move(a_value);
 	}
-	XEMMAI__PORTABLE__EXPORT void f_push(t_scoped&& a_value);
-	XEMMAI__PORTABLE__EXPORT t_scoped f_pop();
-	XEMMAI__PORTABLE__EXPORT void f_unshift(t_scoped&& a_value);
-	XEMMAI__PORTABLE__EXPORT t_scoped f_shift();
+	void f_push(t_scoped&& a_value)
+	{
+		f_grow();
+		auto& tuple = f_as<t_tuple&>(v_tuple);
+		tuple[(v_head + v_size) % tuple.f_size()] = std::move(a_value);
+		++v_size;
+	}
+	t_scoped f_pop()
+	{
+		if (v_size <= 0) f_throw(L"empty array.");
+		auto& tuple = f_as<t_tuple&>(v_tuple);
+		t_scoped p = std::move(tuple[(v_head + --v_size) % tuple.f_size()]);
+		f_shrink();
+		return p;
+	}
+	void f_unshift(t_scoped&& a_value)
+	{
+		f_grow();
+		auto& tuple = f_as<t_tuple&>(v_tuple);
+		v_head += tuple.f_size() - 1;
+		v_head %= tuple.f_size();
+		tuple[v_head] = std::move(a_value);
+		++v_size;
+	}
+	t_scoped f_shift()
+	{
+		if (v_size <= 0) f_throw(L"empty array.");
+		auto& tuple = f_as<t_tuple&>(v_tuple);
+		t_scoped p = std::move(tuple[v_head]);
+		++v_head;
+		v_head %= tuple.f_size();
+		--v_size;
+		f_shrink();
+		return p;
+	}
 	XEMMAI__PORTABLE__EXPORT void f_insert(intptr_t a_index, t_scoped&& a_value);
 	XEMMAI__PORTABLE__EXPORT t_scoped f_remove(intptr_t a_index);
 };

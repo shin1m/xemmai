@@ -74,8 +74,12 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_type_code->v_builtin = true;
 	t_define<t_lambda, t_object>(this, L"Lambda");
 	v_type_lambda->v_builtin = true;
-	v_type_advanced_lambda.f_construct((new t_type_of<t_advanced_lambda>(t_type_of<t_advanced_lambda>::V_ids, v_type_lambda, a_module))->v_this);
+	v_type_lambda_shared.f_construct((new t_type_of<t_lambda_shared>(t_type_of<t_lambda_shared>::V_ids, v_type_lambda, a_module))->v_this);
+	v_type_lambda_shared->v_builtin = true;
+	v_type_advanced_lambda.f_construct((new t_type_of<t_advanced_lambda<t_lambda>>(t_type_of<t_advanced_lambda<t_lambda>>::V_ids, v_type_lambda, a_module))->v_this);
 	v_type_advanced_lambda->v_builtin = true;
+	v_type_advanced_lambda_shared.f_construct((new t_type_of<t_advanced_lambda<t_lambda_shared>>(t_type_of<t_advanced_lambda<t_lambda_shared>>::V_ids, v_type_lambda_shared, a_module))->v_this);
+	v_type_advanced_lambda_shared->v_builtin = true;
 	a_module->f_put(t_symbol::f_instantiate(L"Native"), v_type_native->v_this);
 	v_type_native->v_builtin = true;
 	t_type_of<t_throwable>::f_define();
@@ -117,7 +121,9 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_method);
 	a_scan(v_type_code);
 	a_scan(v_type_lambda);
+	a_scan(v_type_lambda_shared);
 	a_scan(v_type_advanced_lambda);
+	a_scan(v_type_advanced_lambda_shared);
 	a_scan(v_type_native);
 	a_scan(v_type_throwable);
 	a_scan(v_type_null);

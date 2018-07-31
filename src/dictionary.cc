@@ -92,13 +92,6 @@ t_scoped t_dictionary::f_instantiate()
 	return object;
 }
 
-const t_value& t_dictionary::f_get(const t_value& a_key) const
-{
-	t_entry* field = f_find(a_key);
-	if (!field) t_throwable::f_throw(L"key not found.");
-	return field->v_value;
-}
-
 t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 {
 	t_entry* p = f_find(a_key);
@@ -124,7 +117,7 @@ t_scoped t_dictionary::f_remove(const t_value& a_key)
 	t_entry** bucket = table.f_bucket(f_as<size_t>(a_key.f_hash()));
 	while (true) {
 		t_entry* p = *bucket;
-		if (!p) t_throwable::f_throw(L"key not found.");
+		if (!p) f_throw(L"key not found.");
 		if (f_as<bool>(p->v_key.f_equals(a_key))) break;
 		bucket = &p->v_next;
 	}
@@ -145,7 +138,7 @@ void t_type_of<t_dictionary::t_table>::f_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) t_throwable::f_throw(a_stack, a_n, L"must be class.");
+	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class.");
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
 	a_stack[1].f_destruct();
 	auto dictionary = new t_dictionary();
