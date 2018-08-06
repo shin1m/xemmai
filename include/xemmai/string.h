@@ -24,29 +24,28 @@ struct t_type_of<std::wstring> : t_derivable<t_holds<std::wstring, t_type_immuta
 	{
 		return a_self;
 	}
-	static intptr_t f_hash(const std::wstring& a_self)
+	static intptr_t f__hash(const std::wstring& a_self)
 	{
 		return std::hash<std::wstring>{}(a_self);
 	}
-	static std::wstring f_add(const std::wstring& a_self, const t_value& a_value);
-	static bool f_less(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__less(const std::wstring& a_self, const std::wstring& a_value)
 	{
 		return a_self < a_value;
 	}
-	static bool f_less_equal(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__less_equal(const std::wstring& a_self, const std::wstring& a_value)
 	{
 		return a_self <= a_value;
 	}
-	static bool f_greater(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__greater(const std::wstring& a_self, const std::wstring& a_value)
 	{
 		return a_self > a_value;
 	}
-	static bool f_greater_equal(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__greater_equal(const std::wstring& a_self, const std::wstring& a_value)
 	{
 		return a_self >= a_value;
 	}
-	static bool f_equals(const std::wstring& a_self, const t_value& a_value);
-	static bool f_not_equals(const std::wstring& a_self, const t_value& a_value);
+	static bool f__equals(const std::wstring& a_self, const t_value& a_value);
+	static bool f__not_equals(const std::wstring& a_self, const t_value& a_value);
 	static std::wstring f_substring(const std::wstring& a_self, size_t a_i)
 	{
 		return a_self.substr(a_i);
@@ -61,16 +60,28 @@ struct t_type_of<std::wstring> : t_derivable<t_holds<std::wstring, t_type_immuta
 	}
 	static void f_define();
 
-	using t_base::t_base;
-	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
-	virtual void f_hash(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_add(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_less(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_less_equal(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_greater(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_greater_equal(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_equals(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_not_equals(t_object* a_this, t_stacked* a_stack);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+		f_hash = f_do_hash;
+		f_add = f_do_add;
+		f_less = f_do_less;
+		f_less_equal = f_do_less_equal;
+		f_greater = f_do_greater;
+		f_greater_equal = f_do_greater_equal;
+		f_equals = f_do_equals;
+		f_not_equals = f_do_not_equals;
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_add(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_less(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_less_equal(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_greater(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_greater_equal(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
 };
 
 }

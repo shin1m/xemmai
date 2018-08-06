@@ -15,7 +15,9 @@ struct t_time : t_extension
 #endif
 
 	t_time(t_object* a_module);
-	virtual void f_scan(t_scan a_scan);
+	virtual void f_scan(t_scan a_scan)
+	{
+	}
 	template<typename T>
 	t_object* f_type() const
 	{
@@ -535,10 +537,6 @@ t_time::t_time(t_object* a_module) : t_extension(a_module)
 	f_define<std::wstring(*)(const t_tuple&), f_format_http>(this, L"format_http");
 	f_define<t_scoped(*)(const std::wstring&), f_parse_xsd>(this, L"parse_xsd");
 	f_define<std::wstring(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd");
-}
-
-void t_time::f_scan(t_scan a_scan)
-{
 }
 
 }

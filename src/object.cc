@@ -36,7 +36,8 @@ void t_object::f_collect()
 			do {
 				p = cycle->v_next;
 				cycle->v_next = p->v_next;
-				delete &f_as<t_type&>(p);
+				auto q = f_as<t_type*>(p);
+				if (q) q->f_delete();
 				f_engine()->f_free_as_collect(p);
 			} while (p != cycle);
 			auto& q = f_engine()->v_structure__finalizing;

@@ -30,15 +30,15 @@ void t_type::f_define()
 	t_define<t_object, t_object>(f_global(), L"Object", v_this)
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f_hash>())
-		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f_not_equals>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f__hash>())
+		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f__equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f__not_equals>())
 		(L"own", t_member<void(*)(const t_value&), f_own>())
 		(L"share", t_member<void(*)(const t_value&), f_share>())
 	;
 }
 
-t_type* t_type::f_derive()
+t_type* t_type::f_do_derive_object()
 {
 	auto p = new t_type(V_ids, this, v_module);
 	p->v_primitive = true;
@@ -55,15 +55,7 @@ bool t_type::f_derives(t_type* a_type)
 	return false;
 }
 
-void t_type::f_scan(t_object* a_this, t_scan a_scan)
-{
-}
-
-void t_type::f_finalize(t_object* a_this)
-{
-}
-
-t_scoped t_type::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_object::f_allocate(this);
 }
@@ -179,13 +171,6 @@ t_scoped t_type::f_do_remove(t_object* a_this, t_object* a_key)
 	}
 }
 
-void t_type::f_hash(t_object* a_this, t_stacked* a_stack)
-{
-	a_this->f_get(f_global()->f_symbol_hash(), a_stack);
-	t_scoped x = std::move(a_stack[0]);
-	x.f_call(a_stack, 0);
-}
-
 void t_type::f_do_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n)
 {
 	f_do_or_destruct([&]
@@ -207,8 +192,15 @@ size_t t_type::f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	return x.f_call_without_loop(a_stack, a_n);
 }
 
+void t_type::f_do_hash(t_object* a_this, t_stacked* a_stack)
+{
+	a_this->f_get(f_global()->f_symbol_hash(), a_stack);
+	t_scoped x = std::move(a_stack[0]);
+	x.f_call(a_stack, 0);
+}
+
 #define XEMMAI__TYPE__METHOD(a_method, a_n)\
-size_t t_type::f_##a_method(t_object* a_this, t_stacked* a_stack)\
+size_t t_type::f_do_##a_method(t_object* a_this, t_stacked* a_stack)\
 {\
 	try {\
 		a_this->f_get(f_global()->f_symbol_##a_method(), a_stack);\

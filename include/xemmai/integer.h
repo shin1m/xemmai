@@ -112,60 +112,64 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%" PRIdPTR), a_self);
 		return cs;
 	}
-	static intptr_t f_hash(intptr_t a_self)
+	static intptr_t f__hash(intptr_t a_self)
 	{
 		return a_self;
 	}
-	static intptr_t f_plus(intptr_t a_self)
+	static intptr_t f__plus(intptr_t a_self)
 	{
 		return a_self;
 	}
-	static intptr_t f_minus(intptr_t a_self)
+	static intptr_t f__minus(intptr_t a_self)
 	{
 		return -a_self;
 	}
-	static intptr_t f_complement(intptr_t a_self)
+	static intptr_t f__complement(intptr_t a_self)
 	{
 		return ~a_self;
 	}
-	static t_scoped f_multiply(intptr_t a_self, const t_value& a_value);
-	static t_scoped f_divide(intptr_t a_self, const t_value& a_value);
-	static intptr_t f_modulus(intptr_t a_self, intptr_t a_value)
+	static t_scoped f__multiply(intptr_t a_self, const t_value& a_value);
+	static t_scoped f__divide(intptr_t a_self, const t_value& a_value);
+	static intptr_t f__modulus(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self % a_value;
 	}
-	static t_scoped f_add(intptr_t a_self, const t_value& a_value);
-	static t_scoped f_subtract(intptr_t a_self, const t_value& a_value);
-	static intptr_t f_left_shift(intptr_t a_self, intptr_t a_value)
+	static t_scoped f__add(intptr_t a_self, const t_value& a_value);
+	static t_scoped f__subtract(intptr_t a_self, const t_value& a_value);
+	static intptr_t f__left_shift(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self << a_value;
 	}
-	static size_t f_right_shift(size_t a_self, intptr_t a_value)
+	static size_t f__right_shift(size_t a_self, intptr_t a_value)
 	{
 		return a_self >> a_value;
 	}
-	static bool f_less(intptr_t a_self, const t_value& a_value);
-	static bool f_less_equal(intptr_t a_self, const t_value& a_value);
-	static bool f_greater(intptr_t a_self, const t_value& a_value);
-	static bool f_greater_equal(intptr_t a_self, const t_value& a_value);
-	static bool f_equals(intptr_t a_self, const t_value& a_value);
-	static bool f_not_equals(intptr_t a_self, const t_value& a_value);
-	static intptr_t f_and(intptr_t a_self, intptr_t a_value)
+	static bool f__less(intptr_t a_self, const t_value& a_value);
+	static bool f__less_equal(intptr_t a_self, const t_value& a_value);
+	static bool f__greater(intptr_t a_self, const t_value& a_value);
+	static bool f__greater_equal(intptr_t a_self, const t_value& a_value);
+	static bool f__equals(intptr_t a_self, const t_value& a_value);
+	static bool f__not_equals(intptr_t a_self, const t_value& a_value);
+	static intptr_t f__and(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self & a_value;
 	}
-	static intptr_t f_xor(intptr_t a_self, intptr_t a_value)
+	static intptr_t f__xor(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self ^ a_value;
 	}
-	static intptr_t f_or(intptr_t a_self, intptr_t a_value)
+	static intptr_t f__or(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self | a_value;
 	}
 	static void f_define();
 
-	using t_base::t_base;
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }

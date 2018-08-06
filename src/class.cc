@@ -5,7 +5,7 @@
 namespace xemmai
 {
 
-void t_class::f_scan(t_object* a_this, t_scan a_scan)
+void t_class::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	auto& p = f_as<t_type&>(a_this);
 	if (p.v_builtin && f_engine()->f_module_global()) return;
@@ -24,7 +24,8 @@ void t_class::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 	} else {
 		x = f_global()->f_type<t_object>()->v_this;
 	}
-	auto type = f_as<t_type&>(x).f_derive();
+	auto& p = f_as<t_type&>(x);
+	auto type = (p.*p.v_derive)();
 	if (!type) f_throw(L"underivable.");
 	a_stack[0].f_construct(type->v_this);
 }
@@ -108,7 +109,7 @@ size_t t_class::f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	return -1;
 }
 
-size_t t_class::f_send(t_object* a_this, t_stacked* a_stack)
+size_t t_class::f_do_send(t_object* a_this, t_stacked* a_stack)
 {
 	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[1].f_construct(*a_this);

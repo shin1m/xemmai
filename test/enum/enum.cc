@@ -12,7 +12,10 @@ struct t_enum : t_extension
 	t_slot_of<t_type> v_type_number;
 
 	t_enum(t_object* a_module);
-	virtual void f_scan(t_scan a_scan);
+	virtual void f_scan(t_scan a_scan)
+	{
+		a_scan(v_type_number);
+	}
 	template<typename T>
 	const T* f_extension() const
 	{
@@ -70,11 +73,6 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 t_enum::t_enum(t_object* a_module) : t_extension(a_module)
 {
 	t_type_of<t_number>::f_define(this);
-}
-
-void t_enum::f_scan(t_scan a_scan)
-{
-	a_scan(v_type_number);
 }
 
 XEMMAI__MODULE__FACTORY(xemmai::t_object* a_module)

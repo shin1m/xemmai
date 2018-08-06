@@ -136,8 +136,12 @@ public:
 template<>
 struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_finalizes<t_dictionary::t_table>>>
 {
-	using t_base::t_base;
-	virtual void f_scan(t_object* a_this, t_scan a_scan);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		f_scan = f_do_scan;
+	}
+	static void f_do_scan(t_object* a_this, t_scan a_scan);
 };
 
 template<>
@@ -145,23 +149,33 @@ struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
-	static intptr_t f_hash(const t_value& a_self);
-	static bool f_equals(const t_value& a_self, const t_value& a_other);
-	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
+	static intptr_t f__hash(const t_value& a_self);
+	static bool f__equals(const t_value& a_self, const t_value& a_other);
+	static bool f__not_equals(const t_value& a_self, const t_value& a_other)
 	{
-		return !f_equals(a_self, a_other);
+		return !f__equals(a_self, a_other);
 	}
 	static void f_each(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
-	using t_base::t_base;
-	virtual void f_scan(t_object* a_this, t_scan a_scan);
-	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
-	virtual void f_hash(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_set_at(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_equals(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_not_equals(t_object* a_this, t_stacked* a_stack);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		f_scan = f_do_scan;
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+		f_hash = f_do_hash;
+		f_get_at = f_do_get_at;
+		f_set_at = f_do_set_at;
+		f_equals = f_do_equals;
+		f_not_equals = f_do_not_equals;
+	}
+	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
 };
 
 inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(f_as<const t_table&>(a_dictionary.v_table)), v_i(0), v_entry(nullptr)

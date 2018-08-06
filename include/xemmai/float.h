@@ -88,7 +88,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%g", a_self);
 		return cs;
 	}
-	static intptr_t f_hash(double a_self)
+	static intptr_t f__hash(double a_self)
 	{
 		union
 		{
@@ -101,52 +101,56 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 		while (i > 0) n ^= u.v_is[--i];
 		return n;
 	}
-	static double f_plus(double a_self)
+	static double f__plus(double a_self)
 	{
 		return a_self;
 	}
-	static double f_minus(double a_self)
+	static double f__minus(double a_self)
 	{
 		return -a_self;
 	}
-	static double f_multiply(double a_self, double a_value)
+	static double f__multiply(double a_self, double a_value)
 	{
 		return a_self * a_value;
 	}
-	static double f_divide(double a_self, double a_value)
+	static double f__divide(double a_self, double a_value)
 	{
 		return a_self / a_value;
 	}
-	static double f_add(double a_self, double a_value)
+	static double f__add(double a_self, double a_value)
 	{
 		return a_self + a_value;
 	}
-	static double f_subtract(double a_self, double a_value)
+	static double f__subtract(double a_self, double a_value)
 	{
 		return a_self - a_value;
 	}
-	static bool f_less(double a_self, double a_value)
+	static bool f__less(double a_self, double a_value)
 	{
 		return a_self < a_value;
 	}
-	static bool f_less_equal(double a_self, double a_value)
+	static bool f__less_equal(double a_self, double a_value)
 	{
 		return a_self <= a_value;
 	}
-	static bool f_greater(double a_self, double a_value)
+	static bool f__greater(double a_self, double a_value)
 	{
 		return a_self > a_value;
 	}
-	static bool f_greater_equal(double a_self, double a_value)
+	static bool f__greater_equal(double a_self, double a_value)
 	{
 		return a_self >= a_value;
 	}
-	static bool f_equals(double a_self, const t_value& a_value);
-	static bool f_not_equals(double a_self, const t_value& a_value);
+	static bool f__equals(double a_self, const t_value& a_value);
+	static bool f__not_equals(double a_self, const t_value& a_value);
 	static void f_define();
 
-	using t_base::t_base;
-	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }

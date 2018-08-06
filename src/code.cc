@@ -72,8 +72,8 @@ size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n)
 	return a_n - 1 + n;
 }
 
-template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
-void f_operator(t_object* a_this, t_stacked* a_stack)
+template<size_t (*t_type::*A_function)(t_object*, t_stacked*)>
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void f_operator(t_object* a_this, t_stacked* a_stack)
 {
 	size_t n = (a_this->f_type()->*A_function)(a_this, a_stack);
 	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
@@ -1754,11 +1754,6 @@ t_scoped t_code::f_instantiate(t_object* a_module, bool a_shared, bool a_variadi
 	return object;
 }
 
-void t_code::f_scan(t_scan a_scan)
-{
-	a_scan(v_module);
-}
-
 const t_at* t_code::f_at(void** a_address) const
 {
 	auto i = std::lower_bound(v_ats.begin(), v_ats.end(), t_address_at(a_address - &v_instructions[0], t_at(0, 0, 0)));
@@ -1792,9 +1787,9 @@ void t_code::f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_sta
 	a_stack[0].f_construct();
 }
 
-void t_type_of<t_code>::f_scan(t_object* a_this, t_scan a_scan)
+void t_type_of<t_code>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
-	f_as<t_code&>(a_this).f_scan(a_scan);
+	a_scan(f_as<t_code&>(a_this).v_module);
 }
 
 }

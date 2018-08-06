@@ -295,7 +295,6 @@ struct t_code
 	t_code(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_module(a_module), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
 	{
 	}
-	void f_scan(t_scan a_scan);
 	const t_at* f_at(void** a_address) const;
 	void f_at(size_t a_address, const t_at& a_at)
 	{
@@ -374,8 +373,12 @@ struct t_code
 template<>
 struct t_type_of<t_code> : t_uninstantiatable<t_underivable<t_with_traits<t_finalizes<t_code>, false, true>>>
 {
-	using t_base::t_base;
-	virtual void f_scan(t_object* a_this, t_scan a_scan);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		f_scan = f_do_scan;
+	}
+	static void f_do_scan(t_object* a_this, t_scan a_scan);
 };
 
 }

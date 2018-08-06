@@ -494,13 +494,13 @@ inline t_scoped t_value::f_hash() const
 {
 	switch (f_tag()) {
 	case e_tag__NULL:
-		return t_scoped(t_type_of<std::nullptr_t>::f_hash(*this));
+		return t_scoped(t_type_of<std::nullptr_t>::f__hash(*this));
 	case e_tag__BOOLEAN:
-		return t_scoped(t_type_of<bool>::f_hash(v_boolean));
+		return t_scoped(t_type_of<bool>::f__hash(v_boolean));
 	case e_tag__INTEGER:
-		return t_scoped(t_type_of<intptr_t>::f_hash(v_integer));
+		return t_scoped(t_type_of<intptr_t>::f__hash(v_integer));
 	case e_tag__FLOAT:
-		return t_scoped(t_type_of<double>::f_hash(v_float));
+		return t_scoped(t_type_of<double>::f__hash(v_float));
 	default:
 		{
 			t_scoped_stack stack(2);
@@ -517,7 +517,7 @@ inline t_scoped t_value::f_multiply(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f_multiply(v_integer, a_value);
+		return t_type_of<intptr_t>::f__multiply(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float * f_as<double>(a_value));
@@ -533,7 +533,7 @@ inline t_scoped t_value::f_divide(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f_divide(v_integer, a_value);
+		return t_type_of<intptr_t>::f__divide(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float / f_as<double>(a_value));
@@ -564,7 +564,7 @@ inline t_scoped t_value::f_add(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f_add(v_integer, a_value);
+		return t_type_of<intptr_t>::f__add(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float + f_as<double>(a_value));
@@ -580,7 +580,7 @@ inline t_scoped t_value::f_subtract(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f_subtract(v_integer, a_value);
+		return t_type_of<intptr_t>::f__subtract(v_integer, a_value);
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float - f_as<double>(a_value));
@@ -626,7 +626,7 @@ inline t_scoped t_value::f_less(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_scoped(t_type_of<intptr_t>::f_less(v_integer, a_value));
+		return t_scoped(t_type_of<intptr_t>::f__less(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float < f_as<double>(a_value));
@@ -642,7 +642,7 @@ inline t_scoped t_value::f_less_equal(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_scoped(t_type_of<intptr_t>::f_less_equal(v_integer, a_value));
+		return t_scoped(t_type_of<intptr_t>::f__less_equal(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float <= f_as<double>(a_value));
@@ -658,7 +658,7 @@ inline t_scoped t_value::f_greater(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_scoped(t_type_of<intptr_t>::f_greater(v_integer, a_value));
+		return t_scoped(t_type_of<intptr_t>::f__greater(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float > f_as<double>(a_value));
@@ -674,7 +674,7 @@ inline t_scoped t_value::f_greater_equal(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		f_throw(L"not supported.");
 	case e_tag__INTEGER:
-		return t_scoped(t_type_of<intptr_t>::f_greater_equal(v_integer, a_value));
+		return t_scoped(t_type_of<intptr_t>::f__greater_equal(v_integer, a_value));
 	case e_tag__FLOAT:
 		f_check<double>(a_value, L"argument0");
 		return t_scoped(v_float >= f_as<double>(a_value));
@@ -691,9 +691,9 @@ inline t_scoped t_value::f_equals(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		return t_scoped(v_p == a_value.v_p && v_boolean == a_value.v_boolean);
 	case e_tag__INTEGER:
-		return t_scoped(t_type_of<intptr_t>::f_equals(v_integer, a_value));
+		return t_scoped(t_type_of<intptr_t>::f__equals(v_integer, a_value));
 	case e_tag__FLOAT:
-		return t_scoped(t_type_of<double>::f_equals(v_float, a_value));
+		return t_scoped(t_type_of<double>::f__equals(v_float, a_value));
 	default:
 		XEMMAI__VALUE__BINARY(f_equals)
 	}
@@ -707,9 +707,9 @@ inline t_scoped t_value::f_not_equals(const t_value& a_value) const
 	case e_tag__BOOLEAN:
 		return t_scoped(v_p != a_value.v_p || v_boolean != a_value.v_boolean);
 	case e_tag__INTEGER:
-		return t_scoped(t_type_of<intptr_t>::f_not_equals(v_integer, a_value));
+		return t_scoped(t_type_of<intptr_t>::f__not_equals(v_integer, a_value));
 	case e_tag__FLOAT:
-		return t_scoped(t_type_of<double>::f_not_equals(v_float, a_value));
+		return t_scoped(t_type_of<double>::f__not_equals(v_float, a_value));
 	default:
 		XEMMAI__VALUE__BINARY(f_not_equals)
 	}

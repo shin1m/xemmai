@@ -12,28 +12,6 @@ namespace xemmai
 struct t_debug_context;
 void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_position, size_t a_column);
 
-struct t_backtrace
-{
-	static void f_push(const t_value& a_throwable, const t_scoped& a_lambda, void** a_pc);
-
-	t_backtrace* v_next;
-	t_slot v_lambda;
-
-	t_backtrace(t_backtrace* a_next, const t_scoped& a_lambda, void** a_pc) : v_next(a_next), v_lambda(a_lambda)
-	{
-		*reinterpret_cast<void***>(&v_lambda.v_integer) = a_pc;
-	}
-	void** const& f_pc() const
-	{
-		return *reinterpret_cast<void** const*>(&v_lambda.v_integer);
-	}
-	void f_scan(t_scan a_scan)
-	{
-		a_scan(v_lambda);
-	}
-	void f_dump() const;
-};
-
 struct t_fiber
 {
 	static t_object* f_current();
@@ -67,10 +45,11 @@ struct t_type_of<t_fiber> : t_underivable<t_holds<t_fiber>>
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
 	{
+		f_scan = f_do_scan;
 		v_instantiate = static_cast<void (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_instantiate);
 		f_call = f_do_call;
 	}
-	virtual void f_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
 	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 };
@@ -123,13 +102,13 @@ struct t_context
 		std::copy(p, p + (a_n + 2) * sizeof(t_stacked), reinterpret_cast<char*>(v_base - 2));
 		f_stack()->v_used = std::max(v_previous, v_base + a_n);
 	}
-	template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+	template<size_t (*t_type::*A_function)(t_object*, t_stacked*)>
 	size_t f_tail(t_object* a_this);
 	void f_backtrace(const t_value& a_value);
 	const t_value* f_variable(const std::wstring& a_name) const;
 };
 
-template<size_t (t_type::*A_function)(t_object*, t_stacked*)>
+template<size_t (*t_type::*A_function)(t_object*, t_stacked*)>
 size_t t_context::f_tail(t_object* a_this)
 {
 	size_t n = (a_this->f_type()->*A_function)(a_this, v_base + v_lambda->v_privates);

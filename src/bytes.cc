@@ -38,7 +38,7 @@ void t_type_of<t_bytes>::f__construct(xemmai::t_extension* a_extension, t_stacke
 	a_stack[0].f_construct(std::move(p));
 }
 
-bool t_type_of<t_bytes>::f_equals(const t_value& a_self, const t_value& a_other)
+bool t_type_of<t_bytes>::f__equals(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return true;
 	f_check<t_bytes>(a_self, L"this");
@@ -58,14 +58,14 @@ void t_type_of<t_bytes>::f_define()
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_bytes::*)() const, &t_bytes::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<intptr_t(t_bytes::*)(intptr_t) const, &t_bytes::f_get_at>())
 		(f_global()->f_symbol_set_at(), t_member<intptr_t(t_bytes::*)(intptr_t, intptr_t), &t_bytes::f_set_at>())
-		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f_not_equals>())
+		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f__equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f__not_equals>())
 		(L"size", t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())
 		(L"copy", t_member<void(t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
 	;
 }
 
-t_scoped t_type_of<t_bytes>::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_bytes>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1) f_throw(L"must be called with an argument.");
 	auto& a0 = a_stack[2];
@@ -76,12 +76,12 @@ t_scoped t_type_of<t_bytes>::f_construct(t_stacked* a_stack, size_t a_n)
 	return p;
 }
 
-void t_type_of<t_bytes>::f_hash(t_object* a_this, t_stacked* a_stack)
+void t_type_of<t_bytes>::f_do_hash(t_object* a_this, t_stacked* a_stack)
 {
 	a_stack[0].f_construct(f_as<const t_bytes&>(a_this).f_hash());
 }
 
-size_t t_type_of<t_bytes>::f_get_at(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_bytes>::f_do_get_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<intptr_t>(a0.v_p, L"index");
@@ -89,7 +89,7 @@ size_t t_type_of<t_bytes>::f_get_at(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_bytes>::f_set_at(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_bytes>::f_do_set_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	t_destruct<> a1(a_stack[3]);
@@ -99,17 +99,17 @@ size_t t_type_of<t_bytes>::f_set_at(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_bytes>::f_equals(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_bytes>::f_do_equals(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_equals(a_this, a0.v_p));
+	a_stack[0].f_construct(f__equals(a_this, a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_bytes>::f_not_equals(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_bytes>::f_do_not_equals(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_not_equals(a_this, a0.v_p));
+	a_stack[0].f_construct(f__not_equals(a_this, a0.v_p));
 	return -1;
 }
 

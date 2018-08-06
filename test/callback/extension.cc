@@ -16,8 +16,12 @@ struct t_type_of<t_client> : t_derivable<t_holds<t_client>>
 
 	static void f_define(t_callback_extension* a_extension);
 
-	using t_base::t_base;
-	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 
 template<>
@@ -27,8 +31,12 @@ struct t_type_of<t_server> : t_derivable<t_holds<t_server>>
 
 	static void f_define(t_callback_extension* a_extension);
 
-	using t_base::t_base;
-	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }
@@ -45,7 +53,12 @@ struct t_callback_extension : t_extension
 		t_type_of<t_client>::f_define(this);
 		t_type_of<t_server>::f_define(this);
 	}
-	virtual void f_scan(t_scan a_scan);
+	virtual void f_scan(t_scan a_scan)
+	{
+		a_scan(v_symbol_on_message);
+		a_scan(v_type_client);
+		a_scan(v_type_server);
+	}
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot()
 	{
@@ -121,7 +134,7 @@ void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 	;
 }
 
-t_scoped t_type_of<t_client>::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_client>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_construct_with<t_scoped(*)(t_type*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(this, a_stack, a_n);
 }
@@ -136,18 +149,11 @@ void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 	;
 }
 
-t_scoped t_type_of<t_server>::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_server>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<t_server>::f_do(this, a_stack, a_n);
 }
 
-}
-
-void t_callback_extension::f_scan(t_scan a_scan)
-{
-	a_scan(v_symbol_on_message);
-	a_scan(v_type_client);
-	a_scan(v_type_server);
 }
 
 t_scoped t_callback_extension::f_as(t_client* a_value) const

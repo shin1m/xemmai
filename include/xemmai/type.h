@@ -166,15 +166,15 @@ struct t_type_of<t_object>
 		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
 		return cs;
 	}
-	static intptr_t f_hash(const t_value& a_self)
+	static intptr_t f__hash(const t_value& a_self)
 	{
 		return a_self.f_tag();
 	}
-	static bool f_equals(const t_value& a_self, const t_value& a_other)
+	static bool f__equals(const t_value& a_self, const t_value& a_other)
 	{
 		return a_self == a_other;
 	}
-	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
+	static bool f__not_equals(const t_value& a_self, const t_value& a_other)
 	{
 		return a_self != a_other;
 	}
@@ -202,18 +202,47 @@ struct t_type_of<t_object>
 	}
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module);
-	XEMMAI__PORTABLE__EXPORT virtual ~t_type_of() = default;
+	template<typename T>
+	void f_do_delete()
+	{
+		delete static_cast<T*>(this);
+	}
+	void (t_type::*v_delete)() = &t_type::f_do_delete<t_type>;
+	void f_delete()
+	{
+		(this->*v_delete)();
+	}
 	template<typename T>
 	bool f_derives() const
 	{
 		size_t i = t_type_of<T>::V_ids.size() - 1;
 		return i <= v_depth && v_ids[i] == static_cast<t_type_id>(f_type_id<T>);
 	}
-	XEMMAI__PORTABLE__EXPORT virtual t_type* f_derive();
-	XEMMAI__PORTABLE__EXPORT bool f_derives(t_type* a_type);
-	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
-	XEMMAI__PORTABLE__EXPORT virtual void f_finalize(t_object* a_this);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	t_type* f_do_derive_object();
+	template<typename T>
+	t_type* f_do_derive();
+	t_type* f_dont_derive()
+	{
+		return nullptr;
+	}
+	t_type* (t_type::*v_derive)() = &t_type::f_do_derive_object;
+	bool f_derives(t_type* a_type);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+	}
+	void (*f_scan)(t_object* a_this, t_scan a_scan) = f_do_scan;
+	static void f_do_finalize_object(t_object* a_this)
+	{
+	}
+	template<typename T>
+	static void f_do_finalize(t_object* a_this);
+	void (*f_finalize)(t_object*) = f_do_finalize_object;
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_scoped (t_type::*v_construct)(t_stacked*, size_t) = &t_type::f_do_construct;;
+	t_scoped f_construct(t_stacked* a_stack, size_t a_n)
+	{
+		return (this->*v_construct)(a_stack, a_n);
+	}
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
 	void f_dont_instantiate(t_stacked* a_stack, size_t a_n)
 	{
@@ -244,34 +273,58 @@ struct t_type_of<t_object>
 	}
 	static t_scoped f_do_remove(t_object* a_this, t_object* a_key);
 	t_scoped (*f_remove)(t_object*, t_object*) = f_do_remove;
-	XEMMAI__PORTABLE__EXPORT virtual void f_hash(t_object* a_this, t_stacked* a_stack);
 	static void f_do_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
 	void (*f_call_nonowned)(t_object*, t_object*, t_stacked*, size_t) = f_do_call_nonowned;
 	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	size_t (*f_call)(t_object*, t_stacked*, size_t) = f_do_call;
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_set_at(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_plus(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_minus(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_not(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_complement(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_multiply(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_divide(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_modulus(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_add(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_subtract(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_left_shift(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_right_shift(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_less(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_less_equal(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_greater(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_greater_equal(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_equals(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_not_equals(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_and(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_xor(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_or(t_object* a_this, t_stacked* a_stack);
-	XEMMAI__PORTABLE__EXPORT virtual size_t f_send(t_object* a_this, t_stacked* a_stack);
+	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
+	void (*f_hash)(t_object*, t_stacked*) = f_do_hash;
+	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_get_at)(t_object*, t_stacked*) = f_do_get_at;
+	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_set_at)(t_object*, t_stacked*) = f_do_set_at;
+	static size_t f_do_plus(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_plus)(t_object*, t_stacked*) = f_do_plus;
+	static size_t f_do_minus(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_minus)(t_object*, t_stacked*) = f_do_minus;
+	static size_t f_do_not(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_not)(t_object*, t_stacked*) = f_do_not;
+	static size_t f_do_complement(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_complement)(t_object*, t_stacked*) = f_do_complement;
+	static size_t f_do_multiply(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_multiply)(t_object*, t_stacked*) = f_do_multiply;
+	static size_t f_do_divide(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_divide)(t_object*, t_stacked*) = f_do_divide;
+	static size_t f_do_modulus(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_modulus)(t_object*, t_stacked*) = f_do_modulus;
+	static size_t f_do_add(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_add)(t_object*, t_stacked*) = f_do_add;
+	static size_t f_do_subtract(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_subtract)(t_object*, t_stacked*) = f_do_subtract;
+	static size_t f_do_left_shift(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_left_shift)(t_object*, t_stacked*) = f_do_left_shift;
+	static size_t f_do_right_shift(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_right_shift)(t_object*, t_stacked*) = f_do_right_shift;
+	static size_t f_do_less(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_less)(t_object*, t_stacked*) = f_do_less;
+	static size_t f_do_less_equal(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_less_equal)(t_object*, t_stacked*) = f_do_less_equal;
+	static size_t f_do_greater(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_greater)(t_object*, t_stacked*) = f_do_greater;
+	static size_t f_do_greater_equal(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_greater_equal)(t_object*, t_stacked*) = f_do_greater_equal;
+	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_equals)(t_object*, t_stacked*) = f_do_equals;
+	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_not_equals)(t_object*, t_stacked*) = f_do_not_equals;
+	static size_t f_do_and(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_and)(t_object*, t_stacked*) = f_do_and;
+	static size_t f_do_xor(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_xor)(t_object*, t_stacked*) = f_do_xor;
+	static size_t f_do_or(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_or)(t_object*, t_stacked*) = f_do_or;
+	static size_t f_do_send(t_object* a_this, t_stacked* a_stack);
+	size_t (*f_send)(t_object*, t_stacked*) = f_do_send;
 };
 
 template<>
@@ -320,6 +373,12 @@ inline bool f_is(T1&& a_object)
 	return t_type_of<typename t_fundamental<T0>::t_type>::template t_is<T0>::f_call(std::forward<T1>(a_object));
 }
 
+template<typename T>
+void t_type::f_do_finalize(t_object* a_this)
+{
+	delete &f_as<T&>(a_this);
+}
+
 XEMMAI__PORTABLE__EXPORT void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name);
 
 template<typename T>
@@ -360,10 +419,10 @@ struct t_finalizes : T_base
 {
 	typedef t_finalizes t_base;
 
-	using T_base::T_base;
-	virtual void f_finalize(t_object* a_this)
+	template<size_t A_n>
+	t_finalizes(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
-		delete &f_as<T&>(a_this);
+		this->f_finalize = T_base::template f_do_finalize<T>;
 	}
 };
 
@@ -393,8 +452,11 @@ struct t_derivable : T_base
 {
 	typedef t_derivable t_base;
 
-	using T_base::T_base;
-	virtual t_type* f_derive();
+	template<size_t A_n>
+	t_derivable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	{
+		this->v_derive = &t_type::f_do_derive<typename T_base::t_what>;
+	}
 };
 
 template<typename T_base>
@@ -402,10 +464,10 @@ struct t_underivable : T_base
 {
 	typedef t_underivable t_base;
 
-	using T_base::T_base;
-	virtual t_type* f_derive()
+	template<size_t A_n>
+	t_underivable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
-		return nullptr;
+		this->v_derive = &t_type::f_dont_derive;
 	}
 };
 

@@ -27,49 +27,6 @@ void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_pos
 	std::putc('\n', a_out);
 }
 
-void t_context::f_backtrace(const t_value& a_value)
-{
-	f_as<t_code&>(v_lambda->v_code).f_stack_clear(v_pc, v_base);
-	if (f_is<t_throwable>(a_value)) {
-		auto& p = f_as<t_fiber&>(t_fiber::f_current());
-		t_backtrace::f_push(a_value, v_lambda->v_this, p.v_caught == nullptr ? v_pc : p.v_caught);
-		p.v_caught = nullptr;
-	}
-	f_stack()->v_used = v_previous;
-}
-
-const t_value* t_context::f_variable(const std::wstring& a_name) const
-{
-	auto& code = f_as<t_code&>(v_lambda->v_code);
-	auto i = code.v_variables.find(a_name);
-	if (i == code.v_variables.end()) return nullptr;
-	size_t outer = 0;
-	for (auto i = a_name.begin(); i != a_name.end() && *i == L':'; ++i) ++outer;
-	size_t index = i->second.v_index;
-	if (outer <= 0) return (i->second.v_shared ? v_scope : static_cast<const t_value*>(v_base)) + index;
-	auto scope = v_lambda->v_scope_entries;
-	for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
-	return scope + index;
-}
-
-void t_backtrace::f_push(const t_value& a_throwable, const t_scoped& a_lambda, void** a_pc)
-{
-	t_with_lock_for_write lock(a_throwable);
-	auto& p = f_as<t_throwable&>(a_throwable);
-	p.v_backtrace = new t_backtrace(p.v_backtrace, a_lambda, a_pc);
-}
-
-void t_backtrace::f_dump() const
-{
-	if (v_next) {
-		v_next->f_dump();
-		std::fputs("from ", stderr);
-	} else {
-		std::fputs("at ", stderr);
-	}
-	f_engine()->f_context_print(stderr, v_lambda ? f_as<t_lambda*>(v_lambda) : nullptr, f_pc());
-}
-
 t_scoped t_fiber::f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_fiber>());
@@ -130,7 +87,7 @@ void t_type_of<t_fiber>::f_define()
 	;
 }
 
-void t_type_of<t_fiber>::f_scan(t_object* a_this, t_scan a_scan)
+void t_type_of<t_fiber>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	a_scan(f_as<t_fiber&>(a_this).v_callable);
 }
@@ -180,6 +137,31 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_stacked* a_stack, size_
 	if (!q.v_throw) return -1;
 	q.v_throw = false;
 	throw t_scoped(std::move(*q.v_return));
+}
+
+void t_context::f_backtrace(const t_value& a_value)
+{
+	f_as<t_code&>(v_lambda->v_code).f_stack_clear(v_pc, v_base);
+	if (f_is<t_throwable>(a_value)) {
+		auto& p = f_as<t_fiber&>(t_fiber::f_current());
+		t_backtrace::f_push(a_value, v_lambda->v_this, p.v_caught == nullptr ? v_pc : p.v_caught);
+		p.v_caught = nullptr;
+	}
+	f_stack()->v_used = v_previous;
+}
+
+const t_value* t_context::f_variable(const std::wstring& a_name) const
+{
+	auto& code = f_as<t_code&>(v_lambda->v_code);
+	auto i = code.v_variables.find(a_name);
+	if (i == code.v_variables.end()) return nullptr;
+	size_t outer = 0;
+	for (auto i = a_name.begin(); i != a_name.end() && *i == L':'; ++i) ++outer;
+	size_t index = i->second.v_index;
+	if (outer <= 0) return (i->second.v_shared ? v_scope : static_cast<const t_value*>(v_base)) + index;
+	auto scope = v_lambda->v_scope_entries;
+	for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
+	return scope + index;
 }
 
 }

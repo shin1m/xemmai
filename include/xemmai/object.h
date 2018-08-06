@@ -134,7 +134,7 @@ public:
 class t_tuple
 {
 	friend class t_object;
-	friend struct t_finalizes<t_tuple, t_bears<t_tuple, t_type_immutable>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_tuple>;
 
 	size_t v_size;

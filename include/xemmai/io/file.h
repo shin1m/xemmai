@@ -98,8 +98,12 @@ struct t_type_of<io::t_file> : t_derivable<t_holds<io::t_file>>
 
 	static void f_define(t_io* a_extension);
 
-	using t_base::t_base;
-	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }

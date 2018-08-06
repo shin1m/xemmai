@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_native
 {
-	friend struct t_finalizes<t_native, t_bears<t_native>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_native>;
 
 	t_extension::t_function v_function;
@@ -30,11 +30,13 @@ struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_with_traits<t_ho
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
 	{
+		f_scan = f_do_scan;
 		f_call = f_do_call;
+		f_get_at = f_do_get_at;
 	}
-	virtual void f_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
-	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 };
 
 }

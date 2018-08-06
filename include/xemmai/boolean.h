@@ -32,7 +32,7 @@ struct t_type_of<bool> : t_uninstantiatable<t_underivable<t_bears<bool, t_type_i
 	{
 		return a_self ? L"true" : L"false";
 	}
-	static intptr_t f_hash(bool a_self)
+	static intptr_t f__hash(bool a_self)
 	{
 		return a_self ? 1 : 0;
 	}

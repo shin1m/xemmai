@@ -5,6 +5,24 @@
 namespace xemmai
 {
 
+void t_backtrace::f_push(const t_value& a_throwable, const t_scoped& a_lambda, void** a_pc)
+{
+	t_with_lock_for_write lock(a_throwable);
+	auto& p = f_as<t_throwable&>(a_throwable);
+	p.v_backtrace = new t_backtrace(p.v_backtrace, a_lambda, a_pc);
+}
+
+void t_backtrace::f_dump() const
+{
+	if (v_next) {
+		v_next->f_dump();
+		std::fputs("from ", stderr);
+	} else {
+		std::fputs("at ", stderr);
+	}
+	f_engine()->f_context_print(stderr, v_lambda ? f_as<t_lambda*>(v_lambda) : nullptr, f_pc());
+}
+
 void f_throw(const std::wstring& a_message)
 {
 	throw t_throwable::f_instantiate(a_message);
@@ -40,12 +58,12 @@ void t_type_of<t_throwable>::f_define()
 	;
 }
 
-void t_type_of<t_throwable>::f_scan(t_object* a_this, t_scan a_scan)
+void t_type_of<t_throwable>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
-	for (t_backtrace* p = f_as<t_throwable&>(a_this).v_backtrace; p; p = p->v_next) p->f_scan(a_scan);
+	for (t_backtrace* p = f_as<t_throwable&>(a_this).v_backtrace; p; p = p->v_next) a_scan(p->v_lambda);
 }
 
-t_scoped t_type_of<t_throwable>::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_throwable>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<const std::wstring&>::t_bind<t_throwable>::f_do(this, a_stack, a_n);
 }

@@ -127,7 +127,7 @@ void t_type_of<io::t_file>::f_define(t_io* a_extension)
 	;
 }
 
-t_scoped t_type_of<io::t_file>::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<io::t_file>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct<const std::wstring&, const std::wstring&>,

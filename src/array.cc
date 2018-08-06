@@ -155,7 +155,7 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 	return L'[' + s + L']';
 }
 
-intptr_t t_type_of<t_array>::f_hash(const t_value& a_self)
+intptr_t t_type_of<t_array>::f__hash(const t_value& a_self)
 {
 	f_check<t_array>(a_self, L"this");
 	auto& array = f_as<const t_array&>(a_self);
@@ -176,7 +176,7 @@ intptr_t t_type_of<t_array>::f_hash(const t_value& a_self)
 	return n;
 }
 
-bool t_type_of<t_array>::f_less(const t_value& a_self, const t_value& a_other)
+bool t_type_of<t_array>::f__less(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return false;
 	f_check<t_array>(a_self, L"this");
@@ -204,7 +204,7 @@ bool t_type_of<t_array>::f_less(const t_value& a_self, const t_value& a_other)
 	return i < a1.f_size();
 }
 
-bool t_type_of<t_array>::f_less_equal(const t_value& a_self, const t_value& a_other)
+bool t_type_of<t_array>::f__less_equal(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
@@ -231,7 +231,7 @@ bool t_type_of<t_array>::f_less_equal(const t_value& a_self, const t_value& a_ot
 	return true;
 }
 
-bool t_type_of<t_array>::f_greater(const t_value& a_self, const t_value& a_other)
+bool t_type_of<t_array>::f__greater(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return false;
 	f_check<t_array>(a_self, L"this");
@@ -258,7 +258,7 @@ bool t_type_of<t_array>::f_greater(const t_value& a_self, const t_value& a_other
 	return false;
 }
 
-bool t_type_of<t_array>::f_greater_equal(const t_value& a_self, const t_value& a_other)
+bool t_type_of<t_array>::f__greater_equal(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
@@ -286,7 +286,7 @@ bool t_type_of<t_array>::f_greater_equal(const t_value& a_self, const t_value& a
 	return i >= a1.f_size();
 }
 
-bool t_type_of<t_array>::f_equals(const t_value& a_self, const t_value& a_other)
+bool t_type_of<t_array>::f__equals(const t_value& a_self, const t_value& a_other)
 {
 	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
@@ -363,15 +363,15 @@ void t_type_of<t_array>::f_define()
 	t_define<t_array, t_object>(f_global(), L"Array")
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f_hash>())
+		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f__hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_value&(t_array::*)(intptr_t) const, &t_array::f_get_at, t_with_lock_for_read>())
 		(f_global()->f_symbol_set_at(), t_member<const t_value&(t_array::*)(intptr_t, t_scoped&&), &t_array::f_set_at, t_with_lock_for_write>())
-		(f_global()->f_symbol_less(), t_member<bool(*)(const t_value&, const t_value&), f_less>())
-		(f_global()->f_symbol_less_equal(), t_member<bool(*)(const t_value&, const t_value&), f_less_equal>())
-		(f_global()->f_symbol_greater(), t_member<bool(*)(const t_value&, const t_value&), f_greater>())
-		(f_global()->f_symbol_greater_equal(), t_member<bool(*)(const t_value&, const t_value&), f_greater_equal>())
-		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f_equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f_not_equals>())
+		(f_global()->f_symbol_less(), t_member<bool(*)(const t_value&, const t_value&), f__less>())
+		(f_global()->f_symbol_less_equal(), t_member<bool(*)(const t_value&, const t_value&), f__less_equal>())
+		(f_global()->f_symbol_greater(), t_member<bool(*)(const t_value&, const t_value&), f__greater>())
+		(f_global()->f_symbol_greater_equal(), t_member<bool(*)(const t_value&, const t_value&), f__greater_equal>())
+		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f__equals>())
+		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f__not_equals>())
 		(L"clear", t_member<void(t_array::*)(), &t_array::f_clear, t_with_lock_for_write>())
 		(f_global()->f_symbol_size(), t_member<size_t(t_array::*)() const, &t_array::f_size>())
 		(f_global()->f_symbol_push(), t_member<void(t_array::*)(t_scoped&&), &t_array::f_push, t_with_lock_for_write>())
@@ -385,12 +385,12 @@ void t_type_of<t_array>::f_define()
 	;
 }
 
-void t_type_of<t_array>::f_scan(t_object* a_this, t_scan a_scan)
+void t_type_of<t_array>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	a_scan(f_as<t_array&>(a_this).v_tuple);
 }
 
-t_scoped t_type_of<t_array>::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_array>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	t_scoped p = t_object::f_allocate(this);
 	auto array = new t_array();
@@ -400,12 +400,12 @@ t_scoped t_type_of<t_array>::f_construct(t_stacked* a_stack, size_t a_n)
 	return p;
 }
 
-void t_type_of<t_array>::f_hash(t_object* a_this, t_stacked* a_stack)
+void t_type_of<t_array>::f_do_hash(t_object* a_this, t_stacked* a_stack)
 {
-	a_stack[0].f_construct(f_hash(t_value(a_this)));
+	a_stack[0].f_construct(f__hash(t_value(a_this)));
 }
 
-size_t t_type_of<t_array>::f_get_at(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_get_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<intptr_t>(a0.v_p, L"index");
@@ -414,7 +414,7 @@ size_t t_type_of<t_array>::f_get_at(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_array>::f_set_at(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_set_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	t_scoped a1 = std::move(a_stack[3]);
@@ -424,45 +424,45 @@ size_t t_type_of<t_array>::f_set_at(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_array>::f_less(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_less(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_less(a_this, a0.v_p));
+	a_stack[0].f_construct(f__less(a_this, a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_array>::f_less_equal(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_less_equal(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_less_equal(a_this, a0.v_p));
+	a_stack[0].f_construct(f__less_equal(a_this, a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_array>::f_greater(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_greater(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_greater(a_this, a0.v_p));
+	a_stack[0].f_construct(f__greater(a_this, a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_array>::f_greater_equal(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_greater_equal(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_greater_equal(a_this, a0.v_p));
+	a_stack[0].f_construct(f__greater_equal(a_this, a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_array>::f_equals(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_equals(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_equals(a_this, a0.v_p));
+	a_stack[0].f_construct(f__equals(a_this, a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_array>::f_not_equals(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_array>::f_do_not_equals(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f_not_equals(a_this, a0.v_p));
+	a_stack[0].f_construct(f__not_equals(a_this, a0.v_p));
 	return -1;
 }
 

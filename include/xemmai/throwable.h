@@ -6,10 +6,28 @@
 namespace xemmai
 {
 
+struct t_backtrace
+{
+	static void f_push(const t_value& a_throwable, const t_scoped& a_lambda, void** a_pc);
+
+	t_backtrace* v_next;
+	t_slot v_lambda;
+
+	t_backtrace(t_backtrace* a_next, const t_scoped& a_lambda, void** a_pc) : v_next(a_next), v_lambda(a_lambda)
+	{
+		*reinterpret_cast<void***>(&v_lambda.v_integer) = a_pc;
+	}
+	void** const& f_pc() const
+	{
+		return *reinterpret_cast<void** const*>(&v_lambda.v_integer);
+	}
+	void f_dump() const;
+};
+
 class t_throwable
 {
 	friend struct t_backtrace;
-	friend struct t_finalizes<t_throwable, t_bears<t_throwable>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_throwable>;
 
 	t_backtrace* v_backtrace = nullptr;
@@ -36,9 +54,14 @@ struct t_type_of<t_throwable> : t_derivable<t_holds<t_throwable>>
 {
 	static void f_define();
 
-	using t_base::t_base;
-	XEMMAI__PORTABLE__EXPORT virtual void f_scan(t_object* a_this, t_scan a_scan);
-	XEMMAI__PORTABLE__EXPORT virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		f_scan = f_do_scan;
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+	}
+	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 
 }

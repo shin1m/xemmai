@@ -132,12 +132,12 @@ void t_type_of<t_tuple>::f_define()
 	;
 }
 
-void t_type_of<t_tuple>::f_scan(t_object* a_this, t_scan a_scan)
+void t_type_of<t_tuple>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	f_as<t_tuple&>(a_this).f_scan(a_scan);
 }
 
-t_scoped t_type_of<t_tuple>::f_construct(t_stacked* a_stack, size_t a_n)
+t_scoped t_type_of<t_tuple>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	t_scoped p = t_object::f_allocate(this);
 	auto tuple = new(a_n) t_tuple(a_n);
@@ -146,12 +146,12 @@ t_scoped t_type_of<t_tuple>::f_construct(t_stacked* a_stack, size_t a_n)
 	return p;
 }
 
-void t_type_of<t_tuple>::f_hash(t_object* a_this, t_stacked* a_stack)
+void t_type_of<t_tuple>::f_do_hash(t_object* a_this, t_stacked* a_stack)
 {
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_hash());
 }
 
-size_t t_type_of<t_tuple>::f_get_at(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_tuple>::f_do_get_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<size_t>(a0.v_p, L"index");
@@ -159,7 +159,7 @@ size_t t_type_of<t_tuple>::f_get_at(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_tuple>::f_less(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_tuple>::f_do_less(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<t_tuple>(a0.v_p, L"argument0");
@@ -167,7 +167,7 @@ size_t t_type_of<t_tuple>::f_less(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_tuple>::f_less_equal(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_tuple>::f_do_less_equal(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<t_tuple>(a0.v_p, L"argument0");
@@ -175,7 +175,7 @@ size_t t_type_of<t_tuple>::f_less_equal(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_tuple>::f_greater(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_tuple>::f_do_greater(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<t_tuple>(a0.v_p, L"argument0");
@@ -183,7 +183,7 @@ size_t t_type_of<t_tuple>::f_greater(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_tuple>::f_greater_equal(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_tuple>::f_do_greater_equal(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<t_tuple>(a0.v_p, L"argument0");
@@ -191,14 +191,14 @@ size_t t_type_of<t_tuple>::f_greater_equal(t_object* a_this, t_stacked* a_stack)
 	return -1;
 }
 
-size_t t_type_of<t_tuple>::f_equals(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_tuple>::f_do_equals(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_equals(a0.v_p));
 	return -1;
 }
 
-size_t t_type_of<t_tuple>::f_not_equals(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_tuple>::f_do_not_equals(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	a_stack[0].f_construct(f_as<const t_tuple&>(a_this).f_not_equals(a0.v_p));

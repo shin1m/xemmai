@@ -44,12 +44,12 @@ void t_type_of<t_symbol>::f_define()
 	;
 }
 
-void t_type_of<t_symbol>::f_scan(t_object* a_this, t_scan a_scan)
+void t_type_of<t_symbol>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	a_scan(f_as<t_symbol&>(a_this).v_entry->second);
 }
 
-void t_type_of<t_symbol>::f_finalize(t_object* a_this)
+void t_type_of<t_symbol>::f_do_finalize(t_object* a_this)
 {
 	auto& p = f_as<t_symbol&>(a_this);
 	f_engine()->v_symbol__instances.erase(p.v_entry);

@@ -10,7 +10,9 @@ namespace xemmai
 struct t_os : t_extension
 {
 	t_os(t_object* a_module);
-	virtual void f_scan(t_scan a_scan);
+	virtual void f_scan(t_scan a_scan)
+	{
+	}
 	template<typename T>
 	t_object* f_type() const
 	{
@@ -64,10 +66,6 @@ t_os::t_os(t_object* a_module) : t_extension(a_module)
 #ifdef __unix__
 	f_define<t_scoped(*)(), f_pipe>(this, L"pipe");
 #endif
-}
-
-void t_os::f_scan(t_scan a_scan)
-{
 }
 
 }

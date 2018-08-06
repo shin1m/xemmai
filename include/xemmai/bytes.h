@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_bytes
 {
-	friend struct t_finalizes<t_bytes, t_bears<t_bytes>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_bytes>;
 
 	size_t v_size;
@@ -96,20 +96,29 @@ template<>
 struct t_type_of<t_bytes> : t_derivable<t_holds<t_bytes>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
-	static bool f_equals(const t_value& a_self, const t_value& a_other);
-	static bool f_not_equals(const t_value& a_self, const t_value& a_other)
+	static bool f__equals(const t_value& a_self, const t_value& a_other);
+	static bool f__not_equals(const t_value& a_self, const t_value& a_other)
 	{
-		return !f_equals(a_self, a_other);
+		return !f__equals(a_self, a_other);
 	}
 	static void f_define();
 
-	using t_base::t_base;
-	virtual t_scoped f_construct(t_stacked* a_stack, size_t a_n);
-	virtual void f_hash(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_set_at(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_equals(t_object* a_this, t_stacked* a_stack);
-	virtual size_t f_not_equals(t_object* a_this, t_stacked* a_stack);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
+		f_hash = f_do_hash;
+		f_get_at = f_do_get_at;
+		f_set_at = f_do_set_at;
+		f_equals = f_do_equals;
+		f_not_equals = f_do_not_equals;
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
 };
 
 }

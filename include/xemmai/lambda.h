@@ -13,7 +13,7 @@ class t_lambda
 {
 	friend struct t_code;
 	friend struct t_context;
-	friend struct t_finalizes<t_lambda, t_bears<t_lambda>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_lambda>;
 
 protected:
@@ -61,8 +61,13 @@ public:
 template<>
 struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_lambda>, false, true>>>
 {
-	using t_base::t_base;
-	virtual void f_scan(t_object* a_this, t_scan a_scan);
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
+	{
+		f_scan = f_do_scan;
+		f_get_at = f_do_get_at;
+	}
+	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	template<typename T, typename T_context>
 	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	{
@@ -70,13 +75,13 @@ struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_with_traits<t_ho
 		if (a_n != p.v_arguments) f_throw(a_stack, a_n, L"invalid number of arguments.");
 		return p.template f_call<T_context>(a_stack);
 	}
-	virtual size_t f_get_at(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 };
 
 class t_lambda_shared : public t_lambda
 {
 	friend struct t_lambda;
-	friend struct t_finalizes<t_lambda_shared, t_bears<t_lambda_shared, t_type_of<t_lambda>>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_lambda>;
 	friend struct t_type_of<t_lambda_shared>;
 
@@ -108,7 +113,7 @@ template<typename T_base>
 class t_advanced_lambda : public T_base
 {
 	friend struct t_lambda;
-	friend struct t_finalizes<t_advanced_lambda, t_bears<t_advanced_lambda, t_type_of<T_base>>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_advanced_lambda>;
 
 	t_slot v_defaults;
@@ -127,10 +132,14 @@ class t_advanced_lambda : public T_base
 template<typename T_base>
 struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>, t_type_of<T_base>>
 {
-	using t_type_of::t_base::t_base;
-	virtual void f_scan(t_object* a_this, t_scan a_scan)
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type_of::t_base(a_ids, a_super, std::move(a_module))
 	{
-		t_type_of::t_base::f_scan(a_this, a_scan);
+		this->f_scan = f_do_scan;
+	}
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		t_type_of::t_base::f_do_scan(a_this, a_scan);
 		a_scan(f_as<t_advanced_lambda<T_base>&>(a_this).v_defaults);
 	}
 	template<typename T_context>

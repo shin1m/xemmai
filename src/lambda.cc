@@ -40,14 +40,14 @@ t_scoped t_lambda::f_instantiate(t_slot* a_scope, t_scoped&& a_code, t_stacked* 
 	}
 }
 
-void t_type_of<t_lambda>::f_scan(t_object* a_this, t_scan a_scan)
+void t_type_of<t_lambda>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	auto& p = f_as<t_lambda&>(a_this);
 	a_scan(p.v_scope);
 	a_scan(p.v_code);
 }
 
-size_t t_type_of<t_lambda>::f_get_at(t_object* a_this, t_stacked* a_stack)
+size_t t_type_of<t_lambda>::f_do_get_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_scoped a0 = std::move(a_stack[2]);
 	a_stack[0].f_construct(t_method::f_instantiate(a_this, std::move(a0)));

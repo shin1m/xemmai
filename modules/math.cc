@@ -8,7 +8,9 @@ namespace xemmai
 struct t_math : t_extension
 {
 	t_math(t_object* a_module);
-	virtual void f_scan(t_scan a_scan);
+	virtual void f_scan(t_scan a_scan)
+	{
+	}
 	template<typename T>
 	t_object* f_type() const
 	{
@@ -83,10 +85,6 @@ t_math::t_math(t_object* a_module) : t_extension(a_module)
 	f_define<bool(*)(double), f_boolean<std::signbit>>(this, L"signbit");
 	a_module->f_put(t_symbol::f_instantiate(L"E"), f_as(M_E));
 	a_module->f_put(t_symbol::f_instantiate(L"PI"), f_as(M_PI));
-}
-
-void t_math::f_scan(t_scan a_scan)
-{
 }
 
 }
