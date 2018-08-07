@@ -72,13 +72,6 @@ size_t f_expand(void**& a_pc, t_stacked* a_stack, size_t a_n)
 	return a_n - 1 + n;
 }
 
-template<size_t (*t_type::*A_function)(t_object*, t_stacked*)>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void f_operator(t_object* a_this, t_stacked* a_stack)
-{
-	size_t n = (a_this->f_type()->*A_function)(a_this, a_stack);
-	if (n != size_t(-1)) t_value::f_loop(a_stack, n);
-}
-
 }
 
 void t_code::f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic)
@@ -1301,7 +1294,9 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
 				{\
 					XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
-					f_operator<&t_type::a_method>(x, stack);\
+					auto p = static_cast<t_object*>(x);\
+					size_t n = p->f_type()->a_method(p, stack);\
+					if (n != size_t(-1)) t_value::f_loop(stack, n);\
 				}
 #define XEMMAI__CODE__CASE_END\
 			}\

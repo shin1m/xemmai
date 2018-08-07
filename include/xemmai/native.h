@@ -25,15 +25,9 @@ public:
 };
 
 template<>
-struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_native>, false, true>>>
+struct t_type_of<t_native> : t_override<t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_native>, false, true>>>>
 {
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
-	{
-		f_scan = f_do_scan;
-		f_call = f_do_call;
-		f_get_at = f_do_get_at;
-	}
+	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);

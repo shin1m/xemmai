@@ -33,18 +33,11 @@ public:
 };
 
 template<>
-struct t_type_of<t_symbol> : t_underivable<t_bears<t_symbol, t_type_immutable>>
+struct t_type_of<t_symbol> : t_override<t_underivable<t_bears<t_symbol, t_type_immutable>>>
 {
 	void f_define();
 
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
-	{
-		v_revive = true;
-		f_scan = f_do_scan;
-		f_finalize = f_do_finalize;
-		v_instantiate = static_cast<void (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_instantiate);
-	}
+	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	static void f_do_finalize(t_object* a_this);
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);

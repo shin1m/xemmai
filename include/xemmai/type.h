@@ -230,15 +230,15 @@ struct t_type_of<t_object>
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
 	}
-	void (*f_scan)(t_object* a_this, t_scan a_scan) = f_do_scan;
-	static void f_do_finalize_object(t_object* a_this)
+	void (*f_scan)(t_object*, t_scan) = f_do_scan;
+	static void f_do_finalize(t_object* a_this)
 	{
 	}
 	template<typename T>
-	static void f_do_finalize(t_object* a_this);
-	void (*f_finalize)(t_object*) = f_do_finalize_object;
+	static void f__do_finalize(t_object* a_this);
+	void (*f_finalize)(t_object*) = f_do_finalize;
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	t_scoped (t_type::*v_construct)(t_stacked*, size_t) = &t_type::f_do_construct;;
+	t_scoped (t_type::*v_construct)(t_stacked*, size_t) = &t_type::f_do_construct;
 	t_scoped f_construct(t_stacked* a_stack, size_t a_n)
 	{
 		return (this->*v_construct)(a_stack, a_n);
@@ -325,6 +325,39 @@ struct t_type_of<t_object>
 	size_t (*f_or)(t_object*, t_stacked*) = f_do_or;
 	static size_t f_do_send(t_object* a_this, t_stacked* a_stack);
 	size_t (*f_send)(t_object*, t_stacked*) = f_do_send;
+	template<typename T, typename U>
+	void f_override()
+	{
+		if (T::f_do_scan != U::f_do_scan) f_scan = T::f_do_scan;
+		if (T::f_do_finalize != U::f_do_finalize) f_finalize = T::f_do_finalize;
+		if (&T::f_do_construct != &U::f_do_construct) v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&T::f_do_construct);
+		if (&T::f_do_instantiate != &U::f_do_instantiate) v_instantiate = static_cast<void (t_type::*)(t_stacked*, size_t)>(&T::f_do_instantiate);
+		if (T::f_do_call != U::f_do_call) f_call = T::f_do_call;
+		if (T::f_do_hash != U::f_do_hash) f_hash = T::f_do_hash;
+		if (T::f_do_get_at != U::f_do_get_at) f_get_at = T::f_do_get_at;
+		if (T::f_do_set_at != U::f_do_set_at) f_set_at = T::f_do_set_at;
+		if (T::f_do_plus != U::f_do_plus) f_plus = T::f_do_plus;
+		if (T::f_do_minus != U::f_do_minus) f_minus = T::f_do_minus;
+		if (T::f_do_not != U::f_do_not) f_not = T::f_do_not;
+		if (T::f_do_complement != U::f_do_complement) f_complement = T::f_do_complement;
+		if (T::f_do_multiply != U::f_do_multiply) f_multiply = T::f_do_multiply;
+		if (T::f_do_divide != U::f_do_divide) f_divide = T::f_do_divide;
+		if (T::f_do_modulus != U::f_do_modulus) f_modulus = T::f_do_modulus;
+		if (T::f_do_add != U::f_do_add) f_add = T::f_do_add;
+		if (T::f_do_subtract != U::f_do_subtract) f_subtract = T::f_do_subtract;
+		if (T::f_do_left_shift != U::f_do_left_shift) f_left_shift = T::f_do_left_shift;
+		if (T::f_do_right_shift != U::f_do_right_shift) f_right_shift = T::f_do_right_shift;
+		if (T::f_do_less != U::f_do_less) f_less = T::f_do_less;
+		if (T::f_do_less_equal != U::f_do_less_equal) f_less_equal = T::f_do_less_equal;
+		if (T::f_do_greater != U::f_do_greater) f_greater = T::f_do_greater;
+		if (T::f_do_greater_equal != U::f_do_greater_equal) f_greater_equal = T::f_do_greater_equal;
+		if (T::f_do_equals != U::f_do_equals) f_equals = T::f_do_equals;
+		if (T::f_do_not_equals != U::f_do_not_equals) f_not_equals = T::f_do_not_equals;
+		if (T::f_do_and != U::f_do_and) f_and = T::f_do_and;
+		if (T::f_do_xor != U::f_do_xor) f_xor = T::f_do_xor;
+		if (T::f_do_or != U::f_do_or) f_or = T::f_do_or;
+		if (T::f_do_send != U::f_do_send) f_send = T::f_do_send;
+	}
 };
 
 template<>
@@ -374,7 +407,7 @@ inline bool f_is(T1&& a_object)
 }
 
 template<typename T>
-void t_type::f_do_finalize(t_object* a_this)
+void t_type::f__do_finalize(t_object* a_this)
 {
 	delete &f_as<T&>(a_this);
 }
@@ -417,12 +450,13 @@ constexpr std::array<t_type_id, T_base::V_ids.size() + 1> t_bears<T, T_base>::V_
 template<typename T, typename T_base = t_type>
 struct t_finalizes : T_base
 {
+	typedef T t_what;
 	typedef t_finalizes t_base;
 
 	template<size_t A_n>
 	t_finalizes(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
-		this->f_finalize = T_base::template f_do_finalize<T>;
+		this->f_finalize = T_base::template f__do_finalize<T>;
 	}
 };
 
@@ -480,6 +514,18 @@ struct t_uninstantiatable : T_base
 	t_uninstantiatable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
 		this->v_instantiate = &t_type::f_dont_instantiate;
+	}
+};
+
+template<typename T_base>
+struct t_override : T_base
+{
+	typedef t_override t_base;
+
+	template<size_t A_n>
+	t_override(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	{
+		this->template f_override<t_type_of<typename T_base::t_what>, T_base>();
 	}
 };
 

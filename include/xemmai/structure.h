@@ -17,8 +17,7 @@ struct t_type_of<t_structure> : t_type
 		static_cast<t_object*>(v_this)->v_type = type;
 		v_revive = v_shared = true;
 		v_derive = &t_type::f_dont_derive;
-		f_scan = f_do_scan;
-		f_finalize = f_do_finalize;
+		f_override<t_type_of, t_type>();
 		v_instantiate = &t_type::f_dont_instantiate;
 	}
 	static void f_do_scan(t_object* a_this, t_scan a_scan);

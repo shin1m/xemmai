@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<std::wstring> : t_derivable<t_holds<std::wstring, t_type_immutable>>
+struct t_type_of<std::wstring> : t_override<t_derivable<t_holds<std::wstring, t_type_immutable>>>
 {
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
@@ -60,19 +60,7 @@ struct t_type_of<std::wstring> : t_derivable<t_holds<std::wstring, t_type_immuta
 	}
 	static void f_define();
 
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
-	{
-		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
-		f_hash = f_do_hash;
-		f_add = f_do_add;
-		f_less = f_do_less;
-		f_less_equal = f_do_less_equal;
-		f_greater = f_do_greater;
-		f_greater_equal = f_do_greater_equal;
-		f_equals = f_do_equals;
-		f_not_equals = f_do_not_equals;
-	}
+	using t_base::t_base;
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_add(t_object* a_this, t_stacked* a_stack);

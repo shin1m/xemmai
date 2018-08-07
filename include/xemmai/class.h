@@ -17,16 +17,12 @@ struct t_type_of<t_type> : t_bears<t_type>
 		static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super->v_this)->v_type = this;
 		v_fixed = v_shared = true;
 		v_derive = &t_type::f_dont_derive;
-		f_scan = f_do_scan;
-		f_finalize = f_do_finalize;
-		v_instantiate = static_cast<void (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_instantiate);
+		f_override<t_type_of, t_base>();
 		v_get_nonowned = static_cast<void (t_type::*)(t_object*, t_object*, t_stacked*)>(&t_type_of::f_do_get_nonowned);
 		v_get = static_cast<t_scoped (t_type::*)(t_object*, t_object*)>(&t_type_of::f_do_get);
 		f_put = f_do_put;
 		f_remove = f_do_remove;
 		f_call_nonowned = f_do_call_nonowned;
-		f_call = f_do_call;
-		f_send = f_do_send;
 	}
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	static void f_do_finalize(t_object* a_this)

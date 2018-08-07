@@ -185,6 +185,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	t_value::v_increments->f_push(v_structure_root);
 	static_cast<t_object*>(v_structure_root)->v_structure = root;
 	auto type_module = new t_type_of<t_module>(t_type_of<t_module>::V_ids, type_object, nullptr);
+	type_module->v_revive = true;
 	v_module_global = t_object::f_allocate(type_module);
 	auto library = new t_library(std::wstring(), nullptr);
 	v_module_global.f_pointer__(library);
@@ -380,10 +381,10 @@ namespace
 template<typename T_context>
 void f_initialize_calls()
 {
-	f_global()->f_type<t_lambda>()->f_call = t_type_of<t_lambda>::f_do_call<t_lambda, T_context>;
-	f_global()->f_type<t_lambda_shared>()->f_call = t_type_of<t_lambda>::f_do_call<t_lambda_shared, T_context>;
-	f_global()->f_type<t_advanced_lambda<t_lambda>>()->f_call = t_type_of<t_advanced_lambda<t_lambda>>::f_do_call<T_context>;
-	f_global()->f_type<t_advanced_lambda<t_lambda_shared>>()->f_call = t_type_of<t_advanced_lambda<t_lambda_shared>>::f_do_call<T_context>;
+	f_global()->f_type<t_lambda>()->f_call = t_type_of<t_lambda>::f__do_call<t_lambda, T_context>;
+	f_global()->f_type<t_lambda_shared>()->f_call = t_type_of<t_lambda>::f__do_call<t_lambda_shared, T_context>;
+	f_global()->f_type<t_advanced_lambda<t_lambda>>()->f_call = t_type_of<t_advanced_lambda<t_lambda>>::f__do_call<T_context>;
+	f_global()->f_type<t_advanced_lambda<t_lambda_shared>>()->f_call = t_type_of<t_advanced_lambda<t_lambda_shared>>::f__do_call<T_context>;
 }
 
 }

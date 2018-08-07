@@ -6,7 +6,7 @@ namespace xemmai
 class t_threading;
 
 template<>
-struct t_type_of<std::mutex> : t_underivable<t_with_traits<t_holds<std::mutex>, true, true>>
+struct t_type_of<std::mutex> : t_override<t_underivable<t_with_traits<t_holds<std::mutex>, true, true>>>
 {
 	typedef t_threading t_extension;
 
@@ -14,16 +14,12 @@ struct t_type_of<std::mutex> : t_underivable<t_with_traits<t_holds<std::mutex>, 
 	static void f_release(std::mutex& a_self);
 	static void f_define(t_threading* a_extension);
 
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
-	{
-		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
-	}
+	using t_base::t_base;
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 
 template<>
-struct t_type_of<std::condition_variable> : t_underivable<t_with_traits<t_holds<std::condition_variable>, true, true>>
+struct t_type_of<std::condition_variable> : t_override<t_underivable<t_with_traits<t_holds<std::condition_variable>, true, true>>>
 {
 	typedef t_threading t_extension;
 
@@ -33,11 +29,7 @@ struct t_type_of<std::condition_variable> : t_underivable<t_with_traits<t_holds<
 	static void f_broadcast(std::condition_variable& a_self);
 	static void f_define(t_threading* a_extension);
 
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
-	{
-		v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_type_of::f_do_construct);
-	}
+	using t_base::t_base;
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 

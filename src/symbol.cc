@@ -38,7 +38,7 @@ void t_symbol::f_revise(t_object* a_this)
 
 void t_type_of<t_symbol>::f_define()
 {
-	v_builtin = true;
+	v_builtin = v_revive = true;
 	t_define<t_symbol, t_object>(f_global(), L"Symbol", v_this)
 		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
 	;

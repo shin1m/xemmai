@@ -59,17 +59,12 @@ public:
 };
 
 template<>
-struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_lambda>, false, true>>>
+struct t_type_of<t_lambda> : t_override<t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_lambda>, false, true>>>>
 {
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))
-	{
-		f_scan = f_do_scan;
-		f_get_at = f_do_get_at;
-	}
+	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	template<typename T, typename T_context>
-	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
+	static size_t f__do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	{
 		auto& p = f_as<T&>(a_this);
 		if (a_n != p.v_arguments) f_throw(a_stack, a_n, L"invalid number of arguments.");
@@ -130,20 +125,16 @@ class t_advanced_lambda : public T_base
 };
 
 template<typename T_base>
-struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>, t_type_of<T_base>>
+struct t_type_of<t_advanced_lambda<T_base>> : t_override<t_holds<t_advanced_lambda<T_base>, t_type_of<T_base>>>
 {
-	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_type_of::t_base(a_ids, a_super, std::move(a_module))
-	{
-		this->f_scan = f_do_scan;
-	}
+	using t_type_of::t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
 		t_type_of::t_base::f_do_scan(a_this, a_scan);
 		a_scan(f_as<t_advanced_lambda<T_base>&>(a_this).v_defaults);
 	}
 	template<typename T_context>
-	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
+	static size_t f__do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	{
 		auto& p = f_as<t_advanced_lambda<T_base>&>(a_this);
 		if (a_n < p.v_minimum) f_throw(a_stack, a_n, L"too few arguments.");
