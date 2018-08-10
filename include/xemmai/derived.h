@@ -45,10 +45,10 @@ struct t_derived : T
 	}
 };
 
-template<typename T>
-t_type* t_type::f_do_derive()
+template<typename T_base>
+t_type* t_derivable<T_base>::f_do_derive()
 {
-	return new t_derived<t_type_of<T>>(t_type_of<T>::V_ids, this, this->v_module);
+	return new t_derived<t_type_of<typename T_base::t_what>>(t_type_of<typename T_base::t_what>::V_ids, this, this->v_module);
 }
 
 }

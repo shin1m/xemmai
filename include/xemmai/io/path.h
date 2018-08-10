@@ -10,7 +10,7 @@ namespace xemmai
 class t_io;
 
 template<>
-struct t_type_of<portable::t_path> : t_override<t_derivable<t_holds<portable::t_path, t_type_immutable>>>
+struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path, t_type_immutable>>
 {
 	typedef t_io t_extension;
 

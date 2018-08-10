@@ -38,7 +38,7 @@ void t_type::f_define()
 	;
 }
 
-t_type* t_type::f_do_derive_object()
+t_type* t_type::f_do_derive()
 {
 	auto p = new t_type(V_ids, this, v_module);
 	p->v_primitive = true;

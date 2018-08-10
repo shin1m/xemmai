@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_native
 {
-	friend struct t_type_of<t_object>;
+	friend struct t_finalizes<t_bears<t_native>>;
 	friend struct t_type_of<t_native>;
 
 	t_extension::t_function v_function;
@@ -25,7 +25,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_native> : t_override<t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_native>, false, true>>>>
+struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_native>, false, true>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);

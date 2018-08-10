@@ -10,7 +10,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_client> : t_override<t_derivable<t_holds<t_client>>>
+struct t_type_of<t_client> : t_derivable<t_holds<t_client>>
 {
 	typedef t_callback_extension t_extension;
 
@@ -21,7 +21,7 @@ struct t_type_of<t_client> : t_override<t_derivable<t_holds<t_client>>>
 };
 
 template<>
-struct t_type_of<t_server> : t_override<t_derivable<t_holds<t_server>>>
+struct t_type_of<t_server> : t_derivable<t_holds<t_server>>
 {
 	typedef t_callback_extension t_extension;
 

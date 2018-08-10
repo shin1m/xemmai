@@ -44,7 +44,7 @@ struct t_fundamental<unsigned long>
 };
 
 template<>
-struct t_type_of<intptr_t> : t_override<t_derivable<t_bears<intptr_t, t_type_immutable>>>
+struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 {
 	template<typename T0>
 	struct t_as

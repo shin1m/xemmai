@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<std::wstring> : t_override<t_derivable<t_holds<std::wstring, t_type_immutable>>>
+struct t_type_of<std::wstring> : t_derivable<t_holds<std::wstring, t_type_immutable>>
 {
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)

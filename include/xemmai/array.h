@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_array
 {
-	friend struct t_type_of<t_object>;
+	friend struct t_finalizes<t_bears<t_array>>;
 	friend struct t_type_of<t_array>;
 
 	static t_slot* f_move_forward(t_slot* a_p, t_slot* a_q)
@@ -127,7 +127,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_array> : t_override<t_derivable<t_holds<t_array>>>
+struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);

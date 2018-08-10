@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_type> : t_bears<t_type>
+struct t_type_of<t_type> : t_underivable<t_bears<t_type>>
 {
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : t_base(a_ids, a_super)
@@ -16,8 +16,6 @@ struct t_type_of<t_type> : t_bears<t_type>
 		t_value::f_increments()->f_push(v_this);
 		static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super->v_this)->v_type = this;
 		v_fixed = v_shared = true;
-		v_derive = &t_type::f_dont_derive;
-		f_override<t_type_of, t_base>();
 		v_get_nonowned = static_cast<void (t_type::*)(t_object*, t_object*, t_stacked*)>(&t_type_of::f_do_get_nonowned);
 		v_get = static_cast<t_scoped (t_type::*)(t_object*, t_object*)>(&t_type_of::f_do_get);
 		f_put = f_do_put;

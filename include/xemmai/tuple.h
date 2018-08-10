@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_tuple> : t_override<t_derivable<t_holds<t_tuple, t_type_immutable>>>
+struct t_type_of<t_tuple> : t_derivable<t_holds<t_tuple, t_type_immutable>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	void f_define();

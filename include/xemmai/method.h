@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_method
 {
-	friend struct t_type_of<t_object>;
+	friend struct t_finalizes<t_bears<t_method, t_type_immutable>>;
 	friend struct t_type_of<t_method>;
 
 	t_slot v_function;
@@ -33,7 +33,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_method> : t_override<t_uninstantiatable<t_underivable<t_holds<t_method, t_type_immutable>>>>
+struct t_type_of<t_method> : t_uninstantiatable<t_underivable<t_holds<t_method, t_type_immutable>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);

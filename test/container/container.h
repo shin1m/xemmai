@@ -13,7 +13,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_pair> : t_override<t_uninstantiatable<t_underivable<t_holds<t_pair>>>>
+struct t_type_of<t_pair> : t_uninstantiatable<t_underivable<t_holds<t_pair>>>
 {
 	static t_scoped f_instantiate(t_container* a_extension, t_scoped&& a_value);
 	static t_type* f_define(t_container* a_extension);
@@ -23,7 +23,7 @@ struct t_type_of<t_pair> : t_override<t_uninstantiatable<t_underivable<t_holds<t
 };
 
 template<>
-struct t_type_of<t_queue> : t_override<t_derivable<t_holds<t_queue>>>
+struct t_type_of<t_queue> : t_derivable<t_holds<t_queue>>
 {
 	typedef t_container t_extension;
 

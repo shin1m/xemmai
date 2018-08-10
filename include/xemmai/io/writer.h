@@ -49,7 +49,7 @@ public:
 }
 
 template<>
-struct t_type_of<io::t_writer> : t_override<t_derivable<t_holds<io::t_writer>>>
+struct t_type_of<io::t_writer> : t_derivable<t_holds<io::t_writer>>
 {
 	typedef t_io t_extension;
 

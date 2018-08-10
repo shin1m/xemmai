@@ -27,7 +27,7 @@ struct t_backtrace
 class t_throwable
 {
 	friend struct t_backtrace;
-	friend struct t_type_of<t_object>;
+	friend struct t_finalizes<t_bears<t_throwable>>;
 	friend struct t_type_of<t_throwable>;
 
 	t_backtrace* v_backtrace = nullptr;
@@ -50,7 +50,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_throwable> : t_override<t_derivable<t_holds<t_throwable>>>
+struct t_type_of<t_throwable> : t_derivable<t_holds<t_throwable>>
 {
 	static void f_define();
 

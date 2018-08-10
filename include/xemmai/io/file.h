@@ -92,7 +92,7 @@ public:
 }
 
 template<>
-struct t_type_of<io::t_file> : t_override<t_derivable<t_holds<io::t_file>>>
+struct t_type_of<io::t_file> : t_derivable<t_holds<io::t_file>>
 {
 	typedef t_io t_extension;
 

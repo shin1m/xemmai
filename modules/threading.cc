@@ -6,7 +6,7 @@ namespace xemmai
 class t_threading;
 
 template<>
-struct t_type_of<std::mutex> : t_override<t_underivable<t_with_traits<t_holds<std::mutex>, true, true>>>
+struct t_type_of<std::mutex> : t_underivable<t_with_traits<t_holds<std::mutex>, true, true>>
 {
 	typedef t_threading t_extension;
 
@@ -19,7 +19,7 @@ struct t_type_of<std::mutex> : t_override<t_underivable<t_with_traits<t_holds<st
 };
 
 template<>
-struct t_type_of<std::condition_variable> : t_override<t_underivable<t_with_traits<t_holds<std::condition_variable>, true, true>>>
+struct t_type_of<std::condition_variable> : t_underivable<t_with_traits<t_holds<std::condition_variable>, true, true>>
 {
 	typedef t_threading t_extension;
 

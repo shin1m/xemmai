@@ -218,14 +218,8 @@ struct t_type_of<t_object>
 		size_t i = t_type_of<T>::V_ids.size() - 1;
 		return i <= v_depth && v_ids[i] == static_cast<t_type_id>(f_type_id<T>);
 	}
-	t_type* f_do_derive_object();
-	template<typename T>
 	t_type* f_do_derive();
-	t_type* f_dont_derive()
-	{
-		return nullptr;
-	}
-	t_type* (t_type::*v_derive)() = &t_type::f_do_derive_object;
+	t_type* (t_type::*v_derive)() = &t_type::f_do_derive;
 	bool f_derives(t_type* a_type);
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
@@ -234,8 +228,6 @@ struct t_type_of<t_object>
 	static void f_do_finalize(t_object* a_this)
 	{
 	}
-	template<typename T>
-	static void f__do_finalize(t_object* a_this);
 	void (*f_finalize)(t_object*) = f_do_finalize;
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 	t_scoped (t_type::*v_construct)(t_stacked*, size_t) = &t_type::f_do_construct;
@@ -244,10 +236,6 @@ struct t_type_of<t_object>
 		return (this->*v_construct)(a_stack, a_n);
 	}
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
-	void f_dont_instantiate(t_stacked* a_stack, size_t a_n)
-	{
-		f_throw(a_stack, a_n, L"uninstantiatable.");
-	}
 	void (t_type::*v_instantiate)(t_stacked*, size_t) = &t_type::f_do_instantiate;
 	t_scoped f_get_nonowned(t_object* a_this, t_object* a_key);
 	void f_do_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
@@ -328,6 +316,7 @@ struct t_type_of<t_object>
 	template<typename T, typename U>
 	void f_override()
 	{
+		if (&T::f_do_derive != &U::f_do_derive) v_derive = static_cast<t_type* (t_type::*)()>(&T::f_do_derive);
 		if (T::f_do_scan != U::f_do_scan) f_scan = T::f_do_scan;
 		if (T::f_do_finalize != U::f_do_finalize) f_finalize = T::f_do_finalize;
 		if (&T::f_do_construct != &U::f_do_construct) v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&T::f_do_construct);
@@ -406,12 +395,6 @@ inline bool f_is(T1&& a_object)
 	return t_type_of<typename t_fundamental<T0>::t_type>::template t_is<T0>::f_call(std::forward<T1>(a_object));
 }
 
-template<typename T>
-void t_type::f__do_finalize(t_object* a_this)
-{
-	delete &f_as<T&>(a_this);
-}
-
 XEMMAI__PORTABLE__EXPORT void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name);
 
 template<typename T>
@@ -434,38 +417,54 @@ inline void t_slot_of<T>::f_construct(t_object* a_value)
 }
 
 template<typename T, typename T_base = t_type>
-struct t_bears : T_base
+struct t_derives : T_base
 {
 	typedef T t_what;
+	typedef t_derives t_base;
+
+	template<size_t A_n>
+	t_derives(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : T_base(a_ids, a_super)
+	{
+		this->template f_override<t_type_of<T>, T_base>();
+	}
+	template<size_t A_n>
+	t_derives(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	{
+		this->template f_override<t_type_of<T>, T_base>();
+	}
+};
+
+template<typename T, typename T_base = t_type>
+struct t_bears : t_derives<T, T_base>
+{
 	typedef t_bears t_base;
 
 	static constexpr std::array<t_type_id, T_base::V_ids.size() + 1> V_ids = f_append(T_base::V_ids, std::make_index_sequence<T_base::V_ids.size()>(), static_cast<t_type_id>(f_type_id<T>));
 
-	using T_base::T_base;
+	using t_derives<T, T_base>::t_derives;
 };
 
 template<typename T, typename T_base>
 constexpr std::array<t_type_id, T_base::V_ids.size() + 1> t_bears<T, T_base>::V_ids;
 
-template<typename T, typename T_base = t_type>
+template<typename T_base>
 struct t_finalizes : T_base
 {
-	typedef T t_what;
 	typedef t_finalizes t_base;
 
-	template<size_t A_n>
-	t_finalizes(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	using T_base::T_base;
+	static void f_do_finalize(t_object* a_this)
 	{
-		this->f_finalize = T_base::template f__do_finalize<T>;
+		delete &f_as<typename T_base::t_what&>(a_this);
 	}
 };
 
 template<typename T, typename T_base = t_type>
-struct t_holds : t_finalizes<T, t_bears<T, T_base>>
+struct t_holds : t_finalizes<t_bears<T, T_base>>
 {
 	typedef t_holds t_base;
 
-	using t_finalizes<T, t_bears<T, T_base>>::t_finalizes;
+	using t_finalizes<t_bears<T, T_base>>::t_finalizes;
 };
 
 template<typename T_base, bool A_fixed, bool A_shared>
@@ -486,11 +485,8 @@ struct t_derivable : T_base
 {
 	typedef t_derivable t_base;
 
-	template<size_t A_n>
-	t_derivable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
-	{
-		this->v_derive = &t_type::f_do_derive<typename T_base::t_what>;
-	}
+	using T_base::T_base;
+	t_type* f_do_derive();
 };
 
 template<typename T_base>
@@ -498,10 +494,10 @@ struct t_underivable : T_base
 {
 	typedef t_underivable t_base;
 
-	template<size_t A_n>
-	t_underivable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	using T_base::T_base;
+	t_type* f_do_derive()
 	{
-		this->v_derive = &t_type::f_dont_derive;
+		return nullptr;
 	}
 };
 
@@ -510,22 +506,10 @@ struct t_uninstantiatable : T_base
 {
 	typedef t_uninstantiatable t_base;
 
-	template<size_t A_n>
-	t_uninstantiatable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	using T_base::T_base;
+	void f_do_instantiate(t_stacked* a_stack, size_t a_n)
 	{
-		this->v_instantiate = &t_type::f_dont_instantiate;
-	}
-};
-
-template<typename T_base>
-struct t_override : T_base
-{
-	typedef t_override t_base;
-
-	template<size_t A_n>
-	t_override(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
-	{
-		this->template f_override<t_type_of<typename T_base::t_what>, T_base>();
+		f_throw(a_stack, a_n, L"uninstantiatable.");
 	}
 };
 

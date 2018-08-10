@@ -45,7 +45,7 @@ public:
 }
 
 template<>
-struct t_type_of<io::t_reader> : t_override<t_derivable<t_holds<io::t_reader>>>
+struct t_type_of<io::t_reader> : t_derivable<t_holds<io::t_reader>>
 {
 	typedef t_io t_extension;
 

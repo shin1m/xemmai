@@ -13,7 +13,7 @@ class t_lambda
 {
 	friend struct t_code;
 	friend struct t_context;
-	friend struct t_type_of<t_object>;
+	friend struct t_finalizes<t_bears<t_lambda>>;
 	friend struct t_type_of<t_lambda>;
 
 protected:
@@ -59,7 +59,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_lambda> : t_override<t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_lambda>, false, true>>>>
+struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_with_traits<t_holds<t_lambda>, false, true>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
@@ -76,7 +76,7 @@ struct t_type_of<t_lambda> : t_override<t_uninstantiatable<t_underivable<t_with_
 class t_lambda_shared : public t_lambda
 {
 	friend struct t_lambda;
-	friend struct t_type_of<t_object>;
+	friend struct t_finalizes<t_bears<t_lambda_shared, t_type_of<t_lambda>>>;
 	friend struct t_type_of<t_lambda>;
 	friend struct t_type_of<t_lambda_shared>;
 
@@ -108,7 +108,7 @@ template<typename T_base>
 class t_advanced_lambda : public T_base
 {
 	friend struct t_lambda;
-	friend struct t_type_of<t_object>;
+	friend struct t_finalizes<t_bears<t_advanced_lambda, t_type_of<T_base>>>;
 	friend struct t_type_of<t_advanced_lambda>;
 
 	t_slot v_defaults;
@@ -125,7 +125,7 @@ class t_advanced_lambda : public T_base
 };
 
 template<typename T_base>
-struct t_type_of<t_advanced_lambda<T_base>> : t_override<t_holds<t_advanced_lambda<T_base>, t_type_of<T_base>>>
+struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>, t_type_of<T_base>>
 {
 	using t_type_of::t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

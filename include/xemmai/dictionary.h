@@ -134,14 +134,14 @@ public:
 };
 
 template<>
-struct t_type_of<t_dictionary::t_table> : t_override<t_uninstantiatable<t_underivable<t_finalizes<t_dictionary::t_table>>>>
+struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_finalizes<t_derives<t_dictionary::t_table>>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 };
 
 template<>
-struct t_type_of<t_dictionary> : t_override<t_derivable<t_holds<t_dictionary>>>
+struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
