@@ -21,9 +21,6 @@ protected:
 	t_slot v_scope;
 	t_slot v_code;
 	size_t v_arguments;
-#ifdef XEMMAI_ENABLE_JIT
-	size_t (*v_jit_loop)(t_context*);
-#endif
 	void** v_instructions;
 	size_t v_size;
 	size_t v_privates;
@@ -36,9 +33,6 @@ protected:
 		v_arguments = code.v_arguments;
 		v_privates = code.v_privates;
 		v_instructions = &code.v_instructions[0];
-#ifdef XEMMAI_ENABLE_JIT
-		v_jit_loop = code.v_jit_loop;
-#endif
 	}
 	~t_lambda() = default;
 	template<typename T_context>

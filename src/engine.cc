@@ -296,9 +296,6 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		static_cast<t_object*>(writer)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"error"), std::move(writer));
 	}
-#ifdef XEMMAI_ENABLE_JIT
-	f_jit_construct();
-#endif
 }
 
 t_engine::~t_engine()
@@ -348,9 +345,6 @@ t_engine::~t_engine()
 	assert(!v_thread__internals);
 	v_dictionary__entry__pool.f_clear();
 	v_object__pool.f_clear();
-#ifdef XEMMAI_ENABLE_JIT
-	f_jit_destruct();
-#endif
 	if (v_verbose) {
 		bool b = false;
 		std::fprintf(stderr, "statistics:\n");

@@ -1,17 +1,8 @@
 bin_PROGRAMS = xemmai
-if JIT
-AM_CPPFLAGS = -DXEMMAI_ENABLE_JIT
-AM_LDFLAGS = $(LLVM_LDFLAGS)
-LDADD = libjit.a $(LLVM_LIBS)
-else
-AM_CPPFLAGS =
-AM_LDFLAGS =
-LDADD =
-endif
-AM_CPPFLAGS += -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai-$(VERSION)"
+AM_CPPFLAGS = -I$(top_srcdir)/include -DXEMMAI_MODULE_PATH="$(libdir)/xemmai-$(VERSION)"
 AM_CXXFLAGS =
-AM_LDFLAGS += -rdynamic
-LDADD += -ldl -lpthread -lrt
+AM_LDFLAGS = -rdynamic
+LDADD = -ldl -lpthread -lrt
 if DEBUG
 AM_CXXFLAGS += -O0 -g
 else
@@ -60,9 +51,3 @@ xemmai_SOURCES = \
 	io__path.cc \
 	engine.cc \
 	main.cc
-if JIT
-noinst_LIBRARIES = libjit.a
-libjit_a_CPPFLAGS = $(LLVM_CPPFLAGS) $(AM_CPPFLAGS)
-libjit_a_CXXFLAGS = $(LLVM_CXXFLAGS) $(AM_CXXFLAGS) -Wno-non-virtual-dtor -Wno-switch
-libjit_a_SOURCES = jit.cc
-endif

@@ -39,18 +39,10 @@ struct t_module
 struct t_script : t_module
 {
 	std::vector<std::unique_ptr<t_slot>> v_slots;
-#ifdef XEMMAI_ENABLE_JIT
-	void* v_jit;
 
-	t_script(const std::wstring& a_path);
-	virtual ~t_script();
-	void f_jit_add(void* a_module);
-	uint64_t f_jit_find(const std::string& a_name);
-#else
 	t_script(const std::wstring& a_path) : t_module(a_path)
 	{
 	}
-#endif
 	virtual void f_scan(t_scan a_scan);
 	t_slot& f_slot(t_scoped&& a_p)
 	{

@@ -19,10 +19,6 @@ struct t_debugger
 	virtual void f_loaded(t_object* a_thread) = 0;
 };
 
-#ifdef XEMMAI_ENABLE_JIT
-t_engine_jit* f_jit();
-#endif
-
 class t_engine : public t_value::t_collector
 {
 	friend class t_object;
@@ -48,10 +44,6 @@ class t_engine : public t_value::t_collector
 	friend class t_dictionary::t_entry;
 	friend class t_global;
 	friend struct t_safe_region;
-#ifdef XEMMAI_ENABLE_JIT
-	friend struct t_jit_generator;
-	friend t_engine_jit* f_jit();
-#endif
 
 	struct t_synchronizer
 	{
@@ -148,12 +140,6 @@ class t_engine : public t_value::t_collector
 	bool v_debug__stopping = false;
 	size_t v_debug__safe = 0;
 	t_object* v_debug__stepping = nullptr;
-#ifdef XEMMAI_ENABLE_JIT
-	t_engine_jit* v_jit = nullptr;
-
-	void f_jit_construct();
-	void f_jit_destruct();
-#endif
 
 	void f_pools__return();
 	t_object* f_object__pool__allocate()

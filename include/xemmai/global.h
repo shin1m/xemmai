@@ -797,11 +797,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 inline size_t t_code::f_loop(t_context& a_context)
 {
 	try {
-#ifdef XEMMAI_ENABLE_JIT
-		return a_context.v_lambda->v_jit_loop(a_context);
-#else
 		return f_loop(&a_context);
-#endif
 	} catch (const t_scoped& thrown) {
 		a_context.f_backtrace(thrown);
 		throw thrown;

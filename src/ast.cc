@@ -113,9 +113,6 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 {
 	auto code = f_code(a_emit.v_module);
 	auto& code1 = f_as<t_code&>(code);
-#ifdef XEMMAI_ENABLE_JIT
-	f_jit_emit_with_lock(a_emit, code1);
-#else
 	auto scope0 = a_emit.v_scope;
 	a_emit.v_scope = this;
 	auto code0 = a_emit.v_code;
@@ -157,7 +154,6 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.v_targets = targets0;
 	a_emit.v_safe_positions = safe_positions0;
 	if (a_emit.v_safe_points) f_safe_points(code1, *a_emit.v_safe_points, safe_positions1);
-#endif
 	a_emit.f_emit_safe_point(this);
 	if (v_variadic || v_defaults.size() > 0) {
 		for (size_t i = 0; i < v_defaults.size(); ++i) v_defaults[i]->f_emit(a_emit, false, false);
@@ -1251,10 +1247,6 @@ t_scoped t_emit::operator()(ast::t_scope& a_scope)
 		for (auto& pair : a_scope.v_variables) v_code->v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
 		for (auto& x : safe_positions) v_safe_points->emplace(std::make_pair(std::get<0>(x), &v_code->v_instructions[std::get<1>(x)]), std::get<2>(x));
 	}
-#ifdef XEMMAI_ENABLE_JIT
-	f_jit_install();
-	v_code->v_jit_loop = t_code::f_jit_loop_nojit;
-#endif
 	return code;
 }
 

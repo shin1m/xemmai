@@ -37,28 +37,6 @@ AC_ARG_ENABLE(
 	[profile=false]
 )
 AM_CONDITIONAL([PROFILE], [test x$profile = xtrue])
-AC_ARG_ENABLE(
-	[jit],
-	AS_HELP_STRING([--enable-jit], [turn on jit compilation]),
-	[case "${enableval}" in
-	  yes) jit=true ;;
-	  no) jit=false ;;
-	  *) AC_MSG_ERROR([bad value ${enableval} for --enable-jit]) ;;
-	 esac],
-	[jit=false]
-)
-AM_CONDITIONAL([JIT], [test x$jit = xtrue])
-
-if test "x${jit}" = xtrue; then
-	LLVM_CPPFLAGS=`llvm-config --cppflags`
-	LLVM_CXXFLAGS=`llvm-config --cxxflags`
-	LLVM_LDFLAGS=`llvm-config --ldflags`
-	LLVM_LIBS=`llvm-config --system-libs --libs orcjit nativecodegen | paste -s -d ' '`
-	AC_SUBST(LLVM_CPPFLAGS)
-	AC_SUBST(LLVM_CXXFLAGS)
-	AC_SUBST(LLVM_LDFLAGS)
-	AC_SUBST(LLVM_LIBS)
-fi
 
 AM_CONFIG_HEADER([include/xemmai/portable/configure.h])
 AC_CONFIG_FILES([

@@ -267,12 +267,6 @@ struct t_code
 #endif
 	static void f_try(t_context* a_context);
 	static size_t f_loop(t_context& a_context);
-#ifdef XEMMAI_ENABLE_JIT
-	static size_t f_jit_loop_nojit(t_context* a_context);
-	static t_try f_jit_try(t_context* a_context, t_stacked* a_stack, t_try (*a_try)(t_context*), t_try (*a_catch)(t_context*, const t_scoped&), void (*a_finally)(t_context*));
-	static bool f_jit_catch_stack(t_context* a_context, t_stacked* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
-	static bool f_jit_catch_scope(t_context* a_context, t_stacked* a_stack, const t_scoped& a_thrown, void** a_caught, size_t a_index);
-#endif
 	static t_scoped f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 
 	t_slot v_module;
@@ -288,9 +282,6 @@ struct t_code
 	std::set<std::vector<bool>> v_stack_patterns;
 	std::vector<t_stack_map> v_stack_map;
 	std::map<std::wstring, t_variable> v_variables;
-#ifdef XEMMAI_ENABLE_JIT
-	size_t (*v_jit_loop)(t_context*);
-#endif
 
 	t_code(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_module(a_module), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
 	{

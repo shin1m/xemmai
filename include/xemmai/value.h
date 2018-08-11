@@ -26,9 +26,6 @@ struct t_fiber;
 struct t_thread;
 struct t_code;
 t_engine* f_engine();
-#ifdef XEMMAI_ENABLE_JIT
-struct t_engine_jit;
-#endif
 
 typedef t_type_of<t_object> t_type;
 
@@ -44,9 +41,6 @@ class t_value
 	friend struct t_thread;
 	friend struct t_code;
 	friend t_engine* f_engine();
-#ifdef XEMMAI_ENABLE_JIT
-	friend struct t_engine_jit;
-#endif
 
 public:
 	class t_collector
