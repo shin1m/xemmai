@@ -54,13 +54,7 @@ class t_bytes
 public:
 	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
 
-	XEMMAI__PORTABLE__EXPORT std::wstring f_string() const;
-	intptr_t f_hash() const
-	{
-		intptr_t n = 0;
-		for (size_t i = 1; i < v_size; ++i) n += (*this)[i];
-		return n;
-	}
+	std::wstring f_string() const;
 	intptr_t f_get_at(intptr_t a_index) const
 	{
 		f_validate(a_index);
@@ -96,20 +90,12 @@ template<>
 struct t_type_of<t_bytes> : t_derivable<t_holds<t_bytes>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
-	static bool f__equals(const t_value& a_self, const t_value& a_other);
-	static bool f__not_equals(const t_value& a_self, const t_value& a_other)
-	{
-		return !f__equals(a_self, a_other);
-	}
 	static void f_define();
 
 	using t_base::t_base;
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
 };
 
 }

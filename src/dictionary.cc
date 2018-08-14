@@ -167,25 +167,26 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 	t_dictionary::t_iterator i(dictionary);
 	t_scoped x;
 	t_scoped y;
+	if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
 	{
-		t_with_lock_for_read lock(a_self);
-		if (!i.f_entry()) return L"{}";
+		if (!i.f_entry()) return false;
 		x = i.f_entry()->f_key();
 		y = i.f_entry()->v_value;
-	}
+		return true;
+	})) return L"{}";
 	x = x.f_invoke(f_global()->f_symbol_string());
 	f_check<const std::wstring&>(x, L"value");
 	y = y.f_invoke(f_global()->f_symbol_string());
 	f_check<const std::wstring&>(y, L"value");
 	std::wstring s = f_as<const std::wstring&>(x) + L": " + f_as<const std::wstring&>(y);
-	while (true) {
-		{
-			t_with_lock_for_read lock(a_self);
-			i.f_next();
-			if (!i.f_entry()) break;
-			x = i.f_entry()->f_key();
-			y = i.f_entry()->v_value;
-		}
+	while (f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	{
+		i.f_next();
+		if (!i.f_entry()) return false;
+		x = i.f_entry()->f_key();
+		y = i.f_entry()->v_value;
+		return true;
+	})) {
 		x = x.f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(x, L"value");
 		y = y.f_invoke(f_global()->f_symbol_string());
@@ -195,74 +196,76 @@ std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
 	return L'{' + s + L'}';
 }
 
-intptr_t t_type_of<t_dictionary>::f__hash(const t_value& a_self)
+void t_type_of<t_dictionary>::f_clear(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<const t_dictionary&>(a_self);
-	intptr_t n = 0;
-	t_dictionary::t_iterator i(dictionary);
-	while (true) {
-		t_scoped x;
-		t_scoped y;
-		{
-			t_with_lock_for_read lock(a_self);
-			if (!i.f_entry()) break;
-			x = i.f_entry()->f_key();
-			y = i.f_entry()->v_value;
-			i.f_next();
-		}
-		x = x.f_hash();
-		f_check<intptr_t>(x, L"value");
-		n ^= f_as<intptr_t>(x);
-		y = y.f_hash();
-		f_check<intptr_t>(y, L"value");
-		n ^= f_as<intptr_t>(y);
-	}
-	return n;
+	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		f_as<t_dictionary&>(a_self).f_clear();
+	});
 }
 
-bool t_type_of<t_dictionary>::f__equals(const t_value& a_self, const t_value& a_other)
+size_t t_type_of<t_dictionary>::f_size(const t_value& a_self)
 {
-	if (a_self == a_other) return true;
 	f_check<t_dictionary>(a_self, L"this");
-	if (!f_is<t_dictionary>(a_other)) return false;
-	auto& d0 = f_as<const t_dictionary&>(a_self);
-	auto& d1 = f_as<const t_dictionary&>(a_other);
-	if (d0.f_size() != d1.f_size()) return false;
-	t_dictionary::t_iterator i(d0);
-	while (true) {
-		t_scoped x;
-		t_scoped y;
-		{
-			t_with_lock_for_read lock0(a_self);
-			t_with_lock_for_read lock1(a_other);
-			if (!i.f_entry()) break;
-			t_dictionary::t_entry* field = d1.f_find(i.f_entry()->f_key());
-			if (!field) return false;
-			x = i.f_entry()->v_value;
-			y = field->v_value;
-			i.f_next();
-		}
-		if (!f_as<bool>(x.f_equals(y))) return false;
-	}
-	return false;
+	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	{
+		return f_as<const t_dictionary&>(a_self).f_size();
+	});
+}
+
+t_scoped t_type_of<t_dictionary>::f__get_at(const t_value& a_self, const t_value& a_key)
+{
+	f_check<t_dictionary>(a_self, L"this");
+	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	{
+		return t_scoped(f_as<const t_dictionary&>(a_self).f_get(a_key));
+	});
+}
+
+t_scoped t_type_of<t_dictionary>::f__set_at(const t_value& a_self, const t_value& a_key, t_scoped&& a_value)
+{
+	f_check<t_dictionary>(a_self, L"this");
+	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		return f_as<t_dictionary&>(a_self).f_put(a_key, std::move(a_value));
+	});
+}
+
+bool t_type_of<t_dictionary>::f_has(const t_value& a_self, const t_value& a_key)
+{
+	f_check<t_dictionary>(a_self, L"this");
+	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	{
+		return f_as<t_dictionary&>(a_self).f_has(a_key);
+	});
+}
+
+t_scoped t_type_of<t_dictionary>::f_remove(const t_value& a_self, const t_value& a_key)
+{
+	f_check<t_dictionary>(a_self, L"this");
+	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		return f_as<t_dictionary&>(a_self).f_remove(a_key);
+	});
 }
 
 void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_callable)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	auto& d0 = f_as<const t_dictionary&>(a_self);
-	t_dictionary::t_iterator i(d0);
+	auto& dictionary = f_as<const t_dictionary&>(a_self);
+	t_dictionary::t_iterator i(dictionary);
 	while (true) {
 		t_scoped key;
 		t_scoped value;
+		if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
 		{
-			t_with_lock_for_read lock0(a_self);
-			if (!i.f_entry()) break;
+			if (!i.f_entry()) return false;
 			key = i.f_entry()->f_key();
 			value = i.f_entry()->v_value;
 			i.f_next();
-		}
+			return true;
+		})) break;
 		a_callable(std::move(key), std::move(value));
 	}
 }
@@ -273,15 +276,12 @@ void t_type_of<t_dictionary>::f_define()
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f__hash>())
-		(f_global()->f_symbol_get_at(), t_member<const t_value&(t_dictionary::*)(const t_value&) const, &t_dictionary::f_get, t_with_lock_for_read>())
-		(f_global()->f_symbol_set_at(), t_member<t_scoped(t_dictionary::*)(const t_value&, t_scoped&&), &t_dictionary::f_put, t_with_lock_for_write>())
-		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f__equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f__not_equals>())
-		(L"clear", t_member<void(t_dictionary::*)(), &t_dictionary::f_clear, t_with_lock_for_write>())
-		(L"size", t_member<size_t(t_dictionary::*)() const, &t_dictionary::f_size, t_with_lock_for_read>())
-		(L"has", t_member<bool(t_dictionary::*)(const t_value&) const, &t_dictionary::f_has, t_with_lock_for_read>())
-		(L"remove", t_member<t_scoped(t_dictionary::*)(const t_value&), &t_dictionary::f_remove, t_with_lock_for_write>())
+		(L"clear", t_member<void(*)(const t_value&), f_clear>())
+		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_value&), f_size>())
+		(f_global()->f_symbol_get_at(), t_member<t_scoped(*)(const t_value&, const t_value&), f__get_at>())
+		(f_global()->f_symbol_set_at(), t_member<t_scoped(*)(const t_value&, const t_value&, t_scoped&&), f__set_at>())
+		(L"has", t_member<bool(*)(const t_value&, const t_value&), f_has>())
+		(L"remove", t_member<t_scoped(*)(const t_value&, const t_value&), f_remove>())
 		(L"each", t_member<void(*)(const t_value&, const t_value&), f_each>())
 	;
 }
@@ -308,16 +308,13 @@ t_scoped t_type_of<t_dictionary>::f_do_construct(t_stacked* a_stack, size_t a_n)
 	return p;
 }
 
-void t_type_of<t_dictionary>::f_do_hash(t_object* a_this, t_stacked* a_stack)
-{
-	a_stack[0].f_construct(f__hash(t_value(a_this)));
-}
-
 size_t t_type_of<t_dictionary>::f_do_get_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
-	t_with_lock_for_read lock(a_this);
-	a_stack[0].f_construct(f_as<const t_dictionary&>(a_this).f_get(a0.v_p));
+	f_owned_or_shared<t_with_lock_for_read>(a_this, [&]
+	{
+		a_stack[0].f_construct(f_as<const t_dictionary&>(a_this).f_get(a0.v_p));
+	});
 	return -1;
 }
 
@@ -325,22 +322,10 @@ size_t t_type_of<t_dictionary>::f_do_set_at(t_object* a_this, t_stacked* a_stack
 {
 	t_destruct<> a0(a_stack[2]);
 	t_scoped a1 = std::move(a_stack[3]);
-	t_with_lock_for_write lock(a_this);
-	a_stack[0].f_construct(f_as<t_dictionary&>(a_this).f_put(a0.v_p, std::move(a1)));
-	return -1;
-}
-
-size_t t_type_of<t_dictionary>::f_do_equals(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__equals(a_this, a0.v_p));
-	return -1;
-}
-
-size_t t_type_of<t_dictionary>::f_do_not_equals(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__not_equals(a_this, a0.v_p));
+	f_owned_or_shared<t_with_lock_for_write>(a_this, [&]
+	{
+		a_stack[0].f_construct(f_as<t_dictionary&>(a_this).f_put(a0.v_p, std::move(a1)));
+	});
 	return -1;
 }
 

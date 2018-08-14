@@ -8,7 +8,7 @@ namespace xemmai
 namespace
 {
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped f_add(t_object* a_self, const t_value& a_value)
+XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped f_add(t_object* a_self, t_scoped&& a_value)
 {
 	auto& s0 = f_as<const std::wstring&>(a_self);
 	if (f_is<std::wstring>(a_value)) {
@@ -23,9 +23,9 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped f_add(t_object* a_self, const t_
 	return s1.empty() ? t_scoped(a_self) : f_global()->f_as(s0 + s1);
 }
 
-inline t_scoped f_add(const t_value& a_self, const t_value& a_value)
+inline t_scoped f_add(const t_value& a_self, t_scoped&& a_value)
 {
-	return f_add(static_cast<t_object*>(a_self), a_value);
+	return f_add(static_cast<t_object*>(a_self), std::move(a_value));
 }
 
 }
@@ -47,7 +47,7 @@ void t_type_of<std::wstring>::f_define()
 		(t_construct<const std::wstring&>())
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(t_scoped&&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const std::wstring&), f__hash>())
-		(f_global()->f_symbol_add(), t_member<t_scoped(*)(const t_value&, const t_value&), xemmai::f_add>())
+		(f_global()->f_symbol_add(), t_member<t_scoped(*)(const t_value&, t_scoped&&), xemmai::f_add>())
 		(f_global()->f_symbol_less(), t_member<bool(*)(const std::wstring&, const std::wstring&), f__less>())
 		(f_global()->f_symbol_less_equal(), t_member<bool(*)(const std::wstring&, const std::wstring&), f__less_equal>())
 		(f_global()->f_symbol_greater(), t_member<bool(*)(const std::wstring&, const std::wstring&), f__greater>())
@@ -76,7 +76,7 @@ void t_type_of<std::wstring>::f_do_hash(t_object* a_this, t_stacked* a_stack)
 size_t t_type_of<std::wstring>::f_do_add(t_object* a_this, t_stacked* a_stack)
 {
 	t_scoped a0 = std::move(a_stack[2]);
-	a_stack[0].f_construct(xemmai::f_add(a_this, a0));
+	a_stack[0].f_construct(xemmai::f_add(a_this, std::move(a0)));
 	return -1;
 }
 

@@ -1,6 +1,10 @@
 system = Module("system"
 print = system.out.write_line
 assert = @(x) x || throw Throwable("Assertion failed."
+assert_sequence = @(xs, ys)
+	xs.size() == ys.size() || throw Throwable("xs.size() must be " + ys.size() + " but was " + xs.size() + "."
+	for i = 0; i < xs.size(); i = i + 1
+		xs[i] == ys[i] || throw Throwable("xs[" + i + "] must be " + ys[i] + " but was " + xs[i] + "."
 
 a = ["one", 2
 print(a
@@ -42,132 +46,132 @@ b.push(1
 b.push(2
 b.push(3
 print(b
-assert(b == [1, 2, 3]
+assert_sequence(b, [1, 2, 3
 
 b.insert(2, "four"
 print(b
-assert(b == [1, 2, "four", 3]
+assert_sequence(b, [1, 2, "four", 3
 
 print(b.remove(2
 print(b
-assert(b == [1, 2, 3]
+assert_sequence(b, [1, 2, 3
 
 b.push(4
 b.shift(
 print(b
-assert(b == [2, 3, 4]
+assert_sequence(b, [2, 3, 4
 
 b.insert(2, "five"
 print(b
-assert(b == [2, 3, "five", 4]
+assert_sequence(b, [2, 3, "five", 4
 
 print(b.remove(2
 print(b
-assert(b == [2, 3, 4]
+assert_sequence(b, [2, 3, 4
 
 b.push(5
 b.shift(
 print(b
-assert(b == [3, 4, 5]
+assert_sequence(b, [3, 4, 5
 
 b.insert(2, "six"
 print(b
-assert(b == [3, 4, "six", 5]
+assert_sequence(b, [3, 4, "six", 5
 
 print(b.remove(2
 print(b
-assert(b == [3, 4, 5]
+assert_sequence(b, [3, 4, 5
 
 b.push(6
 b.shift(
 print(b
-assert(b == [4, 5, 6]
+assert_sequence(b, [4, 5, 6
 
 b.insert(2, "seven"
 print(b
-assert(b == [4, 5, "seven", 6]
+assert_sequence(b, [4, 5, "seven", 6
 
 print(b.remove(2
 print(b
-assert(b == [4, 5, 6]
+assert_sequence(b, [4, 5, 6
 
 b.push(7
 b.shift(
 print(b
-assert(b == [5, 6, 7]
+assert_sequence(b, [5, 6, 7
 
 b.insert(2, "eight"
 print(b
-assert(b == [5, 6, "eight", 7]
+assert_sequence(b, [5, 6, "eight", 7
 
 print(b.remove(2
 print(b
-assert(b == [5, 6, 7]
+assert_sequence(b, [5, 6, 7
 
 b.push(8
 b.shift(
 print(b
-assert(b == [6, 7, 8]
+assert_sequence(b, [6, 7, 8
 
 b.insert(1, "five"
 print(b
-assert(b == [6, "five", 7, 8]
+assert_sequence(b, [6, "five", 7, 8
 
 print(b.remove(1
 print(b
-assert(b == [6, 7, 8]
+assert_sequence(b, [6, 7, 8
 
 b.unshift(5
 b.pop(
 print(b
-assert(b == [5, 6, 7]
+assert_sequence(b, [5, 6, 7
 
 b.insert(1, "four"
 print(b
-assert(b == [5, "four", 6, 7]
+assert_sequence(b, [5, "four", 6, 7
 
 print(b.remove(1
 print(b
-assert(b == [5, 6, 7]
+assert_sequence(b, [5, 6, 7
 
 b.unshift(4
 b.pop(
 print(b
-assert(b == [4, 5, 6]
+assert_sequence(b, [4, 5, 6
 
 b.insert(1, "three"
 print(b
-assert(b == [4, "three", 5, 6]
+assert_sequence(b, [4, "three", 5, 6
 
 print(b.remove(1
 print(b
-assert(b == [4, 5, 6]
+assert_sequence(b, [4, 5, 6
 
 b.unshift(3
 b.pop(
 print(b
-assert(b == [3, 4, 5]
+assert_sequence(b, [3, 4, 5
 
 b.insert(1, "two"
 print(b
-assert(b == [3, "two", 4, 5]
+assert_sequence(b, [3, "two", 4, 5
 
 print(b.remove(1
 print(b
-assert(b == [3, 4, 5]
+assert_sequence(b, [3, 4, 5
 
 b.unshift(2
 b.pop(
 print(b
-assert(b == [2, 3, 4]
+assert_sequence(b, [2, 3, 4
 
 b.insert(1, "one"
 print(b
-assert(b == [2, "one", 3, 4]
+assert_sequence(b, [2, "one", 3, 4
 
 print(b.remove(1
 print(b
-assert(b == [2, 3, 4]
+assert_sequence(b, [2, 3, 4
 
 Foo = Class(Array) :: @
 	$__construct = @(*xs) :$^__construct[$](0, *xs
@@ -175,4 +179,4 @@ Foo = Class(Array) :: @
 
 foo = Foo(1, 2, 3
 print(foo
-assert(foo == [0, 1, 2, 3, 4]
+assert_sequence(foo, [0, 1, 2, 3, 4

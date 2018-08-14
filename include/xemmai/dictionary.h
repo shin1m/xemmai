@@ -145,23 +145,20 @@ struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
-	static intptr_t f__hash(const t_value& a_self);
-	static bool f__equals(const t_value& a_self, const t_value& a_other);
-	static bool f__not_equals(const t_value& a_self, const t_value& a_other)
-	{
-		return !f__equals(a_self, a_other);
-	}
+	static void f_clear(const t_value& a_self);
+	static size_t f_size(const t_value& a_self);
+	static t_scoped f__get_at(const t_value& a_self, const t_value& a_key);
+	static t_scoped f__set_at(const t_value& a_self, const t_value& a_key, t_scoped&& a_value);
+	static bool f_has(const t_value& a_self, const t_value& a_key);
+	static t_scoped f_remove(const t_value& a_self, const t_value& a_key);
 	static void f_each(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
 };
 
 inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(f_as<const t_table&>(a_dictionary.v_table)), v_i(0), v_entry(nullptr)

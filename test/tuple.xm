@@ -5,7 +5,7 @@ assert = @(x) x || throw Throwable("Assertion failed."
 t = '(
 print(t
 assert(t.size() == 0
-assert(t == Tuple()
+assert(t == Tuple(
 
 t = '("one", 2, 'three, 4.0
 print(t
@@ -28,4 +28,4 @@ Foo = Class(Tuple) :: @
 
 foo = Foo(1, 2, 3
 print(foo
-assert(foo == '(0, 1, 2, 3)
+assert(foo == '(0, 1, 2, 3

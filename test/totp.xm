@@ -121,19 +121,23 @@ hotp = @(key, c)
 	(s[ox] << 8 * ob | (ob != 0 ? s[ox + 1] >> 8 * (4 - ob) : 0)) & 0x7FFFFFFF
 
 assert = @(x) x || throw Throwable("Assertion failed."
+assert_sequence = @(xs, ys)
+	xs.size() == ys.size() || throw Throwable("xs.size() must be " + ys.size() + " but was " + xs.size() + "."
+	for i = 0; i < xs.size(); i = i + 1
+		xs[i] == ys[i] || throw Throwable("xs[" + i + "] must be " + ys[i] + " but was " + xs[i] + "."
 
 test_base32_decode = @(input, expected)
 	x = base32_decode(input
 	#print_int32s(x
 	#print_int32s(expected
-	assert(x == expected
-test_base32_decode("", []
-test_base32_decode("MY======", [0x66, 0x00]
-test_base32_decode("MZXQ====", [0x66, 0x6F, 0x00]
-test_base32_decode("MZXW6===", [0x66, 0x6F, 0x6F, 0x00]
-test_base32_decode("MZXW6YQ=", [0x66, 0x6F, 0x6F, 0x62, 0x00]
-test_base32_decode("MZXW6YTB", [0x66, 0x6F, 0x6F, 0x62, 0x61]
-test_base32_decode("QZXW6YUBOI======", [0x86, 0x6F, 0x6F, 0x62, 0x81, 0x72, 0x00]
+	assert_sequence(x, expected
+test_base32_decode("", [
+test_base32_decode("MY======", [0x66, 0x00
+test_base32_decode("MZXQ====", [0x66, 0x6F, 0x00
+test_base32_decode("MZXW6===", [0x66, 0x6F, 0x6F, 0x00
+test_base32_decode("MZXW6YQ=", [0x66, 0x6F, 0x6F, 0x62, 0x00
+test_base32_decode("MZXW6YTB", [0x66, 0x6F, 0x6F, 0x62, 0x61
+test_base32_decode("QZXW6YUBOI======", [0x86, 0x6F, 0x6F, 0x62, 0x81, 0x72, 0x00
 
 test_sha1 = @(input, expected)
 	xs = [
@@ -141,10 +145,10 @@ test_sha1 = @(input, expected)
 	x = sha1().bytes(xs).done(
 	#print_int32s(x
 	#print_int32s(expected
-	assert(x == expected
-test_sha1("", [0xda39a3ee, 0x5e6b4b0d, 0x3255bfef, 0x95601890, 0xafd80709]
-test_sha1("The quick brown fox jumps over the lazy dog", [0x2fd4e1c6, 0x7a2d28fc, 0xed849ee1, 0xbb76e739, 0x1b93eb12]
-test_sha1("The quick brown fox jumps over the lazy cog", [0xde9f2c7f, 0xd25e1b3a, 0xfad3e85a, 0xbd17d9b, 0x100db4b3]
+	assert_sequence(x, expected
+test_sha1("", [0xda39a3ee, 0x5e6b4b0d, 0x3255bfef, 0x95601890, 0xafd80709
+test_sha1("The quick brown fox jumps over the lazy dog", [0x2fd4e1c6, 0x7a2d28fc, 0xed849ee1, 0xbb76e739, 0x1b93eb12
+test_sha1("The quick brown fox jumps over the lazy cog", [0xde9f2c7f, 0xd25e1b3a, 0xfad3e85a, 0xbd17d9b, 0x100db4b3
 
 if system.arguments.size() < 1
 	key = [

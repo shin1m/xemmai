@@ -89,7 +89,6 @@ class t_global : public t_extension
 	t_slot v_symbol_script;
 	t_slot v_symbol_arguments;
 	t_slot v_symbol_size;
-	t_slot v_symbol_push;
 
 public:
 	t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_class, t_type* a_type_structure, t_type* a_type_module, t_type* a_type_fiber, t_type* a_type_thread);
@@ -232,10 +231,6 @@ public:
 	t_object* f_symbol_size() const
 	{
 		return v_symbol_size;
-	}
-	t_object* f_symbol_push() const
-	{
-		return v_symbol_push;
 	}
 	template<typename T>
 	t_scoped f_as(T&& a_value) const

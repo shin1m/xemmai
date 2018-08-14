@@ -79,14 +79,6 @@ public:
 		auto& tuple = f_as<t_tuple&>(v_tuple);
 		return tuple[(v_head + a_index) % tuple.f_size()];
 	}
-	const t_value& f_get_at(intptr_t a_index) const
-	{
-		return (*this)[a_index];
-	}
-	const t_value& f_set_at(intptr_t a_index, t_scoped&& a_value)
-	{
-		return (*this)[a_index] = std::move(a_value);
-	}
 	void f_push(t_scoped&& a_value)
 	{
 		f_grow();
@@ -122,8 +114,8 @@ public:
 		f_shrink();
 		return p;
 	}
-	XEMMAI__PORTABLE__EXPORT void f_insert(intptr_t a_index, t_scoped&& a_value);
-	XEMMAI__PORTABLE__EXPORT t_scoped f_remove(intptr_t a_index);
+	void f_insert(intptr_t a_index, t_scoped&& a_value);
+	t_scoped f_remove(intptr_t a_index);
 };
 
 template<>
@@ -131,16 +123,16 @@ struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static std::wstring f_string(const t_value& a_self);
-	static intptr_t f__hash(const t_value& a_self);
-	static bool f__less(const t_value& a_self, const t_value& a_other);
-	static bool f__less_equal(const t_value& a_self, const t_value& a_other);
-	static bool f__greater(const t_value& a_self, const t_value& a_other);
-	static bool f__greater_equal(const t_value& a_self, const t_value& a_other);
-	static bool f__equals(const t_value& a_self, const t_value& a_other);
-	static bool f__not_equals(const t_value& a_self, const t_value& a_other)
-	{
-		return !f__equals(a_self, a_other);
-	}
+	static void f_clear(const t_value& a_self);
+	static size_t f_size(const t_value& a_self);
+	static t_scoped f__get_at(const t_value& a_self, intptr_t a_index);
+	static t_scoped f__set_at(const t_value& a_self, intptr_t a_index, t_scoped&& a_value);
+	static void f_push(const t_value& a_self, t_scoped&& a_value);
+	static t_scoped f_pop(const t_value& a_self);
+	static void f_unshift(const t_value& a_self, t_scoped&& a_value);
+	static t_scoped f_shift(const t_value& a_self);
+	static void f_insert(const t_value& a_self, intptr_t a_index, t_scoped&& a_value);
+	static t_scoped f_remove(const t_value& a_self, intptr_t a_index);
 	static void f_each(const t_value& a_self, const t_value& a_callable);
 	static void f_sort(const t_value& a_self, const t_value& a_callable);
 	static void f_define();
@@ -148,15 +140,8 @@ struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_less(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_less_equal(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_greater(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_greater_equal(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
 };
 
 }

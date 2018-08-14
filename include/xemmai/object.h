@@ -740,6 +740,19 @@ inline t_scoped t_value::f_send(const t_value& a_value) const
 	XEMMAI__VALUE__BINARY(f_send)
 }
 
+template<typename T_lock, typename T>
+inline static auto f_owned_or_shared(t_object* a_self, T a_do) -> decltype(a_do())
+{
+	if (a_self->f_owned()) {
+		return a_do();
+	} else if (a_self->f_shared()) {
+		T_lock lock(a_self);
+		return a_do();
+	} else {
+		f_throw(L"owned by another thread.");
+	}
+}
+
 }
 
 #endif

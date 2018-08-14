@@ -55,7 +55,6 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_symbol_script = t_symbol::f_instantiate(L"script");
 	v_symbol_arguments = t_symbol::f_instantiate(L"arguments");
 	v_symbol_size = t_symbol::f_instantiate(L"size");
-	v_symbol_push = t_symbol::f_instantiate(L"push");
 	v_type_object->f_define();
 	a_module->f_put(t_symbol::f_instantiate(L"Class"), v_type_class->v_this);
 	v_type_class->v_builtin = true;
@@ -170,7 +169,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_script);
 	a_scan(v_symbol_arguments);
 	a_scan(v_symbol_size);
-	a_scan(v_symbol_push);
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT

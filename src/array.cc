@@ -132,21 +132,22 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 	f_check<t_array>(a_self, L"this");
 	auto& array = f_as<const t_array&>(a_self);
 	t_scoped x;
+	if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
 	{
-		t_with_lock_for_read lock(a_self);
-		if (array.f_size() <= 0) return L"[]";
+		if (array.f_size() <= 0) return false;
 		x = array[0];
-	}
+		return true;
+	})) return L"[]";
 	x = x.f_invoke(f_global()->f_symbol_string());
 	f_check<const std::wstring&>(x, L"value");
 	std::wstring s = f_as<const std::wstring&>(x);
 	size_t i = 1;
-	while (true) {
-		{
-			t_with_lock_for_read lock(a_self);
-			if (i >= array.f_size()) break;
-			x = array[i];
-		}
+	while (f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	{
+		if (i >= array.f_size()) return false;
+		x = array[i];
+		return true;
+	})) {
 		x = x.f_invoke(f_global()->f_symbol_string());
 		f_check<const std::wstring&>(x, L"value");
 		s += L", " + f_as<const std::wstring&>(x);
@@ -155,163 +156,94 @@ std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
 	return L'[' + s + L']';
 }
 
-intptr_t t_type_of<t_array>::f__hash(const t_value& a_self)
+void t_type_of<t_array>::f_clear(const t_value& a_self)
 {
 	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<const t_array&>(a_self);
-	intptr_t n = 0;
-	size_t i = 0;
-	while (true) {
-		t_scoped x;
-		{
-			t_with_lock_for_read lock(a_self);
-			if (i >= array.f_size()) break;
-			x = array[i];
-		}
-		x = x.f_hash();
-		f_check<intptr_t>(x, L"value");
-		n ^= f_as<intptr_t>(x);
-		++i;
-	}
-	return n;
+	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		f_as<t_array&>(a_self).f_clear();
+	});
 }
 
-bool t_type_of<t_array>::f__less(const t_value& a_self, const t_value& a_other)
+size_t t_type_of<t_array>::f_size(const t_value& a_self)
 {
-	if (a_self == a_other) return false;
 	f_check<t_array>(a_self, L"this");
-	f_check<t_array>(a_other, L"other");
-	auto& a0 = f_as<const t_array&>(a_self);
-	auto& a1 = f_as<const t_array&>(a_other);
-	size_t i = 0;
-	while (true) {
-		t_scoped x;
-		t_scoped y;
-		{
-			t_with_lock_for_read lock0(a_self);
-			if (i >= a0.f_size()) break;
-			x = a0[i];
-		}
-		{
-			t_with_lock_for_read lock1(a_other);
-			if (i >= a1.f_size()) return false;
-			y = a1[i];
-		}
-		if (!f_as<bool>(x.f_equals(t_value(y)))) return f_as<bool>(x.f_less(y));
-		++i;
-	}
-	t_with_lock_for_read lock1(a_other);
-	return i < a1.f_size();
+	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	{
+		return f_as<const t_array&>(a_self).f_size();
+	});
 }
 
-bool t_type_of<t_array>::f__less_equal(const t_value& a_self, const t_value& a_other)
+t_scoped t_type_of<t_array>::f__get_at(const t_value& a_self, intptr_t a_index)
 {
-	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
-	f_check<t_array>(a_other, L"other");
-	auto& a0 = f_as<const t_array&>(a_self);
-	auto& a1 = f_as<const t_array&>(a_other);
-	size_t i = 0;
-	while (true) {
-		t_scoped x;
-		t_scoped y;
-		{
-			t_with_lock_for_read lock0(a_self);
-			if (i >= a0.f_size()) break;
-			x = a0[i];
-		}
-		{
-			t_with_lock_for_read lock1(a_other);
-			if (i >= a1.f_size()) return false;
-			y = a1[i];
-		}
-		if (!f_as<bool>(x.f_equals(t_value(y)))) return f_as<bool>(x.f_less(y));
-		++i;
-	}
-	return true;
+	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	{
+		return t_scoped(f_as<const t_array&>(a_self)[a_index]);
+	});
 }
 
-bool t_type_of<t_array>::f__greater(const t_value& a_self, const t_value& a_other)
+t_scoped t_type_of<t_array>::f__set_at(const t_value& a_self, intptr_t a_index, t_scoped&& a_value)
 {
-	if (a_self == a_other) return false;
 	f_check<t_array>(a_self, L"this");
-	f_check<t_array>(a_other, L"other");
-	auto& a0 = f_as<const t_array&>(a_self);
-	auto& a1 = f_as<const t_array&>(a_other);
-	size_t i = 0;
-	while (true) {
-		t_scoped x;
-		t_scoped y;
-		{
-			t_with_lock_for_read lock0(a_self);
-			if (i >= a0.f_size()) break;
-			x = a0[i];
-		}
-		{
-			t_with_lock_for_read lock1(a_other);
-			if (i >= a1.f_size()) return true;
-			y = a1[i];
-		}
-		if (!f_as<bool>(x.f_equals(t_value(y)))) return f_as<bool>(x.f_greater(y));
-		++i;
-	}
-	return false;
+	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		return t_scoped(f_as<t_array&>(a_self)[a_index] = std::move(a_value));
+	});
 }
 
-bool t_type_of<t_array>::f__greater_equal(const t_value& a_self, const t_value& a_other)
+void t_type_of<t_array>::f_push(const t_value& a_self, t_scoped&& a_value)
 {
-	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
-	f_check<t_array>(a_other, L"other");
-	auto& a0 = f_as<const t_array&>(a_self);
-	auto& a1 = f_as<const t_array&>(a_other);
-	size_t i = 0;
-	while (true) {
-		t_scoped x;
-		t_scoped y;
-		{
-			t_with_lock_for_read lock0(a_self);
-			if (i >= a0.f_size()) break;
-			x = a0[i];
-		}
-		{
-			t_with_lock_for_read lock1(a_other);
-			if (i >= a1.f_size()) return true;
-			y = a1[i];
-		}
-		if (!f_as<bool>(x.f_equals(t_value(y)))) return f_as<bool>(x.f_greater(y));
-		++i;
-	}
-	t_with_lock_for_read lock1(a_other);
-	return i >= a1.f_size();
+	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		f_as<t_array&>(a_self).f_push(std::move(a_value));
+	});
 }
 
-bool t_type_of<t_array>::f__equals(const t_value& a_self, const t_value& a_other)
+t_scoped t_type_of<t_array>::f_pop(const t_value& a_self)
 {
-	if (a_self == a_other) return true;
 	f_check<t_array>(a_self, L"this");
-	if (!f_is<t_array>(a_other)) return false;
-	auto& a0 = f_as<const t_array&>(a_self);
-	auto& a1 = f_as<const t_array&>(a_other);
-	if (a0.f_size() != a1.f_size()) return false;
-	size_t i = 0;
-	while (true) {
-		t_scoped x;
-		t_scoped y;
-		{
-			t_with_lock_for_read lock0(a_self);
-			if (i >= a0.f_size()) break;
-			x = a0[i];
-		}
-		{
-			t_with_lock_for_read lock1(a_other);
-			if (i >= a1.f_size()) return false;
-			y = a1[i];
-		}
-		if (!f_as<bool>(x.f_equals(y))) return false;
-		++i;
-	}
-	return true;
+	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		return f_as<t_array&>(a_self).f_pop();
+	});
+}
+
+void t_type_of<t_array>::f_unshift(const t_value& a_self, t_scoped&& a_value)
+{
+	f_check<t_array>(a_self, L"this");
+	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		f_as<t_array&>(a_self).f_unshift(std::move(a_value));
+	});
+}
+
+t_scoped t_type_of<t_array>::f_shift(const t_value& a_self)
+{
+	f_check<t_array>(a_self, L"this");
+	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		return f_as<t_array&>(a_self).f_shift();
+	});
+}
+
+void t_type_of<t_array>::f_insert(const t_value& a_self, intptr_t a_index, t_scoped&& a_value)
+{
+	f_check<t_array>(a_self, L"this");
+	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		f_as<t_array&>(a_self).f_insert(a_index, std::move(a_value));
+	});
+}
+
+t_scoped t_type_of<t_array>::f_remove(const t_value& a_self, intptr_t a_index)
+{
+	f_check<t_array>(a_self, L"this");
+	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	{
+		return f_as<t_array&>(a_self).f_remove(a_index);
+	});
 }
 
 void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable)
@@ -321,11 +253,12 @@ void t_type_of<t_array>::f_each(const t_value& a_self, const t_value& a_callable
 	size_t i = 0;
 	while (true) {
 		t_scoped x;
+		if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
 		{
-			t_with_lock_for_read lock0(a_self);
-			if (i >= a0.f_size()) break;
+			if (i >= a0.f_size()) return false;
 			x = a0[i];
-		}
+			return true;
+		})) break;
 		a_callable(std::move(x));
 		++i;
 	}
@@ -338,24 +271,24 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 	t_scoped tuple;
 	size_t head = 0;
 	size_t size = 0;
+	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
 	{
-		t_with_lock_for_read lock0(a_self);
 		a0.f_swap(tuple, head, size);
-	}
+	});
 	if (!tuple) return;
 	auto& t = f_as<t_tuple&>(tuple);
 	std::vector<t_scoped> a(size);
 	for (size_t i = 0; i < size; ++i) a[i] = std::move(t[(head + i) % t.f_size()]);
-	head = 0;
-	std::sort(a.begin(), a.end(), [&a_callable](const t_scoped& a_x, const t_scoped& a_y)
+	std::sort(a.begin(), a.end(), [&](const t_scoped& x, const t_scoped& y)
 	{
-		return f_as<bool>(a_callable(a_x, a_y));
+		return f_as<bool>(a_callable(x, y));
 	});
 	for (size_t i = 0; i < size; ++i) t[i] = std::move(a[i]);
+	head = 0;
+	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
 	{
-		t_with_lock_for_read lock0(a_self);
 		a0.f_swap(tuple, head, size);
-	}
+	});
 }
 
 void t_type_of<t_array>::f_define()
@@ -363,23 +296,16 @@ void t_type_of<t_array>::f_define()
 	t_define<t_array, t_object>(f_global(), L"Array")
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f__hash>())
-		(f_global()->f_symbol_get_at(), t_member<const t_value&(t_array::*)(intptr_t) const, &t_array::f_get_at, t_with_lock_for_read>())
-		(f_global()->f_symbol_set_at(), t_member<const t_value&(t_array::*)(intptr_t, t_scoped&&), &t_array::f_set_at, t_with_lock_for_write>())
-		(f_global()->f_symbol_less(), t_member<bool(*)(const t_value&, const t_value&), f__less>())
-		(f_global()->f_symbol_less_equal(), t_member<bool(*)(const t_value&, const t_value&), f__less_equal>())
-		(f_global()->f_symbol_greater(), t_member<bool(*)(const t_value&, const t_value&), f__greater>())
-		(f_global()->f_symbol_greater_equal(), t_member<bool(*)(const t_value&, const t_value&), f__greater_equal>())
-		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f__equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f__not_equals>())
-		(L"clear", t_member<void(t_array::*)(), &t_array::f_clear, t_with_lock_for_write>())
-		(f_global()->f_symbol_size(), t_member<size_t(t_array::*)() const, &t_array::f_size>())
-		(f_global()->f_symbol_push(), t_member<void(t_array::*)(t_scoped&&), &t_array::f_push, t_with_lock_for_write>())
-		(L"pop", t_member<t_scoped(t_array::*)(), &t_array::f_pop, t_with_lock_for_write>())
-		(L"unshift", t_member<void(t_array::*)(t_scoped&&), &t_array::f_unshift, t_with_lock_for_write>())
-		(L"shift", t_member<t_scoped(t_array::*)(), &t_array::f_shift, t_with_lock_for_write>())
-		(L"insert", t_member<void(t_array::*)(intptr_t, t_scoped&&), &t_array::f_insert, t_with_lock_for_write>())
-		(L"remove", t_member<t_scoped(t_array::*)(intptr_t), &t_array::f_remove, t_with_lock_for_write>())
+		(L"clear", t_member<void(*)(const t_value&), f_clear>())
+		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_value&), f_size>())
+		(f_global()->f_symbol_get_at(), t_member<t_scoped(*)(const t_value&, intptr_t), f__get_at>())
+		(f_global()->f_symbol_set_at(), t_member<t_scoped(*)(const t_value&, intptr_t, t_scoped&&), f__set_at>())
+		(L"push", t_member<void(*)(const t_value&, t_scoped&&), f_push>())
+		(L"pop", t_member<t_scoped(*)(const t_value&), f_pop>())
+		(L"unshift", t_member<void(*)(const t_value&, t_scoped&&), f_unshift>())
+		(L"shift", t_member<t_scoped(*)(const t_value&), f_shift>())
+		(L"insert", t_member<void(*)(const t_value&, intptr_t, t_scoped&&), f_insert>())
+		(L"remove", t_member<t_scoped(*)(const t_value&, intptr_t), f_remove>())
 		(L"each", t_member<void(*)(const t_value&, const t_value&), f_each>())
 		(L"sort", t_member<void(*)(const t_value&, const t_value&), f_sort>())
 	;
@@ -400,17 +326,14 @@ t_scoped t_type_of<t_array>::f_do_construct(t_stacked* a_stack, size_t a_n)
 	return p;
 }
 
-void t_type_of<t_array>::f_do_hash(t_object* a_this, t_stacked* a_stack)
-{
-	a_stack[0].f_construct(f__hash(t_value(a_this)));
-}
-
 size_t t_type_of<t_array>::f_do_get_at(t_object* a_this, t_stacked* a_stack)
 {
 	t_destruct<> a0(a_stack[2]);
 	f_check<intptr_t>(a0.v_p, L"index");
-	t_with_lock_for_read lock(a_this);
-	a_stack[0].f_construct(f_as<const t_array&>(a_this).f_get_at(f_as<intptr_t>(a0.v_p)));
+	f_owned_or_shared<t_with_lock_for_read>(a_this, [&]
+	{
+		a_stack[0].f_construct(f_as<const t_array&>(a_this)[f_as<intptr_t>(a0.v_p)]);
+	});
 	return -1;
 }
 
@@ -419,50 +342,10 @@ size_t t_type_of<t_array>::f_do_set_at(t_object* a_this, t_stacked* a_stack)
 	t_destruct<> a0(a_stack[2]);
 	t_scoped a1 = std::move(a_stack[3]);
 	f_check<intptr_t>(a0.v_p, L"index");
-	t_with_lock_for_write lock(a_this);
-	a_stack[0].f_construct(f_as<t_array&>(a_this).f_set_at(f_as<intptr_t>(a0.v_p), std::move(a1)));
-	return -1;
-}
-
-size_t t_type_of<t_array>::f_do_less(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__less(a_this, a0.v_p));
-	return -1;
-}
-
-size_t t_type_of<t_array>::f_do_less_equal(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__less_equal(a_this, a0.v_p));
-	return -1;
-}
-
-size_t t_type_of<t_array>::f_do_greater(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__greater(a_this, a0.v_p));
-	return -1;
-}
-
-size_t t_type_of<t_array>::f_do_greater_equal(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__greater_equal(a_this, a0.v_p));
-	return -1;
-}
-
-size_t t_type_of<t_array>::f_do_equals(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__equals(a_this, a0.v_p));
-	return -1;
-}
-
-size_t t_type_of<t_array>::f_do_not_equals(t_object* a_this, t_stacked* a_stack)
-{
-	t_destruct<> a0(a_stack[2]);
-	a_stack[0].f_construct(f__not_equals(a_this, a0.v_p));
+	f_owned_or_shared<t_with_lock_for_write>(a_this, [&]
+	{
+		a_stack[0].f_construct(f_as<t_array&>(a_this)[f_as<intptr_t>(a0.v_p)] = std::move(a1));
+	});
 	return -1;
 }
 
