@@ -4,7 +4,6 @@
 #include "module.h"
 #include "fiber.h"
 #include "thread.h"
-#include "dictionary.h"
 
 namespace xemmai
 {
@@ -40,8 +39,6 @@ class t_engine : public t_value::t_collector
 	friend struct t_type_of<t_lambda_shared>;
 	friend struct t_type_of<t_advanced_lambda<t_lambda>>;
 	friend struct t_type_of<t_advanced_lambda<t_lambda_shared>>;
-	friend class t_dictionary;
-	friend class t_dictionary::t_entry;
 	friend class t_global;
 	friend struct t_safe_region;
 
@@ -126,8 +123,6 @@ class t_engine : public t_value::t_collector
 	t_library::t_handle* v_library__handle__finalizing = nullptr;
 	std::map<std::wstring, t_slot> v_symbol__instances;
 	std::mutex v_symbol__instantiate__mutex;
-	t_shared_pool<t_dictionary::t_entry, 1024> v_dictionary__entry__pool;
-	size_t v_dictionary__entry__freed = 0;
 	t_scoped v_structure_root;
 	t_scoped v_module_global;
 	t_scoped v_module_system;
@@ -160,10 +155,6 @@ class t_engine : public t_value::t_collector
 	{
 		++v_object__collect;
 		f_free(v_object__pool, v_object__freed, a_p);
-	}
-	void f_free(t_dictionary::t_entry* a_p)
-	{
-		f_free(v_dictionary__entry__pool, v_dictionary__entry__freed, a_p);
 	}
 	void f_signal_synchronizers();
 	void f_wait_synchronizers();
@@ -343,24 +334,6 @@ inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_supe
 inline t_object* t_fiber::f_current()
 {
 	return f_as<t_thread&>(t_thread::v_current).v_active;
-}
-
-inline t_dictionary::t_entry* t_dictionary::t_entry::f_allocate()
-{
-	return f_engine()->v_dictionary__entry__pool.f_allocate();
-}
-
-inline t_dictionary::t_table::~t_table()
-{
-	t_entry** entries = f_entries();
-	for (size_t i = 0; i < v_capacity; ++i) {
-		t_entry* p = entries[i];
-		while (p) {
-			t_entry* q = p->v_next;
-			f_engine()->f_free(p);
-			p = q;
-		}
-	}
 }
 
 }

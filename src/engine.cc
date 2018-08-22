@@ -38,7 +38,6 @@ void t_engine::t_synchronizer::f_run()
 void t_engine::f_pools__return()
 {
 	f_return(v_object__pool);
-	f_return(v_dictionary__entry__pool);
 }
 
 void t_engine::f_signal_synchronizers()
@@ -126,7 +125,6 @@ void t_engine::f_collector()
 		}
 		t_object::f_collect();
 		if (v_object__freed > 0) f_return(v_object__pool, v_object__freed);
-		if (v_dictionary__entry__freed > 0) f_return(v_dictionary__entry__pool, v_dictionary__entry__freed);
 	}
 }
 
@@ -343,29 +341,18 @@ t_engine::~t_engine()
 		} while (v_synchronizers);
 	}
 	assert(!v_thread__internals);
-	v_dictionary__entry__pool.f_clear();
 	v_object__pool.f_clear();
 	if (v_verbose) {
-		bool b = false;
 		std::fprintf(stderr, "statistics:\n");
-		{
-			size_t allocated = v_object__pool.f_allocated();
-			size_t freed = v_object__pool.f_freed();
-			std::fprintf(stderr, "\tobject: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed), static_cast<uintptr_t>(v_object__release), static_cast<uintptr_t>(v_object__collect));
-			if (allocated > freed) b = true;
-		}
-		{
-			size_t allocated = v_dictionary__entry__pool.f_allocated();
-			size_t freed = v_dictionary__entry__pool.f_freed();
-			std::fprintf(stderr, "\tdictionary entry: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed));
-			if (allocated > freed) b = true;
-		}
+		size_t allocated = v_object__pool.f_allocated();
+		size_t freed = v_object__pool.f_freed();
+		std::fprintf(stderr, "\tobject: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed), static_cast<uintptr_t>(v_object__release), static_cast<uintptr_t>(v_object__collect));
 		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__release), static_cast<uintptr_t>(v_collector__collect));
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
 			std::fprintf(stderr, "\tfield cache: hit = %" PRIuPTR ", missed = %" PRIuPTR ", ratio = %.1f%%\n", static_cast<uintptr_t>(v_thread__cache_hit), static_cast<uintptr_t>(v_thread__cache_missed), base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
 		}
-		if (b) throw std::exception();
+		if (allocated > freed) throw std::exception();
 	}
 }
 
