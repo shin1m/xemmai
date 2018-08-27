@@ -37,6 +37,7 @@ scripts = \
 	variadic.xm \
 	array.xm \
 	dictionary.xm \
+	dictionary2.xm \
 	bytes.xm \
 	file.xm \
 	text.xm \

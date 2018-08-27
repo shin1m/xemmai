@@ -4,8 +4,6 @@
 #include "boolean.h"
 #include "integer.h"
 
-#define XEMMAI__DICTIONARY__PRIME
-
 namespace xemmai
 {
 
@@ -22,7 +20,8 @@ public:
 		friend class t_dictionary;
 		friend class t_iterator;
 
-		size_t v_hash = 0;
+		size_t v_gap = 0;
+		size_t v_hash;
 		t_slot v_key;
 
 	public:
@@ -37,13 +36,12 @@ public:
 private:
 	struct t_table
 	{
-#ifdef XEMMAI__DICTIONARY__PRIME
 		struct t_rank
 		{
 			template<size_t A_capacity>
 			static size_t f_slot(size_t a_hash)
 			{
-				return (~0u >> 1 & a_hash) % A_capacity;
+				return a_hash % A_capacity;
 			}
 
 			size_t v_capacity;
@@ -52,7 +50,7 @@ private:
 			size_t (*v_slot)(size_t);
 
 			template<size_t A_capacity>
-			constexpr t_rank(std::integral_constant<size_t, A_capacity>, size_t a_upper = A_capacity / 2, size_t a_lower = A_capacity / 4) : v_capacity(A_capacity), v_upper(a_upper), v_lower(a_lower), v_slot(f_slot<A_capacity>)
+			constexpr t_rank(std::integral_constant<size_t, A_capacity>, size_t a_lower = A_capacity / 4) : v_capacity(A_capacity), v_upper(A_capacity / 2), v_lower(a_lower), v_slot(f_slot<A_capacity>)
 			{
 			}
 		};
@@ -62,56 +60,24 @@ private:
 		t_entry* v_end;
 		size_t v_size = 0;
 		const t_rank& v_rank;
-#else
-		size_t v_mask;
-		size_t v_size = 0;
-		size_t v_upper;
-		size_t v_lower;
-		t_entry* v_end;
-		size_t v_rank;
-#endif
 
-#ifdef XEMMAI__DICTIONARY__PRIME
 		void* operator new(size_t a_size, const t_rank& a_rank)
 		{
 			return new char[a_size + sizeof(t_entry) * a_rank.v_capacity];
-#else
-		void* operator new(size_t a_size, size_t a_rank)
-		{
-			return new char[a_size + sizeof(t_entry) * (1 << a_rank)];
-#endif
 		}
 		void operator delete(void* a_p)
 		{
 			delete[] static_cast<char*>(a_p);
 		}
-#ifdef XEMMAI__DICTIONARY__PRIME
 		void operator delete(void* a_p, const t_rank&)
 		{
 			delete[] static_cast<char*>(a_p);
 		}
-#else
-		void operator delete(void* a_p, size_t)
-		{
-			delete[] static_cast<char*>(a_p);
-		}
-#endif
 
-#ifdef XEMMAI__DICTIONARY__PRIME
 		static t_scoped f_instantiate(const t_rank& a_rank);
 
 		t_table(const t_rank& a_rank) : v_slot(a_rank.v_slot), v_end(f_entries() + a_rank.v_capacity), v_rank(a_rank)
 		{
-#else
-		static t_scoped f_instantiate(size_t a_rank);
-
-		t_table(size_t a_rank) : v_mask(~(~0 << a_rank)), v_rank(a_rank)
-		{
-			size_t capacity = 1 << v_rank;
-			v_upper = capacity / 2;
-			v_lower = v_rank > 3 ? capacity / 4 : 0;
-			v_end = f_entries() + capacity;
-#endif
 			for (auto p = f_entries(); p != v_end; ++p) new(p) t_entry();
 		}
 		t_entry* f_entries() const
@@ -125,66 +91,59 @@ private:
 				a_scan(p->v_value);
 			}
 		}
-#ifdef XEMMAI__DICTIONARY__PRIME
-		t_entry* f_find(const t_value& a_key, size_t a_hash) const
+		static bool f_equals(const t_entry& a_p, size_t a_hash, const t_value& a_key)
 		{
-			size_t hash = ~(~0u >> 1) | a_hash;
-			auto p = f_entries() + v_slot(a_hash);
-			while (p->v_hash && (p->v_hash != hash || !f_as<bool>(p->v_key.f_equals(a_key)))) if (++p >= v_end) p = f_entries();
-			return p;
+			return a_p.v_hash == a_hash && f_as<bool>(a_p.v_key.f_equals(a_key));
 		}
-#else
-		t_entry* f_find(const t_value& a_key, size_t a_hash) const
+		XEMMAI__PORTABLE__ALWAYS_INLINE t_entry* f_find(const t_value& a_key) const
 		{
-			auto p = f_entries();
-			size_t hash = ~(~0u >> 1) | a_hash;
-			size_t i = a_hash & v_mask;
-			while (true) {
-				auto& q = p[i];
-				if (!q.v_hash || q.v_hash == hash && f_as<bool>(q.v_key.f_equals(a_key))) break;
-				i = (i + 1) & v_mask;
+			size_t hash = f_as<size_t>(a_key.f_hash());
+			auto entries = f_entries();
+			auto p = entries + v_slot(hash);
+			for (size_t gap = 1; p->v_gap >= gap; ++gap) {
+				if (f_equals(*p, hash, a_key)) return p;
+				if (++p >= v_end) p = entries;
 			}
-			return p + i;
+			return nullptr;
 		}
-#endif
-		t_entry* f_find(const t_value& a_key) const
+		std::pair<t_entry*, size_t> f_find(size_t a_hash, const t_value& a_key) const
 		{
-			return f_find(a_key, f_as<size_t>(a_key.f_hash()));
+			auto entries = f_entries();
+			auto p = entries + v_slot(a_hash);
+			size_t gap = 1;
+			for (; p->v_gap >= gap && !f_equals(*p, a_hash, a_key); ++gap) if (++p >= v_end) p = entries;
+			return {p, gap};
 		}
+		void f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_scoped&& a_key, t_scoped&& a_value);
 	};
 	friend struct t_type_of<t_table>;
 
-	t_slot v_table;
+	t_table* v_table;
+	t_slot v_slot;
 
-#ifdef XEMMAI__DICTIONARY__PRIME
-	t_dictionary() : v_table(t_table::f_instantiate(t_table::v_ranks[0]))
-#else
-	t_dictionary() : v_table(t_table::f_instantiate(3))
-#endif
-	{
-	}
-#ifdef XEMMAI__DICTIONARY__PRIME
+	t_dictionary();
 	void f_rehash(const t_table::t_rank& a_rank);
-#else
-	void f_rehash(size_t a_rank);
-#endif
 
 public:
 	class t_iterator
 	{
-		t_scoped v_table;
+		t_scoped v_slot;
 		t_entry* v_entry;
 		t_entry* v_end;
 
 	public:
-		t_iterator(const t_dictionary& a_dictionary);
+		t_iterator(const t_dictionary& a_dictionary) : v_slot(a_dictionary.v_slot), v_entry(a_dictionary.v_table->f_entries()), v_end(a_dictionary.v_table->v_end)
+		{
+			do if (v_entry->v_gap) return; while (++v_entry < v_end);
+			v_entry = nullptr;
+		}
 		t_entry* f_entry() const
 		{
 			return v_entry;
 		}
 		void f_next()
 		{
-			while (++v_entry < v_end) if (v_entry->v_hash) return;
+			while (++v_entry < v_end) if (v_entry->v_gap) return;
 			v_entry = nullptr;
 		}
 	};
@@ -192,18 +151,22 @@ public:
 
 	static t_scoped f_instantiate();
 
-	void f_clear()
+	void f_clear();
+	size_t f_size() const
 	{
-#ifdef XEMMAI__DICTIONARY__PRIME
-		v_table = t_table::f_instantiate(t_table::v_ranks[0]);
-#else
-		v_table = t_table::f_instantiate(3);
-#endif
+		return v_table->v_size;
 	}
-	size_t f_size() const;
-	const t_value& f_get(const t_value& a_key) const;
+	const t_value& f_get(const t_value& a_key) const
+	{
+		auto p = v_table->f_find(a_key);
+		if (!p) f_throw(L"key not found.");
+		return p->v_value;
+	}
 	t_scoped f_put(const t_value& a_key, t_scoped&& a_value);
-	bool f_has(const t_value& a_key) const;
+	bool f_has(const t_value& a_key) const
+	{
+		return v_table->f_find(a_key);
+	}
 	t_scoped f_remove(const t_value& a_key);
 };
 
@@ -235,30 +198,16 @@ struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
 };
 
-inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(a_dictionary.v_table)
+inline t_dictionary::t_dictionary() : v_slot(t_table::f_instantiate(t_table::v_ranks[0]))
 {
-	auto& table = f_as<const t_table&>(v_table);
-	v_entry = table.f_entries();
-	v_end = table.v_end;
-	do if (v_entry->v_hash) return; while (++v_entry < v_end);
-	v_entry = nullptr;
+	v_table = &f_as<t_table&>(v_slot);
 }
 
-inline size_t t_dictionary::f_size() const
+inline void t_dictionary::f_clear()
 {
-	return f_as<t_table&>(v_table).v_size;
-}
-
-inline const t_value& t_dictionary::f_get(const t_value& a_key) const
-{
-	auto p = f_as<t_table&>(v_table).f_find(a_key);
-	if (!p->v_hash) f_throw(L"key not found.");
-	return p->v_value;
-}
-
-inline bool t_dictionary::f_has(const t_value& a_key) const
-{
-	return f_as<t_table&>(v_table).f_find(a_key)->v_hash;
+	t_scoped p = t_table::f_instantiate(t_table::v_ranks[0]);
+	v_table = &f_as<t_table&>(p);
+	v_slot = std::move(p);
 }
 
 }

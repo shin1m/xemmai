@@ -35,6 +35,7 @@ assert(d.size() == 0
 d = {
 for i = 0; i < 1000; i = i + 1: d[i] = i
 assert(d.size() == 1000
+for i = 0; i < 1000; i = i + 1: assert(d[i] == i
 
 Foo = Class(Dictionary) :: @
 	$__construct = @(*xs) :$^__construct[$]("zero", 0, *xs
