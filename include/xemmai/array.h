@@ -28,9 +28,11 @@ class t_array
 		return a_p;
 	}
 
-	t_slot v_tuple;
+	t_tuple* v_tuple;
 	size_t v_head = 0;
 	size_t v_size = 0;
+	size_t v_mask = 0;
+	t_slot v_slot;
 
 	t_array() = default;
 	~t_array() = default;
@@ -53,63 +55,48 @@ public:
 	void f_clear()
 	{
 		v_tuple = nullptr;
-		v_head = v_size = 0;
+		v_head = v_size = v_mask = 0;
+		v_slot = nullptr;
 	}
 	size_t f_size() const
 	{
 		return v_size;
 	}
-	void f_swap(t_scoped& a_tuple, size_t& a_head, size_t& a_size)
-	{
-		t_scoped tuple = std::move(v_tuple);
-		v_tuple = std::move(a_tuple);
-		a_tuple = std::move(tuple);
-		std::swap(v_head, a_head);
-		std::swap(v_size, a_size);
-	}
 	const t_slot& operator[](intptr_t a_index) const
 	{
 		f_validate(a_index);
-		auto& tuple = f_as<const t_tuple&>(v_tuple);
-		return tuple[(v_head + a_index) % tuple.f_size()];
+		return (*v_tuple)[v_head + a_index & v_mask];
 	}
 	t_slot& operator[](intptr_t a_index)
 	{
 		f_validate(a_index);
-		auto& tuple = f_as<t_tuple&>(v_tuple);
-		return tuple[(v_head + a_index) % tuple.f_size()];
+		return (*v_tuple)[v_head + a_index & v_mask];
 	}
 	void f_push(t_scoped&& a_value)
 	{
 		f_grow();
-		auto& tuple = f_as<t_tuple&>(v_tuple);
-		tuple[(v_head + v_size) % tuple.f_size()] = std::move(a_value);
+		(*v_tuple)[v_head + v_size & v_mask].f_construct(std::move(a_value));
 		++v_size;
 	}
 	t_scoped f_pop()
 	{
 		if (v_size <= 0) f_throw(L"empty array.");
-		auto& tuple = f_as<t_tuple&>(v_tuple);
-		t_scoped p = std::move(tuple[(v_head + --v_size) % tuple.f_size()]);
+		t_scoped p = std::move((*v_tuple)[v_head + --v_size & v_mask]);
 		f_shrink();
 		return p;
 	}
 	void f_unshift(t_scoped&& a_value)
 	{
 		f_grow();
-		auto& tuple = f_as<t_tuple&>(v_tuple);
-		v_head += tuple.f_size() - 1;
-		v_head %= tuple.f_size();
-		tuple[v_head] = std::move(a_value);
+		v_head = v_head - 1 & v_mask;
+		(*v_tuple)[v_head].f_construct(std::move(a_value));
 		++v_size;
 	}
 	t_scoped f_shift()
 	{
 		if (v_size <= 0) f_throw(L"empty array.");
-		auto& tuple = f_as<t_tuple&>(v_tuple);
-		t_scoped p = std::move(tuple[v_head]);
-		++v_head;
-		v_head %= tuple.f_size();
+		t_scoped p = std::move((*v_tuple)[v_head]);
+		v_head = v_head + 1 & v_mask;
 		--v_size;
 		f_shrink();
 		return p;

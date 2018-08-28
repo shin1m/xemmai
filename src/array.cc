@@ -8,30 +8,36 @@ namespace xemmai
 
 void t_array::f_resize()
 {
-	auto& tuple0 = f_as<t_tuple&>(v_tuple);
 	t_scoped p = t_tuple::f_instantiate(v_size * 2);
-	auto& tuple1 = f_as<t_tuple&>(p);
-	for (size_t i = 0; i < v_size; ++i) tuple1[i] = tuple0[(v_head + i) % tuple0.f_size()];
-	v_tuple = std::move(p);
+	auto& tuple = f_as<t_tuple&>(p);
+	for (size_t i = 0; i < v_size; ++i) tuple[i].f_construct((*v_tuple)[v_head + i & v_mask]);
+	v_tuple = &tuple;
 	v_head = 0;
+	v_mask = tuple.f_size() - 1;
+	v_slot = std::move(p);
 }
 
 void t_array::f_grow()
 {
-	if (v_size <= 0)
-		v_tuple = t_tuple::f_instantiate(4);
-	else
-		if (v_size >= f_as<t_tuple&>(v_tuple).f_size()) f_resize();
+	if (v_size <= 0) {
+		t_scoped p = t_tuple::f_instantiate(4);
+		v_tuple = &f_as<t_tuple&>(p);
+		v_mask = 3;
+		v_slot.f_construct(std::move(p));
+	} else if (v_size >= v_tuple->f_size()) {
+		f_resize();
+	}
 }
 
 void t_array::f_shrink()
 {
-	if (v_size * 4 >= f_as<t_tuple&>(v_tuple).f_size()) return;
+	if (v_size * 4 > v_tuple->f_size()) return;
 	if (v_size > 1) {
 		f_resize();
 	} else if (v_size <= 0) {
 		v_tuple = nullptr;
 		v_head = 0;
+		v_slot = nullptr;
 	}
 }
 
@@ -44,18 +50,12 @@ t_scoped t_array::f_instantiate()
 
 void t_array::f_insert(intptr_t a_index, t_scoped&& a_value)
 {
-	if (a_index < 0) {
-		a_index += v_size;
-		if (a_index < 0) f_throw(L"out of range.");
-	} else {
-		if (a_index > static_cast<intptr_t>(v_size)) f_throw(L"out of range.");
-	}
+	f_validate(a_index);
 	f_grow();
-	auto& tuple = f_as<t_tuple&>(v_tuple);
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;
-	size_t n = tuple.f_size();
-	t_slot* p = &tuple[0];
+	size_t n = v_tuple->f_size();
+	t_slot* p = &(*v_tuple)[0];
 	if (a_index < static_cast<intptr_t>(v_size / 2)) {
 		if (i >= n) {
 			*f_move_backward(p + --v_head, p + n - 1) = std::move(*p);
@@ -85,12 +85,11 @@ void t_array::f_insert(intptr_t a_index, t_scoped&& a_value)
 t_scoped t_array::f_remove(intptr_t a_index)
 {
 	f_validate(a_index);
-	auto& tuple = f_as<t_tuple&>(v_tuple);
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;
-	size_t n = tuple.f_size();
-	t_slot* p = &tuple[0];
-	t_scoped q = std::move(p[i % n]);
+	size_t n = v_tuple->f_size();
+	t_slot* p = &(*v_tuple)[0];
+	t_scoped q = std::move(p[i & v_mask]);
 	if (a_index < static_cast<intptr_t>(v_size / 2)) {
 		if (i >= n) {
 			*f_move_forward(p, p + i - n) = std::move(p[n - 1]);
@@ -268,26 +267,34 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 {
 	f_check<t_array>(a_self, L"this");
 	auto& a0 = f_as<t_array&>(a_self);
-	t_scoped tuple;
+	t_tuple* tuple = nullptr;
 	size_t head = 0;
 	size_t size = 0;
+	size_t mask = 0;
+	t_scoped p;
 	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
 	{
-		a0.f_swap(tuple, head, size);
+		std::swap(a0.v_tuple, tuple);
+		std::swap(a0.v_head, head);
+		std::swap(a0.v_size, size);
+		std::swap(a0.v_mask, mask);
+		p = std::move(a0.v_slot);
 	});
-	if (!tuple) return;
-	auto& t = f_as<t_tuple&>(tuple);
+	if (!p) return;
 	std::vector<t_scoped> a(size);
-	for (size_t i = 0; i < size; ++i) a[i] = std::move(t[(head + i) % t.f_size()]);
+	for (size_t i = 0; i < size; ++i) a[i] = std::move((*tuple)[head + i & mask]);
 	std::sort(a.begin(), a.end(), [&](const t_scoped& x, const t_scoped& y)
 	{
 		return f_as<bool>(a_callable(x, y));
 	});
-	for (size_t i = 0; i < size; ++i) t[i] = std::move(a[i]);
-	head = 0;
+	for (size_t i = 0; i < size; ++i) (*tuple)[i].f_construct(std::move(a[i]));
 	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
 	{
-		a0.f_swap(tuple, head, size);
+		a0.v_tuple = tuple;
+		a0.v_head = 0;
+		a0.v_size = size;
+		a0.v_mask = mask;
+		a0.v_slot.f_construct(std::move(p));
 	});
 }
 
@@ -313,7 +320,7 @@ void t_type_of<t_array>::f_define()
 
 void t_type_of<t_array>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
-	a_scan(f_as<t_array&>(a_this).v_tuple);
+	a_scan(f_as<t_array&>(a_this).v_slot);
 }
 
 t_scoped t_type_of<t_array>::f_do_construct(t_stacked* a_stack, size_t a_n)

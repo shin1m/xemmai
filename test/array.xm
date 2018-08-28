@@ -173,6 +173,21 @@ print(b.remove(1
 print(b
 assert_sequence(b, [2, 3, 4
 
+b.unshift(1
+b.push(5
+print(b
+assert_sequence(b, [1, 2, 3, 4, 5
+
+b.sort(@(x, y) x > y
+print(b
+assert_sequence(b, [5, 4, 3, 2, 1
+
+b.shift(
+b.shift(
+b.shift(
+print(b
+assert_sequence(b, [2, 1
+
 Foo = Class(Array) :: @
 	$__construct = @(*xs) :$^__construct[$](0, *xs
 	$__initialize = @(*xs) $push(4
