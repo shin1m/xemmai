@@ -11,16 +11,20 @@ namespace
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped f_add(t_object* a_self, t_scoped&& a_value)
 {
 	auto& s0 = f_as<const std::wstring&>(a_self);
-	if (f_is<std::wstring>(a_value)) {
-		if (s0.empty()) return a_value;
-		auto& s1 = f_as<const std::wstring&>(a_value);
-		return s1.empty() ? t_scoped(a_self) : f_global()->f_as(s0 + s1);
-	}
+	auto add = [&](t_scoped&& x)
+	{
+		if (s0.empty()) return x;
+		auto& s1 = f_as<const std::wstring&>(x);
+		if (s1.empty()) return t_scoped(a_self);
+		std::wstring s;
+		s.reserve(s0.size() + s1.size());
+		s.append(s0).append(s1);
+		return f_global()->f_as(std::move(s));
+	};
+	if (f_is<std::wstring>(a_value)) return add(std::move(a_value));
 	t_scoped x = a_value.f_invoke(f_global()->f_symbol_string());
 	f_check<std::wstring>(x, L"argument0");
-	if (s0.empty()) return x;
-	auto& s1 = f_as<const std::wstring&>(x);
-	return s1.empty() ? t_scoped(a_self) : f_global()->f_as(s0 + s1);
+	return add(std::move(x));
 }
 
 inline t_scoped f_add(const t_value& a_self, t_scoped&& a_value)
