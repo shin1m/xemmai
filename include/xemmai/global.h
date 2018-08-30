@@ -88,6 +88,7 @@ class t_global : public t_extension
 	t_slot v_symbol_script;
 	t_slot v_symbol_arguments;
 	t_slot v_symbol_size;
+	t_slot v_string_empty;
 
 public:
 	t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_class, t_type* a_type_structure, t_type* a_type_module, t_type* a_type_fiber, t_type* a_type_thread);
@@ -230,6 +231,10 @@ public:
 	t_object* f_symbol_size() const
 	{
 		return v_symbol_size;
+	}
+	t_object* f_string_empty() const
+	{
+		return v_string_empty;
 	}
 	template<typename T>
 	t_scoped f_as(T&& a_value) const
@@ -800,6 +805,12 @@ inline size_t t_code::f_loop(t_context& a_context)
 		a_context.f_backtrace(thrown);
 		throw thrown;
 	}
+}
+
+template<typename T>
+inline t_scoped t_type_of<std::wstring>::f_transfer(const t_global* a_extension, T&& a_value)
+{
+	return a_value.empty() ? t_scoped(a_extension->f_string_empty()) : f_transfer(a_extension->f_type<std::wstring>(), std::forward<T>(a_value));
 }
 
 }

@@ -93,6 +93,8 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_type_float->v_builtin = v_type_float->v_primitive = true;
 	t_type_of<std::wstring>::f_define();
 	v_type_string->v_builtin = true;
+	v_string_empty = t_object::f_allocate_uninitialized(v_type_string);
+	v_string_empty.f_pointer__(new std::wstring());
 	t_type_of<t_array>::f_define();
 	v_type_array->v_builtin = true;
 	t_type_of<t_dictionary>::f_define();
@@ -169,6 +171,7 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_script);
 	a_scan(v_symbol_arguments);
 	a_scan(v_symbol_size);
+	a_scan(v_string_empty);
 }
 
 #ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT

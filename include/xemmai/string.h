@@ -9,13 +9,20 @@ namespace xemmai
 template<>
 struct t_type_of<std::wstring> : t_derivable<t_holds<std::wstring, t_type_immutable>>
 {
-	template<typename T_extension, typename T>
-	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
+	template<typename T>
+	static t_scoped f_transfer(t_type* a_type, T&& a_value)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(a_extension->template f_type<typename t_fundamental<T>::t_type>());
+		t_scoped object = t_object::f_allocate_uninitialized(a_type);
 		object.f_pointer__(new std::wstring(std::forward<T>(a_value)));
 		return object;
 	}
+	template<typename T_extension, typename T>
+	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
+	{
+		return f_transfer(a_extension->template f_type<typename t_fundamental<T>::t_type>(), std::forward<T>(a_value));
+	}
+	template<typename T>
+	static t_scoped f_transfer(const t_global* a_extension, T&& a_value);
 	static std::wstring f_from_code(intptr_t a_code)
 	{
 		return std::wstring(1, a_code);
