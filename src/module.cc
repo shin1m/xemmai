@@ -107,8 +107,8 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 	f_check<size_t>(n, L"size");
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
 		t_scoped x = paths.f_get_at(f_global()->f_as(i));
-		f_check<std::wstring>(x, L"path");
-		std::wstring path = portable::t_path(f_as<const std::wstring&>(x)) / a_name;
+		f_check<t_string>(x, L"path");
+		std::wstring path = portable::t_path(f_as<const t_string&>(x)) / a_name;
 		t_scoped script = f_load_and_execute_script(a_name, path + L".xm");
 		if (script) return script;
 		t_library* library = f_load_library(path);
@@ -125,8 +125,8 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 void t_module::f_main()
 {
 	t_scoped x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
-	f_check<std::wstring>(x, L"script");
-	auto& path = f_as<const std::wstring&>(x);
+	f_check<t_string>(x, L"script");
+	auto path = f_as<std::wstring>(x);
 	if (path.empty()) f_throw(L"script path is empty.");
 	if (!f_load_and_execute_script(L"__main", path)) f_throw(L"file \"" + path + L"\" not found.");
 }
@@ -207,8 +207,8 @@ void t_type_of<t_module>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
 	t_destruct<> a0(a_stack[2]);
-	f_check<std::wstring>(a0.v_p, L"argument0");
-	a_stack[0].f_construct(t_module::f_instantiate(f_as<const std::wstring&>(a0.v_p)));
+	f_check<t_string>(a0.v_p, L"argument0");
+	a_stack[0].f_construct(t_module::f_instantiate(f_as<const t_string&>(a0.v_p)));
 }
 
 }

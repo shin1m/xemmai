@@ -12,18 +12,21 @@ t_scoped t_tuple::f_instantiate(size_t a_size)
 	return object;
 }
 
-std::wstring t_tuple::f_string() const
+t_scoped t_tuple::f_string() const
 {
-	if (v_size <= 0) return L"'()";
-	t_scoped x = (*this)[0].f_invoke(f_global()->f_symbol_string());
-	f_check<const std::wstring&>(x, L"value");
-	std::wstring s = f_as<const std::wstring&>(x);
-	for (size_t i = 1; i < v_size; ++i) {
-		x = (*this)[i].f_invoke(f_global()->f_symbol_string());
-		f_check<const std::wstring&>(x, L"value");
-		s += L", " + f_as<const std::wstring&>(x);
+	std::vector<wchar_t> cs{L'\'', L'('};
+	if (v_size > 0) for (size_t i = 0;;) {
+		t_scoped x = (*this)[i].f_invoke(f_global()->f_symbol_string());
+		f_check<t_string>(x, L"value");
+		auto& s = f_as<const t_string&>(x);
+		auto p = static_cast<const wchar_t*>(s);
+		cs.insert(cs.end(), p, p + s.f_size());
+		if (++i >= v_size) break;
+		cs.push_back(L',');
+		cs.push_back(L' ');
 	}
-	return L"'(" + s + L')';
+	cs.push_back(L')');
+	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
 intptr_t t_tuple::f_hash() const
@@ -99,7 +102,17 @@ bool t_tuple::f_equals(const t_value& a_other) const
 
 void t_tuple::f_each(const t_value& a_callable) const
 {
-	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
+//	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
+	if (a_callable.f_tag() < t_value::e_tag__OBJECT) f_throw(L"not supported.");
+	auto p = static_cast<t_object*>(a_callable);
+	t_scoped_stack stack(3);
+	for (size_t i = 0; i < v_size; ++i) {
+		stack[1].f_construct();
+		stack[2].f_construct((*this)[i]);
+		size_t n = p->f_call_without_loop(stack, 1);
+		if (n != size_t(-1)) t_value::f_loop(stack, n);
+		stack[0].f_destruct();
+	}
 }
 
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
@@ -118,7 +131,7 @@ void t_type_of<t_tuple>::f_define()
 	v_builtin = true;
 	t_define<t_tuple, t_object>(f_global(), L"Tuple", v_this)
 		(f_global()->f_symbol_construct(), f__construct)
-		(f_global()->f_symbol_string(), t_member<std::wstring(t_tuple::*)() const, &t_tuple::f_string>())
+		(f_global()->f_symbol_string(), t_member<t_scoped(t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_tuple::*)() const, &t_tuple::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_value&(t_tuple::*)(size_t) const, &t_tuple::f_get_at>())
 		(f_global()->f_symbol_less(), t_member<bool(t_tuple::*)(const t_tuple&) const, &t_tuple::f_less>())

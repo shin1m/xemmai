@@ -8,7 +8,7 @@ std::wstring t_queue::f_string() const
 		t_object* pair = f_as<t_pair&>(v_head).v_next;
 		while (true) {
 			t_scoped p = f_as<t_pair&>(pair).v_value.f_invoke(f_global()->f_symbol_string());
-			s += f_is<std::wstring>(p) ? f_as<const std::wstring&>(p) : L"<unprintable>";
+			s += f_is<t_string>(p) ? f_as<std::wstring>(p) : L"<unprintable>";
 			s += L'\n';
 			if (pair == static_cast<t_object*>(v_head)) break;
 			pair = f_as<t_pair&>(pair).v_next;

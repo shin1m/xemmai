@@ -28,7 +28,7 @@ t_file::t_file(const std::wstring& a_path, const char* a_mode) : v_stream(std::f
 {
 }
 
-t_file::t_file(const std::wstring& a_path, const std::wstring& a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str())), v_own(true)
+t_file::t_file(const t_string& a_path, const t_string& a_mode) : v_stream(std::fopen(portable::f_convert(a_path.f_wstring()).c_str(), portable::f_convert(a_mode.f_wstring()).c_str())), v_own(true)
 {
 	if (v_stream == NULL) f_throw(L"failed to open.");
 	std::setbuf(v_stream, NULL);
@@ -41,14 +41,14 @@ t_file::t_file(int a_fd, const char* a_mode) : v_stream(fdopen(a_fd, a_mode)), v
 	std::setbuf(v_stream, NULL);
 }
 
-t_file::t_file(int a_fd, const std::wstring& a_mode) : t_file(a_fd, portable::f_convert(a_mode).c_str())
+t_file::t_file(int a_fd, const t_string& a_mode) : t_file(a_fd, portable::f_convert(a_mode.f_wstring()).c_str())
 {
 }
 #endif
 
-void t_file::f_reopen(const std::wstring& a_path, const std::wstring& a_mode)
+void t_file::f_reopen(const t_string& a_path, const t_string& a_mode)
 {
-	v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
+	v_stream = std::freopen(portable::f_convert(a_path.f_wstring()).c_str(), portable::f_convert(a_mode.f_wstring()).c_str(), v_stream);
 	if (v_stream == NULL) f_throw(L"failed to open.");
 	std::setbuf(v_stream, NULL);
 }
@@ -108,11 +108,15 @@ void t_file::f_blocking__(bool a_value)
 void t_type_of<io::t_file>::f_define(t_io* a_extension)
 {
 	t_define<io::t_file, t_object>(a_extension, L"File")
+#ifdef __unix__
 		(
-			t_construct<const std::wstring&, const std::wstring&>(),
-			t_construct<int, const std::wstring&>()
+			t_construct<const t_string&, const t_string&>(),
+			t_construct<int, const t_string&>()
 		)
-		(L"reopen", t_member<void(io::t_file::*)(const std::wstring&, const std::wstring&), &io::t_file::f_reopen, t_with_lock_for_write>())
+#else
+		(t_construct<const t_string&, const t_string&>())
+#endif
+		(L"reopen", t_member<void(io::t_file::*)(const t_string&, const t_string&), &io::t_file::f_reopen, t_with_lock_for_write>())
 		(a_extension->f_symbol_close(), t_member<void(io::t_file::*)(), &io::t_file::f_close, t_with_lock_for_write>())
 		(L"seek", t_member<void(io::t_file::*)(intptr_t, int), &io::t_file::f_seek, t_with_lock_for_write>())
 		(L"tell", t_member<intptr_t(io::t_file::*)() const, &io::t_file::f_tell, t_with_lock_for_read>())
@@ -129,10 +133,14 @@ void t_type_of<io::t_file>::f_define(t_io* a_extension)
 
 t_scoped t_type_of<io::t_file>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
+#ifdef __unix__
 	return t_overload<
-		t_construct<const std::wstring&, const std::wstring&>,
-		t_construct<int, const std::wstring&>
+		t_construct<const t_string&, const t_string&>,
+		t_construct<int, const t_string&>
 	>::t_bind<io::t_file>::f_do(this, a_stack, a_n);
+#else
+	return t_construct<const t_string&, const t_string&>::t_bind<io::t_file>::f_do(this, a_stack, a_n);
+#endif
 }
 
 }

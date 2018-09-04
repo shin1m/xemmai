@@ -22,6 +22,10 @@ catch Throwable e
 	e.dump(
 	assert(true
 assert(t == Tuple("one", 2, 'three, 4.0)
+s = ""
+t.each(@(x) :s = s + " " + x
+print(s
+assert(s == " one 2 three 4"
 
 Foo = Class(Tuple) :: @
 	$__construct = @(*xs) :$^__construct[$](0, *xs)

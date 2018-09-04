@@ -14,6 +14,13 @@ void t_type::f_initialize(xemmai::t_extension* a_extension, t_stacked* a_stack, 
 	a_stack[0].f_construct();
 }
 
+t_scoped t_type::f_string(const t_value& a_self)
+{
+	wchar_t cs[13 + sizeof(t_object*) * 2];
+	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
+	return t_string::f_instantiate(cs, n);
+}
+
 void t_type::f_own(const t_value& a_self)
 {
 	if (a_self.f_tag() >= t_value::e_tag__OBJECT) static_cast<t_object*>(a_self)->f_own();
@@ -29,7 +36,7 @@ void t_type::f_define()
 	v_builtin = v_primitive = true;
 	t_define<t_object, t_object>(f_global(), L"Object", v_this)
 		(f_global()->f_symbol_initialize(), f_initialize)
-		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f__hash>())
 		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f__equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f__not_equals>())

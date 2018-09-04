@@ -80,12 +80,12 @@ void t_writer::f_close(t_io* a_extension)
 void t_writer::f_write(t_io* a_extension, const t_value& a_value)
 {
 	if (!v_stream) f_throw(L"already closed.");
-	if (f_is<const std::wstring&>(a_value)) {
-		f_write(a_extension, f_as<const std::wstring&>(a_value));
+	if (f_is<t_string>(a_value)) {
+		f_write(a_extension, f_as<const t_string&>(a_value));
 	} else {
 		t_scoped x = a_value.f_invoke(f_global()->f_symbol_string());
-		f_check<const std::wstring&>(x, L"value");
-		f_write(a_extension, f_as<const std::wstring&>(x));
+		f_check<t_string>(x, L"value");
+		f_write(a_extension, f_as<const t_string&>(x));
 	}
 }
 
@@ -100,12 +100,12 @@ void t_writer::f_write_line(t_io* a_extension)
 void t_writer::f_write_line(t_io* a_extension, const t_value& a_value)
 {
 	if (!v_stream) f_throw(L"already closed.");
-	if (f_is<const std::wstring&>(a_value)) {
-		f_write(a_extension, f_as<const std::wstring&>(a_value));
+	if (f_is<t_string>(a_value)) {
+		f_write(a_extension, f_as<const t_string&>(a_value));
 	} else {
 		t_scoped x = a_value.f_invoke(f_global()->f_symbol_string());
-		f_check<const std::wstring&>(x, L"value");
-		f_write(a_extension, f_as<const std::wstring&>(x));
+		f_check<t_string>(x, L"value");
+		f_write(a_extension, f_as<const t_string&>(x));
 	}
 	f_write(a_extension, L"\n", 1);
 	f_unshift(a_extension);
@@ -124,7 +124,7 @@ void t_writer::f_flush(t_io* a_extension)
 void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
 	t_define<io::t_writer, t_object>(a_extension, L"Writer")
-		(t_construct<t_scoped&&, const std::wstring&>())
+		(t_construct<t_scoped&&, const t_string&>())
 		(a_extension->f_symbol_close(), t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_close, t_with_lock_for_write>())
 		(a_extension->f_symbol_write(), t_member<void(io::t_writer::*)(t_io*, const t_value&), &io::t_writer::f_write, t_with_lock_for_write>())
 		(a_extension->f_symbol_write_line(),
@@ -144,7 +144,7 @@ void t_type_of<io::t_writer>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 t_scoped t_type_of<io::t_writer>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<t_scoped&&, const std::wstring&>::t_bind<io::t_writer>::f_do(this, a_stack, a_n);
+	return t_construct<t_scoped&&, const t_string&>::t_bind<io::t_writer>::f_do(this, a_stack, a_n);
 }
 
 }

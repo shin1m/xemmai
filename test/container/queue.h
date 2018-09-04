@@ -1,7 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include <xemmai/object.h>
+#include <xemmai/string.h>
 
 using namespace xemmai;
 
@@ -32,9 +32,9 @@ public:
 	{
 		std::printf("t_queue::t_queue()\n");
 	}
-	t_queue(const std::wstring& a_message)
+	t_queue(const t_string& a_message)
 	{
-		std::printf("t_queue::t_queue(a_message = %ls)\n", a_message.c_str());
+		std::printf("t_queue::t_queue(a_message = %ls)\n", a_message.f_wstring().c_str());
 	}
 	void f_scan(t_scan a_scan)
 	{

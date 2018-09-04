@@ -28,10 +28,10 @@ struct t_os : t_extension
 namespace
 {
 
-int f_system(const std::wstring& a_command)
+int f_system(const t_string& a_command)
 {
 	t_safe_region region;
-	return std::system(portable::f_convert(a_command).c_str());
+	return std::system(portable::f_convert(a_command.f_wstring()).c_str());
 }
 
 void f_sleep(intptr_t a_miliseconds)
@@ -61,7 +61,7 @@ t_scoped f_pipe()
 
 t_os::t_os(t_object* a_module) : t_extension(a_module)
 {
-	f_define<int(*)(const std::wstring&), f_system>(this, L"system");
+	f_define<int(*)(const t_string&), f_system>(this, L"system");
 	f_define<void(*)(intptr_t), f_sleep>(this, L"sleep");
 #ifdef __unix__
 	f_define<t_scoped(*)(), f_pipe>(this, L"pipe");

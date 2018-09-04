@@ -145,39 +145,45 @@ void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_s
 	a_stack[0].f_construct(std::move(p));
 }
 
-std::wstring t_type_of<t_dictionary>::f_string(const t_value& a_self)
+t_scoped t_type_of<t_dictionary>::f_string(const t_value& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
 	t_dictionary::t_iterator i(f_as<const t_dictionary&>(a_self));
+	std::vector<wchar_t> cs{L'{'};
 	t_scoped x;
 	t_scoped y;
-	if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	auto get = [&]
 	{
 		if (!i.f_entry()) return false;
 		x = i.f_entry()->f_key();
 		y = i.f_entry()->v_value;
 		return true;
-	})) return L"{}";
-	x = x.f_invoke(f_global()->f_symbol_string());
-	f_check<const std::wstring&>(x, L"key");
-	y = y.f_invoke(f_global()->f_symbol_string());
-	f_check<const std::wstring&>(y, L"value");
-	std::wstring s = f_as<const std::wstring&>(x) + L": " + f_as<const std::wstring&>(y);
-	while (f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
-	{
-		i.f_next();
-		if (!i.f_entry()) return false;
-		x = i.f_entry()->f_key();
-		y = i.f_entry()->v_value;
-		return true;
-	})) {
-		x = x.f_invoke(f_global()->f_symbol_string());
-		f_check<const std::wstring&>(x, L"key");
-		y = y.f_invoke(f_global()->f_symbol_string());
-		f_check<const std::wstring&>(y, L"value");
-		s += L", " + f_as<const std::wstring&>(x) + L": " + f_as<const std::wstring&>(y);
+	};
+	if (f_owned_or_shared<t_with_lock_for_read>(a_self, get)) {
+		auto push = [&](t_scoped& x, const wchar_t* name)
+		{
+			x = x.f_invoke(f_global()->f_symbol_string());
+			f_check<t_string>(x, name);
+			auto& s = f_as<const t_string&>(x);
+			auto p = static_cast<const wchar_t*>(s);
+			cs.insert(cs.end(), p, p + s.f_size());
+		};
+		while (true) {
+			push(x, L"key");
+			cs.push_back(L':');
+			cs.push_back(L' ');
+			push(y, L"value");
+			if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+			{
+				i.f_next();
+				return get();
+			})) break;
+			cs.push_back(L',');
+			cs.push_back(L' ');
+		}
 	}
-	return L'{' + s + L'}';
+	cs.push_back(L'}');
+	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
 void t_type_of<t_dictionary>::f_clear(const t_value& a_self)
@@ -258,7 +264,7 @@ void t_type_of<t_dictionary>::f_define()
 	f_global()->v_type_dictionary__table.f_construct((new t_type_of<t_dictionary::t_table>(t_type_of<t_dictionary::t_table>::V_ids, f_global()->f_type<t_object>(), f_global()->f_module()))->v_this);
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
 		(f_global()->f_symbol_construct(), f__construct)
-		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
 		(L"clear", t_member<void(*)(const t_value&), f_clear>())
 		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_value&), f_size>())
 		(f_global()->f_symbol_get_at(), t_member<t_scoped(*)(const t_value&, const t_value&), f__get_at>())

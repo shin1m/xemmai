@@ -2,66 +2,166 @@
 #define XEMMAI__STRING_H
 
 #include "object.h"
+#include <algorithm>
 
 namespace xemmai
 {
 
+class t_string
+{
+	friend struct t_finalizes<t_bears<t_string, t_type_immutable>>;
+	friend struct t_type_of<t_string>;
+
+	size_t v_size;
+	size_t v_hash;
+
+	void* operator new(size_t a_size, size_t a_n)
+	{
+		return new char[a_size + sizeof(wchar_t) * a_n];
+	}
+	void operator delete(void* a_p)
+	{
+		delete[] static_cast<char*>(a_p);
+	}
+	void operator delete(void* a_p, size_t)
+	{
+		delete[] static_cast<char*>(a_p);
+	}
+
+	t_string(size_t a_size) : v_size(a_size)
+	{
+	}
+	~t_string() = default;
+	wchar_t* f_entries() const
+	{
+		return const_cast<wchar_t*>(static_cast<const wchar_t*>(*this));
+	}
+
+public:
+	static t_string* f_new(t_string* a_p)
+	{
+		return a_p;
+	}
+	static t_string* f_new(const wchar_t* a_p, size_t a_n)
+	{
+		auto p = new(a_n) t_string(a_n);
+		std::copy_n(a_p, a_n, p->f_entries());
+		return p;
+	}
+	static t_string* f_new(const t_string& a_value)
+	{
+		return f_new(static_cast<const wchar_t*>(a_value), a_value.v_size);
+	}
+	static t_string* f_new(const std::wstring& a_value)
+	{
+		return f_new(a_value.data(), a_value.size());
+	}
+	static t_string* f_new(const t_string& a_x, const t_string& a_y)
+	{
+		size_t n = a_x.v_size + a_y.v_size;
+		auto p = new(n) t_string(n);
+		std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, p->f_entries()));
+		return p;
+	}
+	static t_scoped f_instantiate(const wchar_t* a_p, size_t a_n);
+
+	size_t f_size() const
+	{
+		return v_size;
+	}
+	operator const wchar_t*() const
+	{
+		return reinterpret_cast<const wchar_t*>(this + 1);
+	}
+	operator std::wstring() const
+	{
+		return {static_cast<const wchar_t*>(*this), v_size};
+	}
+	std::wstring f_wstring() const
+	{
+		return {static_cast<const wchar_t*>(*this), v_size};
+	}
+	intptr_t f_hash() const
+	{
+		return std::hash<std::wstring>{}(*this);
+	}
+	bool operator==(const t_string& a_x) const
+	{
+		return v_size == a_x.v_size && std::char_traits<wchar_t>::compare(*this, a_x, v_size) == 0;
+	}
+	bool operator!=(const t_string& a_x) const
+	{
+		return !(*this == a_x);
+	}
+	int f_compare(const t_string& a_x) const
+	{
+		int n = std::char_traits<wchar_t>::compare(*this, a_x, std::min(v_size, a_x.v_size));
+		if (n != 0) return n;
+		return v_size < a_x.v_size ? -1 : v_size > a_x.v_size ? 1 : 0;
+	}
+};
+
 template<>
-struct t_type_of<std::wstring> : t_derivable<t_holds<std::wstring, t_type_immutable>>
+struct t_fundamental<std::wstring>
+{
+	typedef t_string t_type;
+};
+
+template<>
+struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 {
 	template<typename T>
-	static t_scoped f_transfer(t_type* a_type, T&& a_value)
+	static t_scoped f__construct(t_type* a_class, T&& a_value)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(a_type);
-		object.f_pointer__(new std::wstring(std::forward<T>(a_value)));
+		t_scoped object = t_object::f_allocate_uninitialized(a_class);
+		object.f_pointer__(t_string::f_new(std::forward<T>(a_value)));
 		return object;
 	}
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
 	{
-		return f_transfer(a_extension->template f_type<typename t_fundamental<T>::t_type>(), std::forward<T>(a_value));
+		return f__construct(a_extension->template f_type<typename t_fundamental<T>::t_type>(), std::forward<T>(a_value));
 	}
 	template<typename T>
 	static t_scoped f_transfer(const t_global* a_extension, T&& a_value);
-	static std::wstring f_from_code(intptr_t a_code)
-	{
-		return std::wstring(1, a_code);
-	}
+	static t_scoped f_from_code(t_global* a_extension, intptr_t a_code);
 	static t_scoped f_string(t_scoped&& a_self)
 	{
 		return a_self;
 	}
-	static intptr_t f__hash(const std::wstring& a_self)
+	static t_scoped f__add(t_global* a_extension, t_object* a_self, t_scoped&& a_value);
+	static t_scoped f__add(t_global* a_extension, const t_value& a_self, t_scoped&& a_value)
 	{
-		return std::hash<std::wstring>{}(a_self);
+		return f__add(a_extension, static_cast<t_object*>(a_self), std::move(a_value));
 	}
-	static bool f__less(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__less(const t_string& a_self, const t_string& a_value)
 	{
-		return a_self < a_value;
+		return a_self.f_compare(a_value) < 0;
 	}
-	static bool f__less_equal(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__less_equal(const t_string& a_self, const t_string& a_value)
 	{
-		return a_self <= a_value;
+		return a_self.f_compare(a_value) <= 0;
 	}
-	static bool f__greater(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__greater(const t_string& a_self, const t_string& a_value)
 	{
-		return a_self > a_value;
+		return a_self.f_compare(a_value) > 0;
 	}
-	static bool f__greater_equal(const std::wstring& a_self, const std::wstring& a_value)
+	static bool f__greater_equal(const t_string& a_self, const t_string& a_value)
 	{
-		return a_self >= a_value;
+		return a_self.f_compare(a_value) >= 0;
 	}
-	static bool f__equals(const std::wstring& a_self, const t_value& a_value);
-	static bool f__not_equals(const std::wstring& a_self, const t_value& a_value);
-	static std::wstring f_substring(const std::wstring& a_self, size_t a_i)
+	static bool f__equals(const t_string& a_self, const t_value& a_value);
+	static bool f__not_equals(const t_string& a_self, const t_value& a_value);
+	static t_scoped f__substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n);
+	static t_scoped f_substring(t_global* a_extension, const t_string& a_self, size_t a_i)
 	{
-		return a_self.substr(a_i);
+		return f__substring(a_extension, a_self, a_i, a_self.f_size() - a_i);
 	}
-	static std::wstring f_substring(const std::wstring& a_self, size_t a_i, size_t a_n)
+	static t_scoped f_substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n)
 	{
-		return a_self.substr(a_i, a_n);
+		return f__substring(a_extension, a_self, a_i, std::min(a_n, a_self.f_size() - a_i));
 	}
-	static intptr_t f_code_at(const std::wstring& a_self, size_t a_i)
+	static intptr_t f_code_at(const t_string& a_self, size_t a_i)
 	{
 		return a_self[a_i];
 	}

@@ -2,6 +2,7 @@
 #define XEMMAI__THROWABLE_H
 
 #include "fiber.h"
+#include "string.h"
 
 namespace xemmai
 {
@@ -39,6 +40,9 @@ protected:
 public:
 	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_message);
 
+	t_throwable(const t_string& a_message) : v_message(a_message.f_wstring())
+	{
+	}
 	t_throwable(const std::wstring& a_message) : v_message(a_message)
 	{
 	}

@@ -72,22 +72,22 @@ void t_reader::f_close(t_io* a_extension)
 	v_stream = nullptr;
 }
 
-std::wstring t_reader::f_read(t_io* a_extension, size_t a_size)
+t_scoped t_reader::f_read(t_io* a_extension, size_t a_size)
 {
 	if (!v_stream) f_throw(L"already closed.");
-	std::wstring s(a_size, L'\0');
+	std::vector<wchar_t> cs(a_size);
 	for (size_t i = 0; i < a_size; ++i) {
 		wint_t c = f_get(a_extension);
 		if (c == WEOF) {
-			s.resize(i);
+			cs.resize(i);
 			break;
 		}
-		s[i] = c;
+		cs[i] = c;
 	}
-	return s;
+	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
-std::wstring t_reader::f_read_line(t_io* a_extension)
+t_scoped t_reader::f_read_line(t_io* a_extension)
 {
 	if (!v_stream) f_throw(L"already closed.");
 	std::vector<wchar_t> cs;
@@ -97,7 +97,7 @@ std::wstring t_reader::f_read_line(t_io* a_extension)
 		cs.push_back(c);
 		if (c == L'\n') break;
 	}
-	return {cs.begin(), cs.end()};
+	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
 }
@@ -106,12 +106,12 @@ void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader")
 		(
-			t_construct<t_scoped&&, const std::wstring&>(),
-			t_construct<t_scoped&&, const std::wstring&, size_t>()
+			t_construct<t_scoped&&, t_string&>(),
+			t_construct<t_scoped&&, t_string&, size_t>()
 		)
 		(a_extension->f_symbol_close(), t_member<void(io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
-		(a_extension->f_symbol_read(), t_member<std::wstring(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
-		(a_extension->f_symbol_read_line(), t_member<std::wstring(io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
+		(a_extension->f_symbol_read(), t_member<t_scoped(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
+		(a_extension->f_symbol_read_line(), t_member<t_scoped(io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
 	;
 }
 
@@ -125,8 +125,8 @@ void t_type_of<io::t_reader>::f_do_scan(t_object* a_this, t_scan a_scan)
 t_scoped t_type_of<io::t_reader>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct<t_scoped&&, const std::wstring&>,
-		t_construct<t_scoped&&, const std::wstring&, size_t>
+		t_construct<t_scoped&&, const t_string&>,
+		t_construct<t_scoped&&, const t_string&, size_t>
 	>::t_bind<io::t_reader>::f_do(this, a_stack, a_n);
 }
 

@@ -39,7 +39,7 @@ t_scoped t_type_of<t_queue>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct<>,
-		t_construct<const std::wstring&>
+		t_construct<const t_string&>
 	>::t_bind<t_queue>::f_do(this, a_stack, a_n);
 }
 

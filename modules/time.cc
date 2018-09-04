@@ -397,7 +397,7 @@ const wchar_t* v_rfc2822_months[] = {
 	L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"
 };
 
-t_scoped f_parse_rfc2822(const std::wstring& a_value)
+t_scoped f_parse_rfc2822(std::wstring a_value)
 {
 	const wchar_t* s = a_value.c_str();
 	intptr_t day;
@@ -427,7 +427,7 @@ t_scoped f_parse_rfc2822(const std::wstring& a_value)
 	return f_tuple(year, m, day, hour, minute, second, f_zone_to_offset(zone));
 }
 
-std::wstring f_format_rfc2822(const t_tuple& a_value, intptr_t a_offset)
+t_scoped f_format_rfc2822(const t_tuple& a_value, intptr_t a_offset)
 {
 	size_t n = a_value.f_size();
 	if (n < 7) f_throw(L"must have at least 7 items.");
@@ -441,11 +441,11 @@ std::wstring f_format_rfc2822(const t_tuple& a_value, intptr_t a_offset)
 	wchar_t sign = a_offset > 0 ? L'+' : L'-';
 	a_offset = std::abs(a_offset) / 60;
 	wchar_t cs[32];
-	std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
-	return cs;
+	n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
+	return t_string::f_instantiate(cs, n);
 }
 
-t_scoped f_parse_http(const std::wstring& a_value)
+t_scoped f_parse_http(std::wstring a_value)
 {
 	intptr_t day;
 	wchar_t month[4];
@@ -470,7 +470,7 @@ t_scoped f_parse_http(const std::wstring& a_value)
 	return f_tuple(year, m, day, hour, minute, second);
 }
 
-std::wstring f_format_http(const t_tuple& a_value)
+t_scoped f_format_http(const t_tuple& a_value)
 {
 	if (a_value.f_size() < 7) f_throw(L"must have at least 7 items.");
 	intptr_t year = f_item(a_value, 0);
@@ -481,11 +481,11 @@ std::wstring f_format_http(const t_tuple& a_value)
 	intptr_t second = static_cast<intptr_t>(std::floor(f_item_with_fraction(a_value, 5)));
 	intptr_t week = f_item(a_value, 6);
 	wchar_t cs[30];
-	std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
-	return cs;
+	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
+	return t_string::f_instantiate(cs, n);
 }
 
-t_scoped f_parse_xsd(const std::wstring& a_value)
+t_scoped f_parse_xsd(std::wstring a_value)
 {
 	intptr_t year;
 	intptr_t month;
@@ -499,7 +499,7 @@ t_scoped f_parse_xsd(const std::wstring& a_value)
 	return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
 }
 
-std::wstring f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_precision)
+t_scoped f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_precision)
 {
 	if (a_value.f_size() < 6) f_throw(L"must have at least 6 items.");
 	intptr_t year = f_item(a_value, 0);
@@ -509,14 +509,15 @@ std::wstring f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_
 	intptr_t minute = f_item(a_value, 4);
 	double second = f_item_with_fraction(a_value, 5);
 	wchar_t cs[30];
+	size_t n;
 	if (a_offset == 0) {
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*fZ"), year, month, day, hour, minute, a_precision, second);
+		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*fZ"), year, month, day, hour, minute, a_precision, second);
 	} else {
 		wchar_t sign = a_offset > 0 ? L'+' : L'-';
 		a_offset = std::abs(a_offset) / 60;
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*f%lc%02" PRIdPTR ":%02" PRIdPTR), year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
+		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*f%lc%02" PRIdPTR ":%02" PRIdPTR), year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
 	}
-	return cs;
+	return t_string::f_instantiate(cs, n);
 }
 
 }
@@ -531,12 +532,12 @@ t_time::t_time(t_object* a_module) : t_extension(a_module)
 	f_define<double(*)(const t_tuple&), f_compose>(this, L"compose");
 	f_define<t_scoped(*)(double), f_decompose>(this, L"decompose");
 	f_define<intptr_t(*)(), f_offset>(this, L"offset");
-	f_define<t_scoped(*)(const std::wstring&), f_parse_rfc2822>(this, L"parse_rfc2822");
-	f_define<std::wstring(*)(const t_tuple&, intptr_t), f_format_rfc2822>(this, L"format_rfc2822");
-	f_define<t_scoped(*)(const std::wstring&), f_parse_http>(this, L"parse_http");
-	f_define<std::wstring(*)(const t_tuple&), f_format_http>(this, L"format_http");
-	f_define<t_scoped(*)(const std::wstring&), f_parse_xsd>(this, L"parse_xsd");
-	f_define<std::wstring(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd");
+	f_define<t_scoped(*)(std::wstring), f_parse_rfc2822>(this, L"parse_rfc2822");
+	f_define<t_scoped(*)(const t_tuple&, intptr_t), f_format_rfc2822>(this, L"format_rfc2822");
+	f_define<t_scoped(*)(std::wstring), f_parse_http>(this, L"parse_http");
+	f_define<t_scoped(*)(const t_tuple&), f_format_http>(this, L"format_http");
+	f_define<t_scoped(*)(std::wstring), f_parse_xsd>(this, L"parse_xsd");
+	f_define<t_scoped(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd");
 }
 
 }

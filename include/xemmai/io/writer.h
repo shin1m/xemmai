@@ -1,9 +1,8 @@
 #ifndef XEMMAI__IO__WRITER_H
 #define XEMMAI__IO__WRITER_H
 
+#include "../string.h"
 #include <iconv.h>
-
-#include "../object.h"
 
 namespace xemmai
 {
@@ -25,9 +24,9 @@ class t_writer
 
 	void f_write(t_io* a_extension);
 	void f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n);
-	void f_write(t_io* a_extension, const std::wstring& a_text)
+	void f_write(t_io* a_extension, const t_string& a_text)
 	{
-		f_write(a_extension, a_text.c_str(), a_text.size());
+		f_write(a_extension, a_text, a_text.f_size());
 	}
 	void f_unshift(t_io* a_extension);
 
@@ -35,6 +34,9 @@ public:
 	static t_scoped f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding);
 
 	t_writer(t_scoped&& a_stream, const std::wstring& a_encoding);
+	t_writer(t_scoped&& a_stream, const t_string& a_encoding) : t_writer(std::move(a_stream), a_encoding.f_wstring())
+	{
+	}
 	~t_writer()
 	{
 		iconv_close(v_cd);

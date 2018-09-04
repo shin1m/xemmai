@@ -12,17 +12,19 @@ t_scoped t_bytes::f_instantiate(size_t a_size)
 	return object;
 }
 
-std::wstring t_bytes::f_string() const
+t_scoped t_bytes::f_string() const
 {
-	if (v_size <= 0) return L"[]";
-	wchar_t cs[6];
-	std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%02x", (*this)[0]);
-	std::wstring s = cs;
-	for (size_t i = 1; i < v_size; ++i) {
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L", %02x", (*this)[i]);
-		s += cs;
+	std::vector<wchar_t> cs{L'\'', L'['};
+	if (v_size > 0) for (size_t i = 0;;) {
+		wchar_t s[3];
+		std::swprintf(s, 3, L"%02x", (*this)[i]);
+		cs.insert(cs.end(), s, s + 2);
+		if (++i >= v_size) break;
+		cs.push_back(L',');
+		cs.push_back(L' ');
 	}
-	return L'[' + s + L']';
+	cs.push_back(L']');
+	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
 void t_type_of<t_bytes>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
@@ -42,7 +44,7 @@ void t_type_of<t_bytes>::f_define()
 {
 	t_define<t_bytes, t_object>(f_global(), L"Bytes")
 		(f_global()->f_symbol_construct(), f__construct)
-		(f_global()->f_symbol_string(), t_member<std::wstring(t_bytes::*)() const, &t_bytes::f_string>())
+		(f_global()->f_symbol_string(), t_member<t_scoped(t_bytes::*)() const, &t_bytes::f_string>())
 		(f_global()->f_symbol_get_at(), t_member<intptr_t(t_bytes::*)(intptr_t) const, &t_bytes::f_get_at>())
 		(f_global()->f_symbol_set_at(), t_member<intptr_t(t_bytes::*)(intptr_t, intptr_t), &t_bytes::f_set_at>())
 		(L"size", t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())

@@ -54,7 +54,7 @@ class t_bytes
 public:
 	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
 
-	std::wstring f_string() const;
+	t_scoped f_string() const;
 	intptr_t f_get_at(intptr_t a_index) const
 	{
 		f_validate(a_index);

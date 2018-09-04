@@ -5,6 +5,13 @@
 namespace xemmai
 {
 
+t_scoped t_type_of<intptr_t>::f_string(intptr_t a_self)
+{
+	wchar_t cs[32];
+	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%" PRIdPTR), a_self);
+	return t_string::f_instantiate(cs, n);
+}
+
 t_scoped t_type_of<intptr_t>::f__multiply(intptr_t a_self, const t_value& a_value)
 {
 	switch (a_value.f_tag()) {
@@ -197,7 +204,7 @@ void t_type_of<intptr_t>::f_define()
 {
 	t_define<intptr_t, t_object>(f_global(), L"Integer")
 		(t_construct_with<t_scoped(*)(t_type*, intptr_t), f_construct_derived>())
-		(f_global()->f_symbol_string(), t_member<std::wstring(*)(intptr_t), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_scoped(*)(intptr_t), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(intptr_t), f__hash>())
 		(f_global()->f_symbol_plus(), t_member<intptr_t(*)(intptr_t), f__plus>())
 		(f_global()->f_symbol_minus(), t_member<intptr_t(*)(intptr_t), f__minus>())
@@ -226,7 +233,7 @@ t_scoped t_type_of<intptr_t>::f_do_construct(t_stacked* a_stack, size_t a_n)
 	return t_overload<
 		t_construct_with<t_scoped(*)(t_type*, intptr_t), f_construct>,
 		t_construct_with<t_scoped(*)(t_type*, double), f_construct>,
-		t_construct_with<t_scoped(*)(t_type*, const std::wstring&), f_construct>
+		t_construct_with<t_scoped(*)(t_type*, const t_string&), f_construct>
 	>::t_bind<intptr_t>::f_do(this, a_stack, a_n);
 }
 

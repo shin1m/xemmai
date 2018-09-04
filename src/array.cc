@@ -1,6 +1,5 @@
 #include <xemmai/array.h>
 
-#include <algorithm>
 #include <xemmai/convert.h>
 
 namespace xemmai
@@ -126,33 +125,35 @@ void t_type_of<t_array>::f__construct(xemmai::t_extension* a_extension, t_stacke
 	a_stack[0].f_construct(std::move(p));
 }
 
-std::wstring t_type_of<t_array>::f_string(const t_value& a_self)
+t_scoped t_type_of<t_array>::f_string(const t_value& a_self)
 {
 	f_check<t_array>(a_self, L"this");
 	auto& array = f_as<const t_array&>(a_self);
+	std::vector<wchar_t> cs{L'['};
 	t_scoped x;
-	if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	if (f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
 	{
 		if (array.f_size() <= 0) return false;
 		x = array[0];
 		return true;
-	})) return L"[]";
-	x = x.f_invoke(f_global()->f_symbol_string());
-	f_check<const std::wstring&>(x, L"value");
-	std::wstring s = f_as<const std::wstring&>(x);
-	size_t i = 1;
-	while (f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
-	{
-		if (i >= array.f_size()) return false;
-		x = array[i];
-		return true;
-	})) {
+	})) for (size_t i = 0;;) {
 		x = x.f_invoke(f_global()->f_symbol_string());
-		f_check<const std::wstring&>(x, L"value");
-		s += L", " + f_as<const std::wstring&>(x);
+		f_check<t_string>(x, L"value");
+		auto& s = f_as<const t_string&>(x);
+		auto p = static_cast<const wchar_t*>(s);
+		cs.insert(cs.end(), p, p + s.f_size());
 		++i;
+		if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+		{
+			if (i >= array.f_size()) return false;
+			x = array[i];
+			return true;
+		})) break;
+		cs.push_back(L',');
+		cs.push_back(L' ');
 	}
-	return L'[' + s + L']';
+	cs.push_back(L']');
+	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
 void t_type_of<t_array>::f_clear(const t_value& a_self)
@@ -302,7 +303,7 @@ void t_type_of<t_array>::f_define()
 {
 	t_define<t_array, t_object>(f_global(), L"Array")
 		(f_global()->f_symbol_construct(), f__construct)
-		(f_global()->f_symbol_string(), t_member<std::wstring(*)(const t_value&), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
 		(L"clear", t_member<void(*)(const t_value&), f_clear>())
 		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_value&), f_size>())
 		(f_global()->f_symbol_get_at(), t_member<t_scoped(*)(const t_value&, intptr_t), f__get_at>())

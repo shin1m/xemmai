@@ -2,6 +2,7 @@
 #define XEMMAI__FLOAT_H
 
 #include "class.h"
+#include "string.h"
 
 namespace xemmai
 {
@@ -67,9 +68,9 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 	{
 		return t_scoped(static_cast<double>(a_value));
 	}
-	static t_scoped f_construct(t_type* a_class, const std::wstring& a_value)
+	static t_scoped f_construct(t_type* a_class, const t_string& a_value)
 	{
-		return t_scoped(f_parse(a_value.c_str()));
+		return t_scoped(f_parse(a_value));
 	}
 	static t_scoped f_construct_derived(t_type* a_class, double a_value)
 	{
@@ -82,12 +83,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 		wchar_t* p;
 		return std::wcstod(a_value, &p);
 	}
-	static std::wstring f_string(double a_self)
-	{
-		wchar_t cs[32];
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%g", a_self);
-		return cs;
-	}
+	static t_scoped f_string(double a_self);
 	static intptr_t f__hash(double a_self)
 	{
 		union

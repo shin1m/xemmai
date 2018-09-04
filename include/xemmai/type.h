@@ -160,12 +160,7 @@ struct t_type_of<t_object>
 		return t_scoped(std::forward<T>(a_value));
 	}
 	static void f_initialize(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
-	static std::wstring f_string(const t_value& a_self)
-	{
-		wchar_t cs[13 + sizeof(t_object*) * 2];
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
-		return cs;
-	}
+	static t_scoped f_string(const t_value& a_self);
 	static intptr_t f__hash(const t_value& a_self)
 	{
 		return a_self.f_tag();

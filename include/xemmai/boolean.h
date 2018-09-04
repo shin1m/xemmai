@@ -28,10 +28,7 @@ struct t_type_of<bool> : t_uninstantiatable<t_underivable<t_bears<bool, t_type_i
 		}
 	};
 
-	static std::wstring f_string(bool a_self)
-	{
-		return a_self ? L"true" : L"false";
-	}
+	static t_scoped f_string(bool a_self);
 	static intptr_t f__hash(bool a_self)
 	{
 		return a_self ? 1 : 0;

@@ -189,7 +189,7 @@ public:
 		if (a_index >= v_size) f_throw(L"out of range.");
 		return (*this)[a_index];
 	}
-	std::wstring f_string() const;
+	t_scoped f_string() const;
 	intptr_t f_hash() const;
 	bool f_less(const t_tuple& a_other) const;
 	bool f_less_equal(const t_tuple& a_other) const;

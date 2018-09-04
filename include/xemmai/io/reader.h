@@ -1,9 +1,8 @@
 #ifndef XEMMAI__IO__READER_H
 #define XEMMAI__IO__READER_H
 
+#include "../string.h"
 #include <iconv.h>
-
-#include "../object.h"
 
 namespace xemmai
 {
@@ -30,7 +29,10 @@ public:
 	static t_scoped f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a_buffer);
 
 	t_reader(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a_buffer);
-	t_reader(t_scoped&& a_stream, const std::wstring& a_encoding) : t_reader(std::move(a_stream), a_encoding, 1024)
+	t_reader(t_scoped&& a_stream, const t_string& a_encoding, size_t a_buffer) : t_reader(std::move(a_stream), a_encoding.f_wstring(), a_buffer)
+	{
+	}
+	t_reader(t_scoped&& a_stream, const t_string& a_encoding) : t_reader(std::move(a_stream), a_encoding, 1024)
 	{
 	}
 	~t_reader()
@@ -38,8 +40,8 @@ public:
 		iconv_close(v_cd);
 	}
 	void f_close(t_io* a_extension);
-	std::wstring f_read(t_io* a_extension, size_t a_size);
-	std::wstring f_read_line(t_io* a_extension);
+	t_scoped f_read(t_io* a_extension, size_t a_size);
+	t_scoped f_read_line(t_io* a_extension);
 };
 
 }

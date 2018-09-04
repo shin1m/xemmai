@@ -2,6 +2,7 @@
 #define XEMMAI__INTEGER_H
 
 #include "class.h"
+#include "string.h"
 #include "macro.h"
 
 namespace xemmai
@@ -90,9 +91,9 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 	{
 		return t_scoped(static_cast<intptr_t>(a_value));
 	}
-	static t_scoped f_construct(t_type* a_class, const std::wstring& a_value)
+	static t_scoped f_construct(t_type* a_class, const t_string& a_value)
 	{
-		return t_scoped(f_parse(a_value.c_str()));
+		return t_scoped(f_parse(a_value));
 	}
 	static t_scoped f_construct_derived(t_type* a_class, intptr_t a_value)
 	{
@@ -106,12 +107,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 		std::swscanf(a_value, XEMMAI__MACRO__L("%" SCNiPTR), &value);
 		return value;
 	}
-	static std::wstring f_string(intptr_t a_self)
-	{
-		wchar_t cs[32];
-		std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%" PRIdPTR), a_self);
-		return cs;
-	}
+	static t_scoped f_string(intptr_t a_self);
 	static intptr_t f__hash(intptr_t a_self)
 	{
 		return a_self;

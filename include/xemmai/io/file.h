@@ -1,9 +1,9 @@
 #ifndef XEMMAI__IO__FILE_H
 #define XEMMAI__IO__FILE_H
 
-#include <cstdio>
-
 #include "../bytes.h"
+#include "../string.h"
+#include <cstdio>
 
 namespace xemmai
 {
@@ -27,25 +27,15 @@ public:
 	{
 		return f_instantiate(new t_file(a_stream));
 	}
-	static t_scoped f_instantiate(const std::wstring& a_path, const std::wstring& a_mode)
-	{
-		return f_instantiate(new t_file(a_path, a_mode));
-	}
-#ifdef __unix__
-	static t_scoped f_instantiate(int a_fd, const std::wstring& a_mode)
-	{
-		return f_instantiate(new t_file(a_fd, a_mode));
-	}
-#endif
 
 	t_file(std::FILE* a_stream) : v_stream(a_stream)
 	{
 	}
-	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const char* a_mode);
-	XEMMAI__PORTABLE__EXPORT t_file(const std::wstring& a_path, const std::wstring& a_mode);
+	t_file(const std::wstring& a_path, const char* a_mode);
+	t_file(const t_string& a_path, const t_string& a_mode);
 #ifdef __unix__
 	t_file(int a_fd, const char* a_mode);
-	t_file(int a_fd, const std::wstring& a_mode);
+	t_file(int a_fd, const t_string& a_mode);
 #endif
 	~t_file()
 	{
@@ -55,7 +45,7 @@ public:
 	{
 		return v_stream;
 	}
-	XEMMAI__PORTABLE__EXPORT void f_reopen(const std::wstring& a_path, const std::wstring& a_mode);
+	void f_reopen(const t_string& a_path, const t_string& a_mode);
 	void f_close()
 	{
 		if (v_stream == NULL) f_throw(L"already closed.");

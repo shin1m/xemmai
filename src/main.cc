@@ -220,8 +220,8 @@ class t_debugger : public xemmai::t_debugger
 				}
 				std::fputc(')', v_out);
 			}
-			if (f_is<std::wstring>(a_value)) {
-				std::fprintf(v_out, " \"%ls\"", f_as<std::wstring&>(a_value).c_str());
+			if (f_is<t_string>(a_value)) {
+				std::fprintf(v_out, " \"%ls\"", static_cast<const wchar_t*>(f_as<const t_string&>(a_value)));
 			} else if (f_is<t_tuple>(a_value)) {
 				std::fputs(" '(", v_out);
 				f_print_sequence<t_tuple>(a_value, a_depth);

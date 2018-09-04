@@ -371,7 +371,7 @@ inline t_slot_of<t_type>& t_global::f_type_slot<double>()
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<std::wstring>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_string>()
 {
 	return v_type_string;
 }
@@ -779,7 +779,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 			std::wstring s = L"<unprintable>";
 			try {
 				t_scoped p = thrown.f_invoke(f_global()->f_symbol_string());
-				if (f_is<std::wstring>(p)) s = f_as<const std::wstring&>(p);
+				if (f_is<t_string>(p)) s = f_as<std::wstring>(p);
 			} catch (...) {
 			}
 			std::fprintf(stderr, "caught: %ls\n", s.c_str());
@@ -808,9 +808,45 @@ inline size_t t_code::f_loop(t_context& a_context)
 }
 
 template<typename T>
-inline t_scoped t_type_of<std::wstring>::f_transfer(const t_global* a_extension, T&& a_value)
+inline t_scoped t_type_of<t_string>::f_transfer(const t_global* a_extension, T&& a_value)
 {
-	return a_value.empty() ? t_scoped(a_extension->f_string_empty()) : f_transfer(a_extension->f_type<std::wstring>(), std::forward<T>(a_value));
+	return a_value.empty() ? t_scoped(a_extension->f_string_empty()) : f__construct(a_extension->f_type<t_string>(), std::forward<T>(a_value));
+}
+
+inline t_scoped t_type_of<t_string>::f_from_code(t_global* a_extension, intptr_t a_code)
+{
+	wchar_t c = a_code;
+	return f__construct(a_extension->f_type<t_string>(), t_string::f_new(&c, 1));
+}
+
+XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_type_of<t_string>::f__add(t_global* a_extension, t_object* a_self, t_scoped&& a_value)
+{
+	auto& s0 = f_as<const t_string&>(a_self);
+	auto add = [&](t_scoped&& x)
+	{
+		if (s0.f_size() <= 0) return x;
+		auto& s1 = f_as<const t_string&>(x);
+		return s1.f_size() <= 0 ? t_scoped(a_self) : f__construct(a_extension->f_type<t_string>(), t_string::f_new(s0, s1));
+	};
+	if (f_is<t_string>(a_value)) return add(std::move(a_value));
+	t_scoped x = a_value.f_invoke(a_extension->f_symbol_string());
+	f_check<t_string>(x, L"argument0");
+	return add(std::move(x));
+}
+
+inline bool t_type_of<t_string>::f__equals(const t_string& a_self, const t_value& a_value)
+{
+	return f_is<t_string>(a_value) && a_self == f_as<const t_string&>(a_value);
+}
+
+inline bool t_type_of<t_string>::f__not_equals(const t_string& a_self, const t_value& a_value)
+{
+	return !f_is<t_string>(a_value) || a_self != f_as<const t_string&>(a_value);
+}
+
+inline t_scoped t_type_of<t_string>::f__substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n)
+{
+	return a_n > 0 ? f__construct(a_extension->f_type<t_string>(), t_string::f_new(static_cast<const wchar_t*>(a_self) + a_i, a_n)) : t_scoped(a_extension->f_string_empty());
 }
 
 }

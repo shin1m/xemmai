@@ -181,7 +181,7 @@ template<>
 struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
-	static std::wstring f_string(const t_value& a_self);
+	static t_scoped f_string(const t_value& a_self);
 	static void f_clear(const t_value& a_self);
 	static size_t f_size(const t_value& a_self);
 	static t_scoped f__get_at(const t_value& a_self, const t_value& a_key);
