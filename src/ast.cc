@@ -85,7 +85,7 @@ void t_lambda::f_safe_points(t_code& a_code, std::map<std::pair<size_t, void**>,
 	t_code::t_variable self;
 	self.v_shared = v_self_shared;
 	self.v_index = v_self_shared ? 0 : -1;
-	a_code.v_variables.emplace(L"$", self);
+	a_code.v_variables.emplace(L"$"sv, self);
 	for (auto& pair : v_variables) a_code.v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
 	std::wstring prefix;
 	self.v_shared = true;
@@ -843,7 +843,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		case e_instruction__COMPLEMENT_T:
 			return t_literal<intptr_t>(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
-			f_throw(L"not supported.");
+			f_throw(L"not supported."sv);
 		}
 	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
 		switch (v_instruction) {
@@ -852,7 +852,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		case e_instruction__MINUS_T:
 			return t_literal<double>(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
-			f_throw(L"not supported.");
+			f_throw(L"not supported."sv);
 		}
 	}
 	size_t instruction = v_instruction;
@@ -939,7 +939,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__OR_TT:
 				return t_literal<intptr_t>(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported.");
+				f_throw(L"not supported."sv);
 			}
 		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
 			a_emit.f_pop();
@@ -969,7 +969,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__NOT_IDENTICAL_TT:
 				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported.");
+				f_throw(L"not supported."sv);
 			}
 		}
 	} else if (left.v_tag == t_operand::e_tag__FLOAT) {
@@ -1001,7 +1001,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__NOT_IDENTICAL_TT:
 				return t_literal<bool>(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported.");
+				f_throw(L"not supported."sv);
 			}
 		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
 			a_emit.f_pop();
@@ -1029,7 +1029,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__NOT_IDENTICAL_TT:
 				return t_literal<bool>(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported.");
+				f_throw(L"not supported."sv);
 			}
 		}
 	}
@@ -1243,7 +1243,7 @@ t_scoped t_emit::operator()(ast::t_scope& a_scope)
 		t_code::t_variable self;
 		self.v_shared = a_scope.v_self_shared;
 		self.v_index = a_scope.v_self_shared ? 0 : -1;
-		v_code->v_variables.emplace(L"$", self);
+		v_code->v_variables.emplace(L"$"sv, self);
 		for (auto& pair : a_scope.v_variables) v_code->v_variables.emplace(f_as<t_symbol&>(pair.first).f_string(), pair.second);
 		for (auto& x : safe_positions) v_safe_points->emplace(std::make_pair(std::get<0>(x), &v_code->v_instructions[std::get<1>(x)]), std::get<2>(x));
 	}

@@ -4,6 +4,8 @@
 #include "object.h"
 #include <algorithm>
 
+//#define XEMMAI__STRING__HASHED
+
 namespace xemmai
 {
 
@@ -13,7 +15,10 @@ class t_string
 	friend struct t_type_of<t_string>;
 
 	size_t v_size;
-	size_t v_hash;
+#ifdef XEMMAI__STRING__HASHED
+	mutable bool v_hashed = false;
+	mutable size_t v_hash;
+#endif
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
@@ -38,10 +43,6 @@ class t_string
 	}
 
 public:
-	static t_string* f_new(t_string* a_p)
-	{
-		return a_p;
-	}
 	static t_string* f_new(const wchar_t* a_p, size_t a_n)
 	{
 		auto p = new(a_n) t_string(a_n);
@@ -52,7 +53,7 @@ public:
 	{
 		return f_new(static_cast<const wchar_t*>(a_value), a_value.v_size);
 	}
-	static t_string* f_new(const std::wstring& a_value)
+	static t_string* f_new(std::wstring_view a_value)
 	{
 		return f_new(a_value.data(), a_value.size());
 	}
@@ -64,6 +65,10 @@ public:
 		return p;
 	}
 	static t_scoped f_instantiate(const wchar_t* a_p, size_t a_n);
+	static t_scoped f_instantiate(std::wstring_view a_value)
+	{
+		return f_instantiate(a_value.data(), a_value.size());
+	}
 
 	size_t f_size() const
 	{
@@ -73,21 +78,33 @@ public:
 	{
 		return reinterpret_cast<const wchar_t*>(this + 1);
 	}
-	operator std::wstring() const
+	operator std::wstring_view() const
 	{
 		return {static_cast<const wchar_t*>(*this), v_size};
 	}
-	std::wstring f_wstring() const
+	operator std::wstring() const
 	{
 		return {static_cast<const wchar_t*>(*this), v_size};
 	}
 	intptr_t f_hash() const
 	{
-		return std::hash<std::wstring>{}(*this);
+#ifdef XEMMAI__STRING__HASHED
+		if (!v_hashed) {
+			v_hash = std::hash<std::wstring_view>{}(*this);
+			v_hashed = true;
+		}
+		return v_hash;
+#else
+		return std::hash<std::wstring_view>{}(*this);
+#endif
 	}
 	bool operator==(const t_string& a_x) const
 	{
+#ifdef XEMMAI__STRING__HASHED
+		return f_hash() == a_x.f_hash() && static_cast<std::wstring_view>(*this) == a_x;
+#else
 		return v_size == a_x.v_size && std::char_traits<wchar_t>::compare(*this, a_x, v_size) == 0;
+#endif
 	}
 	bool operator!=(const t_string& a_x) const
 	{
@@ -108,13 +125,41 @@ struct t_fundamental<std::wstring>
 };
 
 template<>
+struct t_fundamental<std::wstring_view>
+{
+	typedef t_string t_type;
+};
+
+template<>
 struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 {
-	template<typename T>
-	static t_scoped f__construct(t_type* a_class, T&& a_value)
+	template<typename T0>
+	struct t_as
+	{
+		template<typename T1>
+		static T0 f_call(T1&& a_object)
+		{
+			return *static_cast<t_string*>(f_object(std::forward<T1>(a_object))->f_pointer());
+		}
+	};
+	template<typename T0>
+	struct t_as<T0*>
+	{
+		static_assert(std::is_same<std::decay_t<T0>, t_string>::value);
+
+		template<typename T1>
+		static T0* f_call(T1&& a_object)
+		{
+			auto p = f_object(std::forward<T1>(a_object));
+			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : static_cast<T0*>(p->f_pointer());
+		}
+	};
+
+	template<typename... T_an>
+	static t_scoped f__construct(t_type* a_class, T_an&&... a_an)
 	{
 		t_scoped object = t_object::f_allocate_uninitialized(a_class);
-		object.f_pointer__(t_string::f_new(std::forward<T>(a_value)));
+		object.f_pointer__(t_string::f_new(std::forward<T_an>(a_an)...));
 		return object;
 	}
 	template<typename T_extension, typename T>
@@ -177,6 +222,16 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	static size_t f_do_greater_equal(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
+};
+
+template<>
+struct t_type_of<t_string>::t_as<std::wstring_view&&>
+{
+	template<typename T>
+	static std::wstring_view f_call(T&& a_object)
+	{
+		return *static_cast<t_string*>(f_object(std::forward<T>(a_object))->f_pointer());
+	}
 };
 
 }

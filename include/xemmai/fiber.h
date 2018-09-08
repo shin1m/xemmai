@@ -10,7 +10,7 @@ namespace xemmai
 {
 
 struct t_debug_context;
-void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_position, size_t a_column);
+void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column);
 
 struct t_fiber
 {
@@ -99,7 +99,7 @@ struct t_context
 	template<size_t (*t_type::*A_function)(t_object*, t_stacked*)>
 	size_t f_tail(t_object* a_this);
 	void f_backtrace(const t_value& a_value);
-	const t_value* f_variable(const std::wstring& a_name) const;
+	const t_value* f_variable(std::wstring_view a_name) const;
 };
 
 template<size_t (*t_type::*A_function)(t_object*, t_stacked*)>

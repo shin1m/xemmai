@@ -185,10 +185,10 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	auto type_module = new t_type_of<t_module>(t_type_of<t_module>::V_ids, type_object, nullptr);
 	type_module->v_revive = true;
 	v_module_global = t_object::f_allocate(type_module);
-	auto library = new t_library(std::wstring(), nullptr);
+	auto library = new t_library({}, nullptr);
 	v_module_global.f_pointer__(library);
 	v_module__instances__null = v_module__instances.emplace(std::wstring(), t_slot()).first;
-	library->v_iterator = v_module__instances.emplace(L"__global", t_slot()).first;
+	library->v_iterator = v_module__instances.emplace(L"__global"sv, t_slot()).first;
 	library->v_iterator->second = v_module_global;
 	type_object->v_module = v_module_global;
 	v_type_class->v_module = v_module_global;
@@ -223,7 +223,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		while (v_collector__running) v_collector__done.wait(lock);
 	}
 	library->v_extension = new t_global(v_module_global, type_object, v_type_class, type_structure, type_module, type_fiber, type_thread);
-	v_module_system = t_module::f_instantiate(L"system", new t_module(std::wstring()));
+	v_module_system = t_module::f_instantiate(L"system"sv, new t_module({}));
 	t_scoped path = t_array::f_instantiate();
 	static_cast<t_object*>(path)->v_owner = nullptr;
 	{
@@ -233,30 +233,31 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 #ifdef _WIN32
 			s.erase(std::remove(s.begin(), s.end(), L'"'), s.end());
 #endif
+			std::wstring_view sv = s;
 			size_t i = 0;
 			while (true) {
 #ifdef __unix__
-				size_t j = s.find(L':', i);
+				size_t j = sv.find(L':', i);
 #endif
 #ifdef _WIN32
-				size_t j = s.find(L';', i);
+				size_t j = sv.find(L';', i);
 #endif
-				if (j == std::wstring::npos) break;
-				if (i < j) f_as<t_array&>(path).f_push(f_global()->f_as(s.substr(i, j - i)));
+				if (j == std::wstring_view::npos) break;
+				if (i < j) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i, j - i)));
 				i = j + 1;
 			}
-			if (i < s.size()) f_as<t_array&>(path).f_push(f_global()->f_as(s.substr(i)));
+			if (i < sv.size()) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i)));
 		}
 	}
 #ifdef XEMMAI_MODULE_PATH
-	f_as<t_array&>(path).f_push(f_global()->f_as(std::wstring(XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH))));
+	f_as<t_array&>(path).f_push(f_global()->f_as(std::wstring_view(XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH))));
 #endif
 	if (a_count > 0) {
 		v_module_system.f_put(f_global()->f_symbol_executable(), f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_convert(a_arguments[0])))));
 		if (a_count > 1) {
 			portable::t_path script(portable::f_convert(a_arguments[1]));
 			v_module_system.f_put(f_global()->f_symbol_script(), f_global()->f_as(static_cast<const std::wstring&>(script)));
-			f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L"..")));
+			f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L".."sv)));
 			t_scoped arguments = t_array::f_instantiate();
 			auto& p = f_as<t_array&>(arguments);
 			for (size_t i = 2; i < a_count; ++i) p.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
@@ -265,34 +266,34 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	}
 	v_module_system.f_put(f_global()->f_symbol_path(), std::move(path));
 	{
-		auto library = new t_library(std::wstring(), nullptr);
-		v_module_io = t_module::f_instantiate(L"io", library);
+		auto library = new t_library({}, nullptr);
+		v_module_io = t_module::f_instantiate(L"io"sv, library);
 		library->v_extension = new t_io(v_module_io);
 	}
 	{
 		t_scoped file = io::t_file::f_instantiate(stdin);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"raw_in"), t_scoped(file));
+		v_module_system.f_put(t_symbol::f_instantiate(L"raw_in"sv), t_scoped(file));
 		bool tty = f_as<io::t_file&>(file).f_tty();
-		t_scoped reader = io::t_reader::f_instantiate(std::move(file), L"", tty ? 1 : 1024);
+		t_scoped reader = io::t_reader::f_instantiate(std::move(file), L""sv, tty ? 1 : 1024);
 		static_cast<t_object*>(reader)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"in"), std::move(reader));
+		v_module_system.f_put(t_symbol::f_instantiate(L"in"sv), std::move(reader));
 	}
 	{
 		t_scoped file = io::t_file::f_instantiate(stdout);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"raw_out"), t_scoped(file));
-		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L"");
+		v_module_system.f_put(t_symbol::f_instantiate(L"raw_out"sv), t_scoped(file));
+		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L""sv);
 		static_cast<t_object*>(writer)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"out"), std::move(writer));
+		v_module_system.f_put(t_symbol::f_instantiate(L"out"sv), std::move(writer));
 	}
 	{
 		t_scoped file = io::t_file::f_instantiate(stderr);
 		static_cast<t_object*>(file)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"raw_error"), t_scoped(file));
-		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L"");
+		v_module_system.f_put(t_symbol::f_instantiate(L"raw_error"sv), t_scoped(file));
+		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L""sv);
 		static_cast<t_object*>(writer)->v_owner = nullptr;
-		v_module_system.f_put(t_symbol::f_instantiate(L"error"), std::move(writer));
+		v_module_system.f_put(t_symbol::f_instantiate(L"error"sv), std::move(writer));
 	}
 }
 
@@ -428,7 +429,7 @@ void t_engine::f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc
 		const t_at* at = code.f_at(a_pc);
 		if (at) {
 			std::fprintf(a_out, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->f_line()), static_cast<uintptr_t>(at->f_column()));
-			f_print_with_caret(a_out, path.c_str(), at->f_position(), at->f_column());
+			f_print_with_caret(a_out, path, at->f_position(), at->f_column());
 		} else {
 			std::fputc('\n', a_out);
 		}
@@ -439,7 +440,7 @@ void t_engine::f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc
 
 void t_engine::f_debug_safe_point()
 {
-	if (!v_debugger) f_throw(L"not in debug mode");
+	if (!v_debugger) f_throw(L"not in debug mode"sv);
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
 	if (v_debug__stepping == t_thread::f_current())
 		f_debug_break_point(lock);
@@ -449,7 +450,7 @@ void t_engine::f_debug_safe_point()
 
 void t_engine::f_debug_break_point()
 {
-	if (!v_debugger) f_throw(L"not in debug mode");
+	if (!v_debugger) f_throw(L"not in debug mode"sv);
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
 	f_debug_break_point(lock);
 }
@@ -469,7 +470,7 @@ void t_engine::f_debug_safe_region_leave()
 void t_engine::f_debug_stop()
 {
 	std::unique_lock<std::mutex> lock(v_thread__mutex);
-	if (!v_debugger) f_throw(L"not in debug mode");
+	if (!v_debugger) f_throw(L"not in debug mode"sv);
 	if (v_debug__stopping) return;
 	f_debug_stop_and_wait(lock);
 	v_debugger->f_stopped(v_thread);
@@ -478,8 +479,8 @@ void t_engine::f_debug_stop()
 void t_engine::f_debug_continue(t_object* a_stepping)
 {
 	std::lock_guard<std::mutex> lock(v_thread__mutex);
-	if (!v_debugger) f_throw(L"not in debug mode");
-	if (!v_debug__stopping) f_throw(L"already running");
+	if (!v_debugger) f_throw(L"not in debug mode"sv);
+	if (!v_debug__stopping) f_throw(L"already running"sv);
 	v_debug__stopping = false;
 	v_debug__stepping = a_stepping;
 	v_thread__condition.notify_all();

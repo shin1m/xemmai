@@ -26,13 +26,10 @@ class t_reader
 	wint_t f_get(t_io* a_extension);
 
 public:
-	static t_scoped f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a_buffer);
+	static t_scoped f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer);
 
-	t_reader(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a_buffer);
-	t_reader(t_scoped&& a_stream, const t_string& a_encoding, size_t a_buffer) : t_reader(std::move(a_stream), a_encoding.f_wstring(), a_buffer)
-	{
-	}
-	t_reader(t_scoped&& a_stream, const t_string& a_encoding) : t_reader(std::move(a_stream), a_encoding, 1024)
+	t_reader(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer);
+	t_reader(t_scoped&& a_stream, std::wstring_view a_encoding) : t_reader(std::move(a_stream), a_encoding, 1024)
 	{
 	}
 	~t_reader()

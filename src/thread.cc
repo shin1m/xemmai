@@ -107,15 +107,15 @@ t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 			std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 			++internal->v_done;
 		}
-		f_throw(L"failed to create thread.");
+		f_throw(L"failed to create thread."sv);
 	}
 	return object;
 }
 
 void t_thread::f_join()
 {
-	if (this == &f_as<t_thread&>(v_current)) f_throw(L"current thread can not be joined.");
-	if (this == &f_as<t_thread&>(f_engine()->v_thread)) f_throw(L"engine thread can not be joined.");
+	if (this == &f_as<t_thread&>(v_current)) f_throw(L"current thread can not be joined."sv);
+	if (this == &f_as<t_thread&>(f_engine()->v_thread)) f_throw(L"engine thread can not be joined."sv);
 	{
 		t_safe_region region;
 		std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
@@ -127,9 +127,9 @@ void t_thread::f_join()
 void t_type_of<t_thread>::f_define()
 {
 	v_builtin = true;
-	t_define<t_thread, t_object>(f_global(), L"Thread", v_this)
-		(L"current", t_static<t_object*(*)(), t_thread::f_current>())
-		(L"join", t_member<void(t_thread::*)(), &t_thread::f_join>())
+	t_define<t_thread, t_object>(f_global(), L"Thread"sv, v_this)
+		(L"current"sv, t_static<t_object*(*)(), t_thread::f_current>())
+		(L"join"sv, t_member<void(t_thread::*)(), &t_thread::f_join>())
 	;
 }
 
@@ -140,7 +140,7 @@ void t_type_of<t_thread>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_thread>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1 && a_n != 2) f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");
+	if (a_n != 1 && a_n != 2) f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s)."sv);
 	size_t size = f_engine()->v_stack_size;
 	t_scoped a0 = std::move(a_stack[2]);
 	if (a_n == 2) {

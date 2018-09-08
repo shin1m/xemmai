@@ -22,11 +22,11 @@ void t_type_of<t_pair>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_queue>::f_define(t_container* a_extension)
 {
-	t_define<t_queue, t_object>(a_extension, L"Queue")
-		(f_global()->f_symbol_string(), t_member<std::wstring(t_queue::*)() const, &t_queue::f_string>())
-		(L"empty", t_member<bool(t_queue::*)() const, &t_queue::f_empty>())
-		(L"push", t_member<void(t_queue::*)(t_container*, t_scoped&&), &t_queue::f_push>())
-		(L"pop", t_member<t_scoped(t_queue::*)(), &t_queue::f_pop>())
+	t_define<t_queue, t_object>(a_extension, L"Queue"sv)
+		(f_global()->f_symbol_string(), t_member<t_scoped(t_queue::*)() const, &t_queue::f_string>())
+		(L"empty"sv, t_member<bool(t_queue::*)() const, &t_queue::f_empty>())
+		(L"push"sv, t_member<void(t_queue::*)(t_container*, t_scoped&&), &t_queue::f_push>())
+		(L"pop"sv, t_member<t_scoped(t_queue::*)(), &t_queue::f_pop>())
 	;
 }
 
@@ -39,7 +39,7 @@ t_scoped t_type_of<t_queue>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct<>,
-		t_construct<const t_string&>
+		t_construct<std::wstring_view>
 	>::t_bind<t_queue>::f_do(this, a_stack, a_n);
 }
 

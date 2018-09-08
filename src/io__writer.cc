@@ -26,12 +26,12 @@ void t_writer::f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n)
 	while (iconv(v_cd, &p, &n, &v_p, &v_n) == size_t(-1)) {
 		switch (errno) {
 		case EILSEQ:
-			f_throw(L"invalid character.");
+			f_throw(L"invalid character."sv);
 		case E2BIG:
 			f_write(a_extension);
 			break;
 		default:
-			f_throw(L"failed to iconv.");
+			f_throw(L"failed to iconv."sv);
 		}
 	}
 }
@@ -44,13 +44,13 @@ void t_writer::f_unshift(t_io* a_extension)
 			f_write(a_extension);
 			break;
 		default:
-			f_throw(L"failed to iconv.");
+			f_throw(L"failed to iconv."sv);
 		}
 	}
 	f_write(a_extension);
 }
 
-t_scoped t_writer::f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding)
+t_scoped t_writer::f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
 	t_scoped object = t_object::f_allocate(extension->f_type<t_writer>());
@@ -58,9 +58,9 @@ t_scoped t_writer::f_instantiate(t_scoped&& a_stream, const std::wstring& a_enco
 	return object;
 }
 
-t_writer::t_writer(t_scoped&& a_stream, const std::wstring& a_encoding) : v_cd(iconv_open(portable::f_convert(a_encoding).c_str(), "wchar_t"))
+t_writer::t_writer(t_scoped&& a_stream, std::wstring_view a_encoding) : v_cd(iconv_open(portable::f_convert(a_encoding).c_str(), "wchar_t"))
 {
-	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open.");
+	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open."sv);
 	v_stream = std::move(a_stream);
 	v_buffer = t_bytes::f_instantiate(1024);
 	static_cast<t_object*>(v_buffer)->f_share();
@@ -71,7 +71,7 @@ t_writer::t_writer(t_scoped&& a_stream, const std::wstring& a_encoding) : v_cd(i
 
 void t_writer::f_close(t_io* a_extension)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	f_unshift(a_extension);
 	v_stream.f_invoke(a_extension->f_symbol_close());
 	v_stream = nullptr;
@@ -79,7 +79,7 @@ void t_writer::f_close(t_io* a_extension)
 
 void t_writer::f_write(t_io* a_extension, const t_value& a_value)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	if (f_is<t_string>(a_value)) {
 		f_write(a_extension, f_as<const t_string&>(a_value));
 	} else {
@@ -91,7 +91,7 @@ void t_writer::f_write(t_io* a_extension, const t_value& a_value)
 
 void t_writer::f_write_line(t_io* a_extension)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	f_write(a_extension, L"\n", 1);
 	f_unshift(a_extension);
 	v_stream.f_invoke(a_extension->f_symbol_flush());
@@ -99,7 +99,7 @@ void t_writer::f_write_line(t_io* a_extension)
 
 void t_writer::f_write_line(t_io* a_extension, const t_value& a_value)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	if (f_is<t_string>(a_value)) {
 		f_write(a_extension, f_as<const t_string&>(a_value));
 	} else {
@@ -114,7 +114,7 @@ void t_writer::f_write_line(t_io* a_extension, const t_value& a_value)
 
 void t_writer::f_flush(t_io* a_extension)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	f_unshift(a_extension);
 	v_stream.f_invoke(a_extension->f_symbol_flush());
 }
@@ -123,7 +123,7 @@ void t_writer::f_flush(t_io* a_extension)
 
 void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
-	t_define<io::t_writer, t_object>(a_extension, L"Writer")
+	t_define<io::t_writer, t_object>(a_extension, L"Writer"sv)
 		(t_construct<t_scoped&&, const t_string&>())
 		(a_extension->f_symbol_close(), t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_close, t_with_lock_for_write>())
 		(a_extension->f_symbol_write(), t_member<void(io::t_writer::*)(t_io*, const t_value&), &io::t_writer::f_write, t_with_lock_for_write>())

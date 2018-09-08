@@ -120,13 +120,13 @@ public:
 		std::wstring v_path;
 		t_at v_at;
 
-		t_error(t_lexer& a_lexer) : t_throwable(L"lexical error."), v_path(a_lexer.f_path()), v_at(a_lexer.f_at())
+		t_error(t_lexer& a_lexer) : t_throwable(L"lexical error."sv), v_path(a_lexer.f_path()), v_at(a_lexer.f_at())
 		{
 		}
 		virtual void f_dump() const;
 	};
 
-	t_lexer(const std::wstring& a_path, std::FILE* a_stream);
+	t_lexer(std::wstring_view a_path, std::FILE* a_stream);
 	const std::wstring& f_path() const
 	{
 		return v_path;

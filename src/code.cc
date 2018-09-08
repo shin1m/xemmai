@@ -981,9 +981,9 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				++pc;
 				t_stacked& top = stack[0];
-				if (top.f_type() != f_global()->f_type<t_class>()) f_throw(L"not class.");
+				if (top.f_type() != f_global()->f_type<t_class>()) f_throw(L"not class."sv);
 				top = static_cast<t_slot&>(f_as<t_type&>(top).v_super);
-				if (!top) f_throw(L"no more super class.");
+				if (!top) f_throw(L"no more super class."sv);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(NUL)
@@ -1652,7 +1652,7 @@ size_t t_code::f_loop(t_context* a_context)
 label__THROW_NOT_SUPPORTED_M1:
 	--pc;
 label__THROW_NOT_SUPPORTED:
-	f_throw(L"not supported.");
+	f_throw(L"not supported."sv);
 }
 
 void t_code::f_try(t_context* a_context)
@@ -1670,7 +1670,7 @@ void t_code::f_try(t_context* a_context)
 		} catch (const t_scoped&) {
 			throw;
 		} catch (...) {
-			throw t_throwable::f_instantiate(L"<unknown>.");
+			throw t_throwable::f_instantiate(L"<unknown>."sv);
 		}
 	} catch (const t_scoped& thrown) {
 		auto& code = f_as<t_code&>(a_context->v_lambda->v_code);
@@ -1703,7 +1703,7 @@ void t_code::f_try(t_context* a_context)
 				} catch (const t_scoped&) {
 					throw;
 				} catch (...) {
-					throw t_throwable::f_instantiate(L"<unknown>.");
+					throw t_throwable::f_instantiate(L"<unknown>."sv);
 				}
 			} catch (const t_scoped& thrown) {
 				code.f_stack_clear(pc, base, stack);

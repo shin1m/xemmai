@@ -37,18 +37,18 @@ class t_bytes
 	{
 		if (a_index < 0) {
 			a_index += v_size;
-			if (a_index < 0) f_throw(L"out of range.");
+			if (a_index < 0) f_throw(L"out of range."sv);
 		} else {
-			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range.");
+			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range."sv);
 		}
 	}
 	void f_validate(intptr_t& a_index, size_t a_size) const
 	{
 		if (a_index < 0) {
 			a_index += v_size;
-			if (a_index < 0) f_throw(L"out of range.");
+			if (a_index < 0) f_throw(L"out of range."sv);
 		}
-		if (a_index + a_size > v_size) f_throw(L"out of range.");
+		if (a_index + a_size > v_size) f_throw(L"out of range."sv);
 	}
 
 public:

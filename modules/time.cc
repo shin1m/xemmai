@@ -84,7 +84,7 @@ const size_t v_month_base_days[] = {
 double f_compose(const t_tuple& a_value)
 {
 	size_t n = a_value.f_size();
-	if (n < 3) f_throw(L"must have at least 3 items.");
+	if (n < 3) f_throw(L"must have at least 3 items."sv);
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1) - 1;
 	year += month / 12;
@@ -407,18 +407,18 @@ t_scoped f_parse_rfc2822(std::wstring a_value)
 	intptr_t minute;
 	int i;
 	int n = std::swscanf(s, XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR "%n"), &day, month, &year, &hour, &minute, &i);
-	if (n < 5) f_throw(L"invalid format.");
+	if (n < 5) f_throw(L"invalid format."sv);
 	intptr_t m = f_month_name_to_number(month);
-	if (m <= 0) f_throw(L"invalid format.");
+	if (m <= 0) f_throw(L"invalid format."sv);
 	intptr_t second;
 	wchar_t zone[6];
 	if (s[i] == L':') {
 		n = std::swscanf(s + ++i, XEMMAI__MACRO__L("%2" SCNdPTR " %5ls"), &second, zone);
-		if (n < 2) f_throw(L"invalid format.");
+		if (n < 2) f_throw(L"invalid format."sv);
 	} else {
 		second = 0;
 		n = std::swscanf(s + i, L" %5ls", zone);
-		if (n < 1) f_throw(L"invalid format.");
+		if (n < 1) f_throw(L"invalid format."sv);
 	}
 	if (year < 50)
 		year += 2000;
@@ -430,7 +430,7 @@ t_scoped f_parse_rfc2822(std::wstring a_value)
 t_scoped f_format_rfc2822(const t_tuple& a_value, intptr_t a_offset)
 {
 	size_t n = a_value.f_size();
-	if (n < 7) f_throw(L"must have at least 7 items.");
+	if (n < 7) f_throw(L"must have at least 7 items."sv);
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1);
 	intptr_t day = f_item(a_value, 2);
@@ -458,11 +458,11 @@ t_scoped f_parse_http(std::wstring a_value)
 		n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*l[A-Za-z], %2" SCNdPTR "-%3ls-%2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
 		if (n < 6) {
 			n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls %3ls %2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " %4" SCNdPTR), month, &day, &hour, &minute, &second, &year);
-			if (n < 6) f_throw(L"invalid format.");
+			if (n < 6) f_throw(L"invalid format."sv);
 		}
 	}
 	intptr_t m = f_month_name_to_number(month);
-	if (m <= 0) f_throw(L"invalid format.");
+	if (m <= 0) f_throw(L"invalid format."sv);
 	if (year < 50)
 		year += 2000;
 	else if (year < 1000)
@@ -472,7 +472,7 @@ t_scoped f_parse_http(std::wstring a_value)
 
 t_scoped f_format_http(const t_tuple& a_value)
 {
-	if (a_value.f_size() < 7) f_throw(L"must have at least 7 items.");
+	if (a_value.f_size() < 7) f_throw(L"must have at least 7 items."sv);
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1);
 	intptr_t day = f_item(a_value, 2);
@@ -495,13 +495,13 @@ t_scoped f_parse_xsd(std::wstring a_value)
 	double second;
 	wchar_t zone[7];
 	int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
-	if (n < 6) f_throw(L"invalid format.");
+	if (n < 6) f_throw(L"invalid format."sv);
 	return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
 }
 
 t_scoped f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_precision)
 {
-	if (a_value.f_size() < 6) f_throw(L"must have at least 6 items.");
+	if (a_value.f_size() < 6) f_throw(L"must have at least 6 items."sv);
 	intptr_t year = f_item(a_value, 0);
 	intptr_t month = f_item(a_value, 1);
 	intptr_t day = f_item(a_value, 2);
@@ -527,17 +527,17 @@ t_time::t_time(t_object* a_module) : t_extension(a_module)
 , v_tick_base(f_now())
 #endif
 {
-	f_define<double(*)(), f_now>(this, L"now");
-	f_define<intptr_t(*)(t_time*), f_tick>(this, L"tick");
-	f_define<double(*)(const t_tuple&), f_compose>(this, L"compose");
-	f_define<t_scoped(*)(double), f_decompose>(this, L"decompose");
-	f_define<intptr_t(*)(), f_offset>(this, L"offset");
-	f_define<t_scoped(*)(std::wstring), f_parse_rfc2822>(this, L"parse_rfc2822");
-	f_define<t_scoped(*)(const t_tuple&, intptr_t), f_format_rfc2822>(this, L"format_rfc2822");
-	f_define<t_scoped(*)(std::wstring), f_parse_http>(this, L"parse_http");
-	f_define<t_scoped(*)(const t_tuple&), f_format_http>(this, L"format_http");
-	f_define<t_scoped(*)(std::wstring), f_parse_xsd>(this, L"parse_xsd");
-	f_define<t_scoped(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd");
+	f_define<double(*)(), f_now>(this, L"now"sv);
+	f_define<intptr_t(*)(t_time*), f_tick>(this, L"tick"sv);
+	f_define<double(*)(const t_tuple&), f_compose>(this, L"compose"sv);
+	f_define<t_scoped(*)(double), f_decompose>(this, L"decompose"sv);
+	f_define<intptr_t(*)(), f_offset>(this, L"offset"sv);
+	f_define<t_scoped(*)(std::wstring), f_parse_rfc2822>(this, L"parse_rfc2822"sv);
+	f_define<t_scoped(*)(const t_tuple&, intptr_t), f_format_rfc2822>(this, L"format_rfc2822"sv);
+	f_define<t_scoped(*)(std::wstring), f_parse_http>(this, L"parse_http"sv);
+	f_define<t_scoped(*)(const t_tuple&), f_format_http>(this, L"format_http"sv);
+	f_define<t_scoped(*)(std::wstring), f_parse_xsd>(this, L"parse_xsd"sv);
+	f_define<t_scoped(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd"sv);
 }
 
 }

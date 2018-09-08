@@ -31,12 +31,9 @@ class t_writer
 	void f_unshift(t_io* a_extension);
 
 public:
-	static t_scoped f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding);
+	static t_scoped f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding);
 
-	t_writer(t_scoped&& a_stream, const std::wstring& a_encoding);
-	t_writer(t_scoped&& a_stream, const t_string& a_encoding) : t_writer(std::move(a_stream), a_encoding.f_wstring())
-	{
-	}
+	t_writer(t_scoped&& a_stream, std::wstring_view a_encoding);
 	~t_writer()
 	{
 		iconv_close(v_cd);

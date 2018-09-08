@@ -89,9 +89,9 @@ void t_type_of<std::mutex>::f_release(std::mutex& a_self)
 
 void t_type_of<std::mutex>::f_define(t_threading* a_extension)
 {
-	t_define<std::mutex, t_object>(a_extension, L"Mutex")
-		(L"acquire", t_member<void(*)(std::mutex&), f_acquire>())
-		(L"release", t_member<void(*)(std::mutex&), f_release>())
+	t_define<std::mutex, t_object>(a_extension, L"Mutex"sv)
+		(L"acquire"sv, t_member<void(*)(std::mutex&), f_acquire>())
+		(L"release"sv, t_member<void(*)(std::mutex&), f_release>())
 	;
 }
 
@@ -136,13 +136,13 @@ void t_type_of<std::condition_variable>::f_broadcast(std::condition_variable& a_
 
 void t_type_of<std::condition_variable>::f_define(t_threading* a_extension)
 {
-	t_define<std::condition_variable, t_object>(a_extension, L"Condition")
-		(L"wait",
+	t_define<std::condition_variable, t_object>(a_extension, L"Condition"sv)
+		(L"wait"sv,
 			t_member<void(*)(std::condition_variable&, std::mutex&), f_wait>(),
 			t_member<void(*)(std::condition_variable&, std::mutex&, size_t), f_wait>()
 		)
-		(L"signal", t_member<void(*)(std::condition_variable&), f_signal>())
-		(L"broadcast", t_member<void(*)(std::condition_variable&), f_broadcast>())
+		(L"signal"sv, t_member<void(*)(std::condition_variable&), f_signal>())
+		(L"broadcast"sv, t_member<void(*)(std::condition_variable&), f_broadcast>())
 	;
 }
 

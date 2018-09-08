@@ -8,8 +8,8 @@
 namespace xemmai::portable
 {
 
-XEMMAI__PORTABLE__EXPORT std::string f_convert(const std::wstring& a_string);
-XEMMAI__PORTABLE__EXPORT std::wstring f_convert(const std::string& a_string);
+XEMMAI__PORTABLE__EXPORT std::string f_convert(std::wstring_view a_string);
+XEMMAI__PORTABLE__EXPORT std::wstring f_convert(std::string_view a_string);
 
 }
 

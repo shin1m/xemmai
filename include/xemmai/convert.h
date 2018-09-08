@@ -143,7 +143,7 @@ struct t_call_construct<t_scoped(*)(t_type*, T_an...), A_function>
 	{
 		t_signature<T_an...>::f_check(a_stack, a_n);
 		t_destruct<sizeof...(T_an)> destruct(a_stack);
-		if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class.");
+		if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
 		t_signature<T_an...>::f_check(a_stack);
 		t_signature<T_an...>::template f_call<f_function>(a_extension, a_stack[1], a_stack);
 	}
@@ -476,11 +476,11 @@ struct t_overload<>
 	{
 		static void f_call(t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 		{
-			f_throw(a_stack, a_n, L"no method matching signature is found.");
+			f_throw(a_stack, a_n, L"no method matching signature is found."sv);
 		}
 		static t_scoped f_do(t_type* a_class, t_stacked* a_stack, size_t a_n)
 		{
-			f_throw(L"no method matching signature is found.");
+			f_throw(L"no method matching signature is found."sv);
 		}
 	};
 };
@@ -555,12 +555,12 @@ class t_define
 	}
 
 public:
-	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name) : v_extension(a_extension), v_type((new t_type_of<T>(t_type_of<T>::V_ids, a_extension->template f_type<T_super>(), v_extension->f_module()))->v_this)
+	t_define(typename t_type_of<T>::t_extension* a_extension, std::wstring_view a_name) : v_extension(a_extension), v_type((new t_type_of<T>(t_type_of<T>::V_ids, a_extension->template f_type<T_super>(), v_extension->f_module()))->v_this)
 	{
 		v_extension->template f_type_slot<T>().f_construct(v_type);
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
 	}
-	t_define(typename t_type_of<T>::t_extension* a_extension, const std::wstring& a_name, t_object* a_type) : v_extension(a_extension), v_type(a_type)
+	t_define(typename t_type_of<T>::t_extension* a_extension, std::wstring_view a_name, t_object* a_type) : v_extension(a_extension), v_type(a_type)
 	{
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));
 	}
@@ -624,7 +624,7 @@ public:
 		return *this;
 	}
 	template<typename... T_an>
-	t_define& operator()(const std::wstring& a_name, T_an&&... a_n)
+	t_define& operator()(std::wstring_view a_name, T_an&&... a_n)
 	{
 		return (*this)(t_symbol::f_instantiate(a_name), std::forward<T_an>(a_n)...);
 	}
@@ -637,7 +637,7 @@ inline void f_define(T_extension* a_extension, t_object* a_name)
 }
 
 template<typename T_function, T_function A_function, typename T_extension>
-inline void f_define(T_extension* a_extension, const std::wstring& a_name)
+inline void f_define(T_extension* a_extension, std::wstring_view a_name)
 {
 	f_define<T_function, A_function, T_extension>(a_extension, t_symbol::f_instantiate(a_name));
 }

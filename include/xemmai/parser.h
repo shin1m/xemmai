@@ -22,11 +22,11 @@ class t_parser
 	{
 		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1;
 	}
-	void f_throw [[noreturn]] (const std::wstring& a_message, const t_at& a_at)
+	void f_throw [[noreturn]] (std::wstring_view a_message, const t_at& a_at)
 	{
 		throw t_error::f_instantiate(a_message, v_lexer.f_path(), a_at);
 	}
-	void f_throw [[noreturn]] (const std::wstring& a_message)
+	void f_throw [[noreturn]] (std::wstring_view a_message)
 	{
 		f_throw(a_message, v_lexer.f_at());
 	}
@@ -90,12 +90,12 @@ class t_parser
 public:
 	struct t_error : t_throwable
 	{
-		static t_scoped f_instantiate(const std::wstring& a_message, const std::wstring& a_path, const t_at& a_at);
+		static t_scoped f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at);
 
 		std::wstring v_path;
 		t_at v_at;
 
-		t_error(const std::wstring& a_message, const std::wstring& a_path, const t_at& a_at) : t_throwable(L"syntax error: " + a_message), v_path(a_path), v_at(a_at)
+		t_error(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at) : t_throwable(L"syntax error: " + std::wstring(a_message)), v_path(a_path), v_at(a_at)
 		{
 		}
 		virtual void f_dump() const;

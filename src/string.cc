@@ -15,8 +15,8 @@ t_scoped t_string::f_instantiate(const wchar_t* a_p, size_t a_n)
 
 void t_type_of<t_string>::f_define()
 {
-	t_define<t_string, t_object>(f_global(), L"String")
-		(L"from_code", t_static<t_scoped(*)(t_global*, intptr_t), f_from_code>())
+	t_define<t_string, t_object>(f_global(), L"String"sv)
+		(L"from_code"sv, t_static<t_scoped(*)(t_global*, intptr_t), f_from_code>())
 		(t_construct_with<t_scoped(*)(t_type*, const t_string&), f__construct>())
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(t_scoped&&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_string::*)() const, &t_string::f_hash>())
@@ -28,11 +28,11 @@ void t_type_of<t_string>::f_define()
 		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_string&, const t_value&), f__equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_string&, const t_value&), f__not_equals>())
 		(f_global()->f_symbol_size(), t_member<size_t(t_string::*)() const, &t_string::f_size>())
-		(L"substring",
+		(L"substring"sv,
 			t_member<t_scoped(*)(t_global*, const t_string&, size_t), f_substring>(),
 			t_member<t_scoped(*)(t_global*, const t_string&, size_t, size_t), f_substring>()
 		)
-		(L"code_at", t_member<intptr_t(*)(const t_string&, size_t), f_code_at>())
+		(L"code_at"sv, t_member<intptr_t(*)(const t_string&, size_t), f_code_at>())
 	;
 }
 

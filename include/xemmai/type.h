@@ -1,7 +1,6 @@
 #ifndef XEMMAI__TYPE_H
 #define XEMMAI__TYPE_H
 
-#include <string>
 #include <typeinfo>
 
 #include "value.h"
@@ -504,7 +503,7 @@ struct t_uninstantiatable : T_base
 	using T_base::T_base;
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n)
 	{
-		f_throw(a_stack, a_n, L"uninstantiatable.");
+		f_throw(a_stack, a_n, L"uninstantiatable."sv);
 	}
 };
 

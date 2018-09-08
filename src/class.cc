@@ -16,17 +16,17 @@ void t_class::f_do_scan(t_object* a_this, t_scan a_scan)
 
 void t_class::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n > 1) f_throw(a_stack, a_n, L"must be called with or without an argument.");
+	if (a_n > 1) f_throw(a_stack, a_n, L"must be called with or without an argument."sv);
 	t_scoped x;
 	if (a_n > 0) {
 		x = std::move(a_stack[2]);
-		if (x.f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class.");
+		if (x.f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
 	} else {
 		x = f_global()->f_type<t_object>()->v_this;
 	}
 	auto& p = f_as<t_type&>(x);
 	auto type = (p.*p.v_derive)();
-	if (!type) f_throw(L"underivable.");
+	if (!type) f_throw(L"underivable."sv);
 	a_stack[0].f_construct(type->v_this);
 }
 

@@ -26,7 +26,7 @@ struct t_type_of<t_server> : t_derivable<t_holds<t_server>>
 	typedef t_callback_extension t_extension;
 
 	static void f_define(t_callback_extension* a_extension);
-	static void f_post(t_server& a_self, std::wstring a_message)
+	static void f_post(t_server& a_self, std::wstring_view a_message)
 	{
 		a_self.f_post(a_message);
 	}
@@ -45,7 +45,7 @@ struct t_callback_extension : t_extension
 
 	t_callback_extension(t_object* a_module) : t_extension(a_module)
 	{
-		v_symbol_on_message = t_symbol::f_instantiate(L"on_message");
+		v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
 		t_type_of<t_client>::f_define(this);
 		t_type_of<t_server>::f_define(this);
 	}
@@ -98,7 +98,7 @@ public:
 		object.f_pointer__(new t_client_wrapper(object));
 		return object;
 	}
-	static void f_super__on_message(t_client* a_self, std::wstring a_message)
+	static void f_super__on_message(t_client* a_self, std::wstring_view a_message)
 	{
 		if (dynamic_cast<t_client_wrapper*>(a_self))
 			a_self->t_client::f_on_message(a_message);
@@ -109,7 +109,7 @@ public:
 	t_client_wrapper(t_object* a_self) : v_self(a_self)
 	{
 	}
-	virtual void f_on_message(const std::wstring& a_message)
+	virtual void f_on_message(std::wstring_view a_message)
 	{
 		auto extension = f_extension<t_callback_extension>(v_self->f_type()->v_module);
 		v_self->f_invoke(extension->v_symbol_on_message, extension->f_as(a_message));
@@ -121,10 +121,10 @@ namespace xemmai
 
 void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
 {
-	t_define<t_client, t_object>(a_extension, L"Client")
+	t_define<t_client, t_object>(a_extension, L"Client"sv)
 		(t_construct_with<t_scoped(*)(t_type*), t_client_wrapper::f_construct>())
-		(a_extension->v_symbol_on_message, t_member<void(*)(t_client*, std::wstring), t_client_wrapper::f_super__on_message>())
-		(L"remove", t_member<void(t_client::*)(), &t_client::f_remove>())
+		(a_extension->v_symbol_on_message, t_member<void(*)(t_client*, std::wstring_view), t_client_wrapper::f_super__on_message>())
+		(L"remove"sv, t_member<void(t_client::*)(), &t_client::f_remove>())
 	;
 }
 
@@ -135,11 +135,11 @@ t_scoped t_type_of<t_client>::f_do_construct(t_stacked* a_stack, size_t a_n)
 
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 {
-	t_define<t_server, t_object>(a_extension, L"Server")
+	t_define<t_server, t_object>(a_extension, L"Server"sv)
 		(t_construct<>())
-		(L"add", t_member<void(t_server::*)(t_client&), &t_server::f_add>())
-		(L"post", t_member<void(*)(t_server&, std::wstring), f_post>())
-		(L"run", t_member<void(t_server::*)(), &t_server::f_run>())
+		(L"add"sv, t_member<void(t_server::*)(t_client&), &t_server::f_add>())
+		(L"post"sv, t_member<void(*)(t_server&, std::wstring_view), f_post>())
+		(L"run"sv, t_member<void(t_server::*)(), &t_server::f_run>())
 	;
 }
 

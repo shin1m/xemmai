@@ -5,7 +5,7 @@
 namespace xemmai
 {
 
-t_scoped t_symbol::f_instantiate(const std::wstring& a_value)
+t_scoped t_symbol::f_instantiate(std::wstring_view a_value)
 {
 	std::lock_guard<std::mutex> lock(f_engine()->v_symbol__instantiate__mutex);
 	f_engine()->v_object__reviving__mutex.lock();
@@ -39,7 +39,7 @@ void t_symbol::f_revise(t_object* a_this)
 void t_type_of<t_symbol>::f_define()
 {
 	v_builtin = v_revive = true;
-	t_define<t_symbol, t_object>(f_global(), L"Symbol", v_this)
+	t_define<t_symbol, t_object>(f_global(), L"Symbol"sv, v_this)
 		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
 	;
 }
@@ -58,10 +58,10 @@ void t_type_of<t_symbol>::f_do_finalize(t_object* a_this)
 
 void t_type_of<t_symbol>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
+	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument."sv);
 	t_destruct<> a0(a_stack[2]);
 	f_check<t_string>(a0.v_p, L"argument0");
-	a_stack[0].f_construct(t_symbol::f_instantiate(f_as<std::wstring>(a0.v_p)));
+	a_stack[0].f_construct(t_symbol::f_instantiate(f_as<std::wstring_view>(a0.v_p)));
 }
 
 }

@@ -43,9 +43,9 @@ class t_array
 	{
 		if (a_index < 0) {
 			a_index += v_size;
-			if (a_index < 0) f_throw(L"out of range.");
+			if (a_index < 0) f_throw(L"out of range."sv);
 		} else {
-			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range.");
+			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range."sv);
 		}
 	}
 
@@ -80,7 +80,7 @@ public:
 	}
 	t_scoped f_pop()
 	{
-		if (v_size <= 0) f_throw(L"empty array.");
+		if (v_size <= 0) f_throw(L"empty array."sv);
 		t_scoped p = std::move((*v_tuple)[v_head + --v_size & v_mask]);
 		f_shrink();
 		return p;
@@ -94,7 +94,7 @@ public:
 	}
 	t_scoped f_shift()
 	{
-		if (v_size <= 0) f_throw(L"empty array.");
+		if (v_size <= 0) f_throw(L"empty array."sv);
 		t_scoped p = std::move((*v_tuple)[v_head]);
 		v_head = v_head + 1 & v_mask;
 		--v_size;

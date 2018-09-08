@@ -6,7 +6,7 @@
 namespace xemmai
 {
 
-void f_print_with_caret(std::FILE* a_out, const std::wstring& a_path, long a_position, size_t a_column)
+void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column)
 {
 	io::t_file file(a_path, "r");
 	std::fseek(file, a_position, SEEK_SET);
@@ -55,7 +55,7 @@ void t_fiber::f_run()
 			x = thrown;
 		} catch (...) {
 			b = true;
-			x = t_throwable::f_instantiate(L"<unexpected>.");
+			x = t_throwable::f_instantiate(L"<unexpected>."sv);
 		}
 		assert(q.v_stack.v_used == q.v_stack.f_head());
 	}
@@ -82,8 +82,8 @@ void t_fiber::f_caught(const t_value& a_value, t_object* a_lambda, void** a_pc)
 void t_type_of<t_fiber>::f_define()
 {
 	v_builtin = true;
-	t_define<t_fiber, t_object>(f_global(), L"Fiber", v_this)
-		(L"current", t_static<t_object*(*)(), t_fiber::f_current>())
+	t_define<t_fiber, t_object>(f_global(), L"Fiber"sv, v_this)
+		(L"current"sv, t_static<t_object*(*)(), t_fiber::f_current>())
 	;
 }
 
@@ -94,7 +94,7 @@ void t_type_of<t_fiber>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_fiber>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1 && a_n != 2) f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s).");
+	if (a_n != 1 && a_n != 2) f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s)."sv);
 	t_scoped a0 = std::move(a_stack[2]);
 	size_t size = f_engine()->v_stack_size;
 	if (a_n == 2) {
@@ -107,15 +107,15 @@ void t_type_of<t_fiber>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 
 size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
+	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument."sv);
 	t_scoped x = std::move(a_stack[2]);
 	auto& p = f_as<t_fiber&>(a_this);
 	auto& thread = f_as<t_thread&>(t_thread::v_current);
 	auto& q = f_as<t_fiber&>(thread.v_active);
-	if (p.v_main && a_this != static_cast<t_object*>(thread.v_fiber)) f_throw(L"can not yield to other thread.");
+	if (p.v_main && a_this != static_cast<t_object*>(thread.v_fiber)) f_throw(L"can not yield to other thread."sv);
 	{
 		t_with_lock_for_write lock(a_this);
-		if (p.v_active) f_throw(L"already active.");
+		if (p.v_active) f_throw(L"already active."sv);
 		p.v_active = true;
 	}
 	q.v_return = a_stack;
@@ -150,7 +150,7 @@ void t_context::f_backtrace(const t_value& a_value)
 	f_stack()->v_used = v_previous;
 }
 
-const t_value* t_context::f_variable(const std::wstring& a_name) const
+const t_value* t_context::f_variable(std::wstring_view a_name) const
 {
 	auto& code = f_as<t_code&>(v_lambda->v_code);
 	auto i = code.v_variables.find(a_name);

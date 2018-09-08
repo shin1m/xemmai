@@ -38,12 +38,9 @@ protected:
 	XEMMAI__PORTABLE__EXPORT virtual ~t_throwable();
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_message);
+	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_message);
 
-	t_throwable(const t_string& a_message) : v_message(a_message.f_wstring())
-	{
-	}
-	t_throwable(const std::wstring& a_message) : v_message(a_message)
+	t_throwable(std::wstring_view a_message) : v_message(a_message)
 	{
 	}
 	const std::wstring& f_string() const

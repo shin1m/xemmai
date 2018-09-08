@@ -25,7 +25,7 @@ void t_lexer::f_get()
 	v_c = std::getwc(v_stream);
 }
 
-t_lexer::t_lexer(const std::wstring& a_path, std::FILE* a_stream) : v_path(a_path), v_stream(a_stream), v_c(std::getwc(v_stream))
+t_lexer::t_lexer(std::wstring_view a_path, std::FILE* a_stream) : v_path(a_path), v_stream(a_stream), v_c(std::getwc(v_stream))
 {
 	while (true) {
 		f_read_indent();
@@ -664,7 +664,7 @@ t_scoped t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 void t_lexer::t_error::f_dump() const
 {
 	std::fprintf(stderr, "at %ls:%" PRIuPTR ":%" PRIuPTR "\n", v_path.c_str(), static_cast<uintptr_t>(v_at.f_line()), static_cast<uintptr_t>(v_at.f_column()));
-	f_print_with_caret(stderr, v_path.c_str(), v_at.f_position(), v_at.f_column());
+	f_print_with_caret(stderr, v_path, v_at.f_position(), v_at.f_column());
 	t_throwable::f_dump();
 }
 

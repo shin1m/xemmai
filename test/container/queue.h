@@ -32,15 +32,15 @@ public:
 	{
 		std::printf("t_queue::t_queue()\n");
 	}
-	t_queue(const t_string& a_message)
+	t_queue(std::wstring_view a_message)
 	{
-		std::printf("t_queue::t_queue(a_message = %ls)\n", a_message.f_wstring().c_str());
+		std::printf("t_queue::t_queue(a_message = %.*ls)\n", a_message.size(), a_message.data());
 	}
 	void f_scan(t_scan a_scan)
 	{
 		a_scan(v_head);
 	}
-	std::wstring f_string() const;
+	t_scoped f_string() const;
 	bool f_empty() const;
 	void f_push(t_container* a_extension, t_scoped&& a_value);
 	t_scoped f_pop();

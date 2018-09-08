@@ -5,12 +5,12 @@ namespace xemmai
 
 t_io::t_io(t_object* a_module) : t_extension(a_module)
 {
-	v_symbol_close = t_symbol::f_instantiate(L"close");
-	v_symbol_read = t_symbol::f_instantiate(L"read");
-	v_symbol_write = t_symbol::f_instantiate(L"write");
-	v_symbol_flush = t_symbol::f_instantiate(L"flush");
-	v_symbol_read_line = t_symbol::f_instantiate(L"read_line");
-	v_symbol_write_line = t_symbol::f_instantiate(L"write_line");
+	v_symbol_close = t_symbol::f_instantiate(L"close"sv);
+	v_symbol_read = t_symbol::f_instantiate(L"read"sv);
+	v_symbol_write = t_symbol::f_instantiate(L"write"sv);
+	v_symbol_flush = t_symbol::f_instantiate(L"flush"sv);
+	v_symbol_read_line = t_symbol::f_instantiate(L"read_line"sv);
+	v_symbol_write_line = t_symbol::f_instantiate(L"write_line"sv);
 	t_type_of<io::t_file>::f_define(this);
 	v_type_file->v_builtin = true;
 	t_type_of<io::t_reader>::f_define(this);

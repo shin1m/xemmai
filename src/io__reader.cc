@@ -32,14 +32,14 @@ wint_t t_reader::f_get(t_io* a_extension)
 		if (iconv(v_cd, &v_p, &v_n, &p, &n) == size_t(-1)) {
 			switch (errno) {
 			case EILSEQ:
-				f_throw(L"invalid sequence.");
+				f_throw(L"invalid sequence."sv);
 			case EINVAL:
-				if (f_read(a_extension) <= 0) f_throw(L"incomplete sequence.");
+				if (f_read(a_extension) <= 0) f_throw(L"incomplete sequence."sv);
 				continue;
 			case E2BIG:
 				break;
 			default:
-				f_throw(L"failed to iconv.");
+				f_throw(L"failed to iconv."sv);
 			}
 			break;
 		}
@@ -49,7 +49,7 @@ wint_t t_reader::f_get(t_io* a_extension)
 	return c;
 }
 
-t_scoped t_reader::f_instantiate(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a_buffer)
+t_scoped t_reader::f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
 	t_scoped object = t_object::f_allocate(extension->f_type<t_reader>());
@@ -57,9 +57,9 @@ t_scoped t_reader::f_instantiate(t_scoped&& a_stream, const std::wstring& a_enco
 	return object;
 }
 
-t_reader::t_reader(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
+t_reader::t_reader(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
 {
-	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open.");
+	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open."sv);
 	v_stream = std::move(a_stream);
 	v_buffer = t_bytes::f_instantiate(std::max(a_buffer, size_t(1)));
 	static_cast<t_object*>(v_buffer)->f_share();
@@ -67,14 +67,14 @@ t_reader::t_reader(t_scoped&& a_stream, const std::wstring& a_encoding, size_t a
 
 void t_reader::f_close(t_io* a_extension)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	v_stream.f_invoke(a_extension->f_symbol_close());
 	v_stream = nullptr;
 }
 
 t_scoped t_reader::f_read(t_io* a_extension, size_t a_size)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	std::vector<wchar_t> cs(a_size);
 	for (size_t i = 0; i < a_size; ++i) {
 		wint_t c = f_get(a_extension);
@@ -89,7 +89,7 @@ t_scoped t_reader::f_read(t_io* a_extension, size_t a_size)
 
 t_scoped t_reader::f_read_line(t_io* a_extension)
 {
-	if (!v_stream) f_throw(L"already closed.");
+	if (!v_stream) f_throw(L"already closed."sv);
 	std::vector<wchar_t> cs;
 	while (true) {
 		wint_t c = f_get(a_extension);
@@ -104,7 +104,7 @@ t_scoped t_reader::f_read_line(t_io* a_extension)
 
 void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
-	t_define<io::t_reader, t_object>(a_extension, L"Reader")
+	t_define<io::t_reader, t_object>(a_extension, L"Reader"sv)
 		(
 			t_construct<t_scoped&&, t_string&>(),
 			t_construct<t_scoped&&, t_string&, size_t>()

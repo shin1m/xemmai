@@ -14,16 +14,16 @@ class t_symbol
 	friend struct t_type_of<t_type>;
 	friend struct t_type_of<t_symbol>;
 
-	std::map<std::wstring, t_slot>::iterator v_entry;
+	std::map<std::wstring, t_slot, std::less<>>::iterator v_entry;
 	volatile size_t v_revision = 0;
 
-	t_symbol(std::map<std::wstring, t_slot>::iterator a_entry) : v_entry(a_entry)
+	t_symbol(std::map<std::wstring, t_slot, std::less<>>::iterator a_entry) : v_entry(a_entry)
 	{
 	}
 	~t_symbol() = default;
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_value);
+	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_value);
 	static void f_revise(t_object* a_this);
 
 	const std::wstring& f_string() const

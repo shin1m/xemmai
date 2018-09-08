@@ -7,9 +7,9 @@ t_client::~t_client()
 	f_remove();
 }
 
-void t_client::f_on_message(const std::wstring& a_message)
+void t_client::f_on_message(std::wstring_view a_message)
 {
-	std::wprintf(L"t_client::f_on_message(%ls);\n", a_message.c_str());
+	std::wprintf(L"t_client::f_on_message(%.*ls);\n", a_message.size(), a_message.data());
 }
 
 void t_client::f_remove()
@@ -37,7 +37,7 @@ void t_server::f_add(t_client& a_client)
 	a_client.v_server = this;
 }
 
-void t_server::f_post(const std::wstring& a_message)
+void t_server::f_post(std::wstring_view a_message)
 {
 	for (auto p : v_clients) p->f_on_message(a_message);
 }
@@ -48,8 +48,7 @@ void t_server::f_run()
 	while (true) {
 		wchar_t* p = std::fgetws(cs, sizeof(cs) / sizeof(wchar_t), stdin);
 		if (!p) break;
-		std::wstring s = p;
-		s.erase(s.end() - 1);
-		f_post(s);
+		std::wstring_view s = p;
+		f_post(s.substr(0, s.size() - 1));
 	}
 }

@@ -13,6 +13,8 @@
 namespace xemmai
 {
 
+using namespace std::literals;
+
 template<typename T>
 struct t_type_of;
 class t_engine;
@@ -751,9 +753,9 @@ inline auto f_do_or_destruct(T a_do, t_stacked* a_stack, size_t a_n) -> decltype
 	}
 }
 
-void f_throw [[noreturn]] (const std::wstring& a_message);
+void f_throw [[noreturn]] (std::wstring_view a_message);
 
-inline void f_throw [[noreturn]] (t_stacked* a_stack, size_t a_n, const std::wstring& a_message)
+inline void f_throw [[noreturn]] (t_stacked* a_stack, size_t a_n, std::wstring_view a_message)
 {
 	t_destruct_n(a_stack, a_n);
 	f_throw(a_message);

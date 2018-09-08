@@ -24,7 +24,7 @@ bool t_type_of<double>::f__not_equals(double a_self, const t_value& a_value)
 
 void t_type_of<double>::f_define()
 {
-	t_define<double, t_object>(f_global(), L"Float")
+	t_define<double, t_object>(f_global(), L"Float"sv)
 		(t_construct_with<t_scoped(*)(t_type*, double), f_construct_derived>())
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(double), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(double), f__hash>())

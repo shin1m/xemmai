@@ -103,7 +103,7 @@ bool t_tuple::f_equals(const t_value& a_other) const
 void t_tuple::f_each(const t_value& a_callable) const
 {
 //	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
-	if (a_callable.f_tag() < t_value::e_tag__OBJECT) f_throw(L"not supported.");
+	if (a_callable.f_tag() < t_value::e_tag__OBJECT) f_throw(L"not supported."sv);
 	auto p = static_cast<t_object*>(a_callable);
 	t_scoped_stack stack(3);
 	for (size_t i = 0; i < v_size; ++i) {
@@ -117,7 +117,7 @@ void t_tuple::f_each(const t_value& a_callable) const
 
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class.");
+	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
 	a_stack[1].f_destruct();
 	auto tuple = new(a_n) t_tuple(a_n);
@@ -129,7 +129,7 @@ void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacke
 void t_type_of<t_tuple>::f_define()
 {
 	v_builtin = true;
-	t_define<t_tuple, t_object>(f_global(), L"Tuple", v_this)
+	t_define<t_tuple, t_object>(f_global(), L"Tuple"sv, v_this)
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<t_scoped(t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_tuple::*)() const, &t_tuple::f_hash>())
@@ -141,7 +141,7 @@ void t_type_of<t_tuple>::f_define()
 		(f_global()->f_symbol_equals(), t_member<bool(t_tuple::*)(const t_value&) const, &t_tuple::f_equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(t_tuple::*)(const t_value&) const, &t_tuple::f_not_equals>())
 		(f_global()->f_symbol_size(), t_member<size_t(t_tuple::*)() const, &t_tuple::f_size>())
-		(L"each", t_member<void(t_tuple::*)(const t_value&) const, &t_tuple::f_each>())
+		(L"each"sv, t_member<void(t_tuple::*)(const t_value&) const, &t_tuple::f_each>())
 	;
 }
 

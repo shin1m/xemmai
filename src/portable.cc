@@ -10,26 +10,27 @@ namespace xemmai::portable
 {
 
 #ifdef __unix__
-t_path::t_path(const std::wstring& a_path)
+t_path::t_path(std::wstring_view a_path)
 {
 	if (a_path[0] == v_directory_separator) {
 		v_path = L'/';
 	} else {
-		char* mbs = getcwd(NULL, 0);
-		size_t n = std::mbstowcs(NULL, mbs, 0) + 1;
+		const char* mbs = getcwd(NULL, 0);
+		std::mbstate_t state{};
+		size_t n = std::mbsrtowcs(nullptr, &mbs, 0, &state) + 1;
 		std::vector<wchar_t> wcs(n);
-		std::mbstowcs(&wcs[0], mbs, n);
-		std::free(mbs);
-		v_path = &wcs[0];
+		std::mbsrtowcs(wcs.data(), &mbs, n, &state);
+		std::free(const_cast<char*>(mbs));
+		v_path = wcs.data();
 	}
 	*this /= a_path;
 }
 #endif
 
 #ifdef _WIN32
-t_path::t_path(const std::wstring& a_path)
+t_path::t_path(std::wstring_view a_path)
 {
-	DWORD n = GetFullPathNameW(a_path.c_str(), 0, NULL, NULL);
+	DWORD n = GetFullPathNameW(std::wstring(a_path).c_str(), 0, NULL, NULL);
 	std::vector<wchar_t> cs(n);
 	wchar_t* p;
 	GetFullPathNameW(a_path.c_str(), n, &cs[0], &p);
@@ -37,7 +38,7 @@ t_path::t_path(const std::wstring& a_path)
 }
 #endif
 
-t_path& t_path::operator/=(const std::wstring& a_path)
+t_path& t_path::operator/=(std::wstring_view a_path)
 {
 	auto i = a_path.begin();
 	while (i != a_path.end()) {
@@ -55,7 +56,7 @@ t_path& t_path::operator/=(const std::wstring& a_path)
 		} while (i != a_path.end());
 		if (cs.empty() || cs.size() == 1 && cs[0] == L'.') continue;
 		if (cs.size() == 2 && cs[0] == L'.' && cs[1] == L'.') {
-			std::wstring::size_type n = v_path.find_last_of(v_directory_separator);
+			size_t n = v_path.find_last_of(v_directory_separator);
 			if (n > 0) v_path.erase(n);
 		} else {
 			if (*--v_path.end() != v_directory_separator) v_path += v_directory_separator;
@@ -65,20 +66,26 @@ t_path& t_path::operator/=(const std::wstring& a_path)
 	return *this;
 }
 
-std::string f_convert(const std::wstring& a_string)
+std::string f_convert(std::wstring_view a_string)
 {
-	size_t n = std::wcstombs(NULL, a_string.c_str(), 0) + 1;
+	std::wstring s(a_string);
+	auto p = s.c_str();
+	std::mbstate_t state{};
+	size_t n = std::wcsrtombs(nullptr, &p, 0, &state) + 1;
 	std::vector<char> cs(n);
-	std::wcstombs(&cs[0], a_string.c_str(), n);
-	return &cs[0];
+	std::wcsrtombs(cs.data(), &p, n, &state);
+	return cs.data();
 }
 
-std::wstring f_convert(const std::string& a_string)
+std::wstring f_convert(std::string_view a_string)
 {
-	size_t n = std::mbstowcs(NULL, a_string.c_str(), 0) + 1;
+	std::string s(a_string);
+	auto p = s.c_str();
+	std::mbstate_t state{};
+	size_t n = std::mbsrtowcs(nullptr, &p, 0, &state) + 1;
 	std::vector<wchar_t> cs(n);
-	std::mbstowcs(&cs[0], a_string.c_str(), n);
-	return &cs[0];
+	std::mbsrtowcs(cs.data(), &p, n, &state);
+	return cs.data();
 }
 
 }

@@ -31,11 +31,11 @@ public:
 	t_file(std::FILE* a_stream) : v_stream(a_stream)
 	{
 	}
-	t_file(const std::wstring& a_path, const char* a_mode);
-	t_file(const t_string& a_path, const t_string& a_mode);
+	t_file(std::wstring_view a_path, const char* a_mode);
+	t_file(std::wstring_view a_path, std::wstring_view a_mode);
 #ifdef __unix__
 	t_file(int a_fd, const char* a_mode);
-	t_file(int a_fd, const t_string& a_mode);
+	t_file(int a_fd, std::wstring_view a_mode);
 #endif
 	~t_file()
 	{
@@ -45,31 +45,31 @@ public:
 	{
 		return v_stream;
 	}
-	void f_reopen(const t_string& a_path, const t_string& a_mode);
+	void f_reopen(std::wstring_view a_path, std::wstring_view a_mode);
 	void f_close()
 	{
-		if (v_stream == NULL) f_throw(L"already closed.");
-		if (!v_own) f_throw(L"can not close unown.");
+		if (v_stream == NULL) f_throw(L"already closed."sv);
+		if (!v_own) f_throw(L"can not close unown."sv);
 		std::fclose(v_stream);
 		v_stream = NULL;
 	}
 	void f_seek(intptr_t a_offset, int a_whence)
 	{
-		if (v_stream == NULL) f_throw(L"already closed.");
-		if (std::fseek(v_stream, a_offset, a_whence) == -1) f_throw(L"failed to seek.");
+		if (v_stream == NULL) f_throw(L"already closed."sv);
+		if (std::fseek(v_stream, a_offset, a_whence) == -1) f_throw(L"failed to seek."sv);
 	}
 	intptr_t f_tell() const
 	{
-		if (v_stream == NULL) f_throw(L"already closed.");
+		if (v_stream == NULL) f_throw(L"already closed."sv);
 		intptr_t n = std::ftell(v_stream);
-		if (n == -1) f_throw(L"failed to tell.");
+		if (n == -1) f_throw(L"failed to tell."sv);
 		return n;
 	}
 	XEMMAI__PORTABLE__EXPORT size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	XEMMAI__PORTABLE__EXPORT void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	void f_flush()
 	{
-		if (v_stream == NULL) f_throw(L"already closed.");
+		if (v_stream == NULL) f_throw(L"already closed."sv);
 		std::fflush(v_stream);
 	}
 	bool f_tty() const;

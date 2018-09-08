@@ -24,12 +24,12 @@ struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path, t_typ
 	static t_scoped f_construct(t_type* a_class, const t_string& a_value)
 	{
 		t_scoped object = t_object::f_allocate_uninitialized(a_class);
-		object.f_pointer__(new portable::t_path(a_value.f_wstring()));
+		object.f_pointer__(new portable::t_path(a_value));
 		return object;
 	}
 	static portable::t_path f__divide(const portable::t_path& a_self, const t_string& a_value)
 	{
-		return a_self / a_value.f_wstring();
+		return a_self / a_value;
 	}
 	static void f_define(t_io* a_extension);
 

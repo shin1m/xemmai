@@ -281,7 +281,7 @@ struct t_code
 	std::vector<t_address_at> v_ats;
 	std::set<std::vector<bool>> v_stack_patterns;
 	std::vector<t_stack_map> v_stack_map;
-	std::map<std::wstring, t_variable> v_variables;
+	std::map<std::wstring, t_variable, std::less<>> v_variables;
 
 	t_code(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_module(a_module), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
 	{

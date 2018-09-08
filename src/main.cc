@@ -37,7 +37,7 @@ class t_debugger : public xemmai::t_debugger
 	std::condition_variable v_posted;
 	t_object* v_stopped = nullptr;
 	t_object* v_loaded = nullptr;
-	std::map<std::wstring, std::set<size_t>> v_break_points;
+	std::map<std::wstring, std::set<size_t>, std::less<>> v_break_points;
 	bool v_interrupted = false;
 #ifdef __unix__
 	std::thread v_interrupter;
@@ -72,7 +72,7 @@ class t_debugger : public xemmai::t_debugger
 			cs.push_back(a_c);
 			a_c = std::getwchar();
 		}
-		return std::wstring(cs.begin(), cs.end());
+		return {cs.begin(), cs.end()};
 	}
 	std::pair<std::wstring, size_t> f_read_path(wint_t& a_c)
 	{
@@ -82,7 +82,7 @@ class t_debugger : public xemmai::t_debugger
 			a_c = std::getwchar();
 			i = f_read_integer(a_c);
 		}
-		return std::make_pair(portable::t_path(path), i);
+		return {portable::t_path(path), i};
 	}
 	void f_print_break_points()
 	{
@@ -91,7 +91,7 @@ class t_debugger : public xemmai::t_debugger
 			for (auto line : pair.second) std::fprintf(v_out, "\t%" PRIuPTR "\n", static_cast<uintptr_t>(line));
 		}
 	}
-	t_debug_script* f_find_module(const std::wstring& a_path)
+	t_debug_script* f_find_module(std::wstring_view a_path)
 	{
 		for (auto& pair : v_engine.f_modules()) {
 			if (!pair.second) continue;
@@ -100,7 +100,7 @@ class t_debugger : public xemmai::t_debugger
 		}
 		return nullptr;
 	}
-	void f_set_break_point(const std::wstring& a_path, size_t a_line)
+	void f_set_break_point(std::wstring_view a_path, size_t a_line)
 	{
 		auto debug = f_find_module(a_path);
 		if (debug) {
@@ -131,7 +131,7 @@ class t_debugger : public xemmai::t_debugger
 		}
 		v_engine.f_debug_continue(v_engine.f_debug_stepping());
 	}
-	void f_reset_break_point(const std::wstring& a_path, size_t a_line)
+	void f_reset_break_point(std::wstring_view a_path, size_t a_line)
 	{
 		auto i = v_break_points.lower_bound(a_path);
 		if (i == v_break_points.end() || i->first != a_path) return;
@@ -252,7 +252,7 @@ class t_debugger : public xemmai::t_debugger
 			}
 		}
 	}
-	void f_print_variable(t_context* a_context, const std::wstring& a_name, size_t a_depth)
+	void f_print_variable(t_context* a_context, std::wstring_view a_name, size_t a_depth)
 	{
 		const t_value* variable = a_context->f_variable(a_name);
 		if (!variable) return;

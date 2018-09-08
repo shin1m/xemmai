@@ -1,6 +1,6 @@
 check_PROGRAMS = callback.so
 AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CXXFLAGS = -fPIC
+AM_CXXFLAGS = -std=c++17 -fPIC
 AM_LDFLAGS = -shared
 if DEBUG
 AM_CXXFLAGS += -g

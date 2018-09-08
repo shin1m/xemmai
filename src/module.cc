@@ -29,7 +29,7 @@ t_module::t_scoped_lock::~t_scoped_lock()
 	f_engine()->v_module__condition.notify_all();
 }
 
-t_scoped t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
+t_scoped t_module::f_instantiate(std::wstring_view a_name, t_module* a_module)
 {
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_module>());
 	object.f_pointer__(a_module);
@@ -42,9 +42,9 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name, t_module* a_module)
 	return object;
 }
 
-t_library* t_module::f_load_library(const std::wstring& a_path)
+t_library* t_module::f_load_library(std::wstring_view a_path)
 {
-	portable::t_library library(a_path);
+	portable::t_library library{std::wstring(a_path)};
 	if (!library) return nullptr;
 	auto handle = new t_library::t_handle();
 	handle->v_library.f_swap(library);
@@ -62,7 +62,7 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	stack.f_return();
 }
 
-t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path)
+t_scoped t_module::f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path)
 {
 	io::t_file stream(a_path, "r");
 	if (!stream) return {};
@@ -84,7 +84,7 @@ t_scoped t_module::f_load_and_execute_script(const std::wstring& a_name, const s
 	}
 }
 
-t_scoped t_module::f_instantiate(const std::wstring& a_name)
+t_scoped t_module::f_instantiate(std::wstring_view a_name)
 {
 	t_scoped_lock lock;
 	f_engine()->v_object__reviving__mutex.lock();
@@ -118,7 +118,7 @@ t_scoped t_module::f_instantiate(const std::wstring& a_name)
 			return module;
 		}
 	}
-	f_throw(L"module \"" + a_name + L"\" not found.");
+	f_throw(L"module \"" + std::wstring(a_name) + L"\" not found.");
 	return {};
 }
 
@@ -126,12 +126,12 @@ void t_module::f_main()
 {
 	t_scoped x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
 	f_check<t_string>(x, L"script");
-	auto path = f_as<std::wstring>(x);
-	if (path.empty()) f_throw(L"script path is empty.");
-	if (!f_load_and_execute_script(L"__main", path)) f_throw(L"file \"" + path + L"\" not found.");
+	auto path = f_as<std::wstring_view>(x);
+	if (path.empty()) f_throw(L"script path is empty."sv);
+	if (!f_load_and_execute_script(L"__main"sv, path)) f_throw(L"file \"" + std::wstring(path) + L"\" not found.");
 }
 
-t_module::t_module(const std::wstring& a_path) : v_path(a_path), v_iterator(f_engine()->v_module__instances__null)
+t_module::t_module(std::wstring_view a_path) : v_path(a_path), v_iterator(f_engine()->v_module__instances__null)
 {
 }
 
@@ -193,7 +193,7 @@ void t_library::f_scan(t_scan a_scan)
 void t_library::f_initialize(t_object* a_this)
 {
 	auto factory = v_handle->v_library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
-	if (!factory) f_throw(L"f_factory not found.");
+	if (!factory) f_throw(L"f_factory not found."sv);
 	v_extension = factory(a_this);
 }
 
@@ -205,7 +205,7 @@ void t_type_of<t_module>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_module>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
+	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument."sv);
 	t_destruct<> a0(a_stack[2]);
 	f_check<t_string>(a0.v_p, L"argument0");
 	a_stack[0].f_construct(t_module::f_instantiate(f_as<const t_string&>(a0.v_p)));

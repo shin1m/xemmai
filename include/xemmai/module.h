@@ -21,17 +21,17 @@ struct t_module
 		~t_scoped_lock();
 	};
 
-	static t_scoped f_instantiate(const std::wstring& a_name, t_module* a_module);
-	static t_library* f_load_library(const std::wstring& a_path);
+	static t_scoped f_instantiate(std::wstring_view a_name, t_module* a_module);
+	static t_library* f_load_library(std::wstring_view a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
-	static t_scoped f_load_and_execute_script(const std::wstring& a_name, const std::wstring& a_path);
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(const std::wstring& a_name);
+	static t_scoped f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path);
+	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_name);
 	static void f_main();
 
 	std::wstring v_path;
-	std::map<std::wstring, t_slot>::iterator v_iterator;
+	std::map<std::wstring, t_slot, std::less<>>::iterator v_iterator;
 
-	t_module(const std::wstring& a_path);
+	t_module(std::wstring_view a_path);
 	virtual ~t_module();
 	virtual void f_scan(t_scan a_scan);
 };
@@ -40,7 +40,7 @@ struct t_script : t_module
 {
 	std::vector<std::unique_ptr<t_slot>> v_slots;
 
-	t_script(const std::wstring& a_path) : t_module(a_path)
+	t_script(std::wstring_view a_path) : t_module(a_path)
 	{
 	}
 	virtual void f_scan(t_scan a_scan);
@@ -50,7 +50,7 @@ struct t_script : t_module
 		v_slots.emplace_back(p);
 		return *p;
 	}
-	t_object* f_symbol(const std::wstring& a_value)
+	t_object* f_symbol(std::wstring_view a_value)
 	{
 		return f_slot(t_symbol::f_instantiate(a_value));
 	}
@@ -103,7 +103,7 @@ struct t_library : t_module
 	t_handle* v_handle;
 	t_extension* v_extension = nullptr;
 
-	t_library(const std::wstring& a_path, t_handle* a_handle) : t_module(a_path), v_handle(a_handle)
+	t_library(std::wstring_view a_path, t_handle* a_handle) : t_module(a_path), v_handle(a_handle)
 	{
 	}
 	virtual ~t_library();

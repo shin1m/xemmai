@@ -115,13 +115,13 @@ class t_engine : public t_value::t_collector
 	std::mutex v_synchronizer__mutex;
 	//std::condition_variable v_synchronizer__condition;
 	t_type* v_type_class;
-	std::map<std::wstring, t_slot> v_module__instances;
-	std::map<std::wstring, t_slot>::iterator v_module__instances__null;
+	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
+	std::map<std::wstring, t_slot, std::less<>>::iterator v_module__instances__null;
 	std::mutex v_module__mutex;
 	std::condition_variable v_module__condition;
 	t_object* v_module__thread = nullptr;
 	t_library::t_handle* v_library__handle__finalizing = nullptr;
-	std::map<std::wstring, t_slot> v_symbol__instances;
+	std::map<std::wstring, t_slot, std::less<>> v_symbol__instances;
 	std::mutex v_symbol__instantiate__mutex;
 	t_scoped v_structure_root;
 	t_scoped v_module_global;
@@ -210,7 +210,7 @@ public:
 	{
 		for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done <= 0 && p->v_thread) a_callback(p->v_thread);
 	}
-	const std::map<std::wstring, t_slot>& f_modules() const
+	const std::map<std::wstring, t_slot, std::less<>>& f_modules() const
 	{
 		return v_module__instances;
 	}

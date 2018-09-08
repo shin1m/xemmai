@@ -34,14 +34,14 @@ void t_type::f_share(const t_value& a_self)
 void t_type::f_define()
 {
 	v_builtin = v_primitive = true;
-	t_define<t_object, t_object>(f_global(), L"Object", v_this)
+	t_define<t_object, t_object>(f_global(), L"Object"sv, v_this)
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f__hash>())
 		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_value&, const t_value&), f__equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_value&, const t_value&), f__not_equals>())
-		(L"own", t_member<void(*)(const t_value&), f_own>())
-		(L"share", t_member<void(*)(const t_value&), f_share>())
+		(L"own"sv, t_member<void(*)(const t_value&), f_own>())
+		(L"share"sv, t_member<void(*)(const t_value&), f_share>())
 	;
 }
 
@@ -79,7 +79,7 @@ void t_type::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 
 t_scoped t_type::f_get_nonowned(t_object* a_this, t_object* a_key)
 {
-	if (!a_this->f_shared()) f_throw(L"owned by another thread.");
+	if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
 	size_t i = t_thread::t_cache::f_index(a_this, a_key);
 	auto& cache = t_thread::v_cache[i];
 	auto& symbol = f_as<t_symbol&>(a_key);
@@ -93,7 +93,7 @@ t_scoped t_type::f_get_nonowned(t_object* a_this, t_object* a_key)
 	t_scoped value;
 	{
 		t_with_lock_for_read lock(a_this);
-		if (!a_this->f_shared()) f_throw(L"owned by another thread.");
+		if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
 		index = a_this->f_field_index(a_key);
 		if (index >= 0) value = a_this->f_field_get(index);
 	}
@@ -129,7 +129,7 @@ void t_type::f_do_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
 	} else {
 		{
 			t_with_lock_for_write lock(a_this);
-			if (!a_this->f_shared()) f_throw(L"owned by another thread.");
+			if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
 			a_this->f_field_put(a_key, std::move(a_value));
 		}
 		size_t i = t_thread::t_cache::f_index(a_this, a_key);
@@ -163,7 +163,7 @@ t_scoped t_type::f_do_remove(t_object* a_this, t_object* a_key)
 		t_scoped value;
 		{
 			t_with_lock_for_write lock(a_this);
-			if (!a_this->f_shared()) f_throw(L"owned by another thread.");
+			if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
 			intptr_t index = a_this->f_field_index(a_key);
 			if (index < 0) f_throw(f_as<t_symbol&>(a_key).f_string());
 			value = a_this->f_field_get(index);
@@ -261,7 +261,7 @@ t_scoped t_type_immutable::f_do_get(t_object* a_this, t_object* a_key)
 
 void t_type_immutable::f_do_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
 {
-	f_throw(L"immutable.");
+	f_throw(L"immutable."sv);
 }
 
 bool t_type_immutable::f_do_has(t_object* a_this, t_object* a_key)
@@ -271,7 +271,7 @@ bool t_type_immutable::f_do_has(t_object* a_this, t_object* a_key)
 
 t_scoped t_type_immutable::f_do_remove(t_object* a_this, t_object* a_key)
 {
-	f_throw(L"immutable.");
+	f_throw(L"immutable."sv);
 }
 
 void t_type_immutable::f_do_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n)

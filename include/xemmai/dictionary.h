@@ -159,7 +159,7 @@ public:
 	const t_value& f_get(const t_value& a_key) const
 	{
 		auto p = v_table->f_find(a_key);
-		if (!p) f_throw(L"key not found.");
+		if (!p) f_throw(L"key not found."sv);
 		return p->v_value;
 	}
 	t_scoped f_put(const t_value& a_key, t_scoped&& a_value);

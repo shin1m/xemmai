@@ -61,7 +61,7 @@ struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_with_traits<t_ho
 	static size_t f__do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	{
 		auto& p = f_as<T&>(a_this);
-		if (a_n != p.v_arguments) f_throw(a_stack, a_n, L"invalid number of arguments.");
+		if (a_n != p.v_arguments) f_throw(a_stack, a_n, L"invalid number of arguments."sv);
 		return p.template f_call<T_context>(a_stack);
 	}
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
@@ -131,12 +131,12 @@ struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>,
 	static size_t f__do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	{
 		auto& p = f_as<t_advanced_lambda<T_base>&>(a_this);
-		if (a_n < p.v_minimum) f_throw(a_stack, a_n, L"too few arguments.");
+		if (a_n < p.v_minimum) f_throw(a_stack, a_n, L"too few arguments."sv);
 		size_t arguments = p.v_arguments;
 		if (p.v_variadic)
 			--arguments;
 		else if (a_n > arguments)
-			f_throw(a_stack, a_n, L"too many arguments.");
+			f_throw(a_stack, a_n, L"too many arguments."sv);
 		if (a_n < arguments) {
 			auto& t0 = f_as<const t_tuple&>(p.v_defaults);
 			t_stacked* t1 = a_stack + p.v_minimum + 2;

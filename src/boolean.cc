@@ -7,12 +7,12 @@ namespace xemmai
 
 t_scoped t_type_of<bool>::f_string(bool a_self)
 {
-	return a_self ? t_string::f_instantiate(L"true", 4) : t_string::f_instantiate(L"false", 5);
+	return t_string::f_instantiate(a_self ? L"true"sv : L"false"sv);
 }
 
 void t_type_of<bool>::f_define()
 {
-	t_define<bool, t_object>(f_global(), L"Boolean")
+	t_define<bool, t_object>(f_global(), L"Boolean"sv)
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(bool), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(bool), f__hash>())
 		(f_global()->f_symbol_not(), t_member<bool(*)(bool), f_not>())

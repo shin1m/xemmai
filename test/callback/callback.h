@@ -14,7 +14,7 @@ class t_client
 
 public:
 	virtual ~t_client();
-	virtual void f_on_message(const std::wstring& a_message);
+	virtual void f_on_message(std::wstring_view a_message);
 	void f_remove();
 };
 
@@ -29,7 +29,7 @@ class t_server
 public:
 	~t_server();
 	void f_add(t_client& a_client);
-	void f_post(const std::wstring& a_message);
+	void f_post(std::wstring_view a_message);
 	void f_run();
 };
 

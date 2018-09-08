@@ -77,7 +77,7 @@ t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 	if (p.first->v_gap == p.second) return p.first->v_value = std::move(a_value);
 	if (v_table->v_size >= v_table->v_rank.v_upper) {
 		auto rank = &v_table->v_rank + 1;
-		if (rank >= t_table::v_ranks + sizeof(t_table::v_ranks) / sizeof(t_table::t_rank)) f_throw(L"cannot grow.");
+		if (rank >= t_table::v_ranks + sizeof(t_table::v_ranks) / sizeof(t_table::t_rank)) f_throw(L"cannot grow."sv);
 		f_rehash(*rank);
 		p = v_table->f_find(hash, a_key);
 	}
@@ -89,7 +89,7 @@ t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 t_scoped t_dictionary::f_remove(const t_value& a_key)
 {
 	auto p = v_table->f_find(a_key);
-	if (!p) f_throw(L"key not found.");
+	if (!p) f_throw(L"key not found."sv);
 	p->v_gap = 0;
 	p->v_key = nullptr;
 	t_scoped value = std::move(p->v_value);
@@ -123,7 +123,7 @@ void t_type_of<t_dictionary::t_table>::f_do_scan(t_object* a_this, t_scan a_scan
 
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class.");
+	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class."sv);
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
 	a_stack[1].f_destruct();
 	auto dictionary = new t_dictionary();
@@ -262,16 +262,16 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 void t_type_of<t_dictionary>::f_define()
 {
 	f_global()->v_type_dictionary__table.f_construct((new t_type_of<t_dictionary::t_table>(t_type_of<t_dictionary::t_table>::V_ids, f_global()->f_type<t_object>(), f_global()->f_module()))->v_this);
-	t_define<t_dictionary, t_object>(f_global(), L"Dictionary")
+	t_define<t_dictionary, t_object>(f_global(), L"Dictionary"sv)
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
-		(L"clear", t_member<void(*)(const t_value&), f_clear>())
+		(L"clear"sv, t_member<void(*)(const t_value&), f_clear>())
 		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_value&), f_size>())
 		(f_global()->f_symbol_get_at(), t_member<t_scoped(*)(const t_value&, const t_value&), f__get_at>())
 		(f_global()->f_symbol_set_at(), t_member<t_scoped(*)(const t_value&, const t_value&, t_scoped&&), f__set_at>())
-		(L"has", t_member<bool(*)(const t_value&, const t_value&), f_has>())
-		(L"remove", t_member<t_scoped(*)(const t_value&, const t_value&), f_remove>())
-		(L"each", t_member<void(*)(const t_value&, const t_value&), f_each>())
+		(L"has"sv, t_member<bool(*)(const t_value&, const t_value&), f_has>())
+		(L"remove"sv, t_member<t_scoped(*)(const t_value&, const t_value&), f_remove>())
+		(L"each"sv, t_member<void(*)(const t_value&, const t_value&), f_each>())
 	;
 }
 

@@ -115,7 +115,7 @@ t_scoped t_array::f_remove(intptr_t a_index)
 
 void t_type_of<t_array>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class.");
+	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class."sv);
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
 	a_stack[1].f_destruct();
 	auto array = new t_array();
@@ -301,21 +301,21 @@ void t_type_of<t_array>::f_sort(const t_value& a_self, const t_value& a_callable
 
 void t_type_of<t_array>::f_define()
 {
-	t_define<t_array, t_object>(f_global(), L"Array")
+	t_define<t_array, t_object>(f_global(), L"Array"sv)
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
-		(L"clear", t_member<void(*)(const t_value&), f_clear>())
+		(L"clear"sv, t_member<void(*)(const t_value&), f_clear>())
 		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_value&), f_size>())
 		(f_global()->f_symbol_get_at(), t_member<t_scoped(*)(const t_value&, intptr_t), f__get_at>())
 		(f_global()->f_symbol_set_at(), t_member<t_scoped(*)(const t_value&, intptr_t, t_scoped&&), f__set_at>())
-		(L"push", t_member<void(*)(const t_value&, t_scoped&&), f_push>())
-		(L"pop", t_member<t_scoped(*)(const t_value&), f_pop>())
-		(L"unshift", t_member<void(*)(const t_value&, t_scoped&&), f_unshift>())
-		(L"shift", t_member<t_scoped(*)(const t_value&), f_shift>())
-		(L"insert", t_member<void(*)(const t_value&, intptr_t, t_scoped&&), f_insert>())
-		(L"remove", t_member<t_scoped(*)(const t_value&, intptr_t), f_remove>())
-		(L"each", t_member<void(*)(const t_value&, const t_value&), f_each>())
-		(L"sort", t_member<void(*)(const t_value&, const t_value&), f_sort>())
+		(L"push"sv, t_member<void(*)(const t_value&, t_scoped&&), f_push>())
+		(L"pop"sv, t_member<t_scoped(*)(const t_value&), f_pop>())
+		(L"unshift"sv, t_member<void(*)(const t_value&, t_scoped&&), f_unshift>())
+		(L"shift"sv, t_member<t_scoped(*)(const t_value&), f_shift>())
+		(L"insert"sv, t_member<void(*)(const t_value&, intptr_t, t_scoped&&), f_insert>())
+		(L"remove"sv, t_member<t_scoped(*)(const t_value&, intptr_t), f_remove>())
+		(L"each"sv, t_member<void(*)(const t_value&, const t_value&), f_each>())
+		(L"sort"sv, t_member<void(*)(const t_value&, const t_value&), f_sort>())
 	;
 }
 

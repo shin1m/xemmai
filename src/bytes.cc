@@ -29,10 +29,10 @@ t_scoped t_bytes::f_string() const
 
 void t_type_of<t_bytes>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument.");
+	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument."sv);
 	t_destruct<> self(a_stack[1]);
 	t_destruct<> a0(a_stack[2]);
-	if (self.v_p.f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class.");
+	if (self.v_p.f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
 	f_check<size_t>(a0.v_p, L"argument0");
 	t_scoped p = t_object::f_allocate(&f_as<t_type&>(self.v_p));
 	size_t n = f_as<size_t>(a0.v_p);
@@ -42,19 +42,19 @@ void t_type_of<t_bytes>::f__construct(xemmai::t_extension* a_extension, t_stacke
 
 void t_type_of<t_bytes>::f_define()
 {
-	t_define<t_bytes, t_object>(f_global(), L"Bytes")
+	t_define<t_bytes, t_object>(f_global(), L"Bytes"sv)
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<t_scoped(t_bytes::*)() const, &t_bytes::f_string>())
 		(f_global()->f_symbol_get_at(), t_member<intptr_t(t_bytes::*)(intptr_t) const, &t_bytes::f_get_at>())
 		(f_global()->f_symbol_set_at(), t_member<intptr_t(t_bytes::*)(intptr_t, intptr_t), &t_bytes::f_set_at>())
-		(L"size", t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())
-		(L"copy", t_member<void(t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
+		(L"size"sv, t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())
+		(L"copy"sv, t_member<void(t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
 	;
 }
 
 t_scoped t_type_of<t_bytes>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	if (a_n != 1) f_throw(L"must be called with an argument.");
+	if (a_n != 1) f_throw(L"must be called with an argument."sv);
 	auto& a0 = a_stack[2];
 	f_check<size_t>(a0, L"argument0");
 	t_scoped p = t_object::f_allocate(this);

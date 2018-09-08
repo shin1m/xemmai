@@ -56,35 +56,35 @@ bool f_boolean(double a_value)
 
 t_math::t_math(t_object* a_module) : t_extension(a_module)
 {
-	f_define<double(*)(double), std::acos>(this, L"acos");
-	f_define<double(*)(double), std::asin>(this, L"asin");
-	f_define<double(*)(double), std::atan>(this, L"atan");
-	f_define<double(*)(double, double), std::atan2>(this, L"atan2");
-	f_define<double(*)(double), std::ceil>(this, L"ceil");
-	f_define<double(*)(double), std::cos>(this, L"cos");
-	f_define<double(*)(double), std::cosh>(this, L"cosh");
-	f_define<double(*)(double), std::exp>(this, L"exp");
-	f_define<double(*)(double), std::fabs>(this, L"fabs");
-	f_define<double(*)(double), std::floor>(this, L"floor");
-	f_define<double(*)(double, double), std::fmod>(this, L"fmod");
-	f_define<t_scoped(*)(double), f_frexp>(this, L"frexp");
-	f_define<double(*)(double, int), std::ldexp>(this, L"ldexp");
-	f_define<double(*)(double), std::log>(this, L"log");
-	f_define<double(*)(double), std::log10>(this, L"log10");
-	f_define<t_scoped(*)(double), f_modf>(this, L"modf");
-	f_define<double(*)(double, double), std::pow>(this, L"pow");
-	f_define<double(*)(double), std::sin>(this, L"sin");
-	f_define<double(*)(double), std::sinh>(this, L"sinh");
-	f_define<double(*)(double), std::sqrt>(this, L"sqrt");
-	f_define<double(*)(double), std::tan>(this, L"tan");
-	f_define<double(*)(double), std::tanh>(this, L"tanh");
-	f_define<bool(*)(double), f_boolean<std::isfinite>>(this, L"isfinite");
-	f_define<bool(*)(double), f_boolean<std::isinf>>(this, L"isinf");
-	f_define<bool(*)(double), f_boolean<std::isnan>>(this, L"isnan");
-	f_define<bool(*)(double), f_boolean<std::isnormal>>(this, L"isnormal");
-	f_define<bool(*)(double), f_boolean<std::signbit>>(this, L"signbit");
-	a_module->f_put(t_symbol::f_instantiate(L"E"), f_as(M_E));
-	a_module->f_put(t_symbol::f_instantiate(L"PI"), f_as(M_PI));
+	f_define<double(*)(double), std::acos>(this, L"acos"sv);
+	f_define<double(*)(double), std::asin>(this, L"asin"sv);
+	f_define<double(*)(double), std::atan>(this, L"atan"sv);
+	f_define<double(*)(double, double), std::atan2>(this, L"atan2"sv);
+	f_define<double(*)(double), std::ceil>(this, L"ceil"sv);
+	f_define<double(*)(double), std::cos>(this, L"cos"sv);
+	f_define<double(*)(double), std::cosh>(this, L"cosh"sv);
+	f_define<double(*)(double), std::exp>(this, L"exp"sv);
+	f_define<double(*)(double), std::fabs>(this, L"fabs"sv);
+	f_define<double(*)(double), std::floor>(this, L"floor"sv);
+	f_define<double(*)(double, double), std::fmod>(this, L"fmod"sv);
+	f_define<t_scoped(*)(double), f_frexp>(this, L"frexp"sv);
+	f_define<double(*)(double, int), std::ldexp>(this, L"ldexp"sv);
+	f_define<double(*)(double), std::log>(this, L"log"sv);
+	f_define<double(*)(double), std::log10>(this, L"log10"sv);
+	f_define<t_scoped(*)(double), f_modf>(this, L"modf"sv);
+	f_define<double(*)(double, double), std::pow>(this, L"pow"sv);
+	f_define<double(*)(double), std::sin>(this, L"sin"sv);
+	f_define<double(*)(double), std::sinh>(this, L"sinh"sv);
+	f_define<double(*)(double), std::sqrt>(this, L"sqrt"sv);
+	f_define<double(*)(double), std::tan>(this, L"tan"sv);
+	f_define<double(*)(double), std::tanh>(this, L"tanh"sv);
+	f_define<bool(*)(double), f_boolean<std::isfinite>>(this, L"isfinite"sv);
+	f_define<bool(*)(double), f_boolean<std::isinf>>(this, L"isinf"sv);
+	f_define<bool(*)(double), f_boolean<std::isnan>>(this, L"isnan"sv);
+	f_define<bool(*)(double), f_boolean<std::isnormal>>(this, L"isnormal"sv);
+	f_define<bool(*)(double), f_boolean<std::signbit>>(this, L"signbit"sv);
+	a_module->f_put(t_symbol::f_instantiate(L"E"sv), f_as(M_E));
+	a_module->f_put(t_symbol::f_instantiate(L"PI"sv), f_as(M_PI));
 }
 
 }
