@@ -104,18 +104,16 @@ protected:
 	{
 		static const size_t V_SIZE = A_SIZE;
 
-		t_object* volatile v_objects[V_SIZE];
 		t_object* volatile* volatile v_head;
 		t_object* volatile* v_next;
+		t_object* volatile v_objects[V_SIZE];
 		t_object* volatile* volatile v_tail;
 		t_object* volatile* v_epoch;
 
-		t_queue() :
-		v_head(v_objects),
-		v_next(v_objects + V_SIZE - 1),
-		v_tail(v_objects + V_SIZE - 1),
-		v_epoch(v_objects)
+		t_queue() : v_tail(v_objects + V_SIZE - 1), v_epoch(v_objects)
 		{
+			v_head = v_objects;
+			v_next = v_objects + V_SIZE - 1;
 		}
 		void f_next(t_object* a_object) noexcept;
 		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
@@ -615,12 +613,11 @@ void t_value::t_queue<A_SIZE>::f_next(t_object* a_object) noexcept
 	while (v_head == v_tail) v_collector->f_wait();
 	v_next = v_tail;
 	t_object* volatile* head = v_head;
+	*head = a_object;
 	if (head < v_objects + V_SIZE - 1) {
 		if (v_next < head) v_next = v_objects + V_SIZE - 1;
-		*head = a_object;
 		v_head = ++head;
 	} else {
-		*head = a_object;
 		v_head = v_objects;
 	}
 }
