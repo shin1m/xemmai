@@ -19,7 +19,7 @@ namespace io
 t_scoped t_file::f_instantiate(t_file* a_file)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_scoped object = t_object::f_allocate(extension->f_type<t_file>());
+	t_scoped object = t_object::f_allocate(extension->f_type<t_file>(), false);
 	object.f_pointer__(a_file);
 	return object;
 }
@@ -110,11 +110,11 @@ void t_type_of<io::t_file>::f_define(t_io* a_extension)
 	t_define<io::t_file, t_object>(a_extension, L"File"sv)
 #ifdef __unix__
 		(
-			t_construct<std::wstring_view, std::wstring_view>(),
-			t_construct<int, std::wstring_view>()
+			t_construct<false, std::wstring_view, std::wstring_view>(),
+			t_construct<false, int, std::wstring_view>()
 		)
 #else
-		(t_construct<std::wstring_view, std::wstring_view>())
+		(t_construct<false, std::wstring_view, std::wstring_view>())
 #endif
 		(L"reopen"sv, t_member<void(io::t_file::*)(std::wstring_view, std::wstring_view), &io::t_file::f_reopen, t_with_lock_for_write>())
 		(a_extension->f_symbol_close(), t_member<void(io::t_file::*)(), &io::t_file::f_close, t_with_lock_for_write>())
@@ -135,11 +135,11 @@ t_scoped t_type_of<io::t_file>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 #ifdef __unix__
 	return t_overload<
-		t_construct<std::wstring_view, std::wstring_view>,
-		t_construct<int, std::wstring_view>
+		t_construct<false, std::wstring_view, std::wstring_view>,
+		t_construct<false, int, std::wstring_view>
 	>::t_bind<io::t_file>::f_do(this, a_stack, a_n);
 #else
-	return t_construct<std::wstring_view, std::wstring_view>::t_bind<io::t_file>::f_do(this, a_stack, a_n);
+	return t_construct<false, std::wstring_view, std::wstring_view>::t_bind<io::t_file>::f_do(this, a_stack, a_n);
 #endif
 }
 

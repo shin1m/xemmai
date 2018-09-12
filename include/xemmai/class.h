@@ -15,7 +15,7 @@ struct t_type_of<t_type> : t_underivable<t_bears<t_type>>
 		t_value::f_increments()->f_push(v_this);
 		t_value::f_increments()->f_push(v_this);
 		static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super->v_this)->v_type = this;
-		v_fixed = v_shared = true;
+		v_fixed = true;
 		v_get_nonowned = static_cast<void (t_type::*)(t_object*, t_object*, t_stacked*)>(&t_type_of::f_do_get_nonowned);
 		v_get = static_cast<t_scoped (t_type::*)(t_object*, t_object*)>(&t_type_of::f_do_get);
 		f_put = f_do_put;

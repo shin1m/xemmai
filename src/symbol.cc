@@ -20,7 +20,7 @@ t_scoped t_symbol::f_instantiate(std::wstring_view a_value)
 		return i->second;
 	}
 	f_engine()->v_object__reviving__mutex.unlock();
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_symbol>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_symbol>(), true);
 	object.f_pointer__(new t_symbol(i));
 	i->second = static_cast<t_object*>(object);
 	return object;

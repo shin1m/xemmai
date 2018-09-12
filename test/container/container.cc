@@ -5,7 +5,7 @@ namespace xemmai
 
 t_scoped t_type_of<t_pair>::f_instantiate(t_container* a_extension, t_scoped&& a_value)
 {
-	t_scoped object = t_object::f_allocate(a_extension->v_type_pair);
+	t_scoped object = t_object::f_allocate(a_extension->v_type_pair, false);
 	object.f_pointer__(new t_pair(std::move(a_value)));
 	return object;
 }
@@ -38,8 +38,8 @@ void t_type_of<t_queue>::f_do_scan(t_object* a_this, t_scan a_scan)
 t_scoped t_type_of<t_queue>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct<>,
-		t_construct<std::wstring_view>
+		t_construct<false>,
+		t_construct<false, std::wstring_view>
 	>::t_bind<t_queue>::f_do(this, a_stack, a_n);
 }
 

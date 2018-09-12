@@ -362,7 +362,7 @@ struct t_code
 };
 
 template<>
-struct t_type_of<t_code> : t_uninstantiatable<t_underivable<t_with_traits<t_finalizes<t_derives<t_code>>, false, true>>>
+struct t_type_of<t_code> : t_uninstantiatable<t_underivable<t_finalizes<t_derives<t_code>>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);

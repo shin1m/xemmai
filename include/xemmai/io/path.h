@@ -17,13 +17,13 @@ struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path, t_typ
 	template<typename T_extension, typename T>
 	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
 	{
-		t_scoped object = t_object::f_allocate(a_extension->template f_type<typename t_fundamental<T>::t_type>());
+		t_scoped object = t_object::f_allocate(a_extension->template f_type<typename t_fundamental<T>::t_type>(), true);
 		object.f_pointer__(new portable::t_path(std::forward<T>(a_value)));
 		return object;
 	}
 	static t_scoped f_construct(t_type* a_class, const t_string& a_value)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(a_class);
+		t_scoped object = t_object::f_allocate(a_class, true);
 		object.f_pointer__(new portable::t_path(a_value));
 		return object;
 	}

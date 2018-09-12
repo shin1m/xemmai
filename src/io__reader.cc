@@ -52,7 +52,7 @@ wint_t t_reader::f_get(t_io* a_extension)
 t_scoped t_reader::f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_scoped object = t_object::f_allocate(extension->f_type<t_reader>());
+	t_scoped object = t_object::f_allocate(extension->f_type<t_reader>(), false);
 	object.f_pointer__(new t_reader(std::move(a_stream), a_encoding, a_buffer));
 	return object;
 }
@@ -106,8 +106,8 @@ void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader"sv)
 		(
-			t_construct<t_scoped&&, t_string&>(),
-			t_construct<t_scoped&&, t_string&, size_t>()
+			t_construct<false, t_scoped&&, t_string&>(),
+			t_construct<false, t_scoped&&, t_string&, size_t>()
 		)
 		(a_extension->f_symbol_close(), t_member<void(io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
 		(a_extension->f_symbol_read(), t_member<t_scoped(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
@@ -125,8 +125,8 @@ void t_type_of<io::t_reader>::f_do_scan(t_object* a_this, t_scan a_scan)
 t_scoped t_type_of<io::t_reader>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct<t_scoped&&, const t_string&>,
-		t_construct<t_scoped&&, const t_string&, size_t>
+		t_construct<false, t_scoped&&, const t_string&>,
+		t_construct<false, t_scoped&&, const t_string&, size_t>
 	>::t_bind<io::t_reader>::f_do(this, a_stack, a_n);
 }
 

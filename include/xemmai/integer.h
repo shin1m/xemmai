@@ -97,7 +97,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 	}
 	static t_scoped f_construct_derived(t_type* a_class, intptr_t a_value)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(a_class);
+		t_scoped object = t_object::f_allocate(a_class, true);
 		object.f_integer__(a_value);
 		return object;
 	}

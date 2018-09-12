@@ -185,7 +185,6 @@ struct t_type_of<t_object>
 	bool v_primitive = false;
 	bool v_revive = false;
 	bool v_fixed = false;
-	bool v_shared = false;
 
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids);
@@ -461,16 +460,15 @@ struct t_holds : t_finalizes<t_bears<T, T_base>>
 	using t_finalizes<t_bears<T, T_base>>::t_finalizes;
 };
 
-template<typename T_base, bool A_fixed, bool A_shared>
-struct t_with_traits : T_base
+template<typename T_base>
+struct t_fixed : T_base
 {
-	typedef t_with_traits t_base;
+	typedef t_fixed t_base;
 
 	template<size_t A_n>
-	t_with_traits(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
+	t_fixed(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
-		T_base::v_fixed = A_fixed;
-		T_base::v_shared = A_shared;
+		T_base::v_fixed = true;
 	}
 };
 
@@ -507,7 +505,7 @@ struct t_uninstantiatable : T_base
 	}
 };
 
-struct t_type_immutable : t_with_traits<t_type, true, true>
+struct t_type_immutable : t_fixed<t_type>
 {
 	template<size_t A_n>
 	t_type_immutable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : t_base(a_ids, a_super, std::move(a_module))

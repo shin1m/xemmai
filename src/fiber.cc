@@ -29,7 +29,7 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 
 t_scoped t_fiber::f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_fiber>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_fiber>(), false);
 	object.f_pointer__(new t_fiber(std::move(a_callable), a_stack, a_main, a_active));
 	return object;
 }

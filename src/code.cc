@@ -1744,7 +1744,7 @@ void t_code::f_try(t_context* a_context)
 
 t_scoped t_code::f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_code>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_code>(), true);
 	object.f_pointer__(new t_code(a_module, a_shared, a_variadic, a_privates, a_shareds, a_arguments, a_minimum));
 	return object;
 }

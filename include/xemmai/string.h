@@ -158,7 +158,7 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	template<typename... T_an>
 	static t_scoped f__construct(t_type* a_class, T_an&&... a_an)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(a_class);
+		t_scoped object = t_object::f_allocate(a_class, true);
 		object.f_pointer__(t_string::f_new(std::forward<T_an>(a_an)...));
 		return object;
 	}

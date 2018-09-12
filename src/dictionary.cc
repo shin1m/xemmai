@@ -22,7 +22,7 @@ const t_dictionary::t_table::t_rank t_dictionary::t_table::v_ranks[] = {
 
 t_scoped t_dictionary::t_table::f_instantiate(const t_rank& a_rank)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_table>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_table>(), true);
 	object.f_pointer__(new(a_rank) t_table(a_rank));
 	return object;
 }
@@ -65,7 +65,7 @@ void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
 
 t_scoped t_dictionary::f_instantiate()
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_dictionary>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_dictionary>(), false);
 	object.f_pointer__(new t_dictionary());
 	return object;
 }
@@ -124,7 +124,7 @@ void t_type_of<t_dictionary::t_table>::f_do_scan(t_object* a_this, t_scan a_scan
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class."sv);
-	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
+	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]), false);
 	a_stack[1].f_destruct();
 	auto dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
@@ -282,7 +282,7 @@ void t_type_of<t_dictionary>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 t_scoped t_type_of<t_dictionary>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	t_scoped p = t_object::f_allocate(this);
+	t_scoped p = t_object::f_allocate(this, false);
 	auto dictionary = new t_dictionary();
 	p.f_pointer__(dictionary);
 	a_n += 2;

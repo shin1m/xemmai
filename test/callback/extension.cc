@@ -94,7 +94,7 @@ class t_client_wrapper : public t_client
 public:
 	static t_scoped f_construct(t_type* a_class)
 	{
-		t_scoped object = t_object::f_allocate(a_class);
+		t_scoped object = t_object::f_allocate(a_class, false);
 		object.f_pointer__(new t_client_wrapper(object));
 		return object;
 	}
@@ -136,7 +136,7 @@ t_scoped t_type_of<t_client>::f_do_construct(t_stacked* a_stack, size_t a_n)
 void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 {
 	t_define<t_server, t_object>(a_extension, L"Server"sv)
-		(t_construct<>())
+		(t_construct<false>())
 		(L"add"sv, t_member<void(t_server::*)(t_client&), &t_server::f_add>())
 		(L"post"sv, t_member<void(*)(t_server&, std::wstring_view), f_post>())
 		(L"run"sv, t_member<void(t_server::*)(), &t_server::f_run>())
@@ -145,7 +145,7 @@ void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
 
 t_scoped t_type_of<t_server>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<>::t_bind<t_server>::f_do(this, a_stack, a_n);
+	return t_construct<false>::t_bind<t_server>::f_do(this, a_stack, a_n);
 }
 
 }
@@ -154,7 +154,7 @@ t_scoped t_callback_extension::f_as(t_client* a_value) const
 {
 	auto p = dynamic_cast<t_client_wrapper*>(a_value);
 	if (p) return p->v_self;
-	t_scoped object = t_object::f_allocate(v_type_client);
+	t_scoped object = t_object::f_allocate(v_type_client, false);
 	object.f_pointer__(a_value);
 	return object;
 }

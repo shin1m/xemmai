@@ -15,7 +15,7 @@ struct t_type_of<t_structure> : t_uninstantiatable<t_underivable<t_derives<t_str
 		auto type = static_cast<t_object*>(static_cast<t_slot&>(v_super))->v_type;
 		t_value::f_increments()->f_push(type->v_this);
 		static_cast<t_object*>(v_this)->v_type = type;
-		v_revive = v_shared = true;
+		v_revive = true;
 	}
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	static void f_do_finalize(t_object* a_this);

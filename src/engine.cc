@@ -184,7 +184,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	static_cast<t_object*>(v_structure_root)->v_structure = root;
 	auto type_module = new t_type_of<t_module>(t_type_of<t_module>::V_ids, type_object, nullptr);
 	type_module->v_revive = true;
-	v_module_global = t_object::f_allocate(type_module);
+	v_module_global = t_object::f_allocate(type_module, true);
 	auto library = new t_library({}, nullptr);
 	v_module_global.f_pointer__(library);
 	v_module__instances__null = v_module__instances.emplace(std::wstring(), t_slot()).first;
@@ -195,12 +195,12 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	type_structure->v_module = v_module_global;
 	type_module->v_module = v_module_global;
 	auto type_fiber = new t_type_of<t_fiber>(t_type_of<t_fiber>::V_ids, type_object, t_scoped(v_module_global));
-	v_fiber_exit = t_object::f_allocate(type_object);
+	v_fiber_exit = t_object::f_allocate(type_object, true);
 	auto type_thread = new t_type_of<t_thread>(t_type_of<t_thread>::V_ids, type_object, t_scoped(v_module_global));
-	v_thread = t_object::f_allocate(type_thread);
+	v_thread = t_object::f_allocate(type_thread, true);
 	v_thread.f_pointer__(thread);
 	thread->v_internal->v_thread = t_thread::v_current = v_thread;
-	thread->v_fiber = t_object::f_allocate(type_fiber);
+	thread->v_fiber = t_object::f_allocate(type_fiber, false);
 	thread->v_fiber.f_pointer__(new t_fiber(nullptr, v_stack_size, true, true));
 	thread->v_active = thread->v_fiber;
 	{

@@ -183,15 +183,14 @@ struct t_call_construct<t_scoped(*)(t_type*, T_an...), A_function>
 	}
 };
 
-template<typename... T_an>
+template<bool A_shared, typename... T_an>
 struct t_construct
 {
 	template<typename T_self>
 	static t_scoped f_default(t_type* a_class, T_an&&... a_an)
 	{
-		auto p = new T_self(std::forward<T_an>(a_an)...);
-		t_scoped object = t_object::f_allocate(a_class);
-		object.f_pointer__(p);
+		t_scoped object = t_object::f_allocate(a_class, A_shared);
+		object.f_pointer__(new T_self(std::forward<T_an>(a_an)...));
 		return object;
 	}
 
@@ -575,16 +574,16 @@ public:
 		v_type.f_put(a_name, f_function(a_function));
 		return *this;
 	}
-	template<typename... T_an>
-	t_define& operator()(const t_construct<T_an...>&)
+	template<bool A_shared, typename... T_an>
+	t_define& operator()(const t_construct<A_shared, T_an...>&)
 	{
-		v_type.f_put(f_global()->f_symbol_construct(), f_function(t_construct<T_an...>::template t_bind<T>::f_call));
+		v_type.f_put(f_global()->f_symbol_construct(), f_function(t_construct<A_shared, T_an...>::template t_bind<T>::f_call));
 		return *this;
 	}
-	template<typename... T_an, typename T_overload0, typename... T_overloadn>
-	t_define& operator()(const t_construct<T_an...>&, const T_overload0&, const T_overloadn&...)
+	template<bool A_shared, typename... T_an, typename T_overload0, typename... T_overloadn>
+	t_define& operator()(const t_construct<A_shared, T_an...>&, const T_overload0&, const T_overloadn&...)
 	{
-		v_type.f_put(f_global()->f_symbol_construct(), f_function(t_overload<t_construct<T_an...>, T_overload0, T_overloadn...>::template t_bind<T>::f_call));
+		v_type.f_put(f_global()->f_symbol_construct(), f_function(t_overload<t_construct<A_shared, T_an...>, T_overload0, T_overloadn...>::template t_bind<T>::f_call));
 		return *this;
 	}
 	template<typename T_function, T_function A_function>

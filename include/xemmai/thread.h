@@ -85,7 +85,7 @@ struct t_thread
 };
 
 template<>
-struct t_type_of<t_thread> : t_underivable<t_with_traits<t_holds<t_thread>, true, true>>
+struct t_type_of<t_thread> : t_underivable<t_fixed<t_holds<t_thread>>>
 {
 	void f_define();
 

@@ -280,16 +280,16 @@ class t_object
 	{
 		intptr_t v_integer;
 		double v_float;
-		void* v_pointer;
+		void* v_pointer = nullptr;
 	};
-	t_value::t_increments* v_owner;
+	t_value::t_increments* v_owner = nullptr;
 	t_structure* v_structure;
 	t_tuple* v_fields = nullptr;
 	t_lock v_lock;
 	t_object* v_next;
 	t_object* v_scan;
 	t_color v_color;
-	size_t v_count;
+	size_t v_count = 1;
 	size_t v_cyclic;
 
 	template<void (t_object::*A_push)()>
@@ -438,8 +438,7 @@ class t_object
 
 public:
 	static t_scoped f_allocate_on_boot();
-	static t_scoped f_allocate_uninitialized(t_type* a_type);
-	static t_scoped f_allocate(t_type* a_type);
+	static t_scoped f_allocate(t_type* a_type, bool a_shared);
 
 	t_type* f_type() const
 	{

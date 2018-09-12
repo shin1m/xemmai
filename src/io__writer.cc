@@ -53,7 +53,7 @@ void t_writer::f_unshift(t_io* a_extension)
 t_scoped t_writer::f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding)
 {
 	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_scoped object = t_object::f_allocate(extension->f_type<t_writer>());
+	t_scoped object = t_object::f_allocate(extension->f_type<t_writer>(), false);
 	object.f_pointer__(new t_writer(std::move(a_stream), a_encoding));
 	return object;
 }
@@ -124,7 +124,7 @@ void t_writer::f_flush(t_io* a_extension)
 void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 {
 	t_define<io::t_writer, t_object>(a_extension, L"Writer"sv)
-		(t_construct<t_scoped&&, const t_string&>())
+		(t_construct<false, t_scoped&&, const t_string&>())
 		(a_extension->f_symbol_close(), t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_close, t_with_lock_for_write>())
 		(a_extension->f_symbol_write(), t_member<void(io::t_writer::*)(t_io*, const t_value&), &io::t_writer::f_write, t_with_lock_for_write>())
 		(a_extension->f_symbol_write_line(),
@@ -144,7 +144,7 @@ void t_type_of<io::t_writer>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 t_scoped t_type_of<io::t_writer>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<t_scoped&&, const t_string&>::t_bind<io::t_writer>::f_do(this, a_stack, a_n);
+	return t_construct<false, t_scoped&&, const t_string&>::t_bind<io::t_writer>::f_do(this, a_stack, a_n);
 }
 
 }

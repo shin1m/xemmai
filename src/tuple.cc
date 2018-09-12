@@ -7,7 +7,7 @@ namespace xemmai
 
 t_scoped t_tuple::f_instantiate(size_t a_size)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_tuple>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_tuple>(), true);
 	object.f_pointer__(new(a_size) t_tuple(a_size));
 	return object;
 }
@@ -118,7 +118,7 @@ void t_tuple::f_each(const t_value& a_callable) const
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
-	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]));
+	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]), true);
 	a_stack[1].f_destruct();
 	auto tuple = new(a_n) t_tuple(a_n);
 	p.f_pointer__(tuple);
@@ -152,7 +152,7 @@ void t_type_of<t_tuple>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 t_scoped t_type_of<t_tuple>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	t_scoped p = t_object::f_allocate(this);
+	t_scoped p = t_object::f_allocate(this, true);
 	auto tuple = new(a_n) t_tuple(a_n);
 	p.f_pointer__(tuple);
 	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 2]);

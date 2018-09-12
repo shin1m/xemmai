@@ -7,7 +7,7 @@ namespace xemmai
 
 t_scoped t_bytes::f_instantiate(size_t a_size)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_bytes>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_bytes>(), false);
 	object.f_pointer__(new(a_size) t_bytes(a_size));
 	return object;
 }
@@ -34,7 +34,7 @@ void t_type_of<t_bytes>::f__construct(xemmai::t_extension* a_extension, t_stacke
 	t_destruct<> a0(a_stack[2]);
 	if (self.v_p.f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
 	f_check<size_t>(a0.v_p, L"argument0");
-	t_scoped p = t_object::f_allocate(&f_as<t_type&>(self.v_p));
+	t_scoped p = t_object::f_allocate(&f_as<t_type&>(self.v_p), false);
 	size_t n = f_as<size_t>(a0.v_p);
 	p.f_pointer__(new(n) t_bytes(n));
 	a_stack[0].f_construct(std::move(p));
@@ -57,7 +57,7 @@ t_scoped t_type_of<t_bytes>::f_do_construct(t_stacked* a_stack, size_t a_n)
 	if (a_n != 1) f_throw(L"must be called with an argument."sv);
 	auto& a0 = a_stack[2];
 	f_check<size_t>(a0, L"argument0");
-	t_scoped p = t_object::f_allocate(this);
+	t_scoped p = t_object::f_allocate(this, false);
 	size_t n = f_as<size_t>(a0);
 	p.f_pointer__(new(n) t_bytes(n));
 	return p;

@@ -112,7 +112,7 @@ struct t_library : t_module
 };
 
 template<>
-struct t_type_of<t_module> : t_underivable<t_with_traits<t_holds<t_module>, false, true>>
+struct t_type_of<t_module> : t_underivable<t_holds<t_module>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);

@@ -31,7 +31,7 @@ t_module::t_scoped_lock::~t_scoped_lock()
 
 t_scoped t_module::f_instantiate(std::wstring_view a_name, t_module* a_module)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_module>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_module>(), true);
 	object.f_pointer__(a_module);
 	t_scoped second = object;
 	{

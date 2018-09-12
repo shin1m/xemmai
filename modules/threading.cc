@@ -6,7 +6,7 @@ namespace xemmai
 class t_threading;
 
 template<>
-struct t_type_of<std::mutex> : t_underivable<t_with_traits<t_holds<std::mutex>, true, true>>
+struct t_type_of<std::mutex> : t_underivable<t_fixed<t_holds<std::mutex>>>
 {
 	typedef t_threading t_extension;
 
@@ -19,7 +19,7 @@ struct t_type_of<std::mutex> : t_underivable<t_with_traits<t_holds<std::mutex>, 
 };
 
 template<>
-struct t_type_of<std::condition_variable> : t_underivable<t_with_traits<t_holds<std::condition_variable>, true, true>>
+struct t_type_of<std::condition_variable> : t_underivable<t_fixed<t_holds<std::condition_variable>>>
 {
 	typedef t_threading t_extension;
 
@@ -97,7 +97,7 @@ void t_type_of<std::mutex>::f_define(t_threading* a_extension)
 
 t_scoped t_type_of<std::mutex>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
+	return t_construct<true>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
 }
 
 void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex)
@@ -148,7 +148,7 @@ void t_type_of<std::condition_variable>::f_define(t_threading* a_extension)
 
 t_scoped t_type_of<std::condition_variable>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_construct<>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
+	return t_construct<true>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
 }
 
 t_threading::t_threading(t_object* a_module) : t_extension(a_module)

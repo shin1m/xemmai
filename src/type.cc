@@ -64,7 +64,7 @@ bool t_type::f_derives(t_type* a_type)
 
 t_scoped t_type::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_object::f_allocate(this);
+	return t_object::f_allocate(this, false);
 }
 
 void t_type::f_do_instantiate(t_stacked* a_stack, size_t a_n)

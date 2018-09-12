@@ -8,7 +8,7 @@ namespace xemmai
 t_scoped t_string::f_instantiate(const wchar_t* a_p, size_t a_n)
 {
 	if (a_n <= 0) return f_global()->f_string_empty();
-	t_scoped object = t_object::f_allocate_uninitialized(f_global()->f_type<t_string>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_string>(), true);
 	object.f_pointer__(f_new(a_p, a_n));
 	return object;
 }

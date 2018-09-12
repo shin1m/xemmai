@@ -74,7 +74,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 	}
 	static t_scoped f_construct_derived(t_type* a_class, double a_value)
 	{
-		t_scoped object = t_object::f_allocate_uninitialized(a_class);
+		t_scoped object = t_object::f_allocate(a_class, true);
 		object.f_float__(a_value);
 		return object;
 	}

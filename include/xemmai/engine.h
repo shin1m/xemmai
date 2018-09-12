@@ -146,15 +146,22 @@ class t_engine : public t_value::t_collector
 		}
 		return p;
 	}
+	void f_free(t_object* a_p)
+	{
+		a_p->v_pointer = nullptr;
+		a_p->v_owner = nullptr;
+		a_p->v_count = 1;
+		f_free(v_object__pool, v_object__freed, a_p);
+	}
 	void f_free_as_release(t_object* a_p)
 	{
 		++v_object__release;
-		f_free(v_object__pool, v_object__freed, a_p);
+		f_free(a_p);
 	}
 	void f_free_as_collect(t_object* a_p)
 	{
 		++v_object__collect;
-		f_free(v_object__pool, v_object__freed, a_p);
+		f_free(a_p);
 	}
 	void f_signal_synchronizers();
 	void f_wait_synchronizers();
@@ -291,31 +298,18 @@ inline void t_object::f_collect_white()
 	f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
 }
 
-inline t_scoped t_object::f_allocate_uninitialized(t_type* a_type)
+inline t_scoped t_object::f_allocate(t_type* a_type, bool a_shared)
 {
 	t_object* p = f_local_pool__allocate();
-	p->v_next = nullptr;
-	p->v_count = 1;
-	t_value::f_increments()->f_push(a_type->v_this);
+	auto increments = t_value::f_increments();
+	increments->f_push(a_type->v_this);
 	p->v_type = a_type;
-	t_value::f_increments()->f_push(f_engine()->v_structure_root);
-	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->v_pointer);
-	p->v_owner = a_type->v_shared ? nullptr : t_value::f_increments();
-	return t_scoped(p, t_scoped::t_pass());
-}
-
-inline t_scoped t_object::f_allocate(t_type* a_type)
-{
-	t_object* p = f_local_pool__allocate();
+	if (!a_shared) p->v_owner = increments;
+	t_object* root = f_engine()->v_structure_root;
+	increments->f_push(root);
+	p->v_structure = static_cast<t_structure*>(root->v_pointer);
 	p->v_next = nullptr;
-	p->v_count = 1;
-	t_value::f_increments()->f_push(a_type->v_this);
-	p->v_type = a_type;
-	p->v_pointer = nullptr;
-	t_value::f_increments()->f_push(f_engine()->v_structure_root);
-	p->v_structure = static_cast<t_structure*>(static_cast<t_object*>(f_engine()->v_structure_root)->v_pointer);
-	p->v_owner = a_type->v_shared ? nullptr : t_value::f_increments();
-	return t_scoped(p, t_scoped::t_pass());
+	return {p, t_scoped::t_pass()};
 }
 
 template<size_t A_n>
@@ -325,7 +319,7 @@ inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids) : v_this(t_obj
 }
 
 template<size_t A_n>
-inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : v_this(t_object::f_allocate(f_engine()->v_type_class)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(std::move(a_module))
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : v_this(t_object::f_allocate(f_engine()->v_type_class, true)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(std::move(a_module))
 {
 	v_super.f_construct(a_super->v_this);
 	v_this.f_pointer__(this);

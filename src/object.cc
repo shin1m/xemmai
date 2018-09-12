@@ -198,7 +198,7 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 			auto fields = new(index + 4) t_tuple(index + 4);
 			for (size_t i = 0; i < index; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i]));
 			std::swap(v_fields, fields);
-			t_object::f_allocate(f_global()->f_type<t_tuple>()).f_pointer__(fields);
+			t_object::f_allocate(f_global()->f_type<t_tuple>(), true).f_pointer__(fields);
 		}
 		(*v_fields)[index].f_construct(std::move(a_value));
 	}
@@ -215,7 +215,7 @@ t_scoped t_object::f_allocate_on_boot()
 	p->v_count = 1;
 	p->v_pointer = nullptr;
 	p->v_owner = nullptr;
-	return t_scoped(p, t_scoped::t_pass());
+	return {p, t_scoped::t_pass()};
 }
 
 void t_object::f_own()

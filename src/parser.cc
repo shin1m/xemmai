@@ -828,7 +828,7 @@ void t_parser::operator()(ast::t_scope& a_scope)
 
 t_scoped t_parser::t_error::f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_error>());
+	t_scoped object = t_object::f_allocate(f_global()->f_type<t_error>(), false);
 	object.f_pointer__(new t_error(a_message, a_path, a_at));
 	return object;
 }
