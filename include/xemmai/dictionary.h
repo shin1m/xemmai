@@ -98,20 +98,21 @@ private:
 		XEMMAI__PORTABLE__ALWAYS_INLINE t_entry* f_find(const t_value& a_key) const
 		{
 			size_t hash = f_as<size_t>(a_key.f_hash());
-			auto entries = f_entries();
-			auto p = entries + v_slot(hash);
-			for (size_t gap = 1; p->v_gap >= gap; ++gap) {
+			auto p = f_entries() + v_slot(hash);
+			size_t gap = 1;
+			for (; p->v_gap > gap; ++gap) if (++p >= v_end) p = f_entries();
+			for (; p->v_gap == gap; ++gap) {
 				if (f_equals(*p, hash, a_key)) return p;
-				if (++p >= v_end) p = entries;
+				if (++p >= v_end) p = f_entries();
 			}
 			return nullptr;
 		}
 		std::pair<t_entry*, size_t> f_find(size_t a_hash, const t_value& a_key) const
 		{
-			auto entries = f_entries();
-			auto p = entries + v_slot(a_hash);
+			auto p = f_entries() + v_slot(a_hash);
 			size_t gap = 1;
-			for (; p->v_gap >= gap && !f_equals(*p, a_hash, a_key); ++gap) if (++p >= v_end) p = entries;
+			for (; p->v_gap > gap; ++gap) if (++p >= v_end) p = f_entries();
+			for (; p->v_gap >= gap && !f_equals(*p, a_hash, a_key); ++gap) if (++p >= v_end) p = f_entries();
 			return {p, gap};
 		}
 		void f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_scoped&& a_key, t_scoped&& a_value);
