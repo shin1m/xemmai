@@ -73,17 +73,17 @@ t_scoped t_dictionary::f_instantiate()
 t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 {
 	size_t hash = f_as<size_t>(a_key.f_hash());
-	auto p = v_table->f_find(hash, a_key);
-	if (p.first->v_gap == p.second) return p.first->v_value = std::move(a_value);
+	auto [p, gap] = v_table->f_find(hash, a_key);
+	if (p->v_gap == gap) return p->v_value = std::move(a_value);
 	if (v_table->v_size >= v_table->v_rank.v_upper) {
 		auto rank = &v_table->v_rank + 1;
 		if (rank >= t_table::v_ranks + sizeof(t_table::v_ranks) / sizeof(t_table::t_rank)) f_throw(L"cannot grow."sv);
 		f_rehash(*rank);
-		p = v_table->f_find(hash, a_key);
+		std::tie(p, gap) = v_table->f_find(hash, a_key);
 	}
-	v_table->f_put(p.first, p.second, hash, a_key, std::move(a_value));
+	v_table->f_put(p, gap, hash, a_key, std::move(a_value));
 	++v_table->v_size;
-	return p.first->v_value;
+	return p->v_value;
 }
 
 t_scoped t_dictionary::f_remove(const t_value& a_key)

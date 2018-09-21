@@ -831,9 +831,9 @@ inline t_scoped t_type_of<t_string>::f_from_code(t_global* a_extension, intptr_t
 
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_type_of<t_string>::f__add(t_global* a_extension, t_object* a_self, t_scoped&& a_value)
 {
-	auto& s0 = f_as<const t_string&>(a_self);
 	auto add = [&](t_scoped&& x)
 	{
+		auto& s0 = f_as<const t_string&>(a_self);
 		if (s0.f_size() <= 0) return x;
 		auto& s1 = f_as<const t_string&>(x);
 		return s1.f_size() <= 0 ? t_scoped(a_self) : f__construct(a_extension->f_type<t_string>(), s0, s1);
