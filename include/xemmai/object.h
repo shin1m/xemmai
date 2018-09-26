@@ -47,9 +47,9 @@ class t_structure
 
 	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
 
+	t_slot v_this;
 	size_t v_size;
 	std::map<t_object*, t_object*>::iterator v_iterator;
-	t_slot v_this;
 	t_slot v_parent0;
 	t_structure* v_parent1 = nullptr;
 	std::mutex v_mutex;
@@ -68,10 +68,10 @@ class t_structure
 		delete[] static_cast<char*>(a_p);
 	}
 
-	t_structure(t_scoped&& a_this) : v_size(0), v_this(std::move(a_this))
+	t_structure() : v_size(0)
 	{
 	}
-	t_structure(size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_scoped&& a_this, t_structure* a_parent) : v_size(a_size), v_iterator(a_iterator), v_this(std::move(a_this)), v_parent0(a_parent->v_this), v_parent1(a_parent)
+	t_structure(t_scoped&& a_this, size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_structure* a_parent) : v_this(std::move(a_this)), v_size(a_size), v_iterator(a_iterator), v_parent0(a_parent->v_this), v_parent1(a_parent)
 	{
 		t_object* key = v_iterator->first;
 		size_t n = a_parent->v_size;
@@ -292,6 +292,7 @@ class t_object
 	size_t v_count = 1;
 	size_t v_cyclic;
 
+	t_object();
 	template<void (t_object::*A_push)()>
 	void f_step()
 	{

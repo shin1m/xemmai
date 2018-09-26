@@ -123,7 +123,7 @@ class t_engine : public t_value::t_collector
 	t_library::t_handle* v_library__handle__finalizing = nullptr;
 	std::map<std::wstring, t_slot, std::less<>> v_symbol__instances;
 	std::mutex v_symbol__instantiate__mutex;
-	t_scoped v_structure_root;
+	t_structure* v_structure_root;
 	t_scoped v_module_global;
 	t_scoped v_module_system;
 	t_scoped v_module_io;
@@ -150,6 +150,7 @@ class t_engine : public t_value::t_collector
 	{
 		a_p->v_pointer = nullptr;
 		a_p->v_owner = nullptr;
+		a_p->v_structure = v_structure_root;
 		a_p->v_count = 1;
 		f_free(v_object__pool, v_object__freed, a_p);
 	}
@@ -261,6 +262,10 @@ struct t_safe_region
 	}
 };
 
+inline t_object::t_object() : v_structure(f_engine()->v_structure_root)
+{
+}
+
 inline t_object* t_object::f_pool__allocate()
 {
 	return f_engine()->f_object__pool__allocate();
@@ -305,9 +310,7 @@ inline t_scoped t_object::f_allocate(t_type* a_type, bool a_shared)
 	increments->f_push(a_type->v_this);
 	p->v_type = a_type;
 	if (!a_shared) p->v_owner = increments;
-	t_object* root = f_engine()->v_structure_root;
-	increments->f_push(root);
-	p->v_structure = static_cast<t_structure*>(root->v_pointer);
+	increments->f_push(p->v_structure->v_this);
 	p->v_next = nullptr;
 	return {p, t_scoped::t_pass()};
 }

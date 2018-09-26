@@ -41,7 +41,7 @@ t_scoped t_structure::f_append(t_object* a_key)
 	}
 	f_engine()->v_object__reviving__mutex.unlock();
 	t_scoped object = t_object::f_allocate(f_global()->f_type<t_structure>(), true);
-	object.f_pointer__(new(v_size + 1) t_structure(v_size + 1, i, static_cast<t_object*>(object), this));
+	object.f_pointer__(new(v_size + 1) t_structure(static_cast<t_object*>(object), v_size + 1, i, this));
 	i->second = object;
 	return object;
 }

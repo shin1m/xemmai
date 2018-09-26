@@ -159,7 +159,7 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 	--v_debug__safe;
 }
 
-t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_collector__threshold0(1024 * 8), v_collector__threshold1(1024 * 16), v_stack_size(a_stack), v_verbose(a_verbose)
+t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_collector__threshold0(1024 * 8), v_collector__threshold1(1024 * 16), v_structure_root(new(0) t_structure()), v_stack_size(a_stack), v_verbose(a_verbose)
 {
 	v_object__pool.f_grow();
 	auto thread = new t_thread(nullptr);
@@ -169,19 +169,20 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	auto type_object = new t_type(t_type::V_ids);
 	v_type_class = new t_class(t_class::V_ids, type_object);
 	auto type_structure = new t_type_of<t_structure>(t_type_of<t_structure>::V_ids, type_object);
-	v_structure_root = t_object::f_allocate_on_boot();
+	t_scoped root = t_object::f_allocate_on_boot();
 	t_value::v_increments->f_push(type_structure->v_this);
-	static_cast<t_object*>(v_structure_root)->v_type = type_structure;
-	auto root = new(0) t_structure(t_scoped(v_structure_root));
-	v_structure_root.f_pointer__(root);
-	t_value::v_increments->f_push(v_structure_root);
-	static_cast<t_object*>(type_object->v_this)->v_structure = root;
-	t_value::v_increments->f_push(v_structure_root);
-	static_cast<t_object*>(v_type_class->v_this)->v_structure = root;
-	t_value::v_increments->f_push(v_structure_root);
-	static_cast<t_object*>(type_structure->v_this)->v_structure = root;
-	t_value::v_increments->f_push(v_structure_root);
-	static_cast<t_object*>(v_structure_root)->v_structure = root;
+	static_cast<t_object*>(root)->v_type = type_structure;
+	t_value::v_increments->f_push(root);
+	v_structure_root->v_this = root;
+	root.f_pointer__(v_structure_root);
+	t_value::v_increments->f_push(root);
+	static_cast<t_object*>(type_object->v_this)->v_structure = v_structure_root;
+	t_value::v_increments->f_push(root);
+	static_cast<t_object*>(v_type_class->v_this)->v_structure = v_structure_root;
+	t_value::v_increments->f_push(root);
+	static_cast<t_object*>(type_structure->v_this)->v_structure = v_structure_root;
+	t_value::v_increments->f_push(root);
+	static_cast<t_object*>(root)->v_structure = v_structure_root;
 	auto type_module = new t_type_of<t_module>(t_type_of<t_module>::V_ids, type_object, nullptr);
 	type_module->v_revive = true;
 	v_module_global = t_object::f_allocate(type_module, true);
@@ -300,7 +301,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 t_engine::~t_engine()
 {
 	t_thread::f_cache_clear();
-	v_structure_root = nullptr;
+	t_value::v_decrements->f_push(v_structure_root->v_this);
 	v_module_global = nullptr;
 	v_module_system = nullptr;
 	v_module_io = nullptr;
