@@ -22,7 +22,7 @@ class t_string
 
 	void* operator new(size_t a_size, size_t a_n)
 	{
-		return new char[a_size + sizeof(wchar_t) * a_n];
+		return new char[a_size + sizeof(wchar_t) * (a_n + 1)];
 	}
 	void operator delete(void* a_p)
 	{
@@ -43,15 +43,18 @@ class t_string
 	}
 
 public:
+	static t_string* f_new(const t_string& a_value)
+	{
+		size_t n = sizeof(t_string) + sizeof(wchar_t) * (a_value.v_size + 1);
+		auto p = new char[n];
+		std::copy_n(reinterpret_cast<const char*>(&a_value), n, p);
+		return reinterpret_cast<t_string*>(p);
+	}
 	static t_string* f_new(const wchar_t* a_p, size_t a_n)
 	{
 		auto p = new(a_n) t_string(a_n);
-		std::copy_n(a_p, a_n, p->f_entries());
+		*std::copy_n(a_p, a_n, p->f_entries()) = L'\0';
 		return p;
-	}
-	static t_string* f_new(const t_string& a_value)
-	{
-		return f_new(static_cast<const wchar_t*>(a_value), a_value.v_size);
 	}
 	static t_string* f_new(std::wstring_view a_value)
 	{
@@ -61,7 +64,7 @@ public:
 	{
 		size_t n = a_x.v_size + a_y.v_size;
 		auto p = new(n) t_string(n);
-		std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, p->f_entries()));
+		*std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, p->f_entries())) = L'\0';
 		return p;
 	}
 	static t_scoped f_instantiate(const wchar_t* a_p, size_t a_n);

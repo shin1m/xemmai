@@ -80,8 +80,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 	}
 	static double f_parse(const wchar_t* a_value)
 	{
-		wchar_t* p;
-		return std::wcstod(a_value, &p);
+		return std::wcstod(a_value, NULL);
 	}
 	static t_scoped f_string(double a_self);
 	static intptr_t f__hash(double a_self)

@@ -31,13 +31,10 @@ class t_parser
 		f_throw(a_message, v_lexer.f_at());
 	}
 	t_code::t_variable& f_variable(ast::t_scope* a_scope, t_object* a_symbol);
-	intptr_t f_integer()
+	template<typename T>
+	T f_number() const
 	{
-		return t_type_of<intptr_t>::f_parse(&v_lexer.f_value()[0]);
-	}
-	double f_float()
-	{
-		return t_type_of<double>::f_parse(&v_lexer.f_value()[0]);
+		return t_type_of<T>::f_parse(v_lexer.f_value().data());
 	}
 	std::unique_ptr<ast::t_node> f_target(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_action(size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);

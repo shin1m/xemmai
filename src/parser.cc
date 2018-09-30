@@ -241,13 +241,13 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		return std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, false));
 	case t_lexer::e_token__INTEGER:
 		{
-			intptr_t value = f_integer();
+			intptr_t value = f_number<intptr_t>();
 			v_lexer.f_next();
 			return std::unique_ptr<ast::t_node>(new ast::t_literal<intptr_t>(at, value));
 		}
 	case t_lexer::e_token__FLOAT:
 		{
-			double value = f_float();
+			double value = f_number<double>();
 			v_lexer.f_next();
 			return std::unique_ptr<ast::t_node>(new ast::t_literal<double>(at, value));
 		}
@@ -413,13 +413,13 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__INTEGER:
 			{
-				intptr_t value = f_integer();
+				intptr_t value = f_number<intptr_t>();
 				v_lexer.f_next();
 				return f_action(indent, new ast::t_literal<intptr_t>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		case t_lexer::e_token__FLOAT:
 			{
-				double value = f_float();
+				double value = f_number<double>();
 				v_lexer.f_next();
 				return f_action(indent, new ast::t_literal<double>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
@@ -427,7 +427,7 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		break;
 	case e_instruction__COMPLEMENT_T:
 		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
-			intptr_t value = f_integer();
+			intptr_t value = f_number<intptr_t>();
 			v_lexer.f_next();
 			return f_action(indent, new ast::t_literal<intptr_t>(at, ~value), a_assignable);
 		}
