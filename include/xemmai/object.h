@@ -438,7 +438,12 @@ class t_object
 	void f_field_add(t_scoped&& a_structure, t_scoped&& a_value);
 
 public:
-	static t_scoped f_allocate_on_boot();
+	static t_scoped f_allocate_on_boot()
+	{
+		t_object* p = f_local_pool__allocate();
+		p->v_next = nullptr;
+		return {p, t_scoped::t_pass()};
+	}
 	static t_scoped f_allocate(t_type* a_type, bool a_shared);
 
 	t_type* f_type() const

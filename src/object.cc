@@ -208,16 +208,6 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 	t_value::v_decrements->f_push(structure0);
 }
 
-t_scoped t_object::f_allocate_on_boot()
-{
-	t_object* p = f_local_pool__allocate();
-	p->v_next = nullptr;
-	p->v_count = 1;
-	p->v_pointer = nullptr;
-	p->v_owner = nullptr;
-	return {p, t_scoped::t_pass()};
-}
-
 void t_object::f_own()
 {
 	if (f_type()->v_fixed) f_throw(L"thread mode is fixed."sv);
