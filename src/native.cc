@@ -7,9 +7,7 @@ namespace xemmai
 
 t_scoped t_native::f_instantiate(t_extension::t_function a_function, t_extension* a_extension)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_native>(), true);
-	object.f_pointer__(new t_native(a_function, a_extension));
-	return object;
+	return f_global()->f_type<t_native>()->f_new<t_native>(true, a_function, a_extension);
 }
 
 void t_type_of<t_native>::f_do_scan(t_object* a_this, t_scan a_scan)

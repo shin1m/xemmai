@@ -39,9 +39,7 @@ t_throwable::~t_throwable()
 
 t_scoped t_throwable::f_instantiate(std::wstring_view a_message)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_throwable>(), false);
-	object.f_pointer__(new t_throwable(a_message));
-	return object;
+	return f_global()->f_type<t_throwable>()->f_new<t_throwable>(false, a_message);
 }
 
 void t_throwable::f_dump() const

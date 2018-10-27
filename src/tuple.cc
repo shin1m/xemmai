@@ -7,8 +7,8 @@ namespace xemmai
 
 t_scoped t_tuple::f_instantiate(size_t a_size)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_tuple>(), true);
-	object.f_pointer__(new(a_size) t_tuple(a_size));
+	auto object = t_object::f_allocate(f_global()->f_type<t_tuple>(), true, sizeof(t_tuple) + sizeof(t_slot) * a_size);
+	new(object->f_data()) t_tuple(a_size);
 	return object;
 }
 
@@ -118,18 +118,17 @@ void t_tuple::f_each(const t_value& a_callable) const
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
-	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]), true);
+	auto object = t_object::f_allocate(&f_as<t_type&>(a_stack[1]), true, sizeof(t_tuple) + sizeof(t_slot) * a_n);
 	a_stack[1].f_destruct();
-	auto tuple = new(a_n) t_tuple(a_n);
-	p.f_pointer__(tuple);
+	auto tuple = new(object->f_data()) t_tuple(a_n);
 	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(std::move(a_stack[i + 2]));
-	a_stack[0].f_construct(std::move(p));
+	a_stack[0].f_construct(std::move(object));
 }
 
 void t_type_of<t_tuple>::f_define()
 {
 	v_builtin = true;
-	t_define<t_tuple, t_object>(f_global(), L"Tuple"sv, v_this)
+	t_define<t_tuple, t_object>(f_global(), L"Tuple"sv, t_object::f_of(this))
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<t_scoped(t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_tuple::*)() const, &t_tuple::f_hash>())
@@ -152,11 +151,10 @@ void t_type_of<t_tuple>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 t_scoped t_type_of<t_tuple>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	t_scoped p = t_object::f_allocate(this, true);
-	auto tuple = new(a_n) t_tuple(a_n);
-	p.f_pointer__(tuple);
+	auto object = t_object::f_allocate(this, true, sizeof(t_tuple) + sizeof(t_slot) * a_n);
+	auto tuple = new(object->f_data()) t_tuple(a_n);
 	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 2]);
-	return p;
+	return object;
 }
 
 void t_type_of<t_tuple>::f_do_hash(t_object* a_this, t_stacked* a_stack)

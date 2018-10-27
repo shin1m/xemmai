@@ -9,6 +9,7 @@ namespace xemmai
 class t_method
 {
 	friend struct t_finalizes<t_bears<t_method, t_type_immutable>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_method>;
 
 	t_slot v_function;

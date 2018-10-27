@@ -5,6 +5,11 @@
 namespace xemmai
 {
 
+t_symbol::~t_symbol()
+{
+	f_engine()->v_symbol__instances.erase(v_entry);
+}
+
 t_scoped t_symbol::f_instantiate(std::wstring_view a_value)
 {
 	std::lock_guard<std::mutex> lock(f_engine()->v_symbol__instantiate__mutex);
@@ -20,8 +25,7 @@ t_scoped t_symbol::f_instantiate(std::wstring_view a_value)
 		return i->second;
 	}
 	f_engine()->v_object__reviving__mutex.unlock();
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_symbol>(), true);
-	object.f_pointer__(new t_symbol(i));
+	auto object = f_global()->f_type<t_symbol>()->f_new<t_symbol>(true, i);
 	i->second = static_cast<t_object*>(object);
 	return object;
 }
@@ -39,7 +43,7 @@ void t_symbol::f_revise(t_object* a_this)
 void t_type_of<t_symbol>::f_define()
 {
 	v_builtin = v_revive = true;
-	t_define<t_symbol, t_object>(f_global(), L"Symbol"sv, v_this)
+	t_define<t_symbol, t_object>(f_global(), L"Symbol"sv, t_object::f_of(this))
 		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
 	;
 }
@@ -47,13 +51,6 @@ void t_type_of<t_symbol>::f_define()
 void t_type_of<t_symbol>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	a_scan(f_as<t_symbol&>(a_this).v_entry->second);
-}
-
-void t_type_of<t_symbol>::f_do_finalize(t_object* a_this)
-{
-	auto& p = f_as<t_symbol&>(a_this);
-	f_engine()->v_symbol__instances.erase(p.v_entry);
-	delete &p;
 }
 
 void t_type_of<t_symbol>::f_do_instantiate(t_stacked* a_stack, size_t a_n)

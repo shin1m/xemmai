@@ -59,7 +59,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 		}
 		static t_type f_call(t_object* a_object)
 		{
-			return static_cast<t_type>(a_object->f_integer());
+			return static_cast<t_type>(a_object->f_as<intptr_t>());
 		}
 	};
 	template<typename T0>
@@ -97,9 +97,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 	}
 	static t_scoped f_construct_derived(t_type* a_class, intptr_t a_value)
 	{
-		t_scoped object = t_object::f_allocate(a_class, true);
-		object.f_integer__(a_value);
-		return object;
+		return a_class->f_new<intptr_t>(true, a_value);
 	}
 	static intptr_t f_parse(const wchar_t* a_value)
 	{

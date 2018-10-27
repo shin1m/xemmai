@@ -78,7 +78,7 @@ struct t_thread
 	t_slot v_fiber;
 	t_scoped v_active;
 
-	t_thread(t_scoped&& a_fiber) : v_internal(new t_internal()), v_fiber(std::move(a_fiber))
+	t_thread(t_internal* a_internal, t_scoped&& a_fiber) : v_internal(a_internal), v_fiber(std::move(a_fiber))
 	{
 	}
 	void f_join();

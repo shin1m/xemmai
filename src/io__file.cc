@@ -16,14 +16,6 @@ namespace xemmai
 namespace io
 {
 
-t_scoped t_file::f_instantiate(t_file* a_file)
-{
-	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_scoped object = t_object::f_allocate(extension->f_type<t_file>(), false);
-	object.f_pointer__(a_file);
-	return object;
-}
-
 t_file::t_file(std::wstring_view a_path, const char* a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), a_mode)), v_own(true)
 {
 }

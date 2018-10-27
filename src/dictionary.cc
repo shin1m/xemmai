@@ -22,8 +22,8 @@ const t_dictionary::t_table::t_rank t_dictionary::t_table::v_ranks[] = {
 
 t_scoped t_dictionary::t_table::f_instantiate(const t_rank& a_rank)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_table>(), true);
-	object.f_pointer__(new(a_rank) t_table(a_rank));
+	auto object = t_object::f_allocate(f_global()->f_type<t_table>(), true, sizeof(t_table) + sizeof(t_entry) * a_rank.v_capacity);
+	new(object->f_data()) t_table(a_rank);
 	return object;
 }
 
@@ -48,60 +48,61 @@ void t_dictionary::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_s
 
 void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
 {
-	t_scoped p = t_table::f_instantiate(a_rank);
-	auto& table = f_as<t_table&>(p);
-	table.v_size = v_table->v_size;
-	auto entries = table.f_entries();
-	for (auto p = v_table->f_entries(); p != v_table->v_end; ++p) {
+	auto object = t_table::f_instantiate(a_rank);
+	auto& table0 = f_as<t_table&>(v_table);
+	auto& table1 = f_as<t_table&>(object);
+	table1.v_size = table0.v_size;
+	auto entries = table1.f_entries();
+	for (auto p = table0.f_entries(); p != table0.v_end; ++p) {
 		if (!p->v_gap) continue;
 		size_t gap = 0;
-		auto q = entries + table.v_slot(p->v_hash);
-		while (q->v_gap >= ++gap) if (++q >= table.v_end) q = entries;
-		table.f_put(q, gap, p->v_hash, std::move(p->v_key), std::move(p->v_value));
+		auto q = entries + table1.v_slot(p->v_hash);
+		while (q->v_gap >= ++gap) if (++q >= table1.v_end) q = entries;
+		table1.f_put(q, gap, p->v_hash, std::move(p->v_key), std::move(p->v_value));
 	}
-	v_table = &f_as<t_table&>(p);
-	v_slot = std::move(p);
+	v_table = std::move(object);
 }
 
 t_scoped t_dictionary::f_instantiate()
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_dictionary>(), false);
-	object.f_pointer__(new t_dictionary());
-	return object;
+	return f_global()->f_type<t_dictionary>()->f_new<t_dictionary>(false);
 }
 
 t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
 {
+	auto table = &f_as<t_table&>(v_table);
 	size_t hash = f_as<size_t>(a_key.f_hash());
-	auto [p, gap] = v_table->f_find(hash, a_key);
+	auto [p, gap] = table->f_find(hash, a_key);
 	if (p->v_gap == gap) return p->v_value = std::move(a_value);
-	if (v_table->v_size >= v_table->v_rank.v_upper) {
-		auto rank = &v_table->v_rank + 1;
+	if (table->v_size >= table->v_rank.v_upper) {
+		auto rank = &table->v_rank + 1;
 		if (rank >= t_table::v_ranks + sizeof(t_table::v_ranks) / sizeof(t_table::t_rank)) f_throw(L"cannot grow."sv);
 		f_rehash(*rank);
-		std::tie(p, gap) = v_table->f_find(hash, a_key);
+		table = &f_as<t_table&>(v_table);
+		std::tie(p, gap) = table->f_find(hash, a_key);
 	}
-	v_table->f_put(p, gap, hash, a_key, std::move(a_value));
-	++v_table->v_size;
+	table->f_put(p, gap, hash, a_key, std::move(a_value));
+	++table->v_size;
 	return p->v_value;
 }
 
 t_scoped t_dictionary::f_remove(const t_value& a_key)
 {
-	auto p = v_table->f_find(a_key);
+	auto& table = f_as<t_table&>(v_table);
+	auto p = table.f_find(a_key);
 	if (!p) f_throw(L"key not found."sv);
 	p->v_gap = 0;
 	p->v_key = nullptr;
 	t_scoped value = std::move(p->v_value);
-	auto entries = v_table->f_entries();
+	auto entries = table.f_entries();
 	while (true) {
 		auto q = p;
-		if (++q >= v_table->v_end) q = entries;
+		if (++q >= table.v_end) q = entries;
 		size_t gap = q->v_gap;
 		if (gap <= 1) break;
 		for (size_t g = gap;;) {
 			auto r = q;
-			if (++r >= v_table->v_end) r = entries;
+			if (++r >= table.v_end) r = entries;
 			if (r->v_gap < ++g) break;
 			q = r;
 		}
@@ -112,7 +113,7 @@ t_scoped t_dictionary::f_remove(const t_value& a_key)
 		p->v_value = std::move(q->v_value);
 		p = q;
 	}
-	if (--v_table->v_size < v_table->v_rank.v_lower) f_rehash(*(&v_table->v_rank - 1));
+	if (--table.v_size < table.v_rank.v_lower) f_rehash(*(&table.v_rank - 1));
 	return value;
 }
 
@@ -124,25 +125,24 @@ void t_type_of<t_dictionary::t_table>::f_do_scan(t_object* a_this, t_scan a_scan
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class."sv);
-	t_scoped p = t_object::f_allocate(&f_as<t_type&>(a_stack[1]), false);
+	auto object = f_as<t_type&>(a_stack[1]).f_new<t_dictionary>(false);
 	a_stack[1].f_destruct();
-	auto dictionary = new t_dictionary();
-	p.f_pointer__(dictionary);
+	auto& dictionary = f_as<t_dictionary&>(object);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
 		t_scoped x = std::move(a_stack[i]);
 		if (++i >= a_n) {
-			dictionary->f_put(x, {});
+			dictionary.f_put(x, {});
 			break;
 		}
 		try {
-			dictionary->f_put(x, t_scoped(std::move(a_stack[i])));
+			dictionary.f_put(x, t_scoped(std::move(a_stack[i])));
 		} catch (...) {
 			while (++i < a_n) a_stack[i].f_destruct();
 			throw;
 		}
 	}
-	a_stack[0].f_construct(std::move(p));
+	a_stack[0].f_construct(std::move(object));
 }
 
 t_scoped t_type_of<t_dictionary>::f_string(const t_value& a_self)
@@ -261,7 +261,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 
 void t_type_of<t_dictionary>::f_define()
 {
-	f_global()->v_type_dictionary__table.f_construct((new t_type_of<t_dictionary::t_table>(t_type_of<t_dictionary::t_table>::V_ids, f_global()->f_type<t_object>(), f_global()->f_module()))->v_this);
+	f_global()->v_type_dictionary__table.f_construct(t_object::f_of(f_global()->f_type<t_object>()->f_derive<t_type_of<t_dictionary::t_table>>()));
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary"sv)
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
@@ -277,24 +277,23 @@ void t_type_of<t_dictionary>::f_define()
 
 void t_type_of<t_dictionary>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
-	a_scan(f_as<t_dictionary&>(a_this).v_slot);
+	a_scan(f_as<t_dictionary&>(a_this).v_table);
 }
 
 t_scoped t_type_of<t_dictionary>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	t_scoped p = t_object::f_allocate(this, false);
-	auto dictionary = new t_dictionary();
-	p.f_pointer__(dictionary);
+	auto object = f_new<t_dictionary>(false);
+	auto& dictionary = f_as<t_dictionary&>(object);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
 		const auto& x = a_stack[i];
 		if (++i >= a_n) {
-			dictionary->f_put(x, {});
+			dictionary.f_put(x, {});
 			break;
 		}
-		dictionary->f_put(x, t_scoped(a_stack[i]));
+		dictionary.f_put(x, t_scoped(a_stack[i]));
 	}
-	return p;
+	return object;
 }
 
 size_t t_type_of<t_dictionary>::f_do_get_at(t_object* a_this, t_stacked* a_stack)

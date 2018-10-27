@@ -296,6 +296,10 @@ public:
 	{
 		return v_p;
 	}
+	t_object* operator->() const
+	{
+		return v_p;
+	}
 	size_t f_tag() const
 	{
 		return reinterpret_cast<size_t>(v_p);
@@ -305,10 +309,7 @@ public:
 		return v_boolean;
 	}
 	intptr_t f_integer() const;
-	void f_integer__(intptr_t a_value);
 	double f_float() const;
-	void f_float__(double a_value);
-	void f_pointer__(void* a_value);
 	t_type_of<t_object>* f_type() const;
 	bool f_is(t_type* a_class) const;
 	t_scoped f_get(t_object* a_key) const;
@@ -436,6 +437,7 @@ struct t_slot : t_value
 
 class t_scoped : public t_value
 {
+	friend class t_engine;
 	friend class t_object;
 
 	t_scoped(t_object* a_p, const t_pass&) : t_value(a_p)

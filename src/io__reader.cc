@@ -51,10 +51,7 @@ wint_t t_reader::f_get(t_io* a_extension)
 
 t_scoped t_reader::f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer)
 {
-	t_io* extension = f_extension<t_io>(f_engine()->f_module_io());
-	t_scoped object = t_object::f_allocate(extension->f_type<t_reader>(), false);
-	object.f_pointer__(new t_reader(std::move(a_stream), a_encoding, a_buffer));
-	return object;
+	return f_extension<t_io>(f_engine()->f_module_io())->f_type<t_reader>()->f_new<t_reader>(false, std::move(a_stream), a_encoding, a_buffer);
 }
 
 t_reader::t_reader(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)

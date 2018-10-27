@@ -656,9 +656,7 @@ void t_lexer::f_next()
 
 t_scoped t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_error>(), false);
-	object.f_pointer__(new t_error(a_lexer));
-	return object;
+	return f_global()->f_type<t_error>()->f_new<t_error>(false, a_lexer);
 }
 
 void t_lexer::t_error::f_dump() const

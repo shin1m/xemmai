@@ -102,7 +102,7 @@ struct t_type_of<t_object>
 		template<typename T1>
 		static T0 f_call(T1&& a_object)
 		{
-			return *static_cast<typename t_fundamental<T0>::t_type*>(f_object(std::forward<T1>(a_object))->v_pointer);
+			return f_object(std::forward<T1>(a_object))->template f_as<typename t_fundamental<T0>::t_type>();
 		}
 	};
 	template<typename T0>
@@ -114,7 +114,7 @@ struct t_type_of<t_object>
 		static T0* f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : static_cast<T0*>(p->v_pointer);
+			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : &p->template f_as<T0>();
 		}
 	};
 	template<typename T0>
@@ -189,28 +189,27 @@ struct t_type_of<t_object>
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids);
 	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : t_type_of(a_ids)
-	{
-		v_super.f_construct(a_super->v_this);
-	}
-	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module);
 	template<typename T>
-	void f_do_delete()
+	void f_do_destruct()
 	{
-		delete static_cast<T*>(this);
+		static_cast<T*>(this)->~T();
 	}
-	void (t_type::*v_delete)() = &t_type::f_do_delete<t_type>;
-	void f_delete()
+	void (t_type::*v_destruct)() = &t_type::f_do_destruct<t_type>;
+	void f_destruct()
 	{
-		(this->*v_delete)();
+		(this->*v_destruct)();
 	}
+	template<typename T, typename... T_an>
+	t_scoped f_new(bool a_shared, T_an&&... a_an);
 	template<typename T>
 	bool f_derives() const
 	{
 		size_t i = t_type_of<T>::V_ids.size() - 1;
 		return i <= v_depth && v_ids[i] == static_cast<t_type_id>(f_type_id<T>);
 	}
+	template<typename T>
+	t_type* f_derive();
 	t_type* f_do_derive();
 	t_type* (t_type::*v_derive)() = &t_type::f_do_derive;
 	bool f_derives(t_type* a_type);
@@ -416,11 +415,6 @@ struct t_derives : T_base
 	typedef t_derives t_base;
 
 	template<size_t A_n>
-	t_derives(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : T_base(a_ids, a_super)
-	{
-		this->template f_override<t_type_of<T>, T_base>();
-	}
-	template<size_t A_n>
 	t_derives(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
 		this->template f_override<t_type_of<T>, T_base>();
@@ -446,10 +440,7 @@ struct t_finalizes : T_base
 	typedef t_finalizes t_base;
 
 	using T_base::T_base;
-	static void f_do_finalize(t_object* a_this)
-	{
-		delete &f_as<typename T_base::t_what&>(a_this);
-	}
+	static void f_do_finalize(t_object* a_this);
 };
 
 template<typename T, typename T_base = t_type>
@@ -469,27 +460,6 @@ struct t_fixed : T_base
 	t_fixed(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T_base(a_ids, a_super, std::move(a_module))
 	{
 		T_base::v_fixed = true;
-	}
-};
-
-template<typename T_base>
-struct t_derivable : T_base
-{
-	typedef t_derivable t_base;
-
-	using T_base::T_base;
-	t_type* f_do_derive();
-};
-
-template<typename T_base>
-struct t_underivable : T_base
-{
-	typedef t_underivable t_base;
-
-	using T_base::T_base;
-	t_type* f_do_derive()
-	{
-		return nullptr;
 	}
 };
 
@@ -523,6 +493,66 @@ struct t_type_immutable : t_fixed<t_type>
 	bool f_do_has(t_object* a_this, t_object* a_key);
 	static t_scoped f_do_remove(t_object* a_this, t_object* a_key);
 	static void f_do_call_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
+};
+
+template<typename T>
+struct t_derived : T
+{
+	template<size_t A_n>
+	t_derived(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : T(a_ids, a_super, std::move(a_module))
+	{
+		this->v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&t_derived::f_do_construct);
+		this->f_call = t_type::f_do_call;
+		this->f_hash = t_type::f_do_hash;
+		this->f_get_at = t_type::f_do_get_at;
+		this->f_set_at = t_type::f_do_set_at;
+		this->f_plus = t_type::f_do_plus;
+		this->f_minus = t_type::f_do_minus;
+		this->f_not = t_type::f_do_not;
+		this->f_complement = t_type::f_do_complement;
+		this->f_multiply = t_type::f_do_multiply;
+		this->f_divide = t_type::f_do_divide;
+		this->f_modulus = t_type::f_do_modulus;
+		this->f_add = t_type::f_do_add;
+		this->f_subtract = t_type::f_do_subtract;
+		this->f_left_shift = t_type::f_do_left_shift;
+		this->f_right_shift = t_type::f_do_right_shift;
+		this->f_less = t_type::f_do_less;
+		this->f_less_equal = t_type::f_do_less_equal;
+		this->f_greater = t_type::f_do_greater;
+		this->f_greater_equal = t_type::f_do_greater_equal;
+		this->f_equals = t_type::f_do_equals;
+		this->f_not_equals = t_type::f_do_not_equals;
+		this->f_and = t_type::f_do_and;
+		this->f_xor = t_type::f_do_xor;
+		this->f_or = t_type::f_do_or;
+		this->f_send = t_type::f_do_send;
+	}
+	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+};
+
+template<typename T_base>
+struct t_derivable : T_base
+{
+	typedef t_derivable t_base;
+
+	using T_base::T_base;
+	t_type* f_do_derive()
+	{
+		return this->template f_derive<t_derived<t_type_of<typename T_base::t_what>>>();
+	}
+};
+
+template<typename T_base>
+struct t_underivable : T_base
+{
+	typedef t_underivable t_base;
+
+	using T_base::T_base;
+	t_type* f_do_derive()
+	{
+		return nullptr;
+	}
 };
 
 }

@@ -20,19 +20,6 @@ class t_string
 	mutable size_t v_hash;
 #endif
 
-	void* operator new(size_t a_size, size_t a_n)
-	{
-		return new char[a_size + sizeof(wchar_t) * (a_n + 1)];
-	}
-	void operator delete(void* a_p)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-	void operator delete(void* a_p, size_t)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-
 	t_string(size_t a_size) : v_size(a_size)
 	{
 	}
@@ -43,30 +30,6 @@ class t_string
 	}
 
 public:
-	static t_string* f_new(const t_string& a_value)
-	{
-		size_t n = sizeof(t_string) + sizeof(wchar_t) * (a_value.v_size + 1);
-		auto p = new char[n];
-		std::copy_n(reinterpret_cast<const char*>(&a_value), n, p);
-		return reinterpret_cast<t_string*>(p);
-	}
-	static t_string* f_new(const wchar_t* a_p, size_t a_n)
-	{
-		auto p = new(a_n) t_string(a_n);
-		*std::copy_n(a_p, a_n, p->f_entries()) = L'\0';
-		return p;
-	}
-	static t_string* f_new(std::wstring_view a_value)
-	{
-		return f_new(a_value.data(), a_value.size());
-	}
-	static t_string* f_new(const t_string& a_x, const t_string& a_y)
-	{
-		size_t n = a_x.v_size + a_y.v_size;
-		auto p = new(n) t_string(n);
-		*std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, p->f_entries())) = L'\0';
-		return p;
-	}
 	static t_scoped f_instantiate(const wchar_t* a_p, size_t a_n);
 	static t_scoped f_instantiate(std::wstring_view a_value)
 	{
@@ -142,7 +105,7 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 		template<typename T1>
 		static T0 f_call(T1&& a_object)
 		{
-			return *static_cast<t_string*>(f_object(std::forward<T1>(a_object))->f_pointer());
+			return f_object(std::forward<T1>(a_object))->template f_as<t_string>();
 		}
 	};
 	template<typename T0>
@@ -154,21 +117,30 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 		static T0* f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : static_cast<T0*>(p->f_pointer());
+			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : &p->template f_as<t_string>();
 		}
 	};
 
-	template<typename... T_an>
-	static t_scoped f__construct(t_type* a_class, T_an&&... a_an)
+	static t_scoped f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n)
 	{
-		t_scoped object = t_object::f_allocate(a_class, true);
-		object.f_pointer__(t_string::f_new(std::forward<T_an>(a_an)...));
+		auto object = t_object::f_allocate(a_class, true, sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
+		*std::copy_n(a_p, a_n, (new(object->f_data()) t_string(a_n))->f_entries()) = L'\0';
 		return object;
 	}
-	template<typename T_extension, typename T>
-	static t_scoped f_transfer(T_extension* a_extension, T&& a_value)
+	static t_scoped f__construct(t_type* a_class, const t_string& a_value)
 	{
-		return f__construct(a_extension->template f_type<typename t_fundamental<T>::t_type>(), std::forward<T>(a_value));
+		return f__construct(a_class, static_cast<const wchar_t*>(a_value), a_value.v_size);
+	}
+	static t_scoped f__construct(t_type* a_class, std::wstring_view a_value)
+	{
+		return f__construct(a_class, a_value.data(), a_value.size());
+	}
+	static t_scoped f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y)
+	{
+		size_t n = a_x.v_size + a_y.v_size;
+		auto object = t_object::f_allocate(a_class, true, sizeof(t_string) + sizeof(wchar_t) * (n + 1));
+		*std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, (new(object->f_data()) t_string(n))->f_entries())) = L'\0';
+		return object;
 	}
 	template<typename T>
 	static t_scoped f_transfer(const t_global* a_extension, T&& a_value);
@@ -177,10 +149,11 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	{
 		return a_self;
 	}
-	static t_scoped f__add(t_global* a_extension, t_object* a_self, t_scoped&& a_value);
-	static t_scoped f__add(t_global* a_extension, const t_value& a_self, t_scoped&& a_value)
+	static t_scoped f__add(t_object* a_self, t_scoped&& a_value);
+	static t_scoped f__add(const t_value& a_self, t_scoped&& a_value)
 	{
-		return f__add(a_extension, static_cast<t_object*>(a_self), std::move(a_value));
+		f_check<t_string>(a_self, L"self");
+		return f__add(static_cast<t_object*>(a_self), std::move(a_value));
 	}
 	static bool f__less(const t_string& a_self, const t_string& a_value)
 	{
@@ -233,7 +206,7 @@ struct t_type_of<t_string>::t_as<std::wstring_view&&>
 	template<typename T>
 	static std::wstring_view f_call(T&& a_object)
 	{
-		return *static_cast<t_string*>(f_object(std::forward<T>(a_object))->f_pointer());
+		return f_object(std::forward<T>(a_object))->template f_as<t_string>();
 	}
 };
 

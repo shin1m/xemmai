@@ -17,16 +17,12 @@ class t_file
 {
 	friend struct t_type_of<t_file>;
 
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(t_file* a_file);
-
 	std::FILE* v_stream;
 	bool v_own = false;
 
 public:
-	static t_scoped f_instantiate(std::FILE* a_stream)
-	{
-		return f_instantiate(new t_file(a_stream));
-	}
+	template<typename... T_an>
+	static t_scoped f_instantiate(T_an&&... a_an);
 
 	t_file(std::FILE* a_stream) : v_stream(a_stream)
 	{

@@ -61,19 +61,6 @@ private:
 		size_t v_size = 0;
 		const t_rank& v_rank;
 
-		void* operator new(size_t a_size, const t_rank& a_rank)
-		{
-			return new char[a_size + sizeof(t_entry) * a_rank.v_capacity];
-		}
-		void operator delete(void* a_p)
-		{
-			delete[] static_cast<char*>(a_p);
-		}
-		void operator delete(void* a_p, const t_rank&)
-		{
-			delete[] static_cast<char*>(a_p);
-		}
-
 		static t_scoped f_instantiate(const t_rank& a_rank);
 
 		t_table(const t_rank& a_rank) : v_slot(a_rank.v_slot), v_end(f_entries() + a_rank.v_capacity), v_rank(a_rank)
@@ -119,25 +106,19 @@ private:
 	};
 	friend struct t_type_of<t_table>;
 
-	t_table* v_table;
-	t_slot v_slot;
+	t_slot v_table{t_table::f_instantiate(t_table::v_ranks[0])};
 
-	t_dictionary();
 	void f_rehash(const t_table::t_rank& a_rank);
 
 public:
 	class t_iterator
 	{
-		t_scoped v_slot;
+		t_scoped v_table;
 		t_entry* v_entry;
 		t_entry* v_end;
 
 	public:
-		t_iterator(const t_dictionary& a_dictionary) : v_slot(a_dictionary.v_slot), v_entry(a_dictionary.v_table->f_entries()), v_end(a_dictionary.v_table->v_end)
-		{
-			do if (v_entry->v_gap) return; while (++v_entry < v_end);
-			v_entry = nullptr;
-		}
+		t_iterator(const t_dictionary& a_dictionary);
 		t_entry* f_entry() const
 		{
 			return v_entry;
@@ -152,22 +133,14 @@ public:
 
 	static t_scoped f_instantiate();
 
-	void f_clear();
-	size_t f_size() const
+	void f_clear()
 	{
-		return v_table->v_size;
+		v_table = t_table::f_instantiate(t_table::v_ranks[0]);
 	}
-	const t_value& f_get(const t_value& a_key) const
-	{
-		auto p = v_table->f_find(a_key);
-		if (!p) f_throw(L"key not found."sv);
-		return p->v_value;
-	}
+	size_t f_size() const;
+	const t_value& f_get(const t_value& a_key) const;
 	t_scoped f_put(const t_value& a_key, t_scoped&& a_value);
-	bool f_has(const t_value& a_key) const
-	{
-		return v_table->f_find(a_key);
-	}
+	bool f_has(const t_value& a_key) const;
 	t_scoped f_remove(const t_value& a_key);
 };
 
@@ -199,16 +172,27 @@ struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
 };
 
-inline t_dictionary::t_dictionary() : v_slot(t_table::f_instantiate(t_table::v_ranks[0]))
+inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(a_dictionary.v_table), v_entry(f_as<t_table&>(v_table).f_entries()), v_end(f_as<t_table&>(v_table).v_end)
 {
-	v_table = &f_as<t_table&>(v_slot);
+	do if (v_entry->v_gap) return; while (++v_entry < v_end);
+	v_entry = nullptr;
 }
 
-inline void t_dictionary::f_clear()
+inline size_t t_dictionary::f_size() const
 {
-	t_scoped p = t_table::f_instantiate(t_table::v_ranks[0]);
-	v_table = &f_as<t_table&>(p);
-	v_slot = std::move(p);
+	return f_as<t_table&>(v_table).v_size;
+}
+
+inline const t_value& t_dictionary::f_get(const t_value& a_key) const
+{
+	auto p = f_as<t_table&>(v_table).f_find(a_key);
+	if (!p) f_throw(L"key not found."sv);
+	return p->v_value;
+}
+
+inline bool t_dictionary::f_has(const t_value& a_key) const
+{
+	return f_as<t_table&>(v_table).f_find(a_key);
 }
 
 }

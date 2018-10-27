@@ -34,7 +34,7 @@ void t_type::f_share(const t_value& a_self)
 void t_type::f_define()
 {
 	v_builtin = v_primitive = true;
-	t_define<t_object, t_object>(f_global(), L"Object"sv, v_this)
+	t_define<t_object, t_object>(f_global(), L"Object"sv, t_object::f_of(this))
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_value&), f__hash>())
@@ -47,7 +47,7 @@ void t_type::f_define()
 
 t_type* t_type::f_do_derive()
 {
-	auto p = new t_type(V_ids, this, v_module);
+	auto p = f_derive<t_type>();
 	p->v_primitive = true;
 	return p;
 }
@@ -64,7 +64,7 @@ bool t_type::f_derives(t_type* a_type)
 
 t_scoped t_type::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	return t_object::f_allocate(this, false);
+	return t_object::f_allocate(this, false, 0);
 }
 
 void t_type::f_do_instantiate(t_stacked* a_stack, size_t a_n)

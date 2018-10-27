@@ -35,9 +35,16 @@ void t_engine::t_synchronizer::f_run()
 	v_condition.notify_one();
 }
 
+XEMMAI__PORTABLE__THREAD size_t t_engine::v_local_object__allocated;
+
 void t_engine::f_pools__return()
 {
-	f_return(v_object__pool);
+	v_object__pool0.f_return_all();
+	v_object__pool1.f_return_all();
+	v_object__pool2.f_return_all();
+	v_object__pool3.f_return_all();
+	v_object__allocated += v_local_object__allocated;
+	v_local_object__allocated = 0;
 }
 
 void t_engine::f_signal_synchronizers()
@@ -124,7 +131,10 @@ void t_engine::f_collector()
 			}
 		}
 		t_object::f_collect();
-		if (v_object__freed > 0) f_return(v_object__pool, v_object__freed);
+		if (v_object__pool0.v_freed > 0) v_object__pool0.f_return();
+		if (v_object__pool1.v_freed > 0) v_object__pool1.f_return();
+		if (v_object__pool2.v_freed > 0) v_object__pool2.f_return();
+		if (v_object__pool3.v_freed > 0) v_object__pool3.f_return();
 	}
 }
 
@@ -159,51 +169,45 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 	--v_debug__safe;
 }
 
-t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_collector__threshold0(1024 * 8), v_collector__threshold1(1024 * 16), v_structure_root(new(0) t_structure()), v_stack_size(a_stack), v_verbose(a_verbose)
+t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_collector__threshold0(1024 * 8), v_collector__threshold1(1024 * 16), v_stack_size(a_stack), v_verbose(a_verbose)
 {
-	v_object__pool.f_grow();
-	auto thread = new t_thread(nullptr);
-	thread->v_internal->f_initialize();
-	thread->v_internal->v_next = v_thread__internals;
-	v_thread__internals = thread->v_internal;
-	auto type_object = new t_type(t_type::V_ids);
-	v_type_class = new t_class(t_class::V_ids, type_object);
-	auto type_structure = new t_type_of<t_structure>(t_type_of<t_structure>::V_ids, type_object);
-	t_scoped root = t_object::f_allocate_on_boot();
-	t_value::v_increments->f_push(type_structure->v_this);
-	static_cast<t_object*>(root)->v_type = type_structure;
-	t_value::v_increments->f_push(root);
-	v_structure_root->v_this = root;
-	root.f_pointer__(v_structure_root);
-	t_value::v_increments->f_push(root);
-	static_cast<t_object*>(type_object->v_this)->v_structure = v_structure_root;
-	t_value::v_increments->f_push(root);
-	static_cast<t_object*>(v_type_class->v_this)->v_structure = v_structure_root;
-	t_value::v_increments->f_push(root);
-	static_cast<t_object*>(type_structure->v_this)->v_structure = v_structure_root;
-	t_value::v_increments->f_push(root);
-	static_cast<t_object*>(root)->v_structure = v_structure_root;
-	auto type_module = new t_type_of<t_module>(t_type_of<t_module>::V_ids, type_object, nullptr);
+	v_thread__internals->f_initialize();
+	v_structure_root = new(f_object__allocate_on_boot(sizeof(t_structure))->f_data()) t_structure();
+	t_value::v_increments->f_push(t_object::f_of(v_structure_root));
+	t_object::f_of(v_structure_root)->v_structure = v_structure_root;
+	auto type_object = new(f_object__allocate_on_boot(sizeof(t_type))->f_data()) t_type(t_type::V_ids);
+	t_value::v_increments->f_push(t_object::f_of(v_structure_root));
+	v_type_class = new(f_object__allocate_on_boot(sizeof(t_class))->f_data()) t_class(t_class::V_ids, type_object);
+	t_value::v_increments->f_push(t_object::f_of(v_structure_root));
+	v_type_structure = new(f_object__allocate_on_boot(sizeof(t_type_of<t_structure>))->f_data()) t_type_of<t_structure>(t_type_of<t_structure>::V_ids, type_object);
+	t_value::v_increments->f_push(t_object::f_of(v_structure_root));
+	t_value::v_increments->f_push(t_object::f_of(v_type_structure));
+	t_object::f_of(v_structure_root)->v_type = v_type_structure;
+	t_value::v_increments->f_push(t_object::f_of(v_structure_root));
+	v_object__pool0.f_grow();
+	v_object__pool1.f_grow();
+	v_object__pool2.f_grow();
+	v_object__pool3.f_grow();
+	auto type_module = type_object->f_derive<t_type_of<t_module>>();
 	type_module->v_revive = true;
-	v_module_global = t_object::f_allocate(type_module, true);
-	auto library = new t_library({}, nullptr);
-	v_module_global.f_pointer__(library);
-	v_module__instances__null = v_module__instances.emplace(std::wstring(), t_slot()).first;
-	library->v_iterator = v_module__instances.emplace(L"__global"sv, t_slot()).first;
-	library->v_iterator->second = v_module_global;
+	v_module_global = type_module->f_new<t_library>(true, L""sv, nullptr);
+	auto& library = v_module_global->f_as<t_library>();
+	v_module__instances__null = v_module__instances.emplace(L""sv, t_slot()).first;
+	library.v_iterator = v_module__instances.emplace(L"__global"sv, t_slot()).first;
+	library.v_iterator->second = v_module_global;
 	type_object->v_module = v_module_global;
 	v_type_class->v_module = v_module_global;
-	type_structure->v_module = v_module_global;
+	v_type_structure->v_module = v_module_global;
 	type_module->v_module = v_module_global;
-	auto type_fiber = new t_type_of<t_fiber>(t_type_of<t_fiber>::V_ids, type_object, t_scoped(v_module_global));
-	v_fiber_exit = t_object::f_allocate(type_object, true);
-	auto type_thread = new t_type_of<t_thread>(t_type_of<t_thread>::V_ids, type_object, t_scoped(v_module_global));
-	v_thread = t_object::f_allocate(type_thread, true);
-	v_thread.f_pointer__(thread);
-	thread->v_internal->v_thread = t_thread::v_current = v_thread;
-	thread->v_fiber = t_object::f_allocate(type_fiber, false);
-	thread->v_fiber.f_pointer__(new t_fiber(nullptr, v_stack_size, true, true));
-	thread->v_active = thread->v_fiber;
+	auto type_fiber = type_object->f_derive<t_type_of<t_fiber>>();
+	v_fiber_exit = t_object::f_allocate(type_object, true, 0);
+	auto type_thread = type_object->f_derive<t_type_of<t_thread>>();
+	{
+		auto fiber = type_fiber->f_new<t_fiber>(false, nullptr, v_stack_size, true, true);
+		v_thread = type_thread->f_new<t_thread>(true, v_thread__internals, t_scoped(fiber));
+		v_thread__internals->v_thread = t_thread::v_current = v_thread;
+		v_thread->f_as<t_thread>().v_active = std::move(fiber);
+	}
 	{
 		portable::t_affinity affinity;
 		affinity.f_from_thread();
@@ -223,9 +227,9 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		std::thread(&t_engine::f_collector, this).detach();
 		while (v_collector__running) v_collector__done.wait(lock);
 	}
-	library->v_extension = new t_global(v_module_global, type_object, v_type_class, type_structure, type_module, type_fiber, type_thread);
-	v_module_system = t_module::f_instantiate(L"system"sv, new t_module({}));
-	t_scoped path = t_array::f_instantiate();
+	library.v_extension = new t_global(v_module_global, type_object, v_type_class, v_type_structure, type_module, type_fiber, type_thread);
+	v_module_system = t_module::f_new<t_module>(L"system"sv, L""sv);
+	auto path = t_array::f_instantiate();
 	static_cast<t_object*>(path)->v_owner = nullptr;
 	{
 		char* p = std::getenv("XEMMAI_MODULE_PATH");
@@ -266,33 +270,30 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		}
 	}
 	v_module_system.f_put(f_global()->f_symbol_path(), std::move(path));
+	v_module_io = t_module::f_new<t_library>(L"io"sv, L""sv, nullptr);
+	v_module_io->f_as<t_library>().v_extension = new t_io(v_module_io);
 	{
-		auto library = new t_library({}, nullptr);
-		v_module_io = t_module::f_instantiate(L"io"sv, library);
-		library->v_extension = new t_io(v_module_io);
-	}
-	{
-		t_scoped file = io::t_file::f_instantiate(stdin);
+		auto file = io::t_file::f_instantiate(stdin);
 		static_cast<t_object*>(file)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"raw_in"sv), t_scoped(file));
 		bool tty = f_as<io::t_file&>(file).f_tty();
-		t_scoped reader = io::t_reader::f_instantiate(std::move(file), L""sv, tty ? 1 : 1024);
+		auto reader = io::t_reader::f_instantiate(std::move(file), L""sv, tty ? 1 : 1024);
 		static_cast<t_object*>(reader)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"in"sv), std::move(reader));
 	}
 	{
-		t_scoped file = io::t_file::f_instantiate(stdout);
+		auto file = io::t_file::f_instantiate(stdout);
 		static_cast<t_object*>(file)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"raw_out"sv), t_scoped(file));
-		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L""sv);
+		auto writer = io::t_writer::f_instantiate(std::move(file), L""sv);
 		static_cast<t_object*>(writer)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"out"sv), std::move(writer));
 	}
 	{
-		t_scoped file = io::t_file::f_instantiate(stderr);
+		auto file = io::t_file::f_instantiate(stderr);
 		static_cast<t_object*>(file)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"raw_error"sv), t_scoped(file));
-		t_scoped writer = io::t_writer::f_instantiate(std::move(file), L""sv);
+		auto writer = io::t_writer::f_instantiate(std::move(file), L""sv);
 		static_cast<t_object*>(writer)->v_owner = nullptr;
 		v_module_system.f_put(t_symbol::f_instantiate(L"error"sv), std::move(writer));
 	}
@@ -301,7 +302,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 t_engine::~t_engine()
 {
 	t_thread::f_cache_clear();
-	t_value::v_decrements->f_push(v_structure_root->v_this);
+	t_value::v_decrements->f_push(t_object::f_of(v_structure_root));
 	v_module_global = nullptr;
 	v_module_system = nullptr;
 	v_module_io = nullptr;
@@ -343,12 +344,27 @@ t_engine::~t_engine()
 		} while (v_synchronizers);
 	}
 	assert(!v_thread__internals);
-	v_object__pool.f_clear();
+	v_object__pool0.f_clear();
+	v_object__pool1.f_clear();
+	v_object__pool2.f_clear();
+	v_object__pool3.f_clear();
 	if (v_verbose) {
-		std::fprintf(stderr, "statistics:\n");
-		size_t allocated = v_object__pool.f_allocated();
-		size_t freed = v_object__pool.f_freed();
-		std::fprintf(stderr, "\tobject: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed), static_cast<uintptr_t>(v_object__release), static_cast<uintptr_t>(v_object__collect));
+		std::fprintf(stderr, "statistics:\n\tt_object:\n");
+		size_t allocated = 0;
+		size_t freed = 0;
+		auto f = [&](auto& a_pool, size_t a_rank)
+		{
+			size_t x = a_pool.f_allocated();
+			size_t y = a_pool.f_freed();
+			std::fprintf(stderr, "\t\trank%d: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR "\n", a_rank, static_cast<uintptr_t>(x), static_cast<uintptr_t>(y), static_cast<uintptr_t>(x - y));
+			allocated += x;
+			freed += y;
+		};
+		f(v_object__pool0, 0);
+		f(v_object__pool1, 1);
+		f(v_object__pool2, 2);
+		f(v_object__pool3, 3);
+		std::fprintf(stderr, "\t\ttotal: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed), static_cast<uintptr_t>(v_object__release), static_cast<uintptr_t>(v_object__collect));
 		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__release), static_cast<uintptr_t>(v_collector__collect));
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;

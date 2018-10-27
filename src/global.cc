@@ -1,5 +1,6 @@
 #include <xemmai/global.h>
 
+#include <xemmai/structure.h>
 #include <xemmai/array.h>
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>
@@ -12,16 +13,17 @@ XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
 t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_class, t_type* a_type_structure, t_type* a_type_module, t_type* a_type_fiber, t_type* a_type_thread) : t_extension(a_module)
 {
 	v_instance = this;
-	v_type_object.f_construct(a_type_object->v_this);
-	v_type_class.f_construct(a_type_class->v_this);
-	v_type_structure.f_construct(a_type_structure->v_this);
-	v_type_module.f_construct(a_type_module->v_this);
-	v_type_fiber.f_construct(a_type_fiber->v_this);
-	v_type_thread.f_construct(a_type_thread->v_this);
-	v_type_tuple.f_construct((new t_type_of<t_tuple>(t_type_of<t_tuple>::V_ids, v_type_object, a_module))->v_this);
-	v_type_symbol.f_construct((new t_type_of<t_symbol>(t_type_of<t_symbol>::V_ids, v_type_object, a_module))->v_this);
-	v_type_method.f_construct((new t_type_of<t_method>(t_type_of<t_method>::V_ids, v_type_object, a_module))->v_this);
-	v_type_native.f_construct((new t_type_of<t_native>(t_type_of<t_native>::V_ids, v_type_object, a_module))->v_this);
+	v_type_object.f_construct(t_object::f_of(a_type_object));
+	v_type_class.f_construct(t_object::f_of(a_type_class));
+	v_type_structure__discard.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_structure::t_discard>>()));
+	v_type_structure.f_construct(t_object::f_of(a_type_structure));
+	v_type_module.f_construct(t_object::f_of(a_type_module));
+	v_type_fiber.f_construct(t_object::f_of(a_type_fiber));
+	v_type_thread.f_construct(t_object::f_of(a_type_thread));
+	v_type_tuple.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_tuple>>()));
+	v_type_symbol.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_symbol>>()));
+	v_type_method.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_method>>()));
+	v_type_native.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_native>>()));
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct"sv);
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
@@ -57,30 +59,31 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
 	v_symbol_dump = t_symbol::f_instantiate(L"dump"sv);
 	v_type_object->f_define();
-	a_module->f_put(t_symbol::f_instantiate(L"Class"sv), v_type_class->v_this);
+	a_module->f_put(t_symbol::f_instantiate(L"Class"sv), t_object::f_of(v_type_class));
 	v_type_class->v_builtin = true;
+	v_type_structure__discard->v_builtin = true;
 	v_type_structure->v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Module"sv), v_type_module->v_this);
+	a_module->f_put(t_symbol::f_instantiate(L"Module"sv), t_object::f_of(v_type_module));
 	v_type_module->v_builtin = true;
 	static_cast<t_type_of<t_fiber>*>(static_cast<t_type*>(v_type_fiber))->f_define();
 	static_cast<t_type_of<t_thread>*>(static_cast<t_type*>(v_type_thread))->f_define();
 	static_cast<t_type_of<t_tuple>*>(static_cast<t_type*>(v_type_tuple))->f_define();
 	static_cast<t_type_of<t_symbol>*>(static_cast<t_type*>(v_type_symbol))->f_define();
-	v_type_scope.f_construct((new t_type_of<t_scope>(t_type_of<t_scope>::V_ids, v_type_object, a_module))->v_this);
+	v_type_scope.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_scope>>()));
 	v_type_scope->v_builtin = true;
-	t_define<t_method, t_object>(this, L"Method"sv, v_type_method->v_this);
+	t_define<t_method, t_object>(this, L"Method"sv, t_object::f_of(v_type_method));
 	v_type_method->v_builtin = true;
 	t_define<t_code, t_object>(this, L"Code"sv);
 	v_type_code->v_builtin = true;
 	t_define<t_lambda, t_object>(this, L"Lambda"sv);
 	v_type_lambda->v_builtin = true;
-	v_type_lambda_shared.f_construct((new t_type_of<t_lambda_shared>(t_type_of<t_lambda_shared>::V_ids, v_type_lambda, a_module))->v_this);
+	v_type_lambda_shared.f_construct(t_object::f_of(v_type_lambda->f_derive<t_type_of<t_lambda_shared>>()));
 	v_type_lambda_shared->v_builtin = true;
-	v_type_advanced_lambda.f_construct((new t_type_of<t_advanced_lambda<t_lambda>>(t_type_of<t_advanced_lambda<t_lambda>>::V_ids, v_type_lambda, a_module))->v_this);
+	v_type_advanced_lambda.f_construct(t_object::f_of(v_type_lambda->f_derive<t_type_of<t_advanced_lambda<t_lambda>>>()));
 	v_type_advanced_lambda->v_builtin = true;
-	v_type_advanced_lambda_shared.f_construct((new t_type_of<t_advanced_lambda<t_lambda_shared>>(t_type_of<t_advanced_lambda<t_lambda_shared>>::V_ids, v_type_lambda_shared, a_module))->v_this);
+	v_type_advanced_lambda_shared.f_construct(t_object::f_of(v_type_lambda_shared->f_derive<t_type_of<t_advanced_lambda<t_lambda_shared>>>()));
 	v_type_advanced_lambda_shared->v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Native"sv), v_type_native->v_this);
+	a_module->f_put(t_symbol::f_instantiate(L"Native"sv), t_object::f_of(v_type_native));
 	v_type_native->v_builtin = true;
 	t_type_of<t_throwable>::f_define();
 	v_type_throwable->v_builtin = true;
@@ -94,8 +97,7 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_type_float->v_builtin = v_type_float->v_primitive = true;
 	t_type_of<t_string>::f_define();
 	v_type_string->v_builtin = true;
-	v_string_empty = t_object::f_allocate(v_type_string, true);
-	v_string_empty.f_pointer__(t_string::f_new(nullptr, 0));
+	v_string_empty = t_type_of<t_string>::f__construct(static_cast<t_type*>(v_type_string), L""sv);
 	t_type_of<t_array>::f_define();
 	v_type_array->v_builtin = true;
 	t_type_of<t_dictionary>::f_define();
@@ -113,6 +115,7 @@ void t_global::f_scan(t_scan a_scan)
 {
 	a_scan(v_type_object);
 	a_scan(v_type_class);
+	a_scan(v_type_structure__discard);
 	a_scan(v_type_structure);
 	a_scan(v_type_module);
 	a_scan(v_type_fiber);

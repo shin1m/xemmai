@@ -29,33 +29,23 @@ t_module::t_scoped_lock::~t_scoped_lock()
 	f_engine()->v_module__condition.notify_all();
 }
 
-t_scoped t_module::f_instantiate(std::wstring_view a_name, t_module* a_module)
-{
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_module>(), true);
-	object.f_pointer__(a_module);
-	t_scoped second = object;
-	{
-		std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
-		a_module->v_iterator = f_engine()->v_module__instances.emplace(a_name, t_slot()).first;
-		a_module->v_iterator->second = std::move(second);
-	}
-	return object;
-}
-
-t_library* t_module::f_load_library(std::wstring_view a_path)
+t_scoped t_module::f_load_library(std::wstring_view a_name, std::wstring_view a_path)
 {
 	portable::t_library library{std::wstring(a_path)};
-	if (!library) return nullptr;
+	if (!library) return {};
+	auto factory = library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
+	if (!factory) f_throw(L"f_factory not found."sv);
 	auto handle = new t_library::t_handle();
 	handle->v_library.f_swap(library);
-	return new t_library(a_path, handle);
+	auto module = f_new<t_library>(a_name, a_path, handle);
+	module->f_as<t_library>().v_extension = factory(module);
+	return module;
 }
 
 void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
-	auto q = new(0) t_scope();
-	t_scoped scope = t_scope::f_instantiate(q);
-	t_scoped lambda = t_lambda::f_instantiate(q->f_entries(), a_code);
+	auto scope = f_global()->f_type<t_scope>()->f_new<t_scope>(true);
+	auto lambda = t_lambda::f_instantiate(scope->f_as<t_scope>().f_entries(), a_code);
 	t_scoped_stack stack(2);
 	stack[1].f_construct(*a_this);
 	static_cast<t_object*>(lambda)->f_call_without_loop(stack, 0);
@@ -68,17 +58,16 @@ t_scoped t_module::f_load_and_execute_script(std::wstring_view a_name, std::wstr
 	if (!stream) return {};
 	ast::t_scope scope(nullptr);
 	if (f_engine()->v_debugger) {
-		auto script = new t_debug_script(a_path);
-		t_scoped module = f_instantiate(a_name, script);
-		t_parser(*script, stream)(scope);
-		script->v_code = t_emit(module, &script->v_safe_points)(scope);
+		auto module = f_new<t_debug_script>(a_name, a_path);
+		auto& script = module->f_as<t_debug_script>();
+		t_parser(script, stream)(scope);
+		script.v_code = t_emit(module, &script.v_safe_points)(scope);
 		f_engine()->f_debug_script_loaded();
-		f_execute_script(module, script->v_code);
+		f_execute_script(module, script.v_code);
 		return module;
 	} else {
-		auto script = new t_script(a_path);
-		t_scoped module = f_instantiate(a_name, script);
-		t_parser(*script, stream)(scope);
+		auto module = f_new<t_script>(a_name, a_path);
+		t_parser(module->f_as<t_script>(), stream)(scope);
 		f_execute_script(module, t_emit(module, nullptr)(scope));
 		return module;
 	}
@@ -109,14 +98,10 @@ t_scoped t_module::f_instantiate(std::wstring_view a_name)
 		t_scoped x = paths.f_get_at(f_global()->f_as(i));
 		f_check<t_string>(x, L"path");
 		std::wstring path = portable::t_path(f_as<const t_string&>(x)) / a_name;
-		t_scoped script = f_load_and_execute_script(a_name, path + L".xm");
-		if (script) return script;
-		t_library* library = f_load_library(path);
-		if (library) {
-			t_scoped module = f_instantiate(a_name, library);
-			library->f_initialize(module);
-			return module;
-		}
+		t_scoped module = f_load_and_execute_script(a_name, path + L".xm");
+		if (module) return module;
+		module = f_load_library(a_name, path);
+		if (module) return module;
 	}
 	f_throw(L"module \"" + std::wstring(a_name) + L"\" not found.");
 	return {};
@@ -161,18 +146,18 @@ void t_debug_script::f_scan(t_scan a_scan)
 
 std::pair<size_t, size_t> t_debug_script::f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new)
 {
-	auto i = v_safe_points.lower_bound(std::make_pair(a_line, nullptr));
-	if (i == v_safe_points.end()) return std::make_pair(0, 0);
+	auto i = v_safe_points.lower_bound({a_line, nullptr});
+	if (i == v_safe_points.end()) return {0, 0};
 	if (a_column > 0) {
 		while (true) {
-			if (i->first.first != a_line) return std::make_pair(0, 0);
+			if (i->first.first != a_line) return {0, 0};
 			if (i->second == a_column) break;
-			if (++i == v_safe_points.end()) return std::make_pair(0, 0);
+			if (++i == v_safe_points.end()) return {0, 0};
 		}
 	}
 	auto& code = f_as<t_code&>(v_code);
 	if (*i->first.second == code.f_p(a_old)) *i->first.second = code.f_p(a_new);
-	return std::make_pair(i->first.first, i->second);
+	return {i->first.first, i->second};
 }
 
 t_library::~t_library()
@@ -188,13 +173,6 @@ void t_library::f_scan(t_scan a_scan)
 {
 	t_module::f_scan(a_scan);
 	if (v_extension) v_extension->f_scan(a_scan);
-}
-
-void t_library::f_initialize(t_object* a_this)
-{
-	auto factory = v_handle->v_library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
-	if (!factory) f_throw(L"f_factory not found."sv);
-	v_extension = factory(a_this);
 }
 
 void t_type_of<t_module>::f_do_scan(t_object* a_this, t_scan a_scan)

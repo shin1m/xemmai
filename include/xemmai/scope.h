@@ -9,15 +9,12 @@ namespace xemmai
 class t_scope
 {
 	friend class t_lambda_shared;
-	friend class t_module;
+	friend class t_type_of<t_object>;
 	friend class t_type_of<t_scope>;
-
-	static t_scoped f_instantiate(t_scope* a_scope);
 
 	size_t v_size;
 	t_slot v_outer;
 	t_slot* v_outer_entries;
-	t_object* v_this;
 
 	t_scope() : v_size(0)
 	{
@@ -43,20 +40,7 @@ public:
 	}
 	static t_object* f_this(t_slot* a_entries)
 	{
-		return reinterpret_cast<t_scope*>(a_entries)[-1].v_this;
-	}
-
-	void* operator new(size_t a_size, size_t a_n)
-	{
-		return new char[a_size + sizeof(t_slot) * a_n];
-	}
-	void operator delete(void* a_p)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-	void operator delete(void* a_p, size_t)
-	{
-		delete[] static_cast<char*>(a_p);
+		return t_object::f_of(reinterpret_cast<t_scope*>(a_entries) - 1);
 	}
 
 	t_slot* f_entries()

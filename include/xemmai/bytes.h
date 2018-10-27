@@ -13,18 +13,6 @@ class t_bytes
 
 	size_t v_size;
 
-	void* operator new(size_t a_size, size_t a_n)
-	{
-		return new char[a_size + a_n];
-	}
-	void operator delete(void* a_p)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-	void operator delete(void* a_p, size_t)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
 	t_bytes(size_t a_size) : v_size(a_size)
 	{
 	}
@@ -89,6 +77,12 @@ public:
 template<>
 struct t_type_of<t_bytes> : t_derivable<t_holds<t_bytes>>
 {
+	static t_scoped f__construct(t_type* a_class, size_t a_size)
+	{
+		auto object = t_object::f_allocate(a_class, false, sizeof(t_bytes) + a_size);
+		new(object->f_data()) t_bytes(a_size);
+		return object;
+	}
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static void f_define();
 

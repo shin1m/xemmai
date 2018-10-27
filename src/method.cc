@@ -7,9 +7,7 @@ namespace xemmai
 
 t_scoped t_method::f_instantiate(t_scoped&& a_function, t_scoped&& a_self)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_method>(), true);
-	object.f_pointer__(new t_method(std::move(a_function), std::move(a_self)));
-	return object;
+	return f_global()->f_type<t_method>()->f_new<t_method>(true, std::move(a_function), std::move(a_self));
 }
 
 void t_type_of<t_method>::f_do_scan(t_object* a_this, t_scan a_scan)

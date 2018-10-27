@@ -1,7 +1,7 @@
 #ifndef XEMMAI__CONVERT_H
 #define XEMMAI__CONVERT_H
 
-#include "derived.h"
+#include "global.h"
 
 namespace xemmai
 {
@@ -189,9 +189,7 @@ struct t_construct
 	template<typename T_self>
 	static t_scoped f_default(t_type* a_class, T_an&&... a_an)
 	{
-		t_scoped object = t_object::f_allocate(a_class, A_shared);
-		object.f_pointer__(new T_self(std::forward<T_an>(a_an)...));
-		return object;
+		return a_class->f_new<T_self>(A_shared, std::forward<T_an>(a_an)...);
 	}
 
 	template<typename T_self>
@@ -554,7 +552,7 @@ class t_define
 	}
 
 public:
-	t_define(typename t_type_of<T>::t_extension* a_extension, std::wstring_view a_name) : v_extension(a_extension), v_type((new t_type_of<T>(t_type_of<T>::V_ids, a_extension->template f_type<T_super>(), v_extension->f_module()))->v_this)
+	t_define(typename t_type_of<T>::t_extension* a_extension, std::wstring_view a_name) : v_extension(a_extension), v_type(t_object::f_of(a_extension->template f_type<T_super>())->f_type()->template f_new<t_type_of<T>>(true, t_type_of<T>::V_ids, a_extension->template f_type<T_super>(), v_extension->f_module()))
 	{
 		v_extension->template f_type_slot<T>().f_construct(v_type);
 		v_extension->f_module()->f_put(t_symbol::f_instantiate(a_name), static_cast<t_object*>(v_type));

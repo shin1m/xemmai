@@ -22,12 +22,12 @@ void t_class::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 		x = std::move(a_stack[2]);
 		if (x.f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
 	} else {
-		x = f_global()->f_type<t_object>()->v_this;
+		x = t_object::f_of(f_global()->f_type<t_object>());
 	}
 	auto& p = f_as<t_type&>(x);
 	auto type = (p.*p.v_derive)();
 	if (!type) f_throw(L"underivable."sv);
-	a_stack[0].f_construct(type->v_this);
+	a_stack[0].f_construct(t_object::f_of(type));
 }
 
 void t_class::f_do_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack)

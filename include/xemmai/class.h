@@ -10,11 +10,12 @@ template<>
 struct t_type_of<t_type> : t_underivable<t_bears<t_type>>
 {
 	template<size_t A_n>
-	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : t_base(a_ids, a_super)
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : t_base(a_ids, a_super, {})
 	{
-		t_value::f_increments()->f_push(v_this);
-		t_value::f_increments()->f_push(v_this);
-		static_cast<t_object*>(v_this)->v_type = static_cast<t_object*>(v_super->v_this)->v_type = this;
+		auto p = t_object::f_of(this);
+		t_value::f_increments()->f_push(p);
+		t_value::f_increments()->f_push(p);
+		p->v_type = t_object::f_of(v_super)->v_type = this;
 		v_fixed = true;
 		v_get_nonowned = static_cast<void (t_type::*)(t_object*, t_object*, t_stacked*)>(&t_type_of::f_do_get_nonowned);
 		v_get = static_cast<t_scoped (t_type::*)(t_object*, t_object*)>(&t_type_of::f_do_get);
@@ -25,7 +26,7 @@ struct t_type_of<t_type> : t_underivable<t_bears<t_type>>
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	static void f_do_finalize(t_object* a_this)
 	{
-		f_as<t_type&>(a_this).f_delete();
+		f_as<t_type&>(a_this).f_destruct();
 	}
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
 	void f_do_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
@@ -41,7 +42,8 @@ typedef t_type_of<t_type> t_class;
 
 inline t_scoped t_type::f_get_of_type(t_object* a_key)
 {
-	return static_cast<t_class*>(static_cast<t_object*>(v_this)->v_type)->f_do_get(v_this, a_key);
+	auto p = t_object::f_of(this);
+	return static_cast<t_class*>(p->v_type)->f_do_get(p, a_key);
 }
 
 }

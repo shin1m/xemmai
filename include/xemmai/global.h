@@ -29,6 +29,7 @@ class t_global : public t_extension
 
 	t_slot_of<t_type> v_type_object;
 	t_slot_of<t_type> v_type_class;
+	t_slot_of<t_type> v_type_structure__discard;
 	t_slot_of<t_type> v_type_structure;
 	t_slot_of<t_type> v_type_module;
 	t_slot_of<t_type> v_type_fiber;
@@ -244,7 +245,7 @@ public:
 	template<typename T>
 	t_scoped f_as(T&& a_value) const
 	{
-		typedef t_type_of<typename t_fundamental<T>::t_type> t;
+		using t = t_type_of<typename t_fundamental<T>::t_type>;
 		return t::f_transfer(this, std::forward<T>(a_value));
 	}
 };
@@ -259,6 +260,12 @@ template<>
 inline t_slot_of<t_type>& t_global::f_type_slot<t_class>()
 {
 	return v_type_class;
+}
+
+template<>
+inline t_slot_of<t_type>& t_global::f_type_slot<t_structure::t_discard>()
+{
+	return v_type_structure__discard;
 }
 
 template<>
@@ -443,7 +450,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value::f_type() const
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_value::f_get(t_object* a_key) const
 {
 	if (f_tag() < e_tag__OBJECT) {
-		t_scoped value = static_cast<t_object*>(f_type()->v_this)->f_get(a_key);
+		t_scoped value = t_object::f_of(f_type())->f_get(a_key);
 		return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(*this) : value;
 	} else {
 		return v_p->f_get(a_key);
@@ -770,6 +777,26 @@ inline t_scoped t_value::f_or(const t_value& a_value) const
 	}
 }
 
+template<typename T>
+inline t_scoped t_derived<T>::f_do_construct(t_stacked* a_stack, size_t a_n)
+{
+	return t_object::f_of(this)->f_call_preserved(f_global()->f_symbol_construct(), a_stack, a_n);
+}
+
+template<typename T, typename... T_n>
+t_scoped t_module::f_new(std::wstring_view a_name, T_n&&... a_n)
+{
+	auto object = f_global()->f_type<t_module>()->f_new<T>(true, std::forward<T_n>(a_n)...);
+	auto& module = object->template f_as<t_module>();
+	t_scoped second = object;
+	{
+		std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
+		module.v_iterator = f_engine()->v_module__instances.emplace(a_name, t_slot()).first;
+		module.v_iterator->second = std::move(second);
+	}
+	return object;
+}
+
 template<typename T_context, typename T_main>
 intptr_t t_fiber::f_main(T_main a_main)
 {
@@ -817,6 +844,15 @@ inline size_t t_code::f_loop(t_context& a_context)
 	}
 }
 
+template<typename T_context>
+inline size_t t_lambda_shared::f_call(t_stacked* a_stack)
+{
+	auto scope = t_object::f_allocate(f_global()->f_type<t_scope>(), true, sizeof(t_scope) + sizeof(t_slot) * v_shareds);
+	T_context context(this, a_stack);
+	context.v_scope = (new(scope->f_data()) t_scope(v_shareds, v_scope_entries))->f_entries();
+	return t_code::f_loop(context);
+}
+
 template<typename T>
 inline t_scoped t_type_of<t_string>::f_transfer(const t_global* a_extension, T&& a_value)
 {
@@ -829,17 +865,17 @@ inline t_scoped t_type_of<t_string>::f_from_code(t_global* a_extension, intptr_t
 	return f__construct(a_extension->f_type<t_string>(), &c, 1);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_type_of<t_string>::f__add(t_global* a_extension, t_object* a_self, t_scoped&& a_value)
+XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_type_of<t_string>::f__add(t_object* a_self, t_scoped&& a_value)
 {
 	auto add = [&](t_scoped&& x)
 	{
 		auto& s0 = f_as<const t_string&>(a_self);
 		if (s0.f_size() <= 0) return x;
 		auto& s1 = f_as<const t_string&>(x);
-		return s1.f_size() <= 0 ? t_scoped(a_self) : f__construct(a_extension->f_type<t_string>(), s0, s1);
+		return s1.f_size() <= 0 ? t_scoped(a_self) : f__construct(a_self->f_type(), s0, s1);
 	};
 	if (f_is<t_string>(a_value)) return add(std::move(a_value));
-	t_scoped x = a_value.f_invoke(a_extension->f_symbol_string());
+	t_scoped x = a_value.f_invoke(f_global()->f_symbol_string());
 	f_check<t_string>(x, L"argument0");
 	return add(std::move(x));
 }

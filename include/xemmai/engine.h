@@ -61,38 +61,50 @@ class t_engine : public t_value::t_collector
 		}
 		void f_run();
 	};
+	template<typename T, size_t A_size>
+	struct t_pool : t_shared_pool<T, A_size>
+	{
+		size_t v_freed = 0;
 
-	template<typename T, size_t A_size>
-	static void f_return(t_shared_pool<T, A_size>& a_pool)
-	{
-		T* p = t_local_pool<T>::f_detach();
-		while (p) {
-			T* q = p;
-			size_t n = 0;
-			while (++n < A_size && q->v_next) q = q->v_next;
-			T* p0 = p;
-			p = q->v_next;
-			q->v_next = nullptr;
-			a_pool.f_free(p0, n);
+		void f_return_all()
+		{
+			auto p = t_local_pool<T>::f_detach();
+			while (p) {
+				auto q = p;
+				size_t n = 0;
+				while (++n < A_size && q->v_next) q = q->v_next;
+				auto p0 = p;
+				p = q->v_next;
+				q->v_next = nullptr;
+				t_shared_pool<T, A_size>::f_free(p0, n);
+			}
 		}
-	}
-	template<typename T, size_t A_size>
-	static void f_return(t_shared_pool<T, A_size>& a_pool, size_t& a_freed)
-	{
-		a_pool.f_free(t_local_pool<T>::f_detach(), a_freed);
-		a_freed = 0;
-	}
-	template<typename T, size_t A_size>
-	static void f_free(t_shared_pool<T, A_size>& a_pool, size_t& a_freed, T* a_p)
-	{
-		assert(t_thread::v_current == nullptr);
-		t_local_pool<T>::f_free(a_p);
-		if (++a_freed >= A_size) f_return(a_pool, a_freed);
-	}
+		void f_return()
+		{
+			t_shared_pool<T, A_size>::f_free(t_local_pool<T>::f_detach(), v_freed);
+			v_freed = 0;
+		}
+		void f_free(decltype(T::v_next) a_p)
+		{
+			assert(t_thread::v_current == nullptr);
+			t_local_pool<T>::f_free(a_p);
+			if (++v_freed >= A_size) f_return();
+		}
+		size_t f_live() const
+		{
+			return this->f_allocated() - this->f_freed() - v_freed;
+		}
+	};
+
+	static XEMMAI__PORTABLE__THREAD size_t v_local_object__allocated;
 
 	size_t v_collector__threshold0;
 	size_t v_collector__threshold1;
-	t_shared_pool<t_object, 4096> v_object__pool;
+	t_pool<t_object_and<0>, 4096> v_object__pool0;
+	t_pool<t_object_and<1>, 4096> v_object__pool1;
+	t_pool<t_object_and<2>, 4096> v_object__pool2;
+	t_pool<t_object_and<3>, 4096> v_object__pool3;
+	std::atomic<size_t> v_object__allocated = 0;
 	size_t v_object__freed = 0;
 	size_t v_object__lower0 = 0;
 	size_t v_object__lower1 = 0;
@@ -102,10 +114,9 @@ class t_engine : public t_value::t_collector
 	std::mutex v_object__reviving__mutex;
 	size_t v_object__release = 0;
 	size_t v_object__collect = 0;
-	t_structure* v_structure__finalizing = nullptr;
 	std::list<t_object*> v_fiber__runnings;
 	std::mutex v_fiber__mutex;
-	t_thread::t_internal* v_thread__internals = nullptr;
+	t_thread::t_internal* v_thread__internals = new t_thread::t_internal();
 	size_t v_thread__cache_hit = 0;
 	size_t v_thread__cache_missed = 0;
 	std::mutex v_thread__mutex;
@@ -115,6 +126,7 @@ class t_engine : public t_value::t_collector
 	std::mutex v_synchronizer__mutex;
 	//std::condition_variable v_synchronizer__condition;
 	t_type* v_type_class;
+	t_type* v_type_structure;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
 	std::map<std::wstring, t_slot, std::less<>>::iterator v_module__instances__null;
 	std::mutex v_module__mutex;
@@ -137,22 +149,60 @@ class t_engine : public t_value::t_collector
 	t_object* v_debug__stepping = nullptr;
 
 	void f_pools__return();
-	t_object* f_object__pool__allocate()
+	decltype(auto) f_object__pool(std::integral_constant<size_t, 0>)
 	{
-		t_object* p = v_object__pool.f_allocate(false);
-		if (!p) {
-			f_wait();
-			p = v_object__pool.f_allocate();
+		return (v_object__pool0);
+	}
+	decltype(auto) f_object__pool(std::integral_constant<size_t, 1>)
+	{
+		return (v_object__pool1);
+	}
+	decltype(auto) f_object__pool(std::integral_constant<size_t, 2>)
+	{
+		return (v_object__pool2);
+	}
+	decltype(auto) f_object__pool(std::integral_constant<size_t, 3>)
+	{
+		return (v_object__pool3);
+	}
+	template<size_t A_rank>
+	t_object* f_object__pool__allocate();
+	t_object* f_object__allocate(size_t a_size)
+	{
+		if (++v_local_object__allocated >= 1024) {
+			v_object__allocated += 1024;
+			v_local_object__allocated = 0;
 		}
-		return p;
+		return new(new char[sizeof(t_object) + a_size]) t_object(4);
+	}
+	t_scoped f_object__allocate_on_boot(size_t a_size)
+	{
+		auto p = f_object__allocate(a_size);
+		p->v_next = nullptr;
+		return {p, t_scoped::t_pass()};
 	}
 	void f_free(t_object* a_p)
 	{
-		a_p->v_pointer = nullptr;
 		a_p->v_owner = nullptr;
 		a_p->v_structure = v_structure_root;
 		a_p->v_count = 1;
-		f_free(v_object__pool, v_object__freed, a_p);
+		switch (a_p->v_rank) {
+		case 0:
+			v_object__pool0.f_free(a_p);
+			break;
+		case 1:
+			v_object__pool1.f_free(a_p);
+			break;
+		case 2:
+			v_object__pool2.f_free(a_p);
+			break;
+		case 3:
+			v_object__pool3.f_free(a_p);
+			break;
+		default:
+			++v_object__freed;
+			delete a_p;
+		}
 	}
 	void f_free_as_release(t_object* a_p)
 	{
@@ -235,6 +285,17 @@ public:
 	void f_debug_continue(t_object* a_stepping = nullptr);
 };
 
+template<size_t A_rank>
+inline t_object* t_engine::f_object__pool__allocate()
+{
+	auto p = f_object__pool(std::integral_constant<size_t, A_rank>()).f_allocate(false);
+	if (!p) {
+		f_wait();
+		p = f_object__pool(std::integral_constant<size_t, A_rank>()).f_allocate();
+	}
+	return p;
+}
+
 template<typename T>
 void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_member)
 {
@@ -262,18 +323,35 @@ struct t_safe_region
 	}
 };
 
-inline t_object::t_object() : v_structure(f_engine()->v_structure_root)
+inline t_object::t_object(size_t a_rank) : v_rank(a_rank), v_structure(f_engine()->v_structure_root)
 {
 }
 
+template<size_t A_rank>
 inline t_object* t_object::f_pool__allocate()
 {
-	return f_engine()->f_object__pool__allocate();
+	return f_engine()->f_object__pool__allocate<A_rank>();
+}
+
+inline t_object* t_object::f_local_pool__allocate(size_t a_size)
+{
+	switch ((sizeof(t_object) - sizeof(v_data) + a_size - 1) / (sizeof(void*) * 8)) {
+	case 0:
+		return t_local_pool<t_object_and<0>>::f_allocate(f_pool__allocate<0>);
+	case 1:
+		return t_local_pool<t_object_and<1>>::f_allocate(f_pool__allocate<1>);
+	case 2:
+		return t_local_pool<t_object_and<2>>::f_allocate(f_pool__allocate<2>);
+	case 3:
+		return t_local_pool<t_object_and<3>>::f_allocate(f_pool__allocate<3>);
+	default:
+		return f_engine()->f_object__allocate(a_size);
+	}
 }
 
 inline void t_object::f_decrement_step()
 {
-	static_cast<t_object*>(v_structure->v_this)->f_decrement_push();
+	t_object::f_of(v_structure)->f_decrement_push();
 	if (v_fields) {
 		v_fields->f_scan(f_push_and_clear<&t_object::f_decrement_push>);
 		delete v_fields;
@@ -283,7 +361,7 @@ inline void t_object::f_decrement_step()
 		v_type->f_scan(this, f_push_and_clear<&t_object::f_decrement_push>);
 		v_type->f_finalize(this);
 	}
-	static_cast<t_object*>(v_type->v_this)->f_decrement_push();
+	t_object::f_of(v_type)->f_decrement_push();
 	v_color = e_color__BLACK;
 	if (!v_next) f_engine()->f_free_as_release(this);
 }
@@ -301,31 +379,6 @@ inline void t_object::f_collect_white()
 	v_color = e_color__ORANGE;
 	f_append(f_engine()->v_object__cycle, this);
 	f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
-}
-
-inline t_scoped t_object::f_allocate(t_type* a_type, bool a_shared)
-{
-	t_object* p = f_local_pool__allocate();
-	auto increments = t_value::f_increments();
-	increments->f_push(a_type->v_this);
-	p->v_type = a_type;
-	if (!a_shared) p->v_owner = increments;
-	increments->f_push(p->v_structure->v_this);
-	p->v_next = nullptr;
-	return {p, t_scoped::t_pass()};
-}
-
-template<size_t A_n>
-inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids) : v_this(t_object::f_allocate_on_boot()), v_depth(A_n - 1), v_ids(a_ids.data())
-{
-	v_this.f_pointer__(this);
-}
-
-template<size_t A_n>
-inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : v_this(t_object::f_allocate(f_engine()->v_type_class, true)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(std::move(a_module))
-{
-	v_super.f_construct(a_super->v_this);
-	v_this.f_pointer__(this);
 }
 
 inline t_object* t_fiber::f_current()

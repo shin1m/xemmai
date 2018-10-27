@@ -21,8 +21,10 @@ struct t_module
 		~t_scoped_lock();
 	};
 
-	static t_scoped f_instantiate(std::wstring_view a_name, t_module* a_module);
-	static t_library* f_load_library(std::wstring_view a_path);
+
+	template<typename T, typename... T_n>
+	static t_scoped f_new(std::wstring_view a_name, T_n&&... a_n);
+	static t_scoped f_load_library(std::wstring_view a_name, std::wstring_view a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
 	static t_scoped f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path);
 	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_name);
@@ -108,7 +110,6 @@ struct t_library : t_module
 	}
 	virtual ~t_library();
 	virtual void f_scan(t_scan a_scan);
-	void f_initialize(t_object* a_this);
 };
 
 template<>
@@ -122,7 +123,7 @@ struct t_type_of<t_module> : t_underivable<t_holds<t_module>>
 template<typename T>
 inline T* f_extension(t_object* a_module)
 {
-	return static_cast<T*>(static_cast<t_library*>(&f_as<t_module&>(a_module))->v_extension);
+	return static_cast<T*>(static_cast<t_library&>(f_as<t_module&>(a_module)).v_extension);
 }
 
 }

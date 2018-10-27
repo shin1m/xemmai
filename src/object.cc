@@ -1,7 +1,6 @@
 #include <xemmai/object.h>
 
 #include <xemmai/structure.h>
-#include <xemmai/tuple.h>
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -36,16 +35,12 @@ void t_object::f_collect()
 			do {
 				p = cycle->v_next;
 				cycle->v_next = p->v_next;
-				auto q = f_as<t_type*>(p);
-				if (q) q->f_delete();
+				if (p->v_type == f_engine()->v_type_class)
+					p->f_as<t_type>().f_destruct();
+				else if (p->v_type == f_engine()->v_type_structure)
+					p->f_as<t_structure>().~t_structure();
 				f_engine()->f_free_as_collect(p);
 			} while (p != cycle);
-			auto& q = f_engine()->v_structure__finalizing;
-			while (q) {
-				t_structure* p = q;
-				q = p->v_parent1;
-				delete p;
-			}
 		} else {
 			p = cycle->v_next;
 			t_object* q = p->v_next;
@@ -81,8 +76,7 @@ void t_object::f_collect()
 	}
 	if (!v_roots) return;
 	{
-		auto& pool = f_engine()->v_object__pool;
-		size_t live = pool.f_allocated() - pool.f_freed() - f_engine()->v_object__freed;
+		size_t live = f_engine()->v_object__pool0.f_live() + f_engine()->v_object__pool1.f_live() + f_engine()->v_object__pool2.f_live() + f_engine()->v_object__pool3.f_live() + f_engine()->v_object__allocated - f_engine()->v_object__freed;
 		auto& lower0 = f_engine()->v_object__lower0;
 		if (live < lower0) lower0 = live;
 		auto& lower1 = f_engine()->v_object__lower1;
@@ -158,53 +152,36 @@ void t_object::f_collect()
 	}
 }
 
-#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-t_object* t_object::f_local_pool__allocate()
-{
-	return t_local_pool<t_object>::f_allocate(f_pool__allocate);
-}
-#endif
-
 void t_object::f_cyclic_decrement()
 {
-	{
-		t_object* p = v_structure->v_this;
-		if (p) p->f_cyclic_decrement_push();
-	}
+	if (v_structure->v_this) t_object::f_of(v_structure)->f_cyclic_decrement_push();
 	if (v_fields) {
 		v_fields->f_scan(f_push_and_clear<&t_object::f_cyclic_decrement_push>);
 		delete v_fields;
 		v_fields = nullptr;
 	}
 	v_type->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
-	if (v_type != f_engine()->v_type_class) {
-		v_type->f_finalize(this);
-		v_pointer = nullptr;
-	}
-	{
-		t_object* p = v_type->v_this;
-		if (p) p->f_cyclic_decrement_push();
-	}
+	if (v_type != f_engine()->v_type_class) v_type->f_finalize(this);
+	if (v_type->v_this) t_object::f_of(v_type)->f_cyclic_decrement_push();
 }
 
 void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 {
 	if (!v_fields) {
-		v_fields = new(4) t_tuple(4);
+		v_fields = new(4) t_structure::t_fields(4);
 		(*v_fields)[0].f_construct(std::move(a_value));
 	} else {
-		size_t index = v_structure->f_size();
-		if (index >= v_fields->f_size()) {
-			auto fields = new(index + 4) t_tuple(index + 4);
+		size_t index = v_structure->v_size;
+		if (index >= v_fields->v_size) {
+			auto fields = new(index + 4) t_structure::t_fields(index + 4);
 			for (size_t i = 0; i < index; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i]));
 			std::swap(v_fields, fields);
-			t_object::f_allocate(f_global()->f_type<t_tuple>(), true).f_pointer__(fields);
+			f_global()->f_type<t_structure::t_discard>()->f_new<t_structure::t_discard>(true)->f_as<t_structure::t_discard>().v_fields = fields;
 		}
 		(*v_fields)[index].f_construct(std::move(a_value));
 	}
-	t_object* structure0 = v_structure->v_this;
-	t_slot structure1(std::move(a_structure));
-	v_structure = &f_as<t_structure&>(structure1);
+	auto structure0 = t_object::f_of(v_structure);
+	v_structure = &t_slot(std::move(a_structure))->f_as<t_structure>();
 	t_value::v_decrements->f_push(structure0);
 }
 
@@ -217,13 +194,13 @@ void t_object::f_own()
 		v_owner = t_value::v_increments;
 	}
 	t_slot* p = v_structure->f_fields();
-	for (size_t i = 0; i < v_structure->f_size(); ++i) {
+	for (size_t i = 0; i < v_structure->v_size; ++i) {
 		t_object* key = p[i];
 		size_t j = t_thread::t_cache::f_index(this, key);
 		auto& cache = t_thread::v_cache[j];
 		if (static_cast<t_object*>(cache.v_object) == this && static_cast<t_object*>(cache.v_key) == key) cache.v_object = cache.v_key = cache.v_value = nullptr;
 		cache.v_revision = t_thread::t_cache::f_revise(j);
-		cache.v_key_revision = f_as<t_symbol&>(key).v_revision;
+		cache.v_key_revision = key->f_as<t_symbol>().v_revision;
 	}
 }
 
@@ -246,27 +223,20 @@ void t_object::f_field_put(t_object* a_key, t_scoped&& a_value)
 
 void t_object::f_field_remove(size_t a_index)
 {
-	t_object* structure0 = v_structure->v_this;
-	t_slot structure1(v_structure->f_remove(a_index));
-	v_structure = &f_as<t_structure&>(structure1);
+	auto structure0 = t_object::f_of(v_structure);
+	v_structure = &t_slot(v_structure->f_remove(a_index))->f_as<t_structure>();
 	t_value::v_decrements->f_push(structure0);
-	size_t size = v_structure->f_size();
-	if (size + 4 < v_fields->f_size()) {
-		t_scoped tuple = t_tuple::f_instantiate(size);
-		auto& fields = f_as<t_tuple&>(tuple);
-		for (size_t i = 0; i < a_index; ++i) fields[i].f_construct(std::move((*v_fields)[i]));
-		while (a_index < size) {
-			fields[a_index].f_construct(std::move((*v_fields)[a_index + 1]));
-			++a_index;
-		}
-		tuple.f_pointer__(v_fields);
-		v_fields = &fields;
+	size_t size = v_structure->v_size;
+	if (size + 4 < v_fields->v_size) {
+		auto fields = new(size) t_structure::t_fields(size);
+		size_t i = 0;
+		for (; i < a_index; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i]));
+		for (; i < size; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i + 1]));
+		std::swap(v_fields, fields);
+		f_global()->f_type<t_structure::t_discard>()->f_new<t_structure::t_discard>(true)->f_as<t_structure::t_discard>().v_fields = fields;
 	} else {
 		(*v_fields)[a_index].f_destruct();
-		while (a_index < size) {
-			(*v_fields)[a_index].f_construct(std::move((*v_fields)[a_index + 1]));
-			++a_index;
-		}
+		for (; a_index < size; ++a_index) (*v_fields)[a_index].f_construct(std::move((*v_fields)[a_index + 1]));
 	}
 }
 

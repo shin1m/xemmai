@@ -9,6 +9,7 @@ namespace xemmai
 class t_array
 {
 	friend struct t_finalizes<t_bears<t_array>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_array>;
 
 	static t_slot* f_move_forward(t_slot* a_p, t_slot* a_q)
@@ -28,11 +29,10 @@ class t_array
 		return a_p;
 	}
 
-	t_tuple* v_tuple;
+	t_slot v_tuple;
 	size_t v_head = 0;
 	size_t v_size = 0;
 	size_t v_mask = 0;
-	t_slot v_slot;
 
 	t_array() = default;
 	~t_array() = default;
@@ -56,7 +56,6 @@ public:
 	{
 		v_tuple = nullptr;
 		v_head = v_size = v_mask = 0;
-		v_slot = nullptr;
 	}
 	size_t f_size() const
 	{
@@ -65,23 +64,23 @@ public:
 	const t_slot& operator[](intptr_t a_index) const
 	{
 		f_validate(a_index);
-		return (*v_tuple)[v_head + a_index & v_mask];
+		return f_as<t_tuple&>(v_tuple)[v_head + a_index & v_mask];
 	}
 	t_slot& operator[](intptr_t a_index)
 	{
 		f_validate(a_index);
-		return (*v_tuple)[v_head + a_index & v_mask];
+		return f_as<t_tuple&>(v_tuple)[v_head + a_index & v_mask];
 	}
 	void f_push(t_scoped&& a_value)
 	{
 		f_grow();
-		(*v_tuple)[v_head + v_size & v_mask].f_construct(std::move(a_value));
+		f_as<t_tuple&>(v_tuple)[v_head + v_size & v_mask].f_construct(std::move(a_value));
 		++v_size;
 	}
 	t_scoped f_pop()
 	{
 		if (v_size <= 0) f_throw(L"empty array."sv);
-		t_scoped p = std::move((*v_tuple)[v_head + --v_size & v_mask]);
+		t_scoped p = std::move(f_as<t_tuple&>(v_tuple)[v_head + --v_size & v_mask]);
 		f_shrink();
 		return p;
 	}
@@ -89,13 +88,13 @@ public:
 	{
 		f_grow();
 		v_head = v_head - 1 & v_mask;
-		(*v_tuple)[v_head].f_construct(std::move(a_value));
+		f_as<t_tuple&>(v_tuple)[v_head].f_construct(std::move(a_value));
 		++v_size;
 	}
 	t_scoped f_shift()
 	{
 		if (v_size <= 0) f_throw(L"empty array."sv);
-		t_scoped p = std::move((*v_tuple)[v_head]);
+		t_scoped p = std::move(f_as<t_tuple&>(v_tuple)[v_head]);
 		v_head = v_head + 1 & v_mask;
 		--v_size;
 		f_shrink();

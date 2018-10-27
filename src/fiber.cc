@@ -29,9 +29,7 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 
 t_scoped t_fiber::f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_fiber>(), false);
-	object.f_pointer__(new t_fiber(std::move(a_callable), a_stack, a_main, a_active));
-	return object;
+	return f_global()->f_type<t_fiber>()->f_new<t_fiber>(false, std::move(a_callable), a_stack, a_main, a_active);
 }
 
 template<typename T_context>
@@ -82,7 +80,7 @@ void t_fiber::f_caught(const t_value& a_value, t_object* a_lambda, void** a_pc)
 void t_type_of<t_fiber>::f_define()
 {
 	v_builtin = true;
-	t_define<t_fiber, t_object>(f_global(), L"Fiber"sv, v_this)
+	t_define<t_fiber, t_object>(f_global(), L"Fiber"sv, t_object::f_of(this))
 		(L"current"sv, t_static<t_object*(*)(), t_fiber::f_current>())
 	;
 }
@@ -144,7 +142,7 @@ void t_context::f_backtrace(const t_value& a_value)
 	f_as<t_code&>(v_lambda->v_code).f_stack_clear(v_pc, v_base);
 	if (f_is<t_throwable>(a_value)) {
 		auto& p = f_as<t_fiber&>(t_fiber::f_current());
-		t_backtrace::f_push(a_value, v_lambda->v_this, p.v_caught == nullptr ? v_pc : p.v_caught);
+		t_backtrace::f_push(a_value, t_object::f_of(v_lambda), p.v_caught == nullptr ? v_pc : p.v_caught);
 		p.v_caught = nullptr;
 	}
 	f_stack()->v_used = v_previous;

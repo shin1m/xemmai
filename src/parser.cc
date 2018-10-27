@@ -88,7 +88,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			{
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
-				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_tuple>()->v_this)))));
+				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))))));
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) call->v_expand = f_expressions(indent, call->v_arguments);
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_PARENTHESIS) v_lexer.f_next();
 				return std::move(call);
@@ -195,7 +195,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_array>()->v_this)))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_array>()))))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) call->v_expand = f_expressions(indent, call->v_arguments);
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_BRACKET) v_lexer.f_next();
 			return std::move(call);
@@ -204,7 +204,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_type<t_dictionary>()->v_this)))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_dictionary>()))))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
 				size_t i = v_lexer.f_indent();
 				while (true) {
@@ -828,9 +828,7 @@ void t_parser::operator()(ast::t_scope& a_scope)
 
 t_scoped t_parser::t_error::f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_error>(), false);
-	object.f_pointer__(new t_error(a_message, a_path, a_at));
-	return object;
+	return f_global()->f_type<t_error>()->f_new<t_error>(false, a_message, a_path, a_at);
 }
 
 void t_parser::t_error::f_dump() const

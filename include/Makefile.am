@@ -15,7 +15,6 @@ nobase_includeversion_HEADERS = \
 	xemmai/class.h \
 	xemmai/code.h \
 	xemmai/convert.h \
-	xemmai/derived.h \
 	xemmai/dictionary.h \
 	xemmai/engine.h \
 	xemmai/fiber.h \

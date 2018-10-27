@@ -31,12 +31,12 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 			case t_value::e_tag__FLOAT:
 				return a_object.f_float();
 			default:
-				return p->f_float();
+				return p->template f_as<double>();
 			}
 		}
 		static t_type f_call(t_object* a_object)
 		{
-			return a_object->f_float();
+			return a_object->f_as<double>();
 		}
 	};
 	template<typename T0>
@@ -74,9 +74,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 	}
 	static t_scoped f_construct_derived(t_type* a_class, double a_value)
 	{
-		t_scoped object = t_object::f_allocate(a_class, true);
-		object.f_float__(a_value);
-		return object;
+		return a_class->f_new<double>(true, a_value);
 	}
 	static double f_parse(const wchar_t* a_value)
 	{

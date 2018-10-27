@@ -85,13 +85,13 @@ void t_code::f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 	if (f_atomic_increment(count) == 2) {
 		auto p = static_cast<t_object*>(top);
 		if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-			*static_cast<t_slot*>(pc0[4]) = p->v_structure->v_this;
+			*static_cast<t_slot*>(pc0[4]) = t_object::f_of(p->v_structure);
 			pc0[4] = p->v_structure;
 			intptr_t index = p->f_field_index(key);
 			if (index < 0) {
 				f_engine()->f_synchronize();
 				pc0[0] = a_class;
-				t_scoped value = static_cast<t_object*>(p->f_type()->v_this)->f_get(key);
+				t_scoped value = t_object::f_of(p->f_type())->f_get(key);
 				top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(p) : std::move(value);
 			} else {
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
@@ -129,7 +129,7 @@ void t_code::f_object_put(t_stacked* a_base, void**& a_pc, void* a_add, void* a_
 				pc0[0] = a_add;
 				p->f_field_add(std::move(structure), t_scoped(value));
 			} else {
-				*static_cast<t_slot*>(pc0[4]) = p->v_structure->v_this;
+				*static_cast<t_slot*>(pc0[4]) = t_object::f_of(p->v_structure);
 				pc0[4] = p->v_structure;
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
 				f_engine()->f_synchronize();
@@ -167,7 +167,7 @@ void t_code::f_object_put_clear(t_stacked* a_base, void**& a_pc, void* a_add, vo
 				pc0[0] = a_add;
 				p->f_field_add(std::move(structure), std::move(value));
 			} else {
-				*static_cast<t_slot*>(pc0[4]) = p->v_structure->v_this;
+				*static_cast<t_slot*>(pc0[4]) = t_object::f_of(p->v_structure);
 				pc0[4] = p->v_structure;
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
 				f_engine()->f_synchronize();
@@ -195,7 +195,7 @@ void t_code::f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 	if (f_atomic_increment(count) == 2) {
 		auto p = static_cast<t_object*>(top);
 		if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
-			*static_cast<t_slot*>(pc0[4]) = p->v_structure->v_this;
+			*static_cast<t_slot*>(pc0[4]) = t_object::f_of(p->v_structure);
 			pc0[4] = p->v_structure;
 			intptr_t index = p->f_field_index(key);
 			if (index < 0) {
@@ -459,7 +459,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked& top = stack[0];
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
-					t_scoped value = static_cast<t_object*>(p->f_type()->v_this)->f_get(key);
+					t_scoped value = t_object::f_of(p->f_type())->f_get(key);
 					top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(p) : value;
 				} else {
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
@@ -527,8 +527,8 @@ size_t t_code::f_loop(t_context* a_context)
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 					auto structure = static_cast<t_structure*>(pc0[4]);
-					if (p->v_structure == structure->v_parent1) {
-						p->f_field_add(t_scoped(structure->v_this), t_scoped(value));
+					if (p->v_structure == &structure->v_parent->f_as<t_structure>()) {
+						p->f_field_add(t_object::f_of(structure), t_scoped(value));
 					} else {
 						auto key = static_cast<t_object*>(pc0[2]);
 						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC);
@@ -596,8 +596,8 @@ size_t t_code::f_loop(t_context* a_context)
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned()) {
 					auto structure = static_cast<t_structure*>(pc0[4]);
-					if (p->v_structure == structure->v_parent1) {
-						p->f_field_add(t_scoped(structure->v_this), std::move(value));
+					if (p->v_structure == &structure->v_parent->f_as<t_structure>()) {
+						p->f_field_add(t_object::f_of(structure), std::move(value));
 					} else {
 						auto key = static_cast<t_object*>(pc0[2]);
 						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_CLEAR_MEGAMORPHIC);
@@ -973,7 +973,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked* stack = base + reinterpret_cast<size_t>(*++pc);
 				++pc;
 				t_stacked& top = stack[0];
-				top = top.f_type()->v_this;
+				top = t_object::f_of(top.f_type());
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SUPER)
@@ -1689,7 +1689,7 @@ void t_code::f_try(t_context* a_context)
 					if (thrown != f_engine()->v_fiber_exit && thrown.f_is(&f_as<t_type&>(type))) {
 						size_t index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						p.f_caught(thrown, a_context->v_lambda->v_this, caught);
+						p.f_caught(thrown, t_object::f_of(a_context->v_lambda), caught);
 						if ((index & ~(~0 >> 1)) != 0) {
 							auto scope = a_context->v_scope;
 							t_with_lock_for_write lock(t_scope::f_this(scope));
@@ -1744,9 +1744,7 @@ void t_code::f_try(t_context* a_context)
 
 t_scoped t_code::f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum)
 {
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_code>(), true);
-	object.f_pointer__(new t_code(a_module, a_shared, a_variadic, a_privates, a_shareds, a_arguments, a_minimum));
-	return object;
+	return f_global()->f_type<t_code>()->f_new<t_code>(true, a_module, a_shared, a_variadic, a_privates, a_shareds, a_arguments, a_minimum);
 }
 
 const t_at* t_code::f_at(void** a_address) const

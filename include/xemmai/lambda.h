@@ -14,6 +14,7 @@ class t_lambda
 	friend struct t_code;
 	friend struct t_context;
 	friend struct t_finalizes<t_bears<t_lambda>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_lambda>;
 
 protected:
@@ -24,9 +25,8 @@ protected:
 	void** v_instructions;
 	size_t v_size;
 	size_t v_privates;
-	t_object* v_this;
 
-	t_lambda(t_slot* a_scope, t_scoped&& a_code, t_object* a_this) : v_scope_entries(a_scope), v_scope(t_scope::f_this(a_scope)), v_code(std::move(a_code)), v_this(a_this)
+	t_lambda(t_slot* a_scope, t_scoped&& a_code) : v_scope_entries(a_scope), v_scope(t_scope::f_this(a_scope)), v_code(std::move(a_code))
 	{
 		auto& code = f_as<t_code&>(v_code);
 		v_size = code.v_size;
@@ -71,25 +71,19 @@ class t_lambda_shared : public t_lambda
 {
 	friend struct t_lambda;
 	friend struct t_finalizes<t_bears<t_lambda_shared, t_type_of<t_lambda>>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_lambda>;
 	friend struct t_type_of<t_lambda_shared>;
 
 	size_t v_shareds;
 
 protected:
-	t_lambda_shared(t_slot* a_scope, t_scoped&& a_code, t_object* a_this) : t_lambda(a_scope, std::move(a_code), a_this), v_shareds(f_as<t_code&>(v_code).v_shareds)
+	t_lambda_shared(t_slot* a_scope, t_scoped&& a_code) : t_lambda(a_scope, std::move(a_code)), v_shareds(f_as<t_code&>(v_code).v_shareds)
 	{
 	}
 	~t_lambda_shared() = default;
 	template<typename T_context>
-	size_t f_call(t_stacked* a_stack)
-	{
-		auto p = new(v_shareds) t_scope(v_shareds, v_scope_entries);
-		t_scoped scope = t_scope::f_instantiate(p);
-		T_context context(this, a_stack);
-		context.v_scope = p->f_entries();
-		return t_code::f_loop(context);
-	}
+	size_t f_call(t_stacked* a_stack);
 };
 
 template<>
@@ -103,13 +97,14 @@ class t_advanced_lambda : public T_base
 {
 	friend struct t_lambda;
 	friend struct t_finalizes<t_bears<t_advanced_lambda, t_type_of<T_base>>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_advanced_lambda>;
 
 	t_slot v_defaults;
 	bool v_variadic;
 	size_t v_minimum;
 
-	t_advanced_lambda(t_slot* a_scope, t_scoped&& a_code, t_object* a_this, t_scoped&& a_defaults) : T_base(a_scope, std::move(a_code), a_this), v_defaults(std::move(a_defaults))
+	t_advanced_lambda(t_slot* a_scope, t_scoped&& a_code, t_scoped&& a_defaults) : T_base(a_scope, std::move(a_code)), v_defaults(std::move(a_defaults))
 	{
 		auto& code = f_as<t_code&>(this->v_code);
 		v_variadic = code.v_variadic;

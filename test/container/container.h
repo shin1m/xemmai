@@ -16,7 +16,7 @@ template<>
 struct t_type_of<t_pair> : t_uninstantiatable<t_underivable<t_holds<t_pair>>>
 {
 	static t_scoped f_instantiate(t_container* a_extension, t_scoped&& a_value);
-	static t_type* f_define(t_container* a_extension);
+	static t_scoped f_define(t_container* a_extension);
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);

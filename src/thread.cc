@@ -86,12 +86,10 @@ void t_thread::f_cache_acquire()
 
 t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 {
-	t_scoped fiber = t_fiber::f_instantiate(std::move(a_callable), a_stack, true, true);
-	t_scoped object = t_object::f_allocate(f_global()->f_type<t_thread>(), true);
-	auto p = new t_thread(std::move(fiber));
-	object.f_pointer__(p);
-	t_internal* internal = p->v_internal;
+	auto fiber = t_fiber::f_instantiate(std::move(a_callable), a_stack, true, true);
+	auto internal = new t_internal();
 	internal->v_thread = nullptr;
+	auto object = f_global()->f_type<t_thread>()->f_new<t_thread>(true, internal, std::move(fiber));
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		internal->v_next = f_engine()->v_thread__internals;
@@ -127,7 +125,7 @@ void t_thread::f_join()
 void t_type_of<t_thread>::f_define()
 {
 	v_builtin = true;
-	t_define<t_thread, t_object>(f_global(), L"Thread"sv, v_this)
+	t_define<t_thread, t_object>(f_global(), L"Thread"sv, t_object::f_of(this))
 		(L"current"sv, t_static<t_object*(*)(), t_thread::f_current>())
 		(L"join"sv, t_member<void(t_thread::*)(), &t_thread::f_join>())
 	;

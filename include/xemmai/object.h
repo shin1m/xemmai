@@ -16,6 +16,7 @@ class t_with_lock_for_write;
 class t_structure
 {
 	friend class t_engine;
+	friend class t_global;
 	friend class t_object;
 	friend struct t_type_of<t_structure>;
 	friend struct t_thread;
@@ -25,10 +26,6 @@ class t_structure
 	{
 		t_object* v_key;
 		size_t v_index;
-
-		t_entry(t_object* a_key, size_t a_index) : v_key(a_key), v_index(a_index)
-		{
-		}
 	};
 	struct t_cache
 	{
@@ -44,61 +41,61 @@ class t_structure
 		t_slot v_key;
 		intptr_t v_index;
 	};
+	struct t_fields
+	{
+		size_t v_size;
+
+		void* operator new(size_t a_size, size_t a_n)
+		{
+			return new char[a_size + sizeof(t_slot) * a_n];
+		}
+		void operator delete(void* a_p)
+		{
+			delete[] static_cast<char*>(a_p);
+		}
+		void operator delete(void* a_p, size_t)
+		{
+			delete[] static_cast<char*>(a_p);
+		}
+
+		t_fields(size_t a_size) : v_size(a_size)
+		{
+			t_slot* p = *this;
+			for (size_t i = 0; i < v_size; ++i) new(p + i) t_slot();
+		}
+		operator t_slot*() const
+		{
+			return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
+		}
+		template<typename T_scan>
+		void f_scan(T_scan a_scan)
+		{
+			t_slot* p = *this;
+			for (size_t i = 0; i < v_size; ++i) a_scan(p[i]);
+		}
+	};
+	struct t_discard
+	{
+		t_fields* v_fields;
+
+		~t_discard()
+		{
+			delete v_fields;
+		}
+	};
+	friend struct t_type_of<t_structure::t_discard>;
 
 	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
 
-	t_slot v_this;
 	size_t v_size;
 	std::map<t_object*, t_object*>::iterator v_iterator;
-	t_slot v_parent0;
-	t_structure* v_parent1 = nullptr;
+	t_slot v_this;
+	t_slot v_parent;
 	std::mutex v_mutex;
 	std::map<t_object*, t_object*> v_children;
 
-	void* operator new(size_t a_size, size_t a_n)
-	{
-		return new char[a_size + (sizeof(t_slot) + sizeof(t_entry)) * a_n];
-	}
-	void operator delete(void* a_p)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-	void operator delete(void* a_p, size_t)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-
-	t_structure() : v_size(0)
-	{
-	}
-	t_structure(t_scoped&& a_this, size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_structure* a_parent) : v_this(std::move(a_this)), v_size(a_size), v_iterator(a_iterator), v_parent0(a_parent->v_this), v_parent1(a_parent)
-	{
-		t_object* key = v_iterator->first;
-		size_t n = a_parent->v_size;
-		{
-			t_slot* p0 = a_parent->f_fields();
-			t_slot* p1 = f_fields();
-			for (size_t i = 0; i < n; ++i) new(p1++) t_slot(*p0++);
-			new(p1++) t_slot(key);
-		}
-		t_entry* p0 = a_parent->f_entries();
-		t_entry* p1 = f_entries();
-		size_t i = 0;
-		while (i < n && p0->v_key < key) {
-			new(p1) t_entry(p0->v_key, p0->v_index);
-			++p0;
-			++p1;
-			++i;
-		}
-		new(p1) t_entry(key, n);
-		++p1;
-		while (i < n) {
-			new(p1) t_entry(p0->v_key, p0->v_index);
-			++p0;
-			++p1;
-			++i;
-		}
-	}
+	t_structure();
+	t_structure(size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_structure* a_parent);
 	~t_structure() = default;
 	t_slot* f_fields() const
 	{
@@ -113,7 +110,7 @@ public:
 	void f_scan(t_scan a_scan)
 	{
 		a_scan(v_this);
-		a_scan(v_parent0);
+		a_scan(v_parent);
 		t_slot* p = f_fields();
 		for (size_t i = 0; i < v_size; ++i) a_scan(p[i]);
 	}
@@ -122,85 +119,9 @@ public:
 		return v_size;
 	}
 	intptr_t f_index(t_object* a_key, t_cache& a_cache) const;
-	intptr_t f_index(t_object* a_key) const
-	{
-		auto& cache = v_cache[t_cache::f_index(v_this, a_key)];
-		return static_cast<t_object*>(cache.v_structure) == v_this && static_cast<t_object*>(cache.v_key) == a_key ? cache.v_index : f_index(a_key, cache);
-	}
+	intptr_t f_index(t_object* a_key) const;
 	t_scoped f_append(t_object* a_key);
 	t_scoped f_remove(size_t a_index);
-};
-
-class t_tuple
-{
-	friend class t_object;
-	friend struct t_finalizes<t_bears<t_tuple, t_type_immutable>>;
-	friend struct t_type_of<t_tuple>;
-
-	size_t v_size;
-
-	void* operator new(size_t a_size, size_t a_n)
-	{
-		return new char[a_size + sizeof(t_slot) * a_n];
-	}
-	void operator delete(void* a_p)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-	void operator delete(void* a_p, size_t)
-	{
-		delete[] static_cast<char*>(a_p);
-	}
-
-	t_tuple(size_t a_size) : v_size(a_size)
-	{
-		t_slot* p = f_entries();
-		for (size_t i = 0; i < v_size; ++i) new(p + i) t_slot();
-	}
-	~t_tuple() = default;
-	t_slot* f_entries() const
-	{
-		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
-	}
-
-public:
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
-
-	template<typename T_scan>
-	void f_scan(T_scan a_scan)
-	{
-		t_slot* p = f_entries();
-		for (size_t i = 0; i < v_size; ++i) a_scan(p[i]);
-	}
-	size_t f_size() const
-	{
-		return v_size;
-	}
-	const t_slot& operator[](size_t a_index) const
-	{
-		return f_entries()[a_index];
-	}
-	t_slot& operator[](size_t a_index)
-	{
-		return f_entries()[a_index];
-	}
-	const t_value& f_get_at(size_t a_index) const
-	{
-		if (a_index >= v_size) f_throw(L"out of range."sv);
-		return (*this)[a_index];
-	}
-	t_scoped f_string() const;
-	intptr_t f_hash() const;
-	bool f_less(const t_tuple& a_other) const;
-	bool f_less_equal(const t_tuple& a_other) const;
-	bool f_greater(const t_tuple& a_other) const;
-	bool f_greater_equal(const t_tuple& a_other) const;
-	bool f_equals(const t_value& a_other) const;
-	bool f_not_equals(const t_value& a_other) const
-	{
-		return !f_equals(a_other);
-	}
-	void f_each(const t_value& a_callable) const;
 };
 
 template<typename T>
@@ -212,7 +133,8 @@ class t_object
 {
 	friend class t_value;
 	template<typename T, size_t A_size> friend class t_shared_pool;
-	friend class t_local_pool<t_object>;
+	template<typename T> friend class t_local_pool;
+	template<size_t A_rank> friend class t_object_and;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_type>;
 	friend struct t_type_of<t_structure>;
@@ -265,41 +187,32 @@ class t_object
 		a_slot.v_p = nullptr;
 	}
 	static void f_collect();
+	template<size_t A_rank>
 	static t_object* f_pool__allocate();
-#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	static t_object* f_local_pool__allocate()
-	{
-		return t_local_pool<t_object>::f_allocate(f_pool__allocate);
-	}
-#else
-	static XEMMAI__PORTABLE__EXPORT t_object* f_local_pool__allocate();
-#endif
+	static t_object* f_local_pool__allocate(size_t a_size);
 
-	t_type* v_type;
-	union
-	{
-		intptr_t v_integer;
-		double v_float;
-		void* v_pointer = nullptr;
-	};
-	t_value::t_increments* v_owner = nullptr;
-	t_structure* v_structure;
-	t_tuple* v_fields = nullptr;
-	t_lock v_lock;
 	t_object* v_next;
 	t_object* v_scan;
 	t_color v_color;
 	size_t v_count = 1;
 	size_t v_cyclic;
+	size_t v_rank;
+	void* v_pad[2];
+	t_type* v_type;
+	t_value::t_increments* v_owner = nullptr;
+	t_structure* v_structure;
+	t_structure::t_fields* v_fields = nullptr;
+	t_lock v_lock;
+	char v_data[sizeof(void*) * 3];
 
-	t_object();
+	t_object(size_t a_rank);
 	template<void (t_object::*A_push)()>
 	void f_step()
 	{
-		(static_cast<t_object*>(v_structure->v_this)->*A_push)();
+		(t_object::f_of(v_structure)->*A_push)();
 		if (v_fields) v_fields->f_scan(f_push<A_push>);
 		v_type->f_scan(this, f_push<A_push>);
-		(static_cast<t_object*>(v_type->v_this)->*A_push)();
+		(t_object::f_of(v_type)->*A_push)();
 	}
 	template<void (t_object::*A_step)()>
 	void f_loop()
@@ -438,29 +351,25 @@ class t_object
 	void f_field_add(t_scoped&& a_structure, t_scoped&& a_value);
 
 public:
-	static t_scoped f_allocate_on_boot()
+	static t_scoped f_allocate(t_type* a_type, bool a_shared, size_t a_size)
 	{
-		t_object* p = f_local_pool__allocate();
+		auto p = f_local_pool__allocate(a_size);
 		p->v_next = nullptr;
+		auto increments = t_value::f_increments();
+		increments->f_push(f_of(a_type));
+		p->v_type = a_type;
+		if (!a_shared) p->v_owner = increments;
+		increments->f_push(f_of(p->v_structure));
 		return {p, t_scoped::t_pass()};
 	}
-	static t_scoped f_allocate(t_type* a_type, bool a_shared);
+	static t_object* f_of(void* a_data)
+	{
+		return reinterpret_cast<t_object*>(reinterpret_cast<char*>(a_data) - offsetof(t_object, v_data));
+	}
 
 	t_type* f_type() const
 	{
 		return v_type;
-	}
-	intptr_t f_integer() const
-	{
-		return v_integer;
-	}
-	double f_float() const
-	{
-		return v_float;
-	}
-	void* f_pointer() const
-	{
-		return v_pointer;
 	}
 	bool f_is(t_type* a_class) const
 	{
@@ -560,31 +469,35 @@ public:
 		f_call(a_key, stack, a_n);
 		return stack.f_return();
 	}
+	void* f_data()
+	{
+		return v_data;
+	}
+	template<typename T>
+	T& f_as()
+	{
+		return *reinterpret_cast<T*>(v_data);
+	}
+};
+
+template<size_t A_rank>
+struct t_object_and : t_object
+{
+	char v_data[sizeof(void*) * 8 * A_rank];
+
+	t_object_and() : t_object(A_rank)
+	{
+	}
 };
 
 inline intptr_t t_value::f_integer() const
 {
-	return f_tag() < e_tag__OBJECT ? v_integer : v_p->v_integer;
-}
-
-inline void t_value::f_integer__(intptr_t a_value)
-{
-	v_p->v_integer = a_value;
+	return f_tag() < e_tag__OBJECT ? v_integer : v_p->f_as<intptr_t>();
 }
 
 inline double t_value::f_float() const
 {
-	return f_tag() < e_tag__OBJECT ? v_float : v_p->v_float;
-}
-
-inline void t_value::f_float__(double a_value)
-{
-	v_p->v_float = a_value;
-}
-
-inline void t_value::f_pointer__(void* a_value)
-{
-	v_p->v_pointer = a_value;
+	return f_tag() < e_tag__OBJECT ? v_float : v_p->f_as<double>();
 }
 
 inline bool t_value::f_is(t_type* a_class) const
@@ -756,6 +669,49 @@ inline static auto f_owned_or_shared(t_object* a_self, T a_do) -> decltype(a_do(
 	} else {
 		f_throw(L"owned by another thread."sv);
 	}
+}
+
+template<size_t A_n>
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids) : v_this(t_object::f_of(this)), v_depth(A_n - 1), v_ids(a_ids.data())
+{
+}
+
+template<size_t A_n>
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : v_this(t_object::f_of(this)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(std::move(a_module))
+{
+	v_super.f_construct(t_object::f_of(a_super));
+}
+
+template<typename T, typename... T_an>
+t_scoped t_type::f_new(bool a_shared, T_an&&... a_an)
+{
+	auto object = t_object::f_allocate(this, a_shared, sizeof(T));
+	new(object->f_data()) T(std::forward<T_an>(a_an)...);
+	return object;
+}
+
+template<typename T>
+t_type* t_type::f_derive()
+{
+	return &t_object::f_of(this)->v_type->f_new<T>(true, T::V_ids, this, t_scoped(v_module))->template f_as<t_type>();
+}
+
+template<typename T_base>
+inline void t_finalizes<T_base>::f_do_finalize(t_object* a_this)
+{
+	using t = typename T_base::t_what;
+	a_this->f_as<t>().~t();
+}
+
+inline t_structure::t_structure() : v_size(0), v_this(t_object::f_of(this))
+{
+}
+
+inline intptr_t t_structure::f_index(t_object* a_key) const
+{
+	auto p = t_object::f_of(const_cast<t_structure*>(this));
+	auto& cache = v_cache[t_cache::f_index(p, a_key)];
+	return static_cast<t_object*>(cache.v_structure) == p && static_cast<t_object*>(cache.v_key) == a_key ? cache.v_index : f_index(a_key, cache);
 }
 
 }
