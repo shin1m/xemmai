@@ -10,20 +10,20 @@ namespace xemmai
 
 XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
 
-t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_class, t_type* a_type_structure, t_type* a_type_module, t_type* a_type_fiber, t_type* a_type_thread) : t_extension(a_module)
+t_global::t_global(t_object* a_module, t_scoped&& a_type_object, t_scoped&& a_type_class, t_scoped&& a_type_structure, t_scoped&& a_type_module, t_scoped&& a_type_fiber, t_scoped&& a_type_thread) : t_extension(a_module)
 {
 	v_instance = this;
-	v_type_object.f_construct(t_object::f_of(a_type_object));
-	v_type_class.f_construct(t_object::f_of(a_type_class));
-	v_type_structure__discard.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_structure::t_discard>>()));
-	v_type_structure.f_construct(t_object::f_of(a_type_structure));
-	v_type_module.f_construct(t_object::f_of(a_type_module));
-	v_type_fiber.f_construct(t_object::f_of(a_type_fiber));
-	v_type_thread.f_construct(t_object::f_of(a_type_thread));
-	v_type_tuple.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_tuple>>()));
-	v_type_symbol.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_symbol>>()));
-	v_type_method.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_method>>()));
-	v_type_native.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_native>>()));
+	v_type_object.f_construct(std::move(a_type_object));
+	v_type_class.f_construct(std::move(a_type_class));
+	v_type_structure__discard.f_construct(v_type_object->f_derive<t_type_of<t_structure::t_discard>>());
+	v_type_structure.f_construct(std::move(a_type_structure));
+	v_type_module.f_construct(std::move(a_type_module));
+	v_type_fiber.f_construct(std::move(a_type_fiber));
+	v_type_thread.f_construct(std::move(a_type_thread));
+	v_type_tuple.f_construct(v_type_object->f_derive<t_type_of<t_tuple>>());
+	v_type_symbol.f_construct(v_type_object->f_derive<t_type_of<t_symbol>>());
+	v_type_method.f_construct(v_type_object->f_derive<t_type_of<t_method>>());
+	v_type_native.f_construct(v_type_object->f_derive<t_type_of<t_native>>());
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct"sv);
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
@@ -69,7 +69,7 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	static_cast<t_type_of<t_thread>*>(static_cast<t_type*>(v_type_thread))->f_define();
 	static_cast<t_type_of<t_tuple>*>(static_cast<t_type*>(v_type_tuple))->f_define();
 	static_cast<t_type_of<t_symbol>*>(static_cast<t_type*>(v_type_symbol))->f_define();
-	v_type_scope.f_construct(t_object::f_of(v_type_object->f_derive<t_type_of<t_scope>>()));
+	v_type_scope.f_construct(v_type_object->f_derive<t_type_of<t_scope>>());
 	v_type_scope->v_builtin = true;
 	t_define<t_method, t_object>(this, L"Method"sv, t_object::f_of(v_type_method));
 	v_type_method->v_builtin = true;
@@ -77,11 +77,11 @@ t_global::t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_cla
 	v_type_code->v_builtin = true;
 	t_define<t_lambda, t_object>(this, L"Lambda"sv);
 	v_type_lambda->v_builtin = true;
-	v_type_lambda_shared.f_construct(t_object::f_of(v_type_lambda->f_derive<t_type_of<t_lambda_shared>>()));
+	v_type_lambda_shared.f_construct(v_type_lambda->f_derive<t_type_of<t_lambda_shared>>());
 	v_type_lambda_shared->v_builtin = true;
-	v_type_advanced_lambda.f_construct(t_object::f_of(v_type_lambda->f_derive<t_type_of<t_advanced_lambda<t_lambda>>>()));
+	v_type_advanced_lambda.f_construct(v_type_lambda->f_derive<t_type_of<t_advanced_lambda<t_lambda>>>());
 	v_type_advanced_lambda->v_builtin = true;
-	v_type_advanced_lambda_shared.f_construct(t_object::f_of(v_type_lambda_shared->f_derive<t_type_of<t_advanced_lambda<t_lambda_shared>>>()));
+	v_type_advanced_lambda_shared.f_construct(v_type_lambda_shared->f_derive<t_type_of<t_advanced_lambda<t_lambda_shared>>>());
 	v_type_advanced_lambda_shared->v_builtin = true;
 	a_module->f_put(t_symbol::f_instantiate(L"Native"sv), t_object::f_of(v_type_native));
 	v_type_native->v_builtin = true;

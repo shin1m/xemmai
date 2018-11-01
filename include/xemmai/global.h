@@ -93,7 +93,7 @@ class t_global : public t_extension
 	t_slot v_string_empty;
 
 public:
-	t_global(t_object* a_module, t_type* a_type_object, t_type* a_type_class, t_type* a_type_structure, t_type* a_type_module, t_type* a_type_fiber, t_type* a_type_thread);
+	t_global(t_object* a_module, t_scoped&& a_type_object, t_scoped&& a_type_class, t_scoped&& a_type_structure, t_scoped&& a_type_module, t_scoped&& a_type_fiber, t_scoped&& a_type_thread);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot();

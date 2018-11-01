@@ -154,7 +154,7 @@ void t_object::f_collect()
 
 void t_object::f_cyclic_decrement()
 {
-	if (v_structure->v_this) t_object::f_of(v_structure)->f_cyclic_decrement_push();
+	if (v_structure->v_this) v_structure->v_this->f_cyclic_decrement_push();
 	if (v_fields) {
 		v_fields->f_scan(f_push_and_clear<&t_object::f_cyclic_decrement_push>);
 		delete v_fields;
@@ -162,7 +162,7 @@ void t_object::f_cyclic_decrement()
 	}
 	v_type->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
 	if (v_type != f_engine()->v_type_class) v_type->f_finalize(this);
-	if (v_type->v_this) t_object::f_of(v_type)->f_cyclic_decrement_push();
+	if (v_type->v_this) v_type->v_this->f_cyclic_decrement_push();
 }
 
 void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)

@@ -335,7 +335,7 @@ inline t_object* t_object::f_pool__allocate()
 
 inline t_object* t_object::f_local_pool__allocate(size_t a_size)
 {
-	switch ((sizeof(t_object) - sizeof(v_data) + a_size - 1) / (sizeof(void*) * 8)) {
+	switch ((a_size + sizeof(void*) * 8 - sizeof(v_data) - 1) / (sizeof(void*) * 8)) {
 	case 0:
 		return t_local_pool<t_object_and<0>>::f_allocate(f_pool__allocate<0>);
 	case 1:

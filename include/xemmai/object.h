@@ -18,6 +18,7 @@ class t_structure
 	friend class t_engine;
 	friend class t_global;
 	friend class t_object;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_structure>;
 	friend struct t_thread;
 	friend struct t_code;
@@ -683,17 +684,17 @@ inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_supe
 }
 
 template<typename T, typename... T_an>
-t_scoped t_type::f_new(bool a_shared, T_an&&... a_an)
+inline t_scoped t_type::f_new_sized(bool a_shared, size_t a_data, T_an&&... a_an)
 {
-	auto object = t_object::f_allocate(this, a_shared, sizeof(T));
+	auto object = t_object::f_allocate(this, a_shared, sizeof(T) + a_data);
 	new(object->f_data()) T(std::forward<T_an>(a_an)...);
 	return object;
 }
 
 template<typename T>
-t_type* t_type::f_derive()
+t_scoped t_type::f_derive()
 {
-	return &t_object::f_of(this)->v_type->f_new<T>(true, T::V_ids, this, t_scoped(v_module))->template f_as<t_type>();
+	return t_object::f_of(this)->v_type->f_new<T>(true, T::V_ids, this, t_scoped(v_module));
 }
 
 template<typename T_base>

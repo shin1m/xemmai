@@ -9,6 +9,7 @@ namespace xemmai
 class t_bytes
 {
 	friend struct t_finalizes<t_bears<t_bytes>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_bytes>;
 
 	size_t v_size;
@@ -79,9 +80,7 @@ struct t_type_of<t_bytes> : t_derivable<t_holds<t_bytes>>
 {
 	static t_scoped f__construct(t_type* a_class, size_t a_size)
 	{
-		auto object = t_object::f_allocate(a_class, false, sizeof(t_bytes) + a_size);
-		new(object->f_data()) t_bytes(a_size);
-		return object;
+		return a_class->f_new_sized<t_bytes>(false, a_size, a_size);
 	}
 	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
 	static void f_define();

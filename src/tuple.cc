@@ -7,9 +7,7 @@ namespace xemmai
 
 t_scoped t_tuple::f_instantiate(size_t a_size)
 {
-	auto object = t_object::f_allocate(f_global()->f_type<t_tuple>(), true, sizeof(t_tuple) + sizeof(t_slot) * a_size);
-	new(object->f_data()) t_tuple(a_size);
-	return object;
+	return f_global()->f_type<t_tuple>()->f_new_sized<t_tuple>(true, sizeof(t_slot) * a_size, a_size);
 }
 
 t_scoped t_tuple::f_string() const
@@ -118,10 +116,10 @@ void t_tuple::f_each(const t_value& a_callable) const
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
-	auto object = t_object::f_allocate(&f_as<t_type&>(a_stack[1]), true, sizeof(t_tuple) + sizeof(t_slot) * a_n);
+	auto object = a_stack[1]->f_as<t_type>().f_new_sized<t_tuple>(true, sizeof(t_slot) * a_n, a_n);
 	a_stack[1].f_destruct();
-	auto tuple = new(object->f_data()) t_tuple(a_n);
-	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(std::move(a_stack[i + 2]));
+	auto& tuple = object->f_as<t_tuple>();
+	for (size_t i = 0; i < a_n; ++i) tuple[i].f_construct(std::move(a_stack[i + 2]));
 	a_stack[0].f_construct(std::move(object));
 }
 
@@ -151,9 +149,9 @@ void t_type_of<t_tuple>::f_do_scan(t_object* a_this, t_scan a_scan)
 
 t_scoped t_type_of<t_tuple>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	auto object = t_object::f_allocate(this, true, sizeof(t_tuple) + sizeof(t_slot) * a_n);
-	auto tuple = new(object->f_data()) t_tuple(a_n);
-	for (size_t i = 0; i < a_n; ++i) (*tuple)[i].f_construct(a_stack[i + 2]);
+	auto object = f_new_sized<t_tuple>(true, sizeof(t_slot) * a_n, a_n);
+	auto& tuple = object->f_as<t_tuple>();
+	for (size_t i = 0; i < a_n; ++i) tuple[i].f_construct(a_stack[i + 2]);
 	return object;
 }
 

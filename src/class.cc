@@ -27,7 +27,7 @@ void t_class::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 	auto& p = f_as<t_type&>(x);
 	auto type = (p.*p.v_derive)();
 	if (!type) f_throw(L"underivable."sv);
-	a_stack[0].f_construct(t_object::f_of(type));
+	a_stack[0].f_construct(std::move(type));
 }
 
 void t_class::f_do_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack)

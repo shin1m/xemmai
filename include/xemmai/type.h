@@ -73,7 +73,7 @@ class t_slot_of
 	t_slot v_slot;
 
 public:
-	void f_construct(t_object* a_value);
+	void f_construct(t_scoped&& a_value);
 	operator T*() const
 	{
 		return v_p;
@@ -201,7 +201,12 @@ struct t_type_of<t_object>
 		(this->*v_destruct)();
 	}
 	template<typename T, typename... T_an>
-	t_scoped f_new(bool a_shared, T_an&&... a_an);
+	t_scoped f_new(bool a_shared, T_an&&... a_an)
+	{
+		return f_new_sized<T>(a_shared, 0, std::forward<T_an>(a_an)...);
+	}
+	template<typename T, typename... T_an>
+	t_scoped f_new_sized(bool a_shared, size_t a_data, T_an&&... a_an);
 	template<typename T>
 	bool f_derives() const
 	{
@@ -209,9 +214,9 @@ struct t_type_of<t_object>
 		return i <= v_depth && v_ids[i] == static_cast<t_type_id>(f_type_id<T>);
 	}
 	template<typename T>
-	t_type* f_derive();
-	t_type* f_do_derive();
-	t_type* (t_type::*v_derive)() = &t_type::f_do_derive;
+	t_scoped f_derive();
+	t_scoped f_do_derive();
+	t_scoped (t_type::*v_derive)() = &t_type::f_do_derive;
 	bool f_derives(t_type* a_type);
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
@@ -308,7 +313,7 @@ struct t_type_of<t_object>
 	template<typename T, typename U>
 	void f_override()
 	{
-		if (&T::f_do_derive != &U::f_do_derive) v_derive = static_cast<t_type* (t_type::*)()>(&T::f_do_derive);
+		if (&T::f_do_derive != &U::f_do_derive) v_derive = static_cast<t_scoped (t_type::*)()>(&T::f_do_derive);
 		if (T::f_do_scan != U::f_do_scan) f_scan = T::f_do_scan;
 		if (T::f_do_finalize != U::f_do_finalize) f_finalize = T::f_do_finalize;
 		if (&T::f_do_construct != &U::f_do_construct) v_construct = static_cast<t_scoped (t_type::*)(t_stacked*, size_t)>(&T::f_do_construct);
@@ -402,10 +407,10 @@ inline void f_check(const t_value& a_object, const wchar_t* a_name)
 }
 
 template<typename T>
-inline void t_slot_of<T>::f_construct(t_object* a_value)
+inline void t_slot_of<T>::f_construct(t_scoped&& a_value)
 {
 	v_p = &f_as<T&>(a_value);
-	v_slot.f_construct(a_value);
+	v_slot.f_construct(std::move(a_value));
 }
 
 template<typename T, typename T_base = t_type>
@@ -537,7 +542,7 @@ struct t_derivable : T_base
 	typedef t_derivable t_base;
 
 	using T_base::T_base;
-	t_type* f_do_derive()
+	t_scoped f_do_derive()
 	{
 		return this->template f_derive<t_derived<t_type_of<typename T_base::t_what>>>();
 	}
@@ -549,9 +554,9 @@ struct t_underivable : T_base
 	typedef t_underivable t_base;
 
 	using T_base::T_base;
-	t_type* f_do_derive()
+	t_scoped f_do_derive()
 	{
-		return nullptr;
+		return {};
 	}
 };
 

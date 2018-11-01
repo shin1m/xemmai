@@ -45,10 +45,10 @@ void t_type::f_define()
 	;
 }
 
-t_type* t_type::f_do_derive()
+t_scoped t_type::f_do_derive()
 {
 	auto p = f_derive<t_type>();
-	p->v_primitive = true;
+	p->f_as<t_type>().v_primitive = true;
 	return p;
 }
 

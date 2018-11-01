@@ -10,6 +10,7 @@ class t_tuple
 {
 	friend class t_object;
 	friend struct t_finalizes<t_bears<t_tuple, t_type_immutable>>;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_tuple>;
 
 	size_t v_size;
@@ -99,9 +100,9 @@ inline void f_tuple(t_tuple& a_tuple, T_x&& a_x, T_xs&&... a_xs)
 template<typename... T_xs>
 inline t_scoped f_tuple(T_xs&&... a_xs)
 {
-	t_scoped p = t_tuple::f_instantiate(sizeof...(T_xs));
-	f_tuple<0>(f_as<t_tuple&>(p), a_xs...);
-	return p;
+	auto object = t_tuple::f_instantiate(sizeof...(T_xs));
+	f_tuple<0>(object->f_as<t_tuple>(), a_xs...);
+	return object;
 }
 
 }

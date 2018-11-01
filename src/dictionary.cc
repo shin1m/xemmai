@@ -22,9 +22,7 @@ const t_dictionary::t_table::t_rank t_dictionary::t_table::v_ranks[] = {
 
 t_scoped t_dictionary::t_table::f_instantiate(const t_rank& a_rank)
 {
-	auto object = t_object::f_allocate(f_global()->f_type<t_table>(), true, sizeof(t_table) + sizeof(t_entry) * a_rank.v_capacity);
-	new(object->f_data()) t_table(a_rank);
-	return object;
+	return f_global()->f_type<t_table>()->f_new_sized<t_table>(true, sizeof(t_entry) * a_rank.v_capacity, a_rank);
 }
 
 void t_dictionary::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_scoped&& a_key, t_scoped&& a_value)
@@ -261,7 +259,7 @@ void t_type_of<t_dictionary>::f_each(const t_value& a_self, const t_value& a_cal
 
 void t_type_of<t_dictionary>::f_define()
 {
-	f_global()->v_type_dictionary__table.f_construct(t_object::f_of(f_global()->f_type<t_object>()->f_derive<t_type_of<t_dictionary::t_table>>()));
+	f_global()->v_type_dictionary__table.f_construct(f_global()->f_type<t_object>()->f_derive<t_type_of<t_dictionary::t_table>>());
 	t_define<t_dictionary, t_object>(f_global(), L"Dictionary"sv)
 		(f_global()->f_symbol_construct(), f__construct)
 		(f_global()->f_symbol_string(), t_member<t_scoped(*)(const t_value&), f_string>())

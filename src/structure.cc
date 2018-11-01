@@ -64,8 +64,7 @@ t_scoped t_structure::f_append(t_object* a_key)
 		return i->second;
 	}
 	f_engine()->v_object__reviving__mutex.unlock();
-	auto object = t_object::f_allocate(t_object::f_of(this)->f_type(), true, sizeof(t_structure) + (sizeof(t_slot) + sizeof(t_entry)) * (v_size + 1));
-	new(object->f_data()) t_structure(v_size + 1, i, this);
+	auto object = t_object::f_of(this)->f_type()->f_new_sized<t_structure>(true, (sizeof(t_slot) + sizeof(t_entry)) * (v_size + 1), v_size + 1, i, this);
 	i->second = object;
 	return object;
 }
