@@ -1,11 +1,10 @@
 #ifndef XEMMAI__OBJECT_H
 #define XEMMAI__OBJECT_H
 
-#include <map>
-
 #include "atomic.h"
 #include "pool.h"
 #include "type.h"
+#include <map>
 
 namespace xemmai
 {

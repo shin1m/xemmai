@@ -447,14 +447,15 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value::f_type() const
 	}
 }
 
+template<typename T>
+XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_method::f_bind(t_scoped&& a_value, T&& a_target)
+{
+	return a_value.f_type() == f_global()->f_type<t_method>() ? f_instantiate(a_value.f_type(), t_scoped(a_value->f_as<t_method>().v_function), std::forward<T>(a_target)) : std::move(a_value);
+}
+
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_value::f_get(t_object* a_key) const
 {
-	if (f_tag() < e_tag__OBJECT) {
-		t_scoped value = t_object::f_of(f_type())->f_get(a_key);
-		return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(*this) : value;
-	} else {
-		return v_p->f_get(a_key);
-	}
+	return f_tag() < e_tag__OBJECT ? t_method::f_bind(t_object::f_of(f_type())->f_get(a_key), *this) : v_p->f_get(a_key);
 }
 
 template<typename T>
@@ -783,10 +784,10 @@ inline t_scoped t_derived<T>::f_do_construct(t_stacked* a_stack, size_t a_n)
 	return t_object::f_of(this)->f_call_preserved(f_global()->f_symbol_construct(), a_stack, a_n);
 }
 
-template<typename T, typename... T_n>
-t_scoped t_module::f_new(std::wstring_view a_name, T_n&&... a_n)
+template<typename T, typename... T_an>
+t_scoped t_module::f_new(std::wstring_view a_name, T_an&&... a_an)
 {
-	auto object = f_global()->f_type<t_module>()->f_new<T>(true, std::forward<T_n>(a_n)...);
+	auto object = f_global()->f_type<t_module>()->f_new<T>(true, std::forward<T_an>(a_an)...);
 	auto& module = object->template f_as<t_module>();
 	t_scoped second = object;
 	{
@@ -870,7 +871,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_scoped t_type_of<t_string>::f__add(t_ob
 	auto add = [&](t_scoped&& x)
 	{
 		auto& s0 = f_as<const t_string&>(a_self);
-		if (s0.f_size() <= 0) return x;
+		if (s0.f_size() <= 0) return std::move(x);
 		auto& s1 = f_as<const t_string&>(x);
 		return s1.f_size() <= 0 ? t_scoped(a_self) : f__construct(a_self->f_type(), s0, s1);
 	};

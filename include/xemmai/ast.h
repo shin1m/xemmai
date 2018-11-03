@@ -1,10 +1,9 @@
 #ifndef XEMMAI__AST_H
 #define XEMMAI__AST_H
 
+#include "code.h"
 #include <deque>
 #include <set>
-
-#include "code.h"
 
 namespace xemmai
 {

@@ -91,8 +91,7 @@ void t_code::f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 			if (index < 0) {
 				f_engine()->f_synchronize();
 				pc0[0] = a_class;
-				t_scoped value = t_object::f_of(p->f_type())->f_get(key);
-				top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(p) : std::move(value);
+				top = t_method::f_bind(t_object::f_of(p->f_type())->f_get(key), p);
 			} else {
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
 				f_engine()->f_synchronize();
@@ -459,8 +458,7 @@ size_t t_code::f_loop(t_context* a_context)
 				t_stacked& top = stack[0];
 				auto p = static_cast<t_object*>(top);
 				if (top.f_tag() >= t_value::e_tag__OBJECT && p->f_owned() && p->v_structure == pc0[4]) {
-					t_scoped value = t_object::f_of(p->f_type())->f_get(key);
-					top = value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(p) : value;
+					top = t_method::f_bind(t_object::f_of(p->f_type())->f_get(key), p);
 				} else {
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
 					top = top.f_get(key);
@@ -1778,11 +1776,6 @@ void t_code::f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_sta
 		++p;
 	}
 	a_stack[0].f_construct();
-}
-
-void t_type_of<t_code>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	a_scan(f_as<t_code&>(a_this).v_module);
 }
 
 }

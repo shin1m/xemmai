@@ -22,8 +22,8 @@ struct t_module
 	};
 
 
-	template<typename T, typename... T_n>
-	static t_scoped f_new(std::wstring_view a_name, T_n&&... a_n);
+	template<typename T, typename... T_an>
+	static t_scoped f_new(std::wstring_view a_name, T_an&&... a_an);
 	static t_scoped f_load_library(std::wstring_view a_name, std::wstring_view a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
 	static t_scoped f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path);

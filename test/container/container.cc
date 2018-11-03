@@ -14,11 +14,6 @@ t_scoped t_type_of<t_pair>::f_define(t_container* a_extension)
 	return t_object::f_of(super)->f_type()->f_new<t_type_of>(true, V_ids, super, a_extension->f_module());
 }
 
-void t_type_of<t_pair>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	f_as<t_pair&>(a_this).f_scan(a_scan);
-}
-
 void t_type_of<t_queue>::f_define(t_container* a_extension)
 {
 	t_define<t_queue, t_object>(a_extension, L"Queue"sv)
@@ -27,11 +22,6 @@ void t_type_of<t_queue>::f_define(t_container* a_extension)
 		(L"push"sv, t_member<void(t_queue::*)(t_container*, t_scoped&&), &t_queue::f_push>())
 		(L"pop"sv, t_member<t_scoped(t_queue::*)(), &t_queue::f_pop>())
 	;
-}
-
-void t_type_of<t_queue>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	f_as<t_queue&>(a_this).f_scan(a_scan);
 }
 
 t_scoped t_type_of<t_queue>::f_do_construct(t_stacked* a_stack, size_t a_n)

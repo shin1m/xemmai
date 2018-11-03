@@ -2,7 +2,6 @@
 #define XEMMAI__PORTABLE__FIBER_H
 
 #include "define.h"
-
 #ifdef __unix__
 #include <ucontext.h>
 #endif

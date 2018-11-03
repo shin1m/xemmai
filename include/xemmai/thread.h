@@ -90,7 +90,10 @@ struct t_type_of<t_thread> : t_underivable<t_fixed<t_holds<t_thread>>>
 	void f_define();
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_scan(a_this->f_as<t_thread>().v_fiber);
+	}
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
 };
 

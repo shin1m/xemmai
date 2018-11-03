@@ -29,7 +29,10 @@ template<>
 struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_holds<t_native>>>
 {
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_scan(a_this->f_as<t_native>().v_module);
+	}
 	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 };

@@ -56,11 +56,6 @@ void t_type_of<t_throwable>::f_define()
 	;
 }
 
-void t_type_of<t_throwable>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	for (t_backtrace* p = f_as<t_throwable&>(a_this).v_backtrace; p; p = p->v_next) a_scan(p->v_lambda);
-}
-
 t_scoped t_type_of<t_throwable>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<false, std::wstring_view>::t_bind<t_throwable>::f_do(this, a_stack, a_n);

@@ -25,11 +25,9 @@ xemmai_SOURCES = \
 	thread.cc \
 	tuple.cc \
 	symbol.cc \
-	scope.cc \
 	ast.cc \
 	code_operator.h \
 	code.cc \
-	method.cc \
 	lambda.cc \
 	native.cc \
 	throwable.cc \

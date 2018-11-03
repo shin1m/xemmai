@@ -1,11 +1,10 @@
 #ifndef XEMMAI__LEXER_H
 #define XEMMAI__LEXER_H
 
-#include <cwchar>
-#include <cwctype>
-
 #include "throwable.h"
 #include "code.h"
+#include <cwchar>
+#include <cwctype>
 
 namespace xemmai
 {

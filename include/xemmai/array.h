@@ -124,7 +124,10 @@ struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 	static void f_define();
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_scan(a_this->f_as<t_array>().v_tuple);
+	}
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);

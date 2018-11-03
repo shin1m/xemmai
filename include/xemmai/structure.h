@@ -23,7 +23,10 @@ struct t_type_of<t_structure> : t_uninstantiatable<t_underivable<t_derives<t_str
 		t_object::f_of(this)->v_type = type;
 		v_revive = true;
 	}
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_this->f_as<t_structure>().f_scan(a_scan);
+	}
 	static void f_do_finalize(t_object* a_this);
 };
 

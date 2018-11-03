@@ -51,7 +51,12 @@ struct t_type_of<io::t_reader> : t_derivable<t_holds<io::t_reader>>
 	static void f_define(t_io* a_extension);
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		auto& p = a_this->f_as<io::t_reader>();
+		a_scan(p.v_stream);
+		a_scan(p.v_buffer);
+	}
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 

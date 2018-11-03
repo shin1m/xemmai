@@ -9,8 +9,8 @@ namespace xemmai
 
 class t_dictionary
 {
-	friend class t_engine;
 	friend class t_global;
+	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_dictionary>;
 
 public:
@@ -61,7 +61,10 @@ private:
 		size_t v_size = 0;
 		const t_rank& v_rank;
 
-		static t_scoped f_instantiate(const t_rank& a_rank);
+		static t_scoped f_instantiate(t_type* a_type, const t_rank& a_rank)
+		{
+			return a_type->f_new_sized<t_table>(true, sizeof(t_entry) * a_rank.v_capacity, a_rank);
+		}
 
 		t_table(const t_rank& a_rank) : v_slot(a_rank.v_slot), v_end(f_entries() + a_rank.v_capacity), v_rank(a_rank)
 		{
@@ -106,8 +109,11 @@ private:
 	};
 	friend struct t_type_of<t_table>;
 
-	t_slot v_table{t_table::f_instantiate(t_table::v_ranks[0])};
+	t_slot v_table;
 
+	t_dictionary(t_type* a_table) : v_table(t_table::f_instantiate(a_table, t_table::v_ranks[0]))
+	{
+	}
 	void f_rehash(const t_table::t_rank& a_rank);
 
 public:
@@ -135,7 +141,7 @@ public:
 
 	void f_clear()
 	{
-		v_table = t_table::f_instantiate(t_table::v_ranks[0]);
+		v_table = t_table::f_instantiate(v_table->f_type(), t_table::v_ranks[0]);
 	}
 	size_t f_size() const;
 	const t_value& f_get(const t_value& a_key) const;
@@ -148,7 +154,10 @@ template<>
 struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_finalizes<t_derives<t_dictionary::t_table>>>>
 {
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_this->f_as<t_dictionary::t_table>().f_scan(a_scan);
+	}
 };
 
 template<>
@@ -166,7 +175,10 @@ struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 	static void f_define();
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_scan(a_this->f_as<t_dictionary>().v_table);
+	}
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);

@@ -1,9 +1,8 @@
 #ifndef XEMMAI__PORTABLE__CONVERT_H
 #define XEMMAI__PORTABLE__CONVERT_H
 
-#include <string>
-
 #include "define.h"
+#include <string>
 
 namespace xemmai::portable
 {

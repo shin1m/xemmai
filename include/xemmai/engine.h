@@ -21,25 +21,15 @@ struct t_debugger
 class t_engine : public t_value::t_collector
 {
 	friend class t_object;
-	friend struct t_type_of<t_object>;
 	friend class t_structure;
-	friend struct t_type_of<t_structure>;
 	friend struct t_module;
-	friend class t_module::t_scoped_lock;
-	friend struct t_script;
 	friend struct t_library;
 	friend struct t_fiber;
 	friend struct t_type_of<t_fiber>;
 	friend struct t_thread;
 	friend struct t_type_of<t_thread>;
 	friend class t_symbol;
-	friend struct t_type_of<t_symbol>;
 	friend class t_code;
-	friend struct t_type_of<t_lambda>;
-	friend struct t_type_of<t_lambda_shared>;
-	friend struct t_type_of<t_advanced_lambda<t_lambda>>;
-	friend struct t_type_of<t_advanced_lambda<t_lambda_shared>>;
-	friend class t_global;
 	friend struct t_safe_region;
 
 	struct t_synchronizer

@@ -78,11 +78,6 @@ t_scoped t_structure::f_remove(size_t a_index)
 	return q;
 }
 
-void t_type_of<t_structure>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	f_as<t_structure&>(a_this).f_scan(a_scan);
-}
-
 void t_type_of<t_structure>::f_do_finalize(t_object* a_this)
 {
 	auto& p = a_this->f_as<t_structure>();

@@ -20,11 +20,6 @@ const t_dictionary::t_table::t_rank t_dictionary::t_table::v_ranks[] = {
 	R<25165843>, R<50331653>, R<100663319>, R<201326611>, R<402653189>, R<805306457>, R<1610612741>
 };
 
-t_scoped t_dictionary::t_table::f_instantiate(const t_rank& a_rank)
-{
-	return f_global()->f_type<t_table>()->f_new_sized<t_table>(true, sizeof(t_entry) * a_rank.v_capacity, a_rank);
-}
-
 void t_dictionary::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_scoped&& a_key, t_scoped&& a_value)
 {
 	while (a_p->v_gap) {
@@ -46,7 +41,7 @@ void t_dictionary::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_s
 
 void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
 {
-	auto object = t_table::f_instantiate(a_rank);
+	auto object = t_table::f_instantiate(v_table->f_type(), a_rank);
 	auto& table0 = f_as<t_table&>(v_table);
 	auto& table1 = f_as<t_table&>(object);
 	table1.v_size = table0.v_size;
@@ -63,7 +58,7 @@ void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
 
 t_scoped t_dictionary::f_instantiate()
 {
-	return f_global()->f_type<t_dictionary>()->f_new<t_dictionary>(false);
+	return f_global()->f_type<t_dictionary>()->f_new<t_dictionary>(false, f_global()->f_type<t_dictionary::t_table>());
 }
 
 t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)
@@ -115,15 +110,10 @@ t_scoped t_dictionary::f_remove(const t_value& a_key)
 	return value;
 }
 
-void t_type_of<t_dictionary::t_table>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	f_as<t_dictionary::t_table&>(a_this).f_scan(a_scan);
-}
-
 void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(a_stack, a_n, L"must be class."sv);
-	auto object = f_as<t_type&>(a_stack[1]).f_new<t_dictionary>(false);
+	auto object = f_as<t_type&>(a_stack[1]).f_new<t_dictionary>(false, f_global()->f_type<t_dictionary::t_table>());
 	a_stack[1].f_destruct();
 	auto& dictionary = f_as<t_dictionary&>(object);
 	a_n += 2;
@@ -273,14 +263,9 @@ void t_type_of<t_dictionary>::f_define()
 	;
 }
 
-void t_type_of<t_dictionary>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	a_scan(f_as<t_dictionary&>(a_this).v_table);
-}
-
 t_scoped t_type_of<t_dictionary>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
-	auto object = f_new<t_dictionary>(false);
+	auto object = f_new<t_dictionary>(false, f_global()->f_type<t_dictionary::t_table>());
 	auto& dictionary = f_as<t_dictionary&>(object);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {

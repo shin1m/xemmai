@@ -8,10 +8,8 @@ namespace xemmai
 
 class t_tuple
 {
-	friend class t_object;
 	friend struct t_finalizes<t_bears<t_tuple, t_type_immutable>>;
 	friend struct t_type_of<t_object>;
-	friend struct t_type_of<t_tuple>;
 
 	size_t v_size;
 
@@ -73,7 +71,10 @@ struct t_type_of<t_tuple> : t_derivable<t_holds<t_tuple, t_type_immutable>>
 	void f_define();
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_this->f_as<t_tuple>().f_scan(a_scan);
+	}
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
 	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);

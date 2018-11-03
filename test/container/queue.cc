@@ -33,7 +33,7 @@ bool t_queue::f_empty() const
 void t_queue::f_push(t_container* a_extension, t_scoped&& a_value)
 {
 	t_scoped_lock_for_write lock(v_lock);
-	t_scoped pair = t_type_of<t_pair>::f_instantiate(a_extension, std::move(a_value));
+	auto pair = t_type_of<t_pair>::f_instantiate(a_extension, std::move(a_value));
 	if (v_head) {
 		f_as<t_pair&>(pair).v_next = std::move(f_as<t_pair&>(v_head).v_next);
 		f_as<t_pair&>(v_head).v_next = pair;

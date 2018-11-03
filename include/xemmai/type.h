@@ -1,9 +1,8 @@
 #ifndef XEMMAI__TYPE_H
 #define XEMMAI__TYPE_H
 
-#include <typeinfo>
-
 #include "value.h"
+#include <typeinfo>
 
 namespace xemmai
 {

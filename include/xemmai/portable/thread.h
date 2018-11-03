@@ -2,7 +2,6 @@
 #define XEMMAI__PORTABLE__THREAD_H
 
 #include "define.h"
-
 #ifdef __unix__
 #include <pthread.h>
 #endif

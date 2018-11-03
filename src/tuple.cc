@@ -142,11 +142,6 @@ void t_type_of<t_tuple>::f_define()
 	;
 }
 
-void t_type_of<t_tuple>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	f_as<t_tuple&>(a_this).f_scan(a_scan);
-}
-
 t_scoped t_type_of<t_tuple>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	auto object = f_new_sized<t_tuple>(true, sizeof(t_slot) * a_n, a_n);

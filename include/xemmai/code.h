@@ -1,10 +1,9 @@
 #ifndef XEMMAI__CODE_H
 #define XEMMAI__CODE_H
 
+#include "object.h"
 #include <set>
 #include <vector>
-
-#include "scope.h"
 
 namespace xemmai
 {
@@ -365,7 +364,10 @@ template<>
 struct t_type_of<t_code> : t_uninstantiatable<t_underivable<t_finalizes<t_derives<t_code>>>>
 {
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_scan(a_this->f_as<t_code>().v_module);
+	}
 };
 
 }

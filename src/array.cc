@@ -313,11 +313,6 @@ void t_type_of<t_array>::f_define()
 	;
 }
 
-void t_type_of<t_array>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	a_scan(f_as<t_array&>(a_this).v_tuple);
-}
-
 t_scoped t_type_of<t_array>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	auto object = f_new<t_array>(false);

@@ -178,7 +178,7 @@ void t_library::f_scan(t_scan a_scan)
 void t_type_of<t_module>::f_do_scan(t_object* a_this, t_scan a_scan)
 {
 	if (a_this == f_engine()->f_module_global()) return;
-	f_as<t_module&>(a_this).f_scan(a_scan);
+	a_this->f_as<t_module>().f_scan(a_scan);
 }
 
 void t_type_of<t_module>::f_do_instantiate(t_stacked* a_stack, size_t a_n)

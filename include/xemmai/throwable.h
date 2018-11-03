@@ -56,7 +56,10 @@ struct t_type_of<t_throwable> : t_derivable<t_holds<t_throwable>>
 	static void f_define();
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		for (auto p = a_this->f_as<t_throwable>().v_backtrace; p; p = p->v_next) a_scan(p->v_lambda);
+	}
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 

@@ -97,10 +97,7 @@ t_scoped t_type::f_get_nonowned(t_object* a_this, t_object* a_key)
 		index = a_this->f_field_index(a_key);
 		if (index >= 0) value = a_this->f_field_get(index);
 	}
-	if (index < 0) {
-		value = f_get_of_type(a_key);
-		if (value.f_type() == f_global()->f_type<t_method>()) value = f_as<t_method&>(value).f_bind(a_this);
-	}
+	if (index < 0) value = t_method::f_bind(f_get_of_type(a_key), a_this);
 	cache.v_object = a_this;
 	cache.v_key = a_key;
 	return cache.v_value = std::move(value);
@@ -117,9 +114,7 @@ t_scoped t_type::f_do_get(t_object* a_this, t_object* a_key)
 	assert(reinterpret_cast<size_t>(a_this) >= t_value::e_tag__OBJECT);
 	if (!a_this->f_owned()) return f_get_nonowned(a_this, a_key);
 	intptr_t index = a_this->f_field_index(a_key);
-	if (index >= 0) return a_this->f_field_get(index);
-	t_scoped value = f_get_of_type(a_key);
-	return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(a_this) : value;
+	return index < 0 ? t_method::f_bind(f_get_of_type(a_key), a_this) : a_this->f_field_get(index);
 }
 
 void t_type::f_do_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)
@@ -255,8 +250,7 @@ void t_type_immutable::f_do_get_nonowned(t_object* a_this, t_object* a_key, t_st
 t_scoped t_type_immutable::f_do_get(t_object* a_this, t_object* a_key)
 {
 	assert(reinterpret_cast<size_t>(a_this) >= t_value::e_tag__OBJECT);
-	t_scoped value = f_get_of_type(a_key);
-	return value.f_type() == f_global()->f_type<t_method>() ? f_as<t_method&>(value).f_bind(a_this) : value;
+	return t_method::f_bind(f_get_of_type(a_key), a_this);
 }
 
 void t_type_immutable::f_do_put(t_object* a_this, t_object* a_key, t_scoped&& a_value)

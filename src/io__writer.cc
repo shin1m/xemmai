@@ -132,13 +132,6 @@ void t_type_of<io::t_writer>::f_define(t_io* a_extension)
 	;
 }
 
-void t_type_of<io::t_writer>::f_do_scan(t_object* a_this, t_scan a_scan)
-{
-	auto& p = f_as<io::t_writer&>(a_this);
-	a_scan(p.v_stream);
-	a_scan(p.v_buffer);
-}
-
 t_scoped t_type_of<io::t_writer>::f_do_construct(t_stacked* a_stack, size_t a_n)
 {
 	return t_construct<false, t_scoped&&, const t_string&>::t_bind<io::t_writer>::f_do(this, a_stack, a_n);

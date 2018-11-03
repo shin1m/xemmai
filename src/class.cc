@@ -7,7 +7,7 @@ namespace xemmai
 
 void t_class::f_do_scan(t_object* a_this, t_scan a_scan)
 {
-	auto& p = f_as<t_type&>(a_this);
+	auto& p = a_this->f_as<t_type>();
 	if (p.v_builtin && f_engine()->f_module_global()) return;
 	a_scan(p.v_this);
 	a_scan(p.v_module);
@@ -57,7 +57,7 @@ t_scoped t_class::f_do_get(t_object* a_this, t_object* a_key)
 				const t_slot& slot = type->f_field_get(index);
 				t_object* p = slot;
 				if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT && (f_is<t_lambda>(p) || p->f_type() == f_global()->f_type<t_native>()))
-					value = t_method::f_instantiate(p, a_this);
+					value = t_method::f_instantiate(f_global()->f_type<t_method>(), p, a_this);
 				else
 					value = slot;
 				break;

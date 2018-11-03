@@ -1,10 +1,9 @@
 #ifndef XEMMAI__FIBER_H
 #define XEMMAI__FIBER_H
 
-#include <cassert>
-
 #include "portable/fiber.h"
 #include "lambda.h"
+#include <cassert>
 
 namespace xemmai
 {
@@ -43,7 +42,10 @@ struct t_type_of<t_fiber> : t_underivable<t_holds<t_fiber>>
 	void f_define();
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_scan(a_this->f_as<t_fiber>().v_callable);
+	}
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
 	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
 };

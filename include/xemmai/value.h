@@ -1,14 +1,13 @@
 #ifndef XEMMAI__VALUE_H
 #define XEMMAI__VALUE_H
 
+#include "portable/define.h"
 #include <cassert>
 #include <cinttypes>
 #include <cstddef>
 #include <condition_variable>
 #include <mutex>
 #include <type_traits>
-
-#include "portable/define.h"
 
 namespace xemmai
 {

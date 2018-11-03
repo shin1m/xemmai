@@ -1,11 +1,10 @@
 #ifndef XEMMAI__ATOMIC_H
 #define XEMMAI__ATOMIC_H
 
+#include "portable/define.h"
 #include <cstddef>
 #include <atomic>
 #include <thread>
-
-#include "portable/define.h"
 
 namespace xemmai
 {

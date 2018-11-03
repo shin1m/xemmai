@@ -10,7 +10,6 @@ class t_bytes
 {
 	friend struct t_finalizes<t_bears<t_bytes>>;
 	friend struct t_type_of<t_object>;
-	friend struct t_type_of<t_bytes>;
 
 	size_t v_size;
 

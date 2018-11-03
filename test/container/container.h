@@ -19,7 +19,10 @@ struct t_type_of<t_pair> : t_uninstantiatable<t_underivable<t_holds<t_pair>>>
 	static t_scoped f_define(t_container* a_extension);
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_this->f_as<t_pair>().f_scan(a_scan);
+	}
 };
 
 template<>
@@ -30,7 +33,10 @@ struct t_type_of<t_queue> : t_derivable<t_holds<t_queue>>
 	static void f_define(t_container* a_extension);
 
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_this->f_as<t_queue>().f_scan(a_scan);
+	}
 	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
 };
 

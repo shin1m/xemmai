@@ -1,8 +1,9 @@
 #ifndef XEMMAI__LAMBDA_H
 #define XEMMAI__LAMBDA_H
 
-#include "code.h"
 #include "tuple.h"
+#include "scope.h"
+#include "code.h"
 
 namespace xemmai
 {
@@ -56,7 +57,12 @@ template<>
 struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_holds<t_lambda>>>
 {
 	using t_base::t_base;
-	static void f_do_scan(t_object* a_this, t_scan a_scan);
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		auto& p = a_this->f_as<t_lambda>();
+		a_scan(p.v_scope);
+		a_scan(p.v_code);
+	}
 	template<typename T, typename T_context>
 	static size_t f__do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)
 	{
@@ -120,7 +126,7 @@ struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>,
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
 		t_type_of::t_base::f_do_scan(a_this, a_scan);
-		a_scan(f_as<t_advanced_lambda<T_base>&>(a_this).v_defaults);
+		a_scan(a_this->f_as<t_advanced_lambda<T_base>>().v_defaults);
 	}
 	template<typename T_context>
 	static size_t f__do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)

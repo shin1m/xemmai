@@ -147,7 +147,7 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	static t_scoped f_from_code(t_global* a_extension, intptr_t a_code);
 	static t_scoped f_string(t_scoped&& a_self)
 	{
-		return a_self;
+		return std::move(a_self);
 	}
 	static t_scoped f__add(t_object* a_self, t_scoped&& a_value);
 	static t_scoped f__add(const t_value& a_self, t_scoped&& a_value)
