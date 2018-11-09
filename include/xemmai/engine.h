@@ -88,18 +88,18 @@ class t_engine : public t_value::t_collector
 
 	static XEMMAI__PORTABLE__THREAD size_t v_local_object__allocated;
 
-	size_t v_collector__threshold0;
-	size_t v_collector__threshold1;
+#ifdef NDEBUG
+	size_t v_collector__threshold = 1024 * 16;
+#else
+	size_t v_collector__threshold = 64;
+#endif
 	t_pool<t_object_and<0>, 4096> v_object__pool0;
 	t_pool<t_object_and<1>, 4096> v_object__pool1;
 	t_pool<t_object_and<2>, 4096> v_object__pool2;
 	t_pool<t_object_and<3>, 4096> v_object__pool3;
 	std::atomic<size_t> v_object__allocated = 0;
 	size_t v_object__freed = 0;
-	size_t v_object__lower0 = 0;
-	size_t v_object__lower1 = 0;
-	t_object* v_object__cycle = nullptr;
-	std::list<t_object*> v_object__cycles;
+	size_t v_object__lower = 0;
 	bool v_object__reviving = false;
 	std::mutex v_object__reviving__mutex;
 	size_t v_object__release = 0;
@@ -353,22 +353,11 @@ inline void t_object::f_decrement_step()
 	}
 	t_object::f_of(v_type)->f_decrement_push();
 	v_color = e_color__BLACK;
-	if (!v_next) f_engine()->f_free_as_release(this);
-}
-
-inline void t_object::f_collect_white_push()
-{
-	if (v_color != e_color__WHITE) return;
-	v_color = e_color__ORANGE;
-	f_append(f_engine()->v_object__cycle, this);
-	f_push(this);
-}
-
-inline void t_object::f_collect_white()
-{
-	v_color = e_color__ORANGE;
-	f_append(f_engine()->v_object__cycle, this);
-	f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
+	if (v_next) {
+		v_next->v_previous = v_previous;
+		v_previous->v_next = v_next;
+	}
+	f_engine()->f_free_as_release(this);
 }
 
 inline t_object* t_fiber::f_current()

@@ -6,149 +6,123 @@
 namespace xemmai
 {
 
-XEMMAI__PORTABLE__THREAD t_object* t_object::v_roots;
+XEMMAI__PORTABLE__THREAD decltype(t_object::v_roots) t_object::v_roots;
 XEMMAI__PORTABLE__THREAD t_object* t_object::v_scan_stack;
+XEMMAI__PORTABLE__THREAD t_object* t_object::v_cycle;
+XEMMAI__PORTABLE__THREAD t_object* t_object::v_cycles;
 
 void t_object::f_collect()
 {
-	auto& cycles = f_engine()->v_object__cycles;
-	for (auto i = cycles.rbegin(); i != cycles.rend(); ++i) {
+	while (v_cycles) {
 		std::lock_guard<std::mutex> lock(f_engine()->v_object__reviving__mutex);
-		t_object* cycle = *i;
-		t_object* p = cycle;
-		do {
-			p = p->v_next;
-			if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || f_engine()->v_object__reviving && p->v_type->v_revive) {
-				p = nullptr;
-				break;
-			}
-		} while (p != cycle);
-		if (p == cycle) {
-			do {
-				p = p->v_next;
-				p->v_color = e_color__RED;
-			} while (p != cycle);
-			do {
-				p = p->v_next;
-				p->f_cyclic_decrement();
-			} while (p != cycle);
-			do {
-				p = cycle->v_next;
-				cycle->v_next = p->v_next;
-				if (p->v_type == f_engine()->v_type_class)
-					p->f_as<t_type>().f_destruct();
-				else if (p->v_type == f_engine()->v_type_structure)
-					p->f_as<t_structure>().~t_structure();
-				f_engine()->f_free_as_collect(p);
-			} while (p != cycle);
+		auto p = v_cycles;
+		if (f_engine()->v_object__reviving) {
+			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0 && !p->v_type->v_revive) if (!(p = p->v_next)) break;
 		} else {
-			p = cycle->v_next;
-			t_object* q = p->v_next;
+			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0) if (!(p = p->v_next)) break;
+		}
+		if (p) {
+			p = v_cycles;
+			v_cycles = p->v_next_cycle;
+			auto q = p->v_next;
 			if (p->v_color == e_color__ORANGE) {
 				p->v_color = e_color__PURPLE;
-				f_append(v_roots, p);
+				f_append(p);
 			} else if (p->v_color == e_color__PURPLE) {
-				f_append(v_roots, p);
+				f_append(p);
 			} else {
 				p->v_color = e_color__BLACK;
 				p->v_next = nullptr;
 			}
-			while (p != cycle) {
+			while (q) {
 				p = q;
 				q = p->v_next;
 				if (p->v_color == e_color__PURPLE) {
-					f_append(v_roots, p);
+					f_append(p);
 				} else {
 					p->v_color = e_color__BLACK;
 					p->v_next = nullptr;
 				}
 			}
+		} else {
+			p = v_cycles;
+			do p->v_color = e_color__RED; while (p = p->v_next);
+			p = v_cycles;
+			do p->f_cyclic_decrement(); while (p = p->v_next);
+			p = v_cycles;
+			v_cycles = p->v_next_cycle;
+			do {
+				auto q = p->v_next;
+				if (p->v_type == f_engine()->v_type_class)
+					p->f_as<t_type>().f_destruct();
+				else if (p->v_type == f_engine()->v_type_structure)
+					p->f_as<t_structure>().~t_structure();
+				f_engine()->f_free_as_collect(p);
+				p = q;
+			} while (p);
 		}
 	}
-	cycles.clear();
-	{
-		auto& finalizing = f_engine()->v_library__handle__finalizing;
-		while (finalizing) {
-			auto p = finalizing;
-			finalizing = p->v_next;
-			delete p;
-		}
+	for (auto& p = f_engine()->v_library__handle__finalizing; p;) {
+		auto q = p;
+		p = q->v_next;
+		delete q;
 	}
-	if (!v_roots) return;
+	auto roots = reinterpret_cast<t_object*>(&v_roots);
+	if (roots->v_next == roots) return;
 	{
 		size_t live = f_engine()->v_object__pool0.f_live() + f_engine()->v_object__pool1.f_live() + f_engine()->v_object__pool2.f_live() + f_engine()->v_object__pool3.f_live() + f_engine()->v_object__allocated - f_engine()->v_object__freed;
-		auto& lower0 = f_engine()->v_object__lower0;
-		if (live < lower0) lower0 = live;
-		auto& lower1 = f_engine()->v_object__lower1;
-		if (live < lower1) lower1 = live;
-		bool b = live - lower1 >= f_engine()->v_collector__threshold1;
-		if (b) {
-			lower1 = live;
-			++f_engine()->v_collector__collect;
-		} else if (live - lower0 < f_engine()->v_collector__threshold0) {
-			return;
-		}
-		lower0 = live;
-		++f_engine()->v_collector__release;
-		t_object* p = v_roots;
-		while (true) {
-			t_object* q = p->v_next;
-			if (q->v_color == e_color__PURPLE && q->v_count > 0) {
-				if (b) q->f_mark_gray();
-				if (q == v_roots) break;
+		auto& lower = f_engine()->v_object__lower;
+		if (live < lower) lower = live;
+		if (live - lower < f_engine()->v_collector__threshold) return;
+		lower = live;
+		++f_engine()->v_collector__collect;
+		auto p = roots;
+		auto q = p->v_next;
+		do {
+			assert(q->v_count > 0);
+			if (q->v_color == e_color__PURPLE) {
+				q->f_mark_gray();
 				p = q;
 			} else {
 				p->v_next = q->v_next;
-				if (q->v_count <= 0)
-					f_engine()->f_free_as_release(q);
-				else
-					q->v_next = nullptr;
-				if (q == v_roots) {
-					if (p == q) p = nullptr;
-					v_roots = p;
-					break;
-				}
+				q->v_next = nullptr;
 			}
-		}
-		if (!b) return;
+			q = p->v_next;
+		} while (q != roots);
 	}
-	if (!v_roots) return;
+	if (roots->v_next == roots) {
+		roots->v_previous = roots;
+		return;
+	}
 	{
-		t_object* p = v_roots;
+		auto p = roots->v_next;
 		do {
-			p = p->v_next;
 			p->f_scan_gray();
-		} while (p != v_roots);
+			p = p->v_next;
+		} while (p != roots);
 	}
-	auto& cycle = f_engine()->v_object__cycle;
-	while (true) {
-		t_object* p = v_roots->v_next;
-		v_roots->v_next = p->v_next;
+	do {
+		auto p = roots->v_next;
+		roots->v_next = p->v_next;
 		if (p->v_color == e_color__WHITE) {
-			cycle = nullptr;
 			p->f_collect_white();
-			cycles.push_back(cycle);
+			v_cycle->v_next_cycle = v_cycles;
+			v_cycles = v_cycle;
 		} else {
 			p->v_next = nullptr;
 		}
-		if (p == v_roots) break;
-	}
-	v_roots = nullptr;
-	for (auto cycle : cycles) {
-		t_object* p = cycle;
+	} while (roots->v_next != roots);
+	roots->v_previous = roots;
+	for (auto cycle = v_cycles; cycle; cycle = cycle->v_next_cycle) {
+		auto p = cycle;
 		do {
-			p = p->v_next;
 			p->v_color = e_color__RED;
 			p->v_cyclic = p->v_count;
-		} while (p != cycle);
-		do {
-			p = p->v_next;
-			p->f_step<&t_object::f_scan_red>();
-		} while (p != cycle);
-		do {
-			p = p->v_next;
-			p->v_color = e_color__ORANGE;
-		} while (p != cycle);
+		} while (p = p->v_next);
+		p = cycle;
+		do p->f_step<&t_object::f_scan_red>(); while (p = p->v_next);
+		p = cycle;
+		do p->v_color = e_color__ORANGE; while (p = p->v_next);
 	}
 }
 

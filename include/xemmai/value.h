@@ -55,7 +55,6 @@ public:
 		size_t v_collector__tick = 0;
 		size_t v_collector__wait = 0;
 		size_t v_collector__epoch = 0;
-		size_t v_collector__release = 0;
 		size_t v_collector__collect = 0;
 
 		t_collector()
@@ -103,17 +102,12 @@ protected:
 	{
 		static const size_t V_SIZE = A_SIZE;
 
-		t_object* volatile* volatile v_head;
-		t_object* volatile* v_next;
+		t_object* volatile* volatile v_head = v_objects;
+		t_object* volatile* v_next = v_objects + V_SIZE - 1;
 		t_object* volatile v_objects[V_SIZE];
-		t_object* volatile* volatile v_tail;
-		t_object* volatile* v_epoch;
+		t_object* volatile* volatile v_tail = v_objects + V_SIZE - 1;
+		t_object* volatile* v_epoch = v_objects;
 
-		t_queue() : v_tail(v_objects + V_SIZE - 1), v_epoch(v_objects)
-		{
-			v_head = v_objects;
-			v_next = v_objects + V_SIZE - 1;
-		}
 		void f_next(t_object* a_object) noexcept;
 		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
 		{
@@ -130,17 +124,22 @@ protected:
 			v_epoch = v_head;
 		}
 	};
+#ifdef NDEBUG
 	struct t_increments : t_queue<16384>
+#else
+	struct t_increments : t_queue<128>
+#endif
 	{
 		void f_flush();
 	};
+#ifdef NDEBUG
 	struct t_decrements : t_queue<32768>
+#else
+	struct t_decrements : t_queue<256>
+#endif
 	{
-		t_object* volatile* v_last;
+		t_object* volatile* v_last = v_objects;
 
-		t_decrements() : v_last(v_objects)
-		{
-		}
 		void f_flush();
 	};
 	class t_own

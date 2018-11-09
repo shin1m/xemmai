@@ -75,6 +75,7 @@ void t_engine::f_collector()
 {
 	t_value::v_collector = this;
 	if (v_verbose) std::fprintf(stderr, "collector starting...\n");
+	t_object::v_roots.v_next = t_object::v_roots.v_previous = reinterpret_cast<t_object*>(&t_object::v_roots);
 	while (true) {
 		{
 			std::unique_lock<std::mutex> lock(v_collector__mutex);
@@ -169,7 +170,7 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 	--v_debug__safe;
 }
 
-t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_collector__threshold0(1024 * 8), v_collector__threshold1(1024 * 16), v_stack_size(a_stack), v_verbose(a_verbose)
+t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_stack_size(a_stack), v_verbose(a_verbose)
 {
 	v_thread__internals->f_initialize();
 	auto structure_root = f_object__allocate_on_boot(sizeof(t_structure));
@@ -322,7 +323,7 @@ t_engine::~t_engine()
 		internal->v_cache_missed = t_thread::v_cache_missed;
 	}
 	f_pools__return();
-	v_collector__threshold1 = 0;
+	v_collector__threshold = 0;
 	f_wait();
 	f_wait();
 	f_wait();
@@ -372,7 +373,7 @@ t_engine::~t_engine()
 		allocated += v_object__allocated;
 		freed += v_object__freed;
 		std::fprintf(stderr, "\t\ttotal: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed), static_cast<uintptr_t>(v_object__release), static_cast<uintptr_t>(v_object__collect));
-		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__release), static_cast<uintptr_t>(v_collector__collect));
+		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__collect));
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
 			std::fprintf(stderr, "\tfield cache: hit = %" PRIuPTR ", missed = %" PRIuPTR ", ratio = %.1f%%\n", static_cast<uintptr_t>(v_thread__cache_hit), static_cast<uintptr_t>(v_thread__cache_missed), base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
@@ -409,18 +410,20 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		f_initialize_calls<t_context>();
 	}
 	intptr_t n = v_debugger ? t_fiber::f_main<t_debug_context>(t_module::f_main) : t_fiber::f_main<t_context>(t_module::f_main);
-	std::unique_lock<std::mutex> lock(v_thread__mutex);
-	if (v_debugger) {
-		if (v_debug__stepping == t_thread::f_current()) v_debug__stepping = nullptr;
-		f_debug_enter_and_notify();
-	}
 	auto& thread = f_as<t_thread&>(v_thread);
-	auto internal = thread.v_internal;
-	while (true) {
-		auto p = v_thread__internals;
-		while (p == internal || p && p->v_done > 0) p = p->v_next;
-		if (!p) break;
-		v_thread__condition.wait(lock);
+	{
+		std::unique_lock<std::mutex> lock(v_thread__mutex);
+		if (v_debugger) {
+			if (v_debug__stepping == t_thread::f_current()) v_debug__stepping = nullptr;
+			f_debug_enter_and_notify();
+		}
+		auto internal = thread.v_internal;
+		while (true) {
+			auto p = v_thread__internals;
+			while (p == internal || p && p->v_done > 0) p = p->v_next;
+			if (!p) break;
+			v_thread__condition.wait(lock);
+		}
 	}
 	auto& fiber = f_as<t_fiber&>(thread.v_fiber);
 	fiber.v_return = ++fiber.v_stack.v_used;
@@ -437,7 +440,7 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		fiber.v_return->f_destruct();
 	}
 	if (v_debugger) {
-		f_debug_safe_region_leave(lock);
+		f_debug_safe_region_leave();
 		v_debugger = nullptr;
 		assert(v_debug__safe <= 0);
 	}

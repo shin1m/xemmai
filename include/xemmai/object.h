@@ -154,18 +154,20 @@ class t_object
 		e_color__RED
 	};
 
-	static XEMMAI__PORTABLE__THREAD t_object* v_roots;
-	static XEMMAI__PORTABLE__THREAD t_object* v_scan_stack;
-
-	XEMMAI__PORTABLE__FORCE_INLINE static void f_append(t_object*& a_list, t_object* a_p)
+	static XEMMAI__PORTABLE__THREAD struct
 	{
-		if (a_list) {
-			a_p->v_next = a_list->v_next;
-			a_list->v_next = a_p;
-		} else {
-			a_p->v_next = a_p;
-		}
-		a_list = a_p;
+		t_object* v_next;
+		t_object* v_previous;
+	} v_roots;
+	static XEMMAI__PORTABLE__THREAD t_object* v_scan_stack;
+	static XEMMAI__PORTABLE__THREAD t_object* v_cycle;
+	static XEMMAI__PORTABLE__THREAD t_object* v_cycles;
+
+	XEMMAI__PORTABLE__FORCE_INLINE static void f_append(t_object* a_p)
+	{
+		a_p->v_next = reinterpret_cast<t_object*>(&v_roots);
+		a_p->v_previous = v_roots.v_previous;
+		a_p->v_previous->v_next = v_roots.v_previous = a_p;
 	}
 	static void f_push(t_object* a_p)
 	{
@@ -175,13 +177,13 @@ class t_object
 	template<void (t_object::*A_push)()>
 	static void f_push(t_slot& a_slot)
 	{
-		t_object* p = a_slot.v_p;
+		auto p = a_slot.v_p;
 		if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT) (p->*A_push)();
 	}
 	template<void (t_object::*A_push)()>
 	static void f_push_and_clear(t_slot& a_slot)
 	{
-		t_object* p = a_slot.v_p;
+		auto p = a_slot.v_p;
 		if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
 		(p->*A_push)();
 		a_slot.v_p = nullptr;
@@ -192,12 +194,13 @@ class t_object
 	static t_object* f_local_pool__allocate(size_t a_size);
 
 	t_object* v_next;
+	t_object* v_previous;
 	t_object* v_scan;
 	t_color v_color;
 	size_t v_count = 1;
 	size_t v_cyclic;
 	size_t v_rank;
-	void* v_pad[2];
+	t_object* v_next_cycle;
 	t_type* v_type;
 	t_value::t_increments* v_owner = nullptr;
 	t_structure* v_structure;
@@ -217,7 +220,7 @@ class t_object
 	template<void (t_object::*A_step)()>
 	void f_loop()
 	{
-		t_object* p = this;
+		auto p = this;
 		while (true) {
 			(p->*A_step)();
 			p = v_scan_stack;
@@ -238,13 +241,13 @@ class t_object
 	{
 		if (--v_count > 0) {
 #ifdef XEMMAI__OBJECT__CALL_SCAN_BLACK
-			t_object* stack = v_scan_stack;
+			auto stack = v_scan_stack;
 			v_scan_stack = nullptr;
 			f_scan_black();
 			v_scan_stack = stack;
 #endif
 			v_color = e_color__PURPLE;
-			if (!v_next) f_append(v_roots, this);
+			if (!v_next) f_append(this);
 		} else {
 			f_push(this);
 		}
@@ -258,7 +261,7 @@ class t_object
 			f_scan_black();
 #endif
 			v_color = e_color__PURPLE;
-			if (!v_next) f_append(v_roots, this);
+			if (!v_next) f_append(this);
 		} else {
 			f_loop<&t_object::f_decrement_step>();
 		}
@@ -331,8 +334,21 @@ class t_object
 			f_scan_black();
 		}
 	}
-	void f_collect_white_push();
-	void f_collect_white();
+	void f_collect_white_push()
+	{
+		if (v_color != e_color__WHITE) return;
+		v_color = e_color__ORANGE;
+		v_next = v_cycle;
+		v_cycle = this;
+		f_push(this);
+	}
+	void f_collect_white()
+	{
+		v_color = e_color__ORANGE;
+		v_next = nullptr;
+		v_cycle = this;
+		f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
+	}
 	void f_scan_red()
 	{
 		if (v_color == e_color__RED && v_cyclic > 0) --v_cyclic;
