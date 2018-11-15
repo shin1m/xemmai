@@ -86,7 +86,6 @@
     <ClInclude Include="include\xemmai\convert.h" />
     <ClInclude Include="include\xemmai\convert_call.h" />
     <ClInclude Include="include\xemmai\convert_override.h" />
-    <ClInclude Include="include\xemmai\derived.h" />
     <ClInclude Include="include\xemmai\dictionary.h" />
     <ClInclude Include="include\xemmai\engine.h" />
     <ClInclude Include="include\xemmai\fiber.h" />
@@ -114,7 +113,6 @@
     <ClInclude Include="include\xemmai\portable\define.h" />
     <ClInclude Include="include\xemmai\portable\library.h" />
     <ClInclude Include="include\xemmai\portable\path.h" />
-    <ClInclude Include="include\xemmai\portable\thread.h" />
     <ClInclude Include="include\xemmai\scope.h" />
     <ClInclude Include="include\xemmai\string.h" />
     <ClInclude Include="include\xemmai\structure.h" />
@@ -149,14 +147,12 @@
     <ClCompile Include="src\lambda.cc" />
     <ClCompile Include="src\lexer.cc" />
     <ClCompile Include="src\main.cc" />
-    <ClCompile Include="src\method.cc" />
     <ClCompile Include="src\module.cc" />
     <ClCompile Include="src\native.cc" />
     <ClCompile Include="src\null.cc" />
     <ClCompile Include="src\object.cc" />
     <ClCompile Include="src\parser.cc" />
     <ClCompile Include="src\portable.cc" />
-    <ClCompile Include="src\scope.cc" />
     <ClCompile Include="src\string.cc" />
     <ClCompile Include="src\structure.cc" />
     <ClCompile Include="src\symbol.cc" />

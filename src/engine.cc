@@ -1,6 +1,5 @@
 #include <xemmai/engine.h>
 
-#include <xemmai/portable/thread.h>
 #include <xemmai/structure.h>
 #include <xemmai/array.h>
 #include <xemmai/io.h>
@@ -8,32 +7,6 @@
 
 namespace xemmai
 {
-
-void t_engine::t_synchronizer::f_run()
-{
-	{
-		portable::t_affinity affinity;
-		affinity.f_clear();
-		affinity.f_add(v_cpu);
-		affinity.f_to_thread();
-	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" PRIuPTR ") starting...\n", static_cast<uintptr_t>(v_cpu));
-	{
-		std::unique_lock<std::mutex> lock(v_mutex);
-		while (true) {
-			while (!v_wake) v_condition.wait(lock);
-			v_wake = false;
-			if (v_engine->v_collector__quitting) break;
-			{
-				std::lock_guard<std::mutex> lock(v_engine->v_synchronizer__mutex);
-				if (--v_engine->v_synchronizer__wake > 0) continue;
-			}
-//			v_engine->v_synchronizer__condition.notify_one();
-		}
-	}
-	if (v_engine->v_verbose) std::fprintf(stderr, "synchronizer(%" PRIuPTR ") quitting...\n", static_cast<uintptr_t>(v_cpu));
-	v_condition.notify_one();
-}
 
 XEMMAI__PORTABLE__THREAD size_t t_engine::v_local_object__allocated;
 
@@ -45,30 +18,6 @@ void t_engine::f_pools__return()
 	v_object__pool3.f_return_all();
 	v_object__allocated += v_local_object__allocated;
 	v_local_object__allocated = 0;
-}
-
-void t_engine::f_signal_synchronizers()
-{
-	if (!v_synchronizers) return;
-	size_t cpu = portable::f_cpu();
-	for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) if (p->v_cpu != cpu) ++v_synchronizer__wake;
-	for (t_synchronizer* p = v_synchronizers; p; p = p->v_next) {
-		if (p->v_cpu == cpu) continue;
-		{
-			std::lock_guard<std::mutex> lock(p->v_mutex);
-			p->v_wake = true;
-		}
-		p->v_condition.notify_one();
-	}
-}
-
-void t_engine::f_wait_synchronizers()
-{
-/*	if (v_synchronizers) {
-		std::unique_lock<std::mutex> lock(v_synchronizer__mutex);
-		while (v_synchronizer__wake > 0) v_synchronizer__condition.wait(lock);
-	}*/
-	while (v_synchronizer__wake > 0) std::this_thread::yield();
 }
 
 void t_engine::f_collector()
@@ -91,36 +40,27 @@ void t_engine::f_collector()
 			break;
 		}
 		++v_collector__epoch;
-		{
-			std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
-			v_object__reviving = false;
-		}
+		bool reviving = false;
 		{
 			std::lock_guard<std::mutex> lock(v_thread__mutex);
-			for (auto p = v_thread__internals; p; p = p->v_next) {
-				p->v_increments.f_epoch();
-				p->v_decrements.f_epoch();
-			}
-			f_signal_synchronizers();
-			{
-				std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
-				for (auto p = v_thread__internals; p; p = p->v_next) {
-					if (p->v_done > 0) ++p->v_done;
-					if (!p->v_reviving) continue;
-					t_object* volatile* tail = p->v_increments.v_tail + 1;
-					size_t epoch = (p->v_increments.v_epoch + t_value::t_increments::V_SIZE - tail) % t_value::t_increments::V_SIZE;
-					size_t reviving = (p->v_reviving + t_value::t_increments::V_SIZE - tail) % t_value::t_increments::V_SIZE;
-					if (epoch > reviving)
-						p->v_reviving = nullptr;
-					else
-						v_object__reviving = true;
-				}
-			}
-			f_wait_synchronizers();
 			for (auto p = &v_thread__internals; *p;) {
 				auto q = *p;
+				auto tail = q->v_increments.v_tail.load(std::memory_order_relaxed) + 1;
 				q->v_increments.f_flush();
 				q->v_decrements.f_flush();
+				{
+					std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
+					if (q->v_reviving) {
+						size_t n = t_value::t_increments::V_SIZE;
+						size_t epoch = (q->v_increments.v_tail.load(std::memory_order_relaxed) + 1 + n - tail) % n;
+						size_t reviving = (q->v_reviving + n - tail) % n;
+						if (epoch > reviving)
+							q->v_reviving = nullptr;
+						else
+							reviving = true;
+					}
+				}
+				if (q->v_done > 0) ++q->v_done;
 				if (q->v_done < 3) {
 					p = &(*p)->v_next;
 				} else {
@@ -131,7 +71,7 @@ void t_engine::f_collector()
 				}
 			}
 		}
-		t_object::f_collect();
+		t_object::f_collect(reviving);
 		if (v_object__pool0.v_freed > 0) v_object__pool0.f_return();
 		if (v_object__pool1.v_freed > 0) v_object__pool1.f_return();
 		if (v_object__pool2.v_freed > 0) v_object__pool2.f_return();
@@ -212,20 +152,6 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 		v_thread = type_thread->f_as<t_type>().f_new<t_thread>(true, v_thread__internals, t_scoped(fiber));
 		v_thread__internals->v_thread = t_thread::v_current = v_thread;
 		v_thread->f_as<t_thread>().v_active = std::move(fiber);
-	}
-	{
-		portable::t_affinity affinity;
-		affinity.f_from_thread();
-		size_t n = 0;
-		for (size_t i = 0; i < portable::t_affinity::V_SIZE; ++i) if (affinity.f_contains(i)) ++n;
-		if (n > 1) {
-			n = portable::t_affinity::V_SIZE;
-			while (n > 0) {
-				if (!affinity.f_contains(--n)) continue;
-				auto p = new t_synchronizer(this, n);
-				std::thread(&t_synchronizer::f_run, p).detach();
-			}
-		}
 	}
 	{
 		std::unique_lock<std::mutex> lock(v_collector__mutex);
@@ -333,20 +259,6 @@ t_engine::~t_engine()
 		v_collector__running = v_collector__quitting = true;
 		v_collector__wake.notify_one();
 		do v_collector__done.wait(lock); while (v_collector__running);
-	}
-	if (v_synchronizers) {
-		do {
-			{
-				std::lock_guard<std::mutex> lock(v_synchronizers->v_mutex);
-				v_synchronizers->v_wake = true;
-			}
-			v_synchronizers->v_condition.notify_one();
-			{
-				std::unique_lock<std::mutex> lock(v_synchronizers->v_mutex);
-				while (v_synchronizers->v_wake) v_synchronizers->v_condition.wait(lock);
-			}
-			delete v_synchronizers;
-		} while (v_synchronizers);
 	}
 	assert(!v_thread__internals);
 	v_object__pool0.f_clear();

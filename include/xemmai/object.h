@@ -188,7 +188,7 @@ class t_object
 		(p->*A_push)();
 		a_slot.v_p = nullptr;
 	}
-	static void f_collect();
+	static void f_collect(bool a_reviving);
 	template<size_t A_rank>
 	static t_object* f_pool__allocate();
 	static t_object* f_local_pool__allocate(size_t a_size);

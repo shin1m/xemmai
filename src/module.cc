@@ -82,7 +82,6 @@ t_scoped t_module::f_instantiate(std::wstring_view a_name)
 		auto& instances = f_engine()->v_module__instances;
 		auto i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
-			f_engine()->v_object__reviving = true;
 			f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
 			f_engine()->v_module__mutex.unlock();
 			f_engine()->v_object__reviving__mutex.unlock();

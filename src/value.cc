@@ -7,15 +7,15 @@ namespace xemmai
 
 void t_value::t_increments::f_flush()
 {
-	t_object* volatile* end = v_objects + V_SIZE - 1;
-	t_object* volatile* tail = v_tail;
-	t_object* volatile* epoch = v_epoch;
+	auto end = v_objects + V_SIZE - 1;
+	auto tail = v_tail.load(std::memory_order_relaxed);
+	auto epoch = v_head.load(std::memory_order_acquire);
 	if (epoch > v_objects)
 		--epoch;
 	else
 		epoch = end;
 	while (tail != epoch) {
-		t_object* volatile* next = epoch;
+		auto next = epoch;
 		if (tail < end) {
 			if (next < tail) next = end;
 			++tail;
@@ -28,20 +28,20 @@ void t_value::t_increments::f_flush()
 			++tail;
 		}
 	}
-	v_tail = tail;
+	v_tail.store(tail, std::memory_order_release);
 }
 
 void t_value::t_decrements::f_flush()
 {
-	t_object* volatile* end = v_objects + V_SIZE - 1;
-	t_object* volatile* tail = v_tail;
-	t_object* volatile* epoch = v_last;
+	auto end = v_objects + V_SIZE - 1;
+	auto tail = v_tail.load(std::memory_order_relaxed);
+	auto epoch = v_last;
 	if (epoch > v_objects)
 		--epoch;
 	else
 		epoch = end;
 	while (tail != epoch) {
-		t_object* volatile* next = epoch;
+		auto next = epoch;
 		if (tail < end) {
 			if (next < tail) next = end;
 			++tail;
@@ -54,8 +54,8 @@ void t_value::t_decrements::f_flush()
 			++tail;
 		}
 	}
-	v_tail = tail;
-	v_last = v_epoch;
+	v_tail.store(tail, std::memory_order_release);
+	v_last = v_head.load(std::memory_order_acquire);
 }
 
 XEMMAI__PORTABLE__THREAD t_value::t_collector* t_value::v_collector;

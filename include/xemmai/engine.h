@@ -32,25 +32,6 @@ class t_engine : public t_value::t_collector
 	friend class t_code;
 	friend struct t_safe_region;
 
-	struct t_synchronizer
-	{
-		t_engine* v_engine;
-		size_t v_cpu;
-		bool v_wake = false;
-		std::mutex v_mutex;
-		std::condition_variable v_condition;
-		t_synchronizer* v_next;
-
-		t_synchronizer(t_engine* a_engine, size_t a_cpu) : v_engine(a_engine), v_cpu(a_cpu), v_next(a_engine->v_synchronizers)
-		{
-			v_engine->v_synchronizers = this;
-		}
-		~t_synchronizer()
-		{
-			v_engine->v_synchronizers = v_next;
-		}
-		void f_run();
-	};
 	template<typename T, size_t A_size>
 	struct t_pool : t_shared_pool<T, A_size>
 	{
@@ -100,7 +81,6 @@ class t_engine : public t_value::t_collector
 	std::atomic<size_t> v_object__allocated = 0;
 	size_t v_object__freed = 0;
 	size_t v_object__lower = 0;
-	bool v_object__reviving = false;
 	std::mutex v_object__reviving__mutex;
 	size_t v_object__release = 0;
 	size_t v_object__collect = 0;
@@ -111,10 +91,6 @@ class t_engine : public t_value::t_collector
 	size_t v_thread__cache_missed = 0;
 	std::mutex v_thread__mutex;
 	std::condition_variable v_thread__condition;
-	t_synchronizer* v_synchronizers = nullptr;
-	volatile size_t v_synchronizer__wake = 0;
-	std::mutex v_synchronizer__mutex;
-	//std::condition_variable v_synchronizer__condition;
 	t_type* v_type_class;
 	t_type* v_type_structure;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
@@ -204,8 +180,6 @@ class t_engine : public t_value::t_collector
 		++v_object__collect;
 		f_free(a_p);
 	}
-	void f_signal_synchronizers();
-	void f_wait_synchronizers();
 	void f_collector();
 	void f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock);
 	void f_debug_enter_and_notify()
@@ -247,12 +221,6 @@ public:
 		return v_module_io;
 	}
 	intptr_t f_run(t_debugger* a_debugger);
-	void f_synchronize()
-	{
-		std::lock_guard<std::mutex> lock(v_thread__mutex);
-		f_signal_synchronizers();
-		f_wait_synchronizers();
-	}
 	template<typename T>
 	void f_threads(T a_callback)
 	{

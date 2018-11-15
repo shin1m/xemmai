@@ -58,7 +58,6 @@ t_scoped t_structure::f_append(t_object* a_key)
 	if (i == v_children.end() || i->first != a_key) {
 		i = v_children.emplace_hint(i, a_key, nullptr);
 	} else if (i->second) {
-		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
 		f_engine()->v_object__reviving__mutex.unlock();
 		return i->second;

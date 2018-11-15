@@ -19,7 +19,6 @@ t_scoped t_symbol::f_instantiate(std::wstring_view a_value)
 	if (i == instances.end() || i->first != a_value) {
 		i = instances.emplace_hint(i, a_value, t_slot());
 	} else if (i->second.f_tag() != t_value::e_tag__NULL) {
-		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
 		f_engine()->v_object__reviving__mutex.unlock();
 		return i->second;

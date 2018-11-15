@@ -6,6 +6,7 @@
 #include <cinttypes>
 #include <cstddef>
 #include <condition_variable>
+#include <atomic>
 #include <mutex>
 #include <type_traits>
 
@@ -102,26 +103,21 @@ protected:
 	{
 		static const size_t V_SIZE = A_SIZE;
 
-		t_object* volatile* volatile v_head = v_objects;
-		t_object* volatile* v_next = v_objects + V_SIZE - 1;
+		std::atomic<t_object* volatile*> v_head{v_objects};
+		t_object* volatile* v_next = v_objects + V_SIZE / 2;
 		t_object* volatile v_objects[V_SIZE];
-		t_object* volatile* volatile v_tail = v_objects + V_SIZE - 1;
-		t_object* volatile* v_epoch = v_objects;
+		std::atomic<t_object* volatile*> v_tail{v_objects + V_SIZE - 1};
 
 		void f_next(t_object* a_object) noexcept;
 		XEMMAI__PORTABLE__ALWAYS_INLINE XEMMAI__PORTABLE__FORCE_INLINE void f_push(t_object* a_object)
 		{
-			t_object* volatile* head = v_head;
+			auto head = v_head.load(std::memory_order_relaxed);
 			if (head == v_next) {
 				f_next(a_object);
 			} else {
 				*head = a_object;
-				v_head = ++head;
+				v_head.store(++head, std::memory_order_release);
 			}
-		}
-		void f_epoch()
-		{
-			v_epoch = v_head;
 		}
 	};
 #ifdef NDEBUG
@@ -610,15 +606,17 @@ template<size_t A_SIZE>
 void t_value::t_queue<A_SIZE>::f_next(t_object* a_object) noexcept
 {
 	v_collector->f_tick();
-	while (v_head == v_tail) v_collector->f_wait();
-	v_next = v_tail;
-	t_object* volatile* head = v_head;
+	auto head = v_head.load(std::memory_order_relaxed);
+	while (head == v_tail.load(std::memory_order_acquire)) v_collector->f_wait();
 	*head = a_object;
 	if (head < v_objects + V_SIZE - 1) {
-		if (v_next < head) v_next = v_objects + V_SIZE - 1;
-		v_head = ++head;
+		v_head.store(++head, std::memory_order_release);
+		auto tail = v_tail.load(std::memory_order_acquire);
+		v_next = std::min(tail < head ? v_objects + V_SIZE - 1 : tail, head + V_SIZE / 2);
 	} else {
-		v_head = v_objects;
+		v_head.store(v_objects, std::memory_order_release);
+		auto tail = v_tail.load(std::memory_order_acquire);
+		v_next = std::min(tail, v_objects + V_SIZE / 2);
 	}
 }
 

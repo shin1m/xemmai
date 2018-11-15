@@ -31,7 +31,7 @@ struct t_thread
 	{
 		t_internal* v_next = nullptr;
 		size_t v_done = 0;
-		t_value::t_collector* v_collector;
+		t_value::t_collector* v_collector = t_value::v_collector;
 		t_value::t_increments v_increments;
 		t_value::t_decrements v_decrements;
 		t_object* volatile* v_reviving = nullptr;
@@ -41,9 +41,6 @@ struct t_thread
 		size_t v_cache_missed = 0;
 		t_object* v_thread;
 
-		t_internal() : v_collector(t_value::v_collector)
-		{
-		}
 		void f_initialize()
 		{
 			t_value::v_increments = &v_increments;
@@ -53,7 +50,7 @@ struct t_thread
 		}
 		void f_revive()
 		{
-			v_reviving = v_increments.v_head;
+			v_reviving = v_increments.v_head.load(std::memory_order_relaxed);
 		}
 	};
 

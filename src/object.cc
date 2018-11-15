@@ -11,12 +11,12 @@ XEMMAI__PORTABLE__THREAD t_object* t_object::v_scan_stack;
 XEMMAI__PORTABLE__THREAD t_object* t_object::v_cycle;
 XEMMAI__PORTABLE__THREAD t_object* t_object::v_cycles;
 
-void t_object::f_collect()
+void t_object::f_collect(bool a_reviving)
 {
 	while (v_cycles) {
 		std::lock_guard<std::mutex> lock(f_engine()->v_object__reviving__mutex);
 		auto p = v_cycles;
-		if (f_engine()->v_object__reviving) {
+		if (a_reviving) {
 			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0 && !p->v_type->v_revive) if (!(p = p->v_next)) break;
 		} else {
 			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0) if (!(p = p->v_next)) break;

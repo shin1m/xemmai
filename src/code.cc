@@ -89,12 +89,12 @@ void t_code::f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 			pc0[4] = p->v_structure;
 			intptr_t index = p->f_field_index(key);
 			if (index < 0) {
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_class;
 				top = t_method::f_bind(t_object::f_of(p->f_type())->f_get(key), p);
 			} else {
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_instance;
 				top = p->f_field_get(index);
 			}
@@ -124,14 +124,14 @@ void t_code::f_object_put(t_stacked* a_base, void**& a_pc, void* a_add, void* a_
 				t_scoped structure = p->v_structure->f_append(key);
 				*static_cast<t_slot*>(pc0[4]) = static_cast<t_object*>(structure);
 				pc0[4] = &f_as<t_structure&>(structure);
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_add;
 				p->f_field_add(std::move(structure), t_scoped(value));
 			} else {
 				*static_cast<t_slot*>(pc0[4]) = t_object::f_of(p->v_structure);
 				pc0[4] = p->v_structure;
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_set;
 				p->f_field_get(index) = value;
 			}
@@ -162,14 +162,14 @@ void t_code::f_object_put_clear(t_stacked* a_base, void**& a_pc, void* a_add, vo
 				t_scoped structure = p->v_structure->f_append(key);
 				*static_cast<t_slot*>(pc0[4]) = static_cast<t_object*>(structure);
 				pc0[4] = &f_as<t_structure&>(structure);
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_add;
 				p->f_field_add(std::move(structure), std::move(value));
 			} else {
 				*static_cast<t_slot*>(pc0[4]) = t_object::f_of(p->v_structure);
 				pc0[4] = p->v_structure;
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_set;
 				p->f_field_get(index) = std::move(value);
 			}
@@ -198,12 +198,12 @@ void t_code::f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* 
 			pc0[4] = p->v_structure;
 			intptr_t index = p->f_field_index(key);
 			if (index < 0) {
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_class;
 				f_get_of_type(*p, key, stack);
 			} else {
 				*reinterpret_cast<size_t*>(pc0 + 5) = index;
-				f_engine()->f_synchronize();
+				std::atomic_thread_fence(std::memory_order_release);
 				pc0[0] = a_instance;
 				stack[0].f_construct(p->f_field_get(index));
 				stack[1].f_construct();
@@ -451,6 +451,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_GET_MONOMORPHIC_CLASS)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -467,6 +468,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_GET_MONOMORPHIC_INSTANCE)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -494,6 +496,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_GET_MEGAMORPHIC)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -517,6 +520,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_MONOMORPHIC_ADD)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -542,6 +546,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_MONOMORPHIC_SET)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -571,6 +576,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_MEGAMORPHIC)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -586,6 +592,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_CLEAR_MONOMORPHIC_ADD)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -611,6 +618,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_CLEAR_MONOMORPHIC_SET)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -640,6 +648,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_CLEAR_MEGAMORPHIC)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -705,6 +714,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET_MONOMORPHIC_CLASS)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -721,6 +731,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET_MONOMORPHIC_INSTANCE)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);
@@ -750,6 +761,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET_MEGAMORPHIC)
 			{
+				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
 				pc += 6;
 				t_stacked* stack = base + reinterpret_cast<size_t>(pc0[1]);

@@ -9,20 +9,9 @@ Below are modifications.
 
 Each mutator thread has its own increment/decrement queues.
 
-This is in order to avoid heavy synchronization on queueing references across threads.
+They are single producer single consumer circular queues.
 
-Increment/Decrement queues are fixed size ring buffers.
-
-
-## Memory Synchronization
-
-Memory synchronization of each queue is done by context switching of native threads.
-
-The queueing operation itself does not emit any memory barrier instruction and only expects that the compiler does not reorder the instructions of the operation.
-
-Instead, it is assumed that context switching involves memory barriers and memory orders are preserved between before and after context switching.
-
-On memory synchronization, all synchronizers wake up all together, not in order.
+This makes memory synchronization between mutators and collector simple.
 
 
 ## Scanning Stacks
@@ -36,11 +25,19 @@ Other references including those on native stacks are tracked by smart pointers.
 
 ## Frequency of Cycle Collection
 
-Cycle collection only runs every certain epochs.
+The cycle collection runs only when an increased number of live objects has exceeded a certain threshold.
 
-The list of root candidates is represented by an intrusive single linked list.
+The key point is that the list of root candidates is represented by an intrusive doubly linked list.
 
-So the overflow of the list does not have to be cared about even if cycle collections are skipped.
+This avoids the overflow of the list.
+And this also allows the decrement phase removing objects from the list and freeing them immediately when their reference counts have reached to zero.
+
+Therefore, the cycle collection can be skipped as long as the number of live objects does not increase.
+
+
+## Scanning Object Graphs
+
+Scanning object graphs is done non-recursively.
 
 
 ## Increment Operation
@@ -49,4 +46,4 @@ Increment operation does not recursively scan blacks.
 
 Scanning blacks on every increment operation turned out to be expensive in the implementation.
 
-So the increment operation switched to marking just only its target object as black.
+Therefore, the increment operation switched to marking just only its target object as black.
