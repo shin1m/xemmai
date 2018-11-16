@@ -83,16 +83,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 	static t_scoped f_string(double a_self);
 	static intptr_t f__hash(double a_self)
 	{
-		union
-		{
-			double v_d;
-			intptr_t v_is[sizeof(double) / sizeof(intptr_t)];
-		} u;
-		u.v_d = a_self;
-		intptr_t n = 0;
-		intptr_t i = sizeof(double) / sizeof(intptr_t);
-		while (i > 0) n ^= u.v_is[--i];
-		return n;
+		return std::hash<double>{}(a_self);
 	}
 	static double f__plus(double a_self)
 	{

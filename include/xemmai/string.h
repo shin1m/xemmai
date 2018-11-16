@@ -4,8 +4,6 @@
 #include "object.h"
 #include <algorithm>
 
-//#define XEMMAI__STRING__HASHED
-
 namespace xemmai
 {
 
@@ -15,10 +13,6 @@ class t_string
 	friend struct t_type_of<t_string>;
 
 	size_t v_size;
-#ifdef XEMMAI__STRING__HASHED
-	mutable bool v_hashed = false;
-	mutable size_t v_hash;
-#endif
 
 	t_string(size_t a_size) : v_size(a_size)
 	{
@@ -54,23 +48,11 @@ public:
 	}
 	intptr_t f_hash() const
 	{
-#ifdef XEMMAI__STRING__HASHED
-		if (!v_hashed) {
-			v_hash = std::hash<std::wstring_view>{}(*this);
-			v_hashed = true;
-		}
-		return v_hash;
-#else
 		return std::hash<std::wstring_view>{}(*this);
-#endif
 	}
 	bool operator==(const t_string& a_x) const
 	{
-#ifdef XEMMAI__STRING__HASHED
-		return f_hash() == a_x.f_hash() && static_cast<std::wstring_view>(*this) == a_x;
-#else
 		return v_size == a_x.v_size && std::char_traits<wchar_t>::compare(*this, a_x, v_size) == 0;
-#endif
 	}
 	bool operator!=(const t_string& a_x) const
 	{
