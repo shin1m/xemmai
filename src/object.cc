@@ -11,12 +11,12 @@ XEMMAI__PORTABLE__THREAD t_object* t_object::v_scan_stack;
 XEMMAI__PORTABLE__THREAD t_object* t_object::v_cycle;
 XEMMAI__PORTABLE__THREAD t_object* t_object::v_cycles;
 
-void t_object::f_collect(bool a_reviving)
+void t_object::f_collect()
 {
 	while (v_cycles) {
 		std::lock_guard<std::mutex> lock(f_engine()->v_object__reviving__mutex);
 		auto p = v_cycles;
-		if (a_reviving) {
+		if (f_engine()->v_object__reviving) {
 			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0 && !p->v_type->v_revive) if (!(p = p->v_next)) break;
 		} else {
 			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0) if (!(p = p->v_next)) break;
@@ -150,7 +150,7 @@ void t_object::f_field_add(t_scoped&& a_structure, t_scoped&& a_value)
 			auto fields = new(index + 4) t_structure::t_fields(index + 4);
 			for (size_t i = 0; i < index; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i]));
 			std::swap(v_fields, fields);
-			f_global()->f_type<t_structure::t_discard>()->f_new<t_structure::t_discard>(true)->f_as<t_structure::t_discard>().v_fields = fields;
+			f_new<t_structure::t_discard>(f_global(), true)->f_as<t_structure::t_discard>().v_fields = fields;
 		}
 		(*v_fields)[index].f_construct(std::move(a_value));
 	}
@@ -207,7 +207,7 @@ void t_object::f_field_remove(size_t a_index)
 		for (; i < a_index; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i]));
 		for (; i < size; ++i) (*fields)[i].f_construct(std::move((*v_fields)[i + 1]));
 		std::swap(v_fields, fields);
-		f_global()->f_type<t_structure::t_discard>()->f_new<t_structure::t_discard>(true)->f_as<t_structure::t_discard>().v_fields = fields;
+		f_new<t_structure::t_discard>(f_global(), true)->f_as<t_structure::t_discard>().v_fields = fields;
 	} else {
 		(*v_fields)[a_index].f_destruct();
 		for (; a_index < size; ++a_index) (*v_fields)[a_index].f_construct(std::move((*v_fields)[a_index + 1]));

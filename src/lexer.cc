@@ -656,7 +656,7 @@ void t_lexer::f_next()
 
 t_scoped t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 {
-	return f_global()->f_type<t_error>()->f_new<t_error>(false, a_lexer);
+	return f_new<t_error>(f_global(), false, a_lexer);
 }
 
 void t_lexer::t_error::f_dump() const

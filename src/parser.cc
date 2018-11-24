@@ -828,7 +828,7 @@ void t_parser::operator()(ast::t_scope& a_scope)
 
 t_scoped t_parser::t_error::f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at)
 {
-	return f_global()->f_type<t_error>()->f_new<t_error>(false, a_message, a_path, a_at);
+	return f_new<t_error>(f_global(), false, a_message, a_path, a_at);
 }
 
 void t_parser::t_error::f_dump() const

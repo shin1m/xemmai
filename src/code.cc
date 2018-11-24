@@ -1754,7 +1754,7 @@ void t_code::f_try(t_context* a_context)
 
 t_scoped t_code::f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum)
 {
-	return f_global()->f_type<t_code>()->f_new<t_code>(true, a_module, a_shared, a_variadic, a_privates, a_shareds, a_arguments, a_minimum);
+	return f_new<t_code>(f_global(), true, a_module, a_shared, a_variadic, a_privates, a_shareds, a_arguments, a_minimum);
 }
 
 const t_at* t_code::f_at(void** a_address) const

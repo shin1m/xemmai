@@ -52,7 +52,7 @@ void t_writer::f_unshift(t_io* a_extension)
 
 t_scoped t_writer::f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding)
 {
-	return f_extension<t_io>(f_engine()->f_module_io())->f_type<t_writer>()->f_new<t_writer>(false, std::move(a_stream), a_encoding);
+	return f_new<t_writer>(f_extension<t_io>(f_engine()->f_module_io()), false, std::move(a_stream), a_encoding);
 }
 
 t_writer::t_writer(t_scoped&& a_stream, std::wstring_view a_encoding) : v_cd(iconv_open(portable::f_convert(a_encoding).c_str(), "wchar_t"))

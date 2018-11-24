@@ -58,7 +58,7 @@ void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
 
 t_scoped t_dictionary::f_instantiate()
 {
-	return f_global()->f_type<t_dictionary>()->f_new<t_dictionary>(false, f_global()->f_type<t_dictionary::t_table>());
+	return f_new<t_dictionary>(f_global(), false, f_global()->f_type<t_dictionary::t_table>());
 }
 
 t_scoped t_dictionary::f_put(const t_value& a_key, t_scoped&& a_value)

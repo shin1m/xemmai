@@ -7,7 +7,7 @@ namespace xemmai
 
 t_scoped t_native::f_instantiate(t_extension::t_function a_function, t_extension* a_extension)
 {
-	return f_global()->f_type<t_native>()->f_new<t_native>(true, a_function, a_extension);
+	return f_new<t_native>(f_global(), true, a_function, a_extension);
 }
 
 size_t t_type_of<t_native>::f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n)

@@ -29,7 +29,7 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 
 t_scoped t_fiber::f_instantiate(t_scoped&& a_callable, size_t a_stack, bool a_main, bool a_active)
 {
-	return f_global()->f_type<t_fiber>()->f_new<t_fiber>(false, std::move(a_callable), a_stack, a_main, a_active);
+	return f_new<t_fiber>(f_global(), false, std::move(a_callable), a_stack, a_main, a_active);
 }
 
 template<typename T_context>

@@ -126,6 +126,12 @@ inline T* f_extension(t_object* a_module)
 	return static_cast<T*>(static_cast<t_library&>(f_as<t_module&>(a_module)).v_extension);
 }
 
+template<typename T_type, typename T_extension, typename... T_an>
+inline t_scoped f_new(T_extension* a_extension, bool a_shared, T_an&&... a_an)
+{
+	return a_extension->template f_type<T_type>()->template f_new<T_type>(a_shared, std::forward<T_an>(a_an)...);
+}
+
 }
 
 #define XEMMAI__MODULE__FACTORY extern "C" XEMMAI__PORTABLE__DEFINE_EXPORT xemmai::t_extension* f_factory

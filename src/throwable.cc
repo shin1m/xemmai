@@ -39,7 +39,7 @@ t_throwable::~t_throwable()
 
 t_scoped t_throwable::f_instantiate(std::wstring_view a_message)
 {
-	return f_global()->f_type<t_throwable>()->f_new<t_throwable>(false, a_message);
+	return f_new<t_throwable>(f_global(), false, a_message);
 }
 
 void t_throwable::f_dump() const

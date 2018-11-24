@@ -40,7 +40,10 @@ void t_engine::f_collector()
 			break;
 		}
 		++v_collector__epoch;
-		bool reviving = false;
+		{
+			std::lock_guard<std::mutex> lock(v_object__reviving__mutex);
+			v_object__reviving = false;
+		}
 		{
 			std::lock_guard<std::mutex> lock(v_thread__mutex);
 			for (auto p = &v_thread__internals; *p;) {
@@ -57,7 +60,7 @@ void t_engine::f_collector()
 						if (epoch > reviving)
 							q->v_reviving = nullptr;
 						else
-							reviving = true;
+							v_object__reviving = true;
 					}
 				}
 				if (q->v_done > 0) ++q->v_done;
@@ -71,7 +74,7 @@ void t_engine::f_collector()
 				}
 			}
 		}
-		t_object::f_collect(reviving);
+		t_object::f_collect();
 		if (v_object__pool0.v_freed > 0) v_object__pool0.f_return();
 		if (v_object__pool1.v_freed > 0) v_object__pool1.f_return();
 		if (v_object__pool2.v_freed > 0) v_object__pool2.f_return();

@@ -89,7 +89,7 @@ t_scoped t_thread::f_instantiate(t_scoped&& a_callable, size_t a_stack)
 	auto fiber = t_fiber::f_instantiate(std::move(a_callable), a_stack, true, true);
 	auto internal = new t_internal();
 	internal->v_thread = nullptr;
-	auto object = f_global()->f_type<t_thread>()->f_new<t_thread>(true, internal, std::move(fiber));
+	auto object = f_new<t_thread>(f_global(), true, internal, std::move(fiber));
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_thread__mutex);
 		internal->v_next = f_engine()->v_thread__internals;

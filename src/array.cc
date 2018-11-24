@@ -39,7 +39,7 @@ void t_array::f_shrink()
 
 t_scoped t_array::f_instantiate()
 {
-	return f_global()->f_type<t_array>()->f_new<t_array>(false);
+	return f_new<t_array>(f_global(), false);
 }
 
 void t_array::f_insert(intptr_t a_index, t_scoped&& a_value)

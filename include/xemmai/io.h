@@ -106,13 +106,13 @@ inline t_slot_of<t_type>& t_io::f_type_slot<portable::t_path>()
 template<typename... T_an>
 inline t_scoped io::t_file::f_instantiate(T_an&&... a_an)
 {
-	return f_extension<t_io>(f_engine()->f_module_io())->f_type<t_file>()->f_new<t_file>(false, std::forward<T_an>(a_an)...);
+	return f_new<t_file>(f_extension<t_io>(f_engine()->f_module_io()), false, std::forward<T_an>(a_an)...);
 }
 
 template<typename T>
 inline t_scoped t_type_of<portable::t_path>::f_transfer(const t_io* a_extension, T&& a_value)
 {
-	return a_extension->f_type<portable::t_path>()->f_new<portable::t_path>(true, std::forward<T>(a_value));
+	return xemmai::f_new<portable::t_path>(a_extension, true, std::forward<T>(a_value));
 }
 
 }

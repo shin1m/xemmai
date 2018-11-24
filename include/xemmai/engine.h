@@ -81,6 +81,7 @@ class t_engine : public t_value::t_collector
 	std::atomic<size_t> v_object__allocated = 0;
 	size_t v_object__freed = 0;
 	size_t v_object__lower = 0;
+	bool v_object__reviving = false;
 	std::mutex v_object__reviving__mutex;
 	size_t v_object__release = 0;
 	size_t v_object__collect = 0;

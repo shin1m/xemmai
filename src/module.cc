@@ -44,7 +44,7 @@ t_scoped t_module::f_load_library(std::wstring_view a_name, std::wstring_view a_
 
 void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 {
-	auto scope = f_global()->f_type<t_scope>()->f_new<t_scope>(true);
+	auto scope = xemmai::f_new<t_scope>(f_global(), true);
 	auto lambda = t_lambda::f_instantiate(scope->f_as<t_scope>().f_entries(), a_code);
 	t_scoped_stack stack(2);
 	stack[1].f_construct(*a_this);
@@ -82,6 +82,7 @@ t_scoped t_module::f_instantiate(std::wstring_view a_name)
 		auto& instances = f_engine()->v_module__instances;
 		auto i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
+			f_engine()->v_object__reviving = true;
 			f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
 			f_engine()->v_module__mutex.unlock();
 			f_engine()->v_object__reviving__mutex.unlock();
