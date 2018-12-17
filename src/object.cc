@@ -15,15 +15,19 @@ void t_object::f_collect()
 {
 	while (v_cycles) {
 		std::lock_guard<std::mutex> lock(f_engine()->v_object__reviving__mutex);
-		auto p = v_cycles;
-		if (f_engine()->v_object__reviving) {
-			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0 && !p->v_type->v_revive) if (!(p = p->v_next)) break;
-		} else {
-			while (p->v_color == e_color__ORANGE && p->v_cyclic <= 0) if (!(p = p->v_next)) break;
-		}
-		if (p) {
-			p = v_cycles;
-			v_cycles = p->v_next_cycle;
+		auto cycle = v_cycles;
+		v_cycles = cycle->v_next_cycle;
+		auto p = cycle;
+		auto mutated = [&]
+		{
+			if (f_engine()->v_object__reviving)
+				do if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || p->v_type->v_revive) return true; while ((p = p->v_next) != cycle);
+			else
+				do if (p->v_color != e_color__ORANGE || p->v_cyclic > 0) return true; while ((p = p->v_next) != cycle);
+			return false;
+		};
+		if (mutated()) {
+			p = cycle;
 			auto q = p->v_next;
 			if (p->v_color == e_color__ORANGE) {
 				p->v_color = e_color__PURPLE;
@@ -34,7 +38,7 @@ void t_object::f_collect()
 				p->v_color = e_color__BLACK;
 				p->v_next = nullptr;
 			}
-			while (q) {
+			while (q != cycle) {
 				p = q;
 				q = p->v_next;
 				if (p->v_color == e_color__PURPLE) {
@@ -45,12 +49,8 @@ void t_object::f_collect()
 				}
 			}
 		} else {
-			p = v_cycles;
-			do p->v_color = e_color__RED; while (p = p->v_next);
-			p = v_cycles;
-			do p->f_cyclic_decrement(); while (p = p->v_next);
-			p = v_cycles;
-			v_cycles = p->v_next_cycle;
+			do p->v_color = e_color__RED; while ((p = p->v_next) != cycle);
+			do p->f_cyclic_decrement(); while ((p = p->v_next) != cycle);
 			do {
 				auto q = p->v_next;
 				if (p->v_type == f_engine()->v_type_class)
@@ -59,7 +59,7 @@ void t_object::f_collect()
 					p->f_as<t_structure>().~t_structure();
 				f_engine()->f_free_as_collect(p);
 				p = q;
-			} while (p);
+			} while (p != cycle);
 		}
 	}
 	for (auto& p = f_engine()->v_library__handle__finalizing; p;) {
@@ -73,7 +73,7 @@ void t_object::f_collect()
 		size_t live = f_engine()->v_object__pool0.f_live() + f_engine()->v_object__pool1.f_live() + f_engine()->v_object__pool2.f_live() + f_engine()->v_object__pool3.f_live() + f_engine()->v_object__allocated - f_engine()->v_object__freed;
 		auto& lower = f_engine()->v_object__lower;
 		if (live < lower) lower = live;
-		if (live - lower < f_engine()->v_collector__threshold) return;
+		if (live - lower < f_engine()->v_options.v_collector__threshold) return;
 		lower = live;
 		++f_engine()->v_collector__collect;
 		auto p = roots;
@@ -118,11 +118,9 @@ void t_object::f_collect()
 		do {
 			p->v_color = e_color__RED;
 			p->v_cyclic = p->v_count;
-		} while (p = p->v_next);
-		p = cycle;
-		do p->f_step<&t_object::f_scan_red>(); while (p = p->v_next);
-		p = cycle;
-		do p->v_color = e_color__ORANGE; while (p = p->v_next);
+		} while ((p = p->v_next) != cycle);
+		do p->f_step<&t_object::f_scan_red>(); while ((p = p->v_next) != cycle);
+		do p->v_color = e_color__ORANGE; while ((p = p->v_next) != cycle);
 	}
 }
 

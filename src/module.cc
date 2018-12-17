@@ -116,25 +116,22 @@ void t_module::f_main()
 	if (!f_load_and_execute_script(L"__main"sv, path)) f_throw(L"file \"" + std::wstring(path) + L"\" not found.");
 }
 
-t_module::t_module(std::wstring_view a_path) : v_path(a_path), v_iterator(f_engine()->v_module__instances__null)
-{
-}
-
 t_module::~t_module()
 {
-	if (v_iterator == f_engine()->v_module__instances__null) return;
+	if (v_iterator == decltype(v_iterator){}) return;
 	std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
 	f_engine()->v_module__instances.erase(v_iterator);
 }
 
 void t_module::f_scan(t_scan a_scan)
 {
-	a_scan(v_iterator->second);
+	if (v_iterator != decltype(v_iterator){}) a_scan(v_iterator->second);
 }
 
 void t_script::f_scan(t_scan a_scan)
 {
 	t_module::f_scan(a_scan);
+	std::lock_guard<std::mutex> lock(v_mutex);
 	for (auto& p : v_slots) a_scan(*p);
 }
 

@@ -30,10 +30,13 @@ struct t_module
 	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_name);
 	static void f_main();
 
-	std::wstring v_path;
 	std::map<std::wstring, t_slot, std::less<>>::iterator v_iterator;
+	std::wstring v_path;
 
-	t_module(std::wstring_view a_path);
+	t_module(std::map<std::wstring, t_slot, std::less<>>::iterator a_iterator, std::wstring_view a_path) : v_iterator(a_iterator), v_path(a_path)
+	{
+		v_iterator->second = t_object::f_of(this);
+	}
 	virtual ~t_module();
 	virtual void f_scan(t_scan a_scan);
 };
@@ -41,16 +44,15 @@ struct t_module
 struct t_script : t_module
 {
 	std::vector<std::unique_ptr<t_slot>> v_slots;
+	std::mutex v_mutex;
 
-	t_script(std::wstring_view a_path) : t_module(a_path)
-	{
-	}
+	using t_module::t_module;
 	virtual void f_scan(t_scan a_scan);
 	t_slot& f_slot(t_scoped&& a_p)
 	{
 		auto p = new t_slot(std::move(a_p));
-		v_slots.emplace_back(p);
-		return *p;
+		std::lock_guard<std::mutex> lock(v_mutex);
+		return *v_slots.emplace_back(p);
 	}
 	t_object* f_symbol(std::wstring_view a_value)
 	{
@@ -105,7 +107,7 @@ struct t_library : t_module
 	t_handle* v_handle;
 	t_extension* v_extension = nullptr;
 
-	t_library(std::wstring_view a_path, t_handle* a_handle) : t_module(a_path), v_handle(a_handle)
+	t_library(std::map<std::wstring, t_slot, std::less<>>::iterator a_iterator, std::wstring_view a_path, t_handle* a_handle) : t_module(a_iterator, a_path), v_handle(a_handle)
 	{
 	}
 	virtual ~t_library();

@@ -308,11 +308,12 @@ class t_object
 	}
 	void f_scan_gray_push()
 	{
-		if (v_color == e_color__GRAY && v_cyclic <= 0) {
+		if (v_color != e_color__GRAY) return;
+		if (v_cyclic > 0) {
+			f_scan_black_push();
+		} else {
 			v_color = e_color__WHITING;
 			f_push(this);
-		} else if (v_color != e_color__WHITING && v_color != e_color__WHITE) {
-			f_scan_black_push();
 		}
 	}
 	void f_scan_gray_step()
@@ -326,27 +327,26 @@ class t_object
 	}
 	void f_scan_gray()
 	{
-		if (v_color == e_color__GRAY && v_cyclic <= 0) {
+		if (v_color != e_color__GRAY) return;
+		if (v_cyclic > 0) {
+			f_scan_black();
+		} else {
 			v_color = e_color__WHITING;
 			f_loop<&t_object::f_scan_gray_step>();
-			if (v_color == e_color__WHITING) v_color = e_color__WHITE;
-		} else if (v_color != e_color__WHITE) {
-			f_scan_black();
 		}
 	}
 	void f_collect_white_push()
 	{
 		if (v_color != e_color__WHITE) return;
 		v_color = e_color__ORANGE;
-		v_next = v_cycle;
-		v_cycle = this;
+		v_next = v_cycle->v_next;
+		v_cycle->v_next = this;
 		f_push(this);
 	}
 	void f_collect_white()
 	{
 		v_color = e_color__ORANGE;
-		v_next = nullptr;
-		v_cycle = this;
+		v_cycle = v_next = this;
 		f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
 	}
 	void f_scan_red()

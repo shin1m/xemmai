@@ -75,7 +75,7 @@ t_object* t_lambda::f_code(t_object* a_module)
 {
 	size_t minimum = v_arguments - v_defaults.size();
 	if (v_variadic) --minimum;
-	t_scoped code = t_code::f_instantiate(a_module, v_shared, v_variadic, v_privates.size(), v_shareds, v_arguments, minimum);
+	auto code = t_code::f_instantiate(a_module, v_shared, v_variadic, v_privates.size(), v_shareds, v_arguments, minimum);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_module));
 	return script.f_slot(std::move(code));
 }
@@ -502,7 +502,7 @@ t_operand t_object_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
-	a_emit << e_instruction__OBJECT_GET << a_emit.f_stack() - 1 << v_key << 0 << script.f_slot(t_scoped()) << 0;
+	a_emit << e_instruction__OBJECT_GET << a_emit.f_stack() - 1 << v_key << 0 << script.f_slot({}) << 0;
 	a_emit.f_stack_map();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_emit_clear();
@@ -515,7 +515,7 @@ void t_object_get::f_method(t_emit& a_emit)
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
 	a_emit.f_pop();
-	a_emit << e_instruction__METHOD_GET << a_emit.f_stack() << v_key << 0 << script.f_slot(t_scoped()) << 0;
+	a_emit << e_instruction__METHOD_GET << a_emit.f_stack() << v_key << 0 << script.f_slot({}) << 0;
 	a_emit.f_stack_map().f_push(true).f_push(true);
 	a_emit.f_at(this);
 }
@@ -550,7 +550,7 @@ t_operand t_object_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
-	a_emit << (a_clear ? e_instruction__OBJECT_PUT_CLEAR : e_instruction__OBJECT_PUT) << a_emit.f_stack() - 2 << v_key << 0 << script.f_slot(t_scoped()) << 0;
+	a_emit << (a_clear ? e_instruction__OBJECT_PUT_CLEAR : e_instruction__OBJECT_PUT) << a_emit.f_stack() - 2 << v_key << 0 << script.f_slot({}) << 0;
 	a_emit.f_stack_map().f_pop();
 	if (a_clear) a_emit.f_pop();
 	a_emit.f_at(this);

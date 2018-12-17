@@ -9,7 +9,8 @@ XEMMAI__PORTABLE__THREAD t_structure::t_cache* t_structure::v_cache;
 
 t_structure::t_structure(size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_structure* a_parent) : v_size(a_size), v_iterator(a_iterator), v_this(t_object::f_of(this)), v_parent(t_object::f_of(a_parent))
 {
-	t_object* key = v_iterator->first;
+	v_iterator->second = t_object::f_of(this);
+	auto key = v_iterator->first;
 	size_t n = a_parent->v_size;
 	{
 		t_slot* p0 = a_parent->f_fields();
@@ -57,16 +58,14 @@ t_scoped t_structure::f_append(t_object* a_key)
 	auto i = v_children.lower_bound(a_key);
 	if (i == v_children.end() || i->first != a_key) {
 		i = v_children.emplace_hint(i, a_key, nullptr);
-	} else if (i->second) {
+		f_engine()->v_object__reviving__mutex.unlock();
+		return t_object::f_of(this)->f_type()->f_new_sized<t_structure>(true, (sizeof(t_slot) + sizeof(t_entry)) * (v_size + 1), v_size + 1, i, this);
+	} else {
 		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
 		f_engine()->v_object__reviving__mutex.unlock();
 		return i->second;
 	}
-	f_engine()->v_object__reviving__mutex.unlock();
-	auto object = t_object::f_of(this)->f_type()->f_new_sized<t_structure>(true, (sizeof(t_slot) + sizeof(t_entry)) * (v_size + 1), v_size + 1, i, this);
-	i->second = object;
-	return object;
 }
 
 t_scoped t_structure::f_remove(size_t a_index)

@@ -787,15 +787,12 @@ inline t_scoped t_derived<T>::f_do_construct(t_stacked* a_stack, size_t a_n)
 template<typename T, typename... T_an>
 t_scoped t_module::f_new(std::wstring_view a_name, T_an&&... a_an)
 {
-	auto object = f_global()->f_type<t_module>()->f_new<T>(true, std::forward<T_an>(a_an)...);
-	auto& module = object->template f_as<t_module>();
-	t_scoped second = object;
+	typename decltype(f_engine()->v_module__instances)::iterator i;
 	{
 		std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
-		module.v_iterator = f_engine()->v_module__instances.emplace(a_name, t_slot()).first;
-		module.v_iterator->second = std::move(second);
+		i = f_engine()->v_module__instances.emplace(a_name, nullptr).first;
 	}
-	return object;
+	return f_global()->f_type<t_module>()->f_new<T>(true, i, std::forward<T_an>(a_an)...);
 }
 
 template<typename T_context, typename T_main>

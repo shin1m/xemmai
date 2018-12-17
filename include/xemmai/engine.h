@@ -66,14 +66,21 @@ class t_engine : public t_value::t_collector
 			return this->f_allocated() - this->f_freed() - v_freed;
 		}
 	};
+public:
+	struct t_options
+	{
+#ifdef NDEBUG
+		size_t v_collector__threshold = 1024 * 16;
+#else
+		size_t v_collector__threshold = 64;
+#endif
+		size_t v_stack_size = 1 << 10;
+		bool v_verbose = false;
+	};
 
+private:
 	static XEMMAI__PORTABLE__THREAD size_t v_local_object__allocated;
 
-#ifdef NDEBUG
-	size_t v_collector__threshold = 1024 * 16;
-#else
-	size_t v_collector__threshold = 64;
-#endif
 	t_pool<t_object_and<0>, 4096> v_object__pool0;
 	t_pool<t_object_and<1>, 4096> v_object__pool1;
 	t_pool<t_object_and<2>, 4096> v_object__pool2;
@@ -95,7 +102,6 @@ class t_engine : public t_value::t_collector
 	t_type* v_type_class;
 	t_type* v_type_structure;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
-	std::map<std::wstring, t_slot, std::less<>>::iterator v_module__instances__null;
 	std::mutex v_module__mutex;
 	std::condition_variable v_module__condition;
 	t_object* v_module__thread = nullptr;
@@ -108,8 +114,7 @@ class t_engine : public t_value::t_collector
 	t_scoped v_module_io;
 	t_scoped v_fiber_exit;
 	t_scoped v_thread;
-	size_t v_stack_size;
-	bool v_verbose;
+	t_options v_options;
 	t_debugger* v_debugger = nullptr;
 	bool v_debug__stopping = false;
 	size_t v_debug__safe = 0;
@@ -207,7 +212,7 @@ class t_engine : public t_value::t_collector
 	void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
 
 public:
-	t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments);
+	t_engine(const t_options& a_options, size_t a_count, char** a_arguments);
 	~t_engine();
 	t_object* f_module_global() const
 	{

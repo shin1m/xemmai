@@ -456,7 +456,7 @@ t_debugger* t_debugger::v_instance;
 int main(int argc, char* argv[])
 {
 	std::setlocale(LC_ALL, "");
-	bool verbose = false;
+	t_engine::t_options options;
 	int debug = -1;
 	{
 		char** end = argv + argc;
@@ -465,7 +465,9 @@ int main(int argc, char* argv[])
 			if ((*p)[0] == '-' && (*p)[1] == '-') {
 				const char* v = *p + 2;
 				if (std::strcmp(v, "verbose") == 0) {
-					verbose = true;
+					options.v_verbose = true;
+				} else if (std::strncmp(v, "collector-threshold=", 20) == 0) {
+					std::sscanf(v + 20, "%u", &options.v_collector__threshold);
 				} else if (std::strncmp(v, "debug", 5) == 0) {
 					debug = 2;
 					if (v[5] == '=') std::sscanf(v + 6, "%u", &debug);
@@ -488,7 +490,7 @@ int main(int argc, char* argv[])
 		pthread_sigmask(SIG_BLOCK, &set, NULL);
 #endif
 	}
-	xemmai::t_engine engine(1 << 10, verbose, argc, argv);
+	xemmai::t_engine engine(options, argc, argv);
 	if (debug < 0) return static_cast<int>(engine.f_run(nullptr));
 	io::t_file out(debug == 2 ? dup(2) : debug, "w");
 	::t_debugger debugger(engine, out);

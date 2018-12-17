@@ -19,6 +19,7 @@ class t_symbol
 
 	t_symbol(std::map<std::wstring, t_slot, std::less<>>::iterator a_entry) : v_entry(a_entry)
 	{
+		v_entry->second = t_object::f_of(this);
 	}
 	~t_symbol();
 

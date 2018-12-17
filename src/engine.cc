@@ -23,7 +23,7 @@ void t_engine::f_pools__return()
 void t_engine::f_collector()
 {
 	t_value::v_collector = this;
-	if (v_verbose) std::fprintf(stderr, "collector starting...\n");
+	if (v_options.v_verbose) std::fprintf(stderr, "collector starting...\n");
 	t_object::v_roots.v_next = t_object::v_roots.v_previous = reinterpret_cast<t_object*>(&t_object::v_roots);
 	while (true) {
 		{
@@ -33,7 +33,7 @@ void t_engine::f_collector()
 			do v_collector__wake.wait(lock); while (!v_collector__running);
 		}
 		if (v_collector__quitting) {
-			if (v_verbose) std::fprintf(stderr, "collector quitting...\n");
+			if (v_options.v_verbose) std::fprintf(stderr, "collector quitting...\n");
 			std::lock_guard<std::mutex> lock(v_collector__mutex);
 			v_collector__running = false;
 			v_collector__done.notify_one();
@@ -113,7 +113,7 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 	--v_debug__safe;
 }
 
-t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_arguments) : v_stack_size(a_stack), v_verbose(a_verbose)
+t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_arguments) : v_options(a_options)
 {
 	v_thread__internals->f_initialize();
 	auto structure_root = f_object__allocate_on_boot(sizeof(t_structure));
@@ -138,11 +138,8 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	v_object__pool3.f_grow();
 	auto type_module = type->f_derive<t_type_of<t_module>>();
 	type_module->f_as<t_type>().v_revive = true;
-	v_module_global = type_module->f_as<t_type>().f_new<t_library>(true, L""sv, nullptr);
+	v_module_global = type_module->f_as<t_type>().f_new<t_library>(true, v_module__instances.emplace(L"__global"sv, nullptr).first, L""sv, nullptr);
 	auto& library = v_module_global->f_as<t_library>();
-	v_module__instances__null = v_module__instances.emplace(L""sv, t_slot()).first;
-	library.v_iterator = v_module__instances.emplace(L"__global"sv, t_slot()).first;
-	library.v_iterator->second = v_module_global;
 	type->v_module = v_module_global;
 	v_type_class->v_module = v_module_global;
 	v_type_structure->v_module = v_module_global;
@@ -151,7 +148,7 @@ t_engine::t_engine(size_t a_stack, bool a_verbose, size_t a_count, char** a_argu
 	v_fiber_exit = t_object::f_allocate(type, true, 0);
 	auto type_thread = type->f_derive<t_type_of<t_thread>>();
 	{
-		auto fiber = type_fiber->f_as<t_type>().f_new<t_fiber>(false, nullptr, v_stack_size, true, true);
+		auto fiber = type_fiber->f_as<t_type>().f_new<t_fiber>(false, nullptr, v_options.v_stack_size, true, true);
 		v_thread = type_thread->f_as<t_type>().f_new<t_thread>(true, v_thread__internals, t_scoped(fiber));
 		v_thread__internals->v_thread = t_thread::v_current = v_thread;
 		v_thread->f_as<t_thread>().v_active = std::move(fiber);
@@ -252,7 +249,7 @@ t_engine::~t_engine()
 		internal->v_cache_missed = t_thread::v_cache_missed;
 	}
 	f_pools__return();
-	v_collector__threshold = 0;
+	v_options.v_collector__threshold = 0;
 	f_wait();
 	f_wait();
 	f_wait();
@@ -268,7 +265,7 @@ t_engine::~t_engine()
 	v_object__pool1.f_clear();
 	v_object__pool2.f_clear();
 	v_object__pool3.f_clear();
-	if (v_verbose) {
+	if (v_options.v_verbose) {
 		std::fprintf(stderr, "statistics:\n\tt_object:\n");
 		size_t allocated = 0;
 		size_t freed = 0;

@@ -89,7 +89,7 @@ void t_type_of<t_fiber>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
 {
 	if (a_n != 1 && a_n != 2) f_throw(a_stack, a_n, L"must be called with 1 or 2 argument(s)."sv);
 	t_scoped a0 = std::move(a_stack[2]);
-	size_t size = f_engine()->v_stack_size;
+	size_t size = f_engine()->v_options.v_stack_size;
 	if (a_n == 2) {
 		t_destruct<> a1(a_stack[3]);
 		f_check<size_t>(a1.v_p, L"argument1");

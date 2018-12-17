@@ -1,21 +1,19 @@
+dist: xenial
 language: cpp
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - automake
-      - g++-7
-before_install:
-  - sudo add-apt-repository -y ppa:dns/gnu
-  - sudo apt-get -qq update
-  - sudo apt-get -qq install automake
+      - g++-8
 before_script:
   - autoreconf -is
-  - CXX=g++-7 ./configure
+  - CXX=g++-8 ./configure
   - make
 script:
   - make check
+  - cat test/*.log
+  - XM_LOG_FLAGS='--collector-threshold=0' make check
   - cat test/*.log
   - XM_LOG_FLAGS='--debug </dev/null' make check
   - cat test/*.log
