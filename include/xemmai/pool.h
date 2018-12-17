@@ -21,10 +21,6 @@ class t_shared_pool
 	{
 		decltype(T::v_next) v_head;
 		size_t v_size;
-
-		t_chunk(decltype(T::v_next) a_head, size_t a_size) : v_head(a_head), v_size(a_size)
-		{
-		}
 	};
 
 	t_block* v_blocks = nullptr;
@@ -67,7 +63,7 @@ public:
 	void f_free(decltype(T::v_next) a_p, size_t a_n)
 	{
 		std::lock_guard<std::mutex> lock(v_mutex);
-		v_chunks.push_back(t_chunk(a_p, a_n));
+		v_chunks.push_back({a_p, a_n});
 		v_freed += a_n;
 	}
 };
@@ -84,7 +80,7 @@ void t_shared_pool<T, A_size>::f_grow()
 		++p;
 	}
 	p->v_next = nullptr;
-	v_chunks.push_back(t_chunk(block->v_cells, A_size));
+	v_chunks.push_back({block->v_cells, A_size});
 }
 
 template<typename T>

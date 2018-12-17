@@ -288,12 +288,12 @@ struct t_code
 	const t_at* f_at(void** a_address) const;
 	void f_at(size_t a_address, const t_at& a_at)
 	{
-		v_ats.push_back(t_address_at(a_address, a_at));
+		v_ats.emplace_back(a_address, a_at);
 	}
 	const std::vector<bool>& f_stack_map(void** a_address) const;
 	void f_stack_map(int a_offset, const std::vector<bool>& a_pattern)
 	{
-		v_stack_map.push_back(t_stack_map{f_last() + a_offset, &*v_stack_patterns.insert(a_pattern).first});
+		v_stack_map.push_back({f_last() + a_offset, &*v_stack_patterns.insert(a_pattern).first});
 	}
 	void f_stack_clear(void** a_address, t_stacked* a_base) const;
 	void f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_stack) const;

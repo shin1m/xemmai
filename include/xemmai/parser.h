@@ -30,6 +30,10 @@ class t_parser
 	{
 		f_throw(a_message, v_lexer.f_at());
 	}
+	t_slot& f_symbol() const
+	{
+		return v_module.f_slot(t_symbol::f_instantiate({v_lexer.f_value().data(), v_lexer.f_value().size()}));
+	}
 	t_code::t_variable& f_variable(ast::t_scope* a_scope, t_object* a_symbol);
 	template<typename T>
 	T f_number() const

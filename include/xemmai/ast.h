@@ -568,8 +568,7 @@ struct t_emit
 	}
 	t_code::t_label& f_label()
 	{
-		v_labels->push_back(t_code::t_label());
-		return v_labels->back();
+		return v_labels->emplace_back();
 	}
 	void f_resolve()
 	{
@@ -591,7 +590,7 @@ struct t_emit
 	void f_emit_safe_point(ast::t_node* a_node)
 	{
 		if (!v_safe_points) return;
-		v_safe_positions->push_back(std::make_tuple(a_node->v_at.f_line(), v_code->f_last(), a_node->v_at.f_column()));
+		v_safe_positions->emplace_back(a_node->v_at.f_line(), v_code->f_last(), a_node->v_at.f_column());
 		*this << e_instruction__SAFE_POINT;
 		f_at(a_node);
 	}

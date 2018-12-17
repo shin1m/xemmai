@@ -54,10 +54,6 @@ struct t_script : t_module
 		std::lock_guard<std::mutex> lock(v_mutex);
 		return *v_slots.emplace_back(p);
 	}
-	t_object* f_symbol(std::wstring_view a_value)
-	{
-		return f_slot(t_symbol::f_instantiate(a_value));
-	}
 };
 
 struct t_debug_script : t_script

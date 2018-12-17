@@ -38,7 +38,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			switch (v_lexer.f_token()) {
 			case t_lexer::e_token__SYMBOL:
 				{
-					auto symbol = v_module.f_symbol({v_lexer.f_value().data(), v_lexer.f_value().size()});
+					t_object* symbol = f_symbol();
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 						if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
@@ -60,7 +60,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					v_lexer.f_next();
 					if (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 						t_at at = v_lexer.f_at();
-						auto symbol = v_module.f_symbol({v_lexer.f_value().data(), v_lexer.f_value().size()});
+						t_object* symbol = f_symbol();
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 							if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
@@ -80,7 +80,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__SYMBOL:
 			{
-				auto& symbol = v_module.f_slot(t_symbol::f_instantiate({v_lexer.f_value().data(), v_lexer.f_value().size()}));
+				auto& symbol = f_symbol();
 				v_lexer.f_next();
 				return std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, symbol));
 			}
@@ -115,7 +115,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					while (true) {
 						switch (v_lexer.f_token()) {
 						case t_lexer::e_token__SYMBOL:
-							lambda->v_privates.push_back(&lambda->v_variables.emplace(v_module.f_symbol({v_lexer.f_value().data(), v_lexer.f_value().size()}), t_code::t_variable()).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.emplace(f_symbol(), t_code::t_variable()).first->second);
 							v_lexer.f_next();
 							if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 								v_lexer.f_next();
@@ -132,7 +132,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						case t_lexer::e_token__ASTERISK:
 							v_lexer.f_next();
 							if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol."sv);
-							lambda->v_privates.push_back(&lambda->v_variables.emplace(v_module.f_symbol({v_lexer.f_value().data(), v_lexer.f_value().size()}), t_code::t_variable()).first->second);
+							lambda->v_privates.push_back(&lambda->v_variables.emplace(f_symbol(), t_code::t_variable()).first->second);
 							lambda->v_variadic = true;
 							v_lexer.f_next();
 							break;
@@ -326,7 +326,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 				}
 			case t_lexer::e_token__SYMBOL:
 				{
-					auto symbol = v_module.f_symbol({v_lexer.f_value().data(), v_lexer.f_value().size()});
+					t_object* symbol = f_symbol();
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 						if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
@@ -355,7 +355,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					}
 				case t_lexer::e_token__SYMBOL:
 					{
-						auto key = v_module.f_symbol({v_lexer.f_value().data(), v_lexer.f_value().size()});
+						t_object* key = f_symbol();
 						v_lexer.f_next();
 						return f_action(a_indent, token == t_lexer::e_token__QUESTION ? static_cast<ast::t_node*>(new ast::t_object_has(at, std::move(a_target), key)) : static_cast<ast::t_node*>(new ast::t_object_remove(at, std::move(a_target), key)), a_assignable);
 					}
@@ -602,7 +602,7 @@ std::unique_ptr<ast::t_node> t_parser::f_and_also(bool a_assignable)
 		v_lexer.f_next();
 		std::unique_ptr<ast::t_if> branch(new ast::t_if(at, std::move(node)));
 		branch->v_true.push_back(f_or(false));
-		branch->v_false.push_back(std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, false)));
+		branch->v_false.emplace_back(new ast::t_literal<bool>(at, false));
 		node = std::move(branch);
 	}
 	return node;
@@ -615,7 +615,7 @@ std::unique_ptr<ast::t_node> t_parser::f_or_else(bool a_assignable)
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
 		std::unique_ptr<ast::t_if> branch(new ast::t_if(at, std::move(node)));
-		branch->v_true.push_back(std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, true)));
+		branch->v_true.emplace_back(new ast::t_literal<bool>(at, true));
 		branch->v_false.push_back(f_and_also(false));
 		node = std::move(branch);
 	}
@@ -728,7 +728,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 					v_lexer.f_next();
 					std::unique_ptr<ast::t_node> expression = f_expression();
 					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol."sv);
-					auto symbol = v_module.f_symbol({v_lexer.f_value().data(), v_lexer.f_value().size()});
+					t_object* symbol = f_symbol();
 					v_lexer.f_next();
 					std::unique_ptr<ast::t_try::t_catch> c(new ast::t_try::t_catch(std::move(expression), f_variable(v_scope, symbol)));
 					f_block_or_expression(indent, c->v_block);
