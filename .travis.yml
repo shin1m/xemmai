@@ -6,11 +6,15 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-8
+env:
+  - CONFIGURE_OPTION='--enable-debug CXX=g++-8' ULIMIT_OPTION='-Ss 65536'
+  - CONFIGURE_OPTION='CXX=g++-8'
 before_script:
   - autoreconf -is
-  - CXX=g++-8 ./configure
+  - ./configure $CONFIGURE_OPTION
   - make
 script:
+  - ulimit $ULIMIT_OPTION
   - make check
   - cat test/*.log
   - XM_LOG_FLAGS='--collector-threshold=0' make check
