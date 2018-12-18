@@ -18,9 +18,9 @@ This makes memory synchronization between mutators and collector simple.
 
 There is no special treatment for scanning stacks.
 
-Language level stacks are scanned as part of `Fiber` object.
+Language level stacks are tracked by smart pointers as part of `Fiber` object.
 
-Other references including those on native stacks are tracked by smart pointers.
+Other references including those on native stacks are also tracked by smart pointers.
 
 
 ## Frequency of Cycle Collection
@@ -40,10 +40,10 @@ Therefore, the cycle collection can be skipped as long as the number of live obj
 Scanning object graphs is done non-recursively.
 
 
-## Increment Operation
+## No Scanning Blacks on Each Increment/Decrement Operation
 
-Increment operation does not recursively scan blacks.
+Increment/decrement operations do not recursively scan blacks.
 
-Scanning blacks on every increment operation turned out to be expensive in the implementation.
+Scanning blacks on every increment/decrement operation turned out to be expensive in the implementation.
 
-Therefore, the increment operation switched to marking just only its target object as black.
+Therefore, the increment/decrement operations switched to marking just only their target objects as black/purple respectively.
