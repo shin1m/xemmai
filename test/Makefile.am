@@ -44,6 +44,7 @@ scripts = \
 	path.xm \
 	hanoi.xm \
 	hanoi2.xm \
+	hanoi4.xm \
 	prime.xm \
 	prime2.xm \
 	prime3.xm \
