@@ -231,21 +231,11 @@ class t_object
 	XEMMAI__PORTABLE__FORCE_INLINE void f_increment()
 	{
 		++v_count;
-#ifdef XEMMAI__OBJECT__CALL_SCAN_BLACK
-		f_scan_black();
-#else
 		v_color = e_color__BLACK;
-#endif
 	}
 	void f_decrement_push()
 	{
 		if (--v_count > 0) {
-#ifdef XEMMAI__OBJECT__CALL_SCAN_BLACK
-			auto stack = v_scan_stack;
-			v_scan_stack = nullptr;
-			f_scan_black();
-			v_scan_stack = stack;
-#endif
 			v_color = e_color__PURPLE;
 			if (!v_next) f_append(this);
 		} else {
@@ -257,26 +247,11 @@ class t_object
 	{
 		assert(v_count > 0);
 		if (--v_count > 0) {
-#ifdef XEMMAI__OBJECT__CALL_SCAN_BLACK
-			f_scan_black();
-#endif
 			v_color = e_color__PURPLE;
 			if (!v_next) f_append(this);
 		} else {
 			f_loop<&t_object::f_decrement_step>();
 		}
-	}
-	void f_scan_black_push()
-	{
-		if (v_color == e_color__BLACK) return;
-		v_color = e_color__BLACK;
-		f_push(this);
-	}
-	void f_scan_black()
-	{
-		if (v_color == e_color__BLACK) return;
-		v_color = e_color__BLACK;
-		f_loop<&t_object::f_step<&t_object::f_scan_black_push>>();
 	}
 	void f_mark_gray_push()
 	{
@@ -293,28 +268,23 @@ class t_object
 		v_cyclic = v_count;
 		f_loop<&t_object::f_step<&t_object::f_mark_gray_push>>();
 	}
+	void f_scan_black_push()
+	{
+		if (v_color == e_color__BLACK) return;
+		v_color = e_color__BLACK;
+		f_push(this);
+	}
 	void f_scan_gray_scan_black_push()
 	{
-		switch (v_color) {
-		case e_color__BLACK:
-			break;
-		case e_color__WHITING:
-			v_color = e_color__BLACK;
-			break;
-		default:
-			v_color = e_color__BLACK;
-			f_push(this);
-		}
+		if (v_color == e_color__BLACK) return;
+		if (v_color != e_color__WHITING) f_push(this);
+		v_color = e_color__BLACK;
 	}
 	void f_scan_gray_push()
 	{
 		if (v_color != e_color__GRAY) return;
-		if (v_cyclic > 0) {
-			f_scan_black_push();
-		} else {
-			v_color = e_color__WHITING;
-			f_push(this);
-		}
+		v_color = v_cyclic > 0 ? e_color__BLACK : e_color__WHITING;
+		f_push(this);
 	}
 	void f_scan_gray_step()
 	{
@@ -329,9 +299,9 @@ class t_object
 	{
 		if (v_color != e_color__GRAY) return;
 		if (v_cyclic > 0) {
-			f_scan_black();
+			v_color = e_color__BLACK;
+			f_loop<&t_object::f_step<&t_object::f_scan_black_push>>();
 		} else {
-			v_color = e_color__WHITING;
 			f_loop<&t_object::f_scan_gray_step>();
 		}
 	}
