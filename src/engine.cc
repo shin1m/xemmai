@@ -367,8 +367,8 @@ void t_engine::f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc
 		std::fprintf(a_out, "%ls", path.c_str());
 		const t_at* at = code.f_at(a_pc);
 		if (at) {
-			std::fprintf(a_out, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->f_line()), static_cast<uintptr_t>(at->f_column()));
-			f_print_with_caret(a_out, path, at->f_position(), at->f_column());
+			std::fprintf(a_out, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->v_line), static_cast<uintptr_t>(at->v_column));
+			f_print_with_caret(a_out, path, at->v_position, at->v_column);
 		} else {
 			std::fputc('\n', a_out);
 		}

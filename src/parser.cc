@@ -833,8 +833,8 @@ t_scoped t_parser::t_error::f_instantiate(std::wstring_view a_message, std::wstr
 
 void t_parser::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%" PRIuPTR ":%" PRIuPTR "\n", v_path.c_str(), static_cast<uintptr_t>(v_at.f_line()), static_cast<uintptr_t>(v_at.f_column()));
-	f_print_with_caret(stderr, v_path, v_at.f_position(), v_at.f_column());
+	std::fprintf(stderr, "at %ls:%" PRIuPTR ":%" PRIuPTR "\n", v_path.c_str(), static_cast<uintptr_t>(v_at.v_line), static_cast<uintptr_t>(v_at.v_column));
+	f_print_with_caret(stderr, v_path, v_at.v_position, v_at.v_column);
 	t_throwable::f_dump();
 }
 

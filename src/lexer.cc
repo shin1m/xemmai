@@ -57,7 +57,7 @@ void t_lexer::f_next()
 			if (v_indent.size() > n) v_indent.erase(v_indent.begin() + n, v_indent.end());
 		}
 	}
-	v_at = t_at(v_position, v_line, v_column);
+	v_at = {v_position, v_line, v_column};
 	v_value.clear();
 	switch (v_c) {
 	case WEOF:
@@ -661,8 +661,8 @@ t_scoped t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 
 void t_lexer::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%" PRIuPTR ":%" PRIuPTR "\n", v_path.c_str(), static_cast<uintptr_t>(v_at.f_line()), static_cast<uintptr_t>(v_at.f_column()));
-	f_print_with_caret(stderr, v_path, v_at.f_position(), v_at.f_column());
+	std::fprintf(stderr, "at %ls:%" PRIuPTR ":%" PRIuPTR "\n", v_path.c_str(), static_cast<uintptr_t>(v_at.v_line), static_cast<uintptr_t>(v_at.v_column));
+	f_print_with_caret(stderr, v_path, v_at.v_position, v_at.v_column);
 	t_throwable::f_dump();
 }
 

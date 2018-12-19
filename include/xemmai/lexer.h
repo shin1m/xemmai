@@ -117,7 +117,7 @@ public:
 		static t_scoped f_instantiate(t_lexer& a_lexer);
 
 		std::wstring v_path;
-		t_at v_at;
+		const t_at v_at;
 
 		t_error(t_lexer& a_lexer) : t_throwable(L"lexical error."sv), v_path(a_lexer.f_path()), v_at(a_lexer.f_at())
 		{

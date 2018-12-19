@@ -94,7 +94,7 @@ public:
 		static t_scoped f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at);
 
 		std::wstring v_path;
-		t_at v_at;
+		const t_at v_at;
 
 		t_error(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at) : t_throwable(L"syntax error: " + std::wstring(a_message)), v_path(a_path), v_at(a_at)
 		{

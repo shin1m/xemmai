@@ -135,7 +135,6 @@ public:
 			v_entry = nullptr;
 		}
 	};
-	friend class t_iterator;
 
 	static t_scoped f_instantiate();
 

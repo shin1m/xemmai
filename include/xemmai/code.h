@@ -175,28 +175,11 @@ enum t_instruction
 	e_instruction__BREAK_POINT
 };
 
-class t_at
+struct t_at
 {
 	long v_position;
 	size_t v_line;
 	size_t v_column;
-
-public:
-	t_at(long a_position, size_t a_line, size_t a_column) : v_position(a_position), v_line(a_line), v_column(a_column)
-	{
-	}
-	long f_position() const
-	{
-		return v_position;
-	}
-	size_t f_line() const
-	{
-		return v_line;
-	}
-	size_t f_column() const
-	{
-		return v_column;
-	}
 };
 
 struct t_code
@@ -207,15 +190,11 @@ struct t_code
 		bool v_varies = false;
 		size_t v_index;
 	};
-	class t_address_at : public t_at
+	struct t_at_address : t_at
 	{
 		size_t v_address;
 
-	public:
-		t_address_at(size_t a_address, const t_at& a_at) : t_at(a_at), v_address(a_address)
-		{
-		}
-		bool operator<(const t_address_at& a_other) const
+		bool operator<(const t_at_address& a_other) const
 		{
 			return v_address < a_other.v_address;
 		}
@@ -277,7 +256,7 @@ struct t_code
 	size_t v_arguments;
 	size_t v_minimum;
 	std::vector<void*> v_instructions;
-	std::vector<t_address_at> v_ats;
+	std::vector<t_at_address> v_ats;
 	std::set<std::vector<bool>> v_stack_patterns;
 	std::vector<t_stack_map> v_stack_map;
 	std::map<std::wstring, t_variable, std::less<>> v_variables;
@@ -288,7 +267,7 @@ struct t_code
 	const t_at* f_at(void** a_address) const;
 	void f_at(size_t a_address, const t_at& a_at)
 	{
-		v_ats.emplace_back(a_address, a_at);
+		v_ats.push_back({a_at, a_address});
 	}
 	const std::vector<bool>& f_stack_map(void** a_address) const;
 	void f_stack_map(int a_offset, const std::vector<bool>& a_pattern)

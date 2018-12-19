@@ -86,7 +86,7 @@ class t_node
 	friend struct xemmai::t_emit;
 
 protected:
-	t_at v_at;
+	const t_at v_at;
 
 public:
 	t_node(const t_at& a_at) : v_at(a_at)
@@ -590,7 +590,7 @@ struct t_emit
 	void f_emit_safe_point(ast::t_node* a_node)
 	{
 		if (!v_safe_points) return;
-		v_safe_positions->emplace_back(a_node->v_at.f_line(), v_code->f_last(), a_node->v_at.f_column());
+		v_safe_positions->emplace_back(a_node->v_at.v_line, v_code->f_last(), a_node->v_at.v_column);
 		*this << e_instruction__SAFE_POINT;
 		f_at(a_node);
 	}

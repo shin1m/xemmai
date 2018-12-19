@@ -1759,13 +1759,13 @@ t_scoped t_code::f_instantiate(t_object* a_module, bool a_shared, bool a_variadi
 
 const t_at* t_code::f_at(void** a_address) const
 {
-	auto i = std::lower_bound(v_ats.begin(), v_ats.end(), t_address_at(a_address - &v_instructions[0], t_at(0, 0, 0)));
+	auto i = std::lower_bound(v_ats.begin(), v_ats.end(), t_at_address{{0, 0, 0}, static_cast<size_t>(a_address - v_instructions.data())});
 	return i == v_ats.end() ? nullptr : &*i;
 }
 
 const std::vector<bool>& t_code::f_stack_map(void** a_address) const
 {
-	return *std::lower_bound(v_stack_map.begin(), v_stack_map.end(), t_stack_map{static_cast<size_t>(a_address - &v_instructions[0]), nullptr})->v_pattern;
+	return *std::lower_bound(v_stack_map.begin(), v_stack_map.end(), t_stack_map{static_cast<size_t>(a_address - v_instructions.data()), nullptr})->v_pattern;
 }
 
 void t_code::f_stack_clear(void** a_address, t_stacked* a_base) const
