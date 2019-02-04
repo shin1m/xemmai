@@ -13,10 +13,10 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 	std::putc('\t', a_out);
 	while (true) {
 		int c = std::getc(file);
-		if (c == EOF) break;
+		if (c == EOF || c == '\n') break;
 		std::putc(c, a_out);
-		if (c == '\n') break;
 	}
+	std::putc('\n', a_out);
 	std::fseek(file, a_position, SEEK_SET);
 	std::putc('\t', a_out);
 	for (size_t i = 1; i < a_column; ++i) {
