@@ -273,7 +273,7 @@ t_engine::~t_engine()
 		{
 			size_t x = a_pool.f_allocated();
 			size_t y = a_pool.f_freed();
-			std::fprintf(stderr, "\t\trank%d: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR "\n", a_rank, static_cast<uintptr_t>(x), static_cast<uintptr_t>(y), static_cast<uintptr_t>(x - y));
+			std::fprintf(stderr, "\t\trank%zu: %zu - %zu = %zu\n", a_rank, x, y, x - y);
 			allocated += x;
 			freed += y;
 		};
@@ -281,14 +281,14 @@ t_engine::~t_engine()
 		f(v_object__pool1, 1);
 		f(v_object__pool2, 2);
 		f(v_object__pool3, 3);
-		std::fprintf(stderr, "\t\trank4: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR "\n", static_cast<uintptr_t>(v_object__allocated), static_cast<uintptr_t>(v_object__freed), static_cast<uintptr_t>(v_object__allocated - v_object__freed));
+		std::fprintf(stderr, "\t\trank4: %zu - %zu = %zu\n", static_cast<size_t>(v_object__allocated), v_object__freed, v_object__allocated - v_object__freed);
 		allocated += v_object__allocated;
 		freed += v_object__freed;
-		std::fprintf(stderr, "\t\ttotal: %" PRIuPTR " - %" PRIuPTR " = %" PRIuPTR ", release = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(allocated), static_cast<uintptr_t>(freed), static_cast<uintptr_t>(allocated - freed), static_cast<uintptr_t>(v_object__release), static_cast<uintptr_t>(v_object__collect));
-		std::fprintf(stderr, "\tcollector: tick = %" PRIuPTR ", wait = %" PRIuPTR ", epoch = %" PRIuPTR ", collect = %" PRIuPTR "\n", static_cast<uintptr_t>(v_collector__tick), static_cast<uintptr_t>(v_collector__wait), static_cast<uintptr_t>(v_collector__epoch), static_cast<uintptr_t>(v_collector__collect));
+		std::fprintf(stderr, "\t\ttotal: %zu - %zu = %zu, release = %zu, collect = %zu\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
+		std::fprintf(stderr, "\tcollector: tick = %zu, wait = %zu, epoch = %zu, collect = %zu\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
 		{
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
-			std::fprintf(stderr, "\tfield cache: hit = %" PRIuPTR ", missed = %" PRIuPTR ", ratio = %.1f%%\n", static_cast<uintptr_t>(v_thread__cache_hit), static_cast<uintptr_t>(v_thread__cache_missed), base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
+			std::fprintf(stderr, "\tfield cache: hit = %zu, missed = %zu, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
 		}
 		if (allocated > freed) throw std::exception();
 	}
@@ -367,7 +367,7 @@ void t_engine::f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc
 		std::fprintf(a_out, "%ls", path.c_str());
 		const t_at* at = code.f_at(a_pc);
 		if (at) {
-			std::fprintf(a_out, ":%" PRIuPTR ":%" PRIuPTR "\n", static_cast<uintptr_t>(at->v_line), static_cast<uintptr_t>(at->v_column));
+			std::fprintf(a_out, ":%zu:%zu\n", at->v_line, at->v_column);
 			f_print_with_caret(a_out, path, at->v_position, at->v_column);
 		} else {
 			std::fputc('\n', a_out);

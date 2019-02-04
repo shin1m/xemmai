@@ -661,7 +661,7 @@ t_scoped t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 
 void t_lexer::t_error::f_dump() const
 {
-	std::fprintf(stderr, "at %ls:%" PRIuPTR ":%" PRIuPTR "\n", v_path.c_str(), static_cast<uintptr_t>(v_at.v_line), static_cast<uintptr_t>(v_at.v_column));
+	std::fprintf(stderr, "at %ls:%zu:%zu\n", v_path.c_str(), v_at.v_line, v_at.v_column);
 	f_print_with_caret(stderr, v_path, v_at.v_position, v_at.v_column);
 	t_throwable::f_dump();
 }

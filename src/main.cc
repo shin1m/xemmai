@@ -88,7 +88,7 @@ class t_debugger : public xemmai::t_debugger
 	{
 		for (auto& pair : v_break_points) {
 			std::fprintf(v_out, "%ls\n", pair.first.c_str());
-			for (auto line : pair.second) std::fprintf(v_out, "\t%" PRIuPTR "\n", static_cast<uintptr_t>(line));
+			for (auto line : pair.second) std::fprintf(v_out, "\t%zu\n", line);
 		}
 	}
 	t_debug_script* f_find_module(std::wstring_view a_path)
@@ -160,7 +160,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print_thread(size_t a_i, t_object* a_thread)
 	{
-		std::fprintf(v_out, "[%" PRIuPTR "]: %p\n", static_cast<uintptr_t>(a_i), a_thread);
+		std::fprintf(v_out, "[%zu]: %p\n", a_i, a_thread);
 		auto context = f_context(a_thread);
 		if (context) f_print(context);
 	}
