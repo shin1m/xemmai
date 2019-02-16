@@ -15,6 +15,7 @@ endif
 enum_so_SOURCES = enum.cc
 
 check_SCRIPTS = test.xm
-CLEANFILES = test.xm
-test.xm: test.xm.in
+EXTRA_DIST = test.xm.in
+CLEANFILES = $(check_SCRIPTS)
+%.xm: %.xm.in
 	cp $< $@

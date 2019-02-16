@@ -15,6 +15,7 @@ endif
 container_so_SOURCES = queue.h queue.cc container.h container.cc
 
 check_SCRIPTS = test.xm
-CLEANFILES = test.xm
-test.xm: $(srcdir)/test.xm.in
+EXTRA_DIST = test.xm.in
+CLEANFILES = $(check_SCRIPTS)
+%.xm: %.xm.in
 	cp $< $@

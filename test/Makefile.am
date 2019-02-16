@@ -2,8 +2,8 @@ TEST_EXTENSIONS = .xm .xmd .xmo
 AM_TESTS_ENVIRONMENT = export XEMMAI_MODULE_PATH=$(top_builddir)/modules;
 XM_LOG_COMPILER = $(top_builddir)/src/xemmai
 AM_XM_LOG_FLAGS = --verbose
-XMD_LOG_COMPILER = ./run-xmd $(top_builddir)/src/xemmai
-XMO_LOG_COMPILER = ./run-xmo $(top_builddir)/src/xemmai
+XMD_LOG_COMPILER = $(srcdir)/run-xmd $(top_builddir)/src/xemmai
+XMO_LOG_COMPILER = $(srcdir)/run-xmo $(top_builddir)/src/xemmai
 scripts = \
 	field.xm \
 	flow.xm \
@@ -52,25 +52,27 @@ scripts = \
 	mandelbrot.xm \
 	fix.xm \
 	time.xm \
-	totp.xm
-TESTS = $(scripts) \
-	container/test.xm \
-	callback/test.xm \
-	callback/fiber.xm \
-	callback/fiber2.xm \
-	enum/test.xm \
-	backtrace.xmd \
-	hanoi3.xmd \
+	totp.xm \
 	dump.xmo \
 	dump2.xmo \
 	dump3.xmo \
 	fd.xmo
+TESTS = $(scripts) \
+	backtrace.xmd \
+	hanoi3.xmd \
+	container/test.xm \
+	callback/test.xm \
+	callback/fiber.xm \
+	callback/fiber2.xm \
+	enum/test.xm
 EXTRA_DIST = $(scripts) \
 	list.xm \
 	run-xmd \
 	run-xmo \
+	backtrace.xmd.in \
 	backtrace.xmdi \
 	backtrace.xmde \
+	hanoi3.xmd.in \
 	hanoi3.xmdi \
 	hanoi3.xmde \
 	dump.xmoe \
@@ -80,6 +82,10 @@ EXTRA_DIST = $(scripts) \
 	test.proj
 CLEANFILES = \
 	file.xm.test \
-	text.xm.test
+	text.xm.test \
+	backtrace.xmd \
+	hanoi3.xmd
+%.xmd: %.xmd.in
+	cp $< $@
 
 SUBDIRS = container callback enum

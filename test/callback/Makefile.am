@@ -15,6 +15,7 @@ endif
 callback_so_SOURCES = callback.h callback.cc extension.cc
 
 check_SCRIPTS = test.xm fiber.xm fiber2.xm
-CLEANFILES = test.xm fiber.xm fiber2.xm
+EXTRA_DIST = test.xm.in fiber.xm.in fiber2.xm.in
+CLEANFILES = $(check_SCRIPTS)
 %.xm: %.xm.in
 	cp $< $@
