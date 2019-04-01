@@ -1,4 +1,4 @@
-# xemmai [![Build Status](https://secure.travis-ci.org/shin1m/xemmai.png)](http://travis-ci.org/shin1m/xemmai)
+# xemmai [![Build Status](https://travis-ci.org/shin1m/xemmai.svg?branch=master)](https://travis-ci.org/shin1m/xemmai)
 
 xemmai is a dynamic programming language.
 Its syntax is based on the off-side rule.
@@ -89,7 +89,7 @@ It also has a concurrent garbage collector to utilize multiple processors.
 
 The MIT License (MIT)
 
-Copyright (c) 2008-2018 Shin-ichi MORITA
+Copyright (c) 2008-2019 Shin-ichi MORITA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
