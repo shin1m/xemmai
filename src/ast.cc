@@ -123,7 +123,7 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	std::vector<bool> stack1(v_privates.size() - v_arguments, false);
 	a_emit.v_stack = &stack1;
 	auto labels0 = a_emit.v_labels;
-	std::list<t_code::t_label> labels1;
+	std::list<t_emit::t_label> labels1;
 	a_emit.v_labels = &labels1;
 	auto targets0 = a_emit.v_targets;
 	auto& return0 = a_emit.f_label();
@@ -440,7 +440,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		a_emit.f_pop().f_stack_map().f_push(live);
 	}
 	a_emit << e_instruction__YRT;
-	auto operand = [&](t_code::t_label* a_label, t_block* a_junction) -> t_code::t_label*
+	auto operand = [&](t_emit::t_label* a_label, t_block* a_junction) -> t_emit::t_label*
 	{
 		if (!a_label) {
 			a_emit << size_t(0);
@@ -460,7 +460,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	auto return0 = operand(targets0->v_return, targets0->v_return_junction);
 	auto step = break0 || continue0 || return0 ? &a_emit.f_label() : nullptr;
 	if (step) a_emit << e_instruction__JUMP << *step;
-	auto join = [&](t_code::t_label* a_label0, t_code::t_label* a_label1, t_block* a_junction)
+	auto join = [&](t_emit::t_label* a_label0, t_emit::t_label* a_label1, t_block* a_junction)
 	{
 		if (!a_label0) return;
 		a_emit.f_target(*a_label0);
@@ -1227,7 +1227,7 @@ t_scoped t_emit::operator()(ast::t_scope& a_scope)
 	v_stack = &stack;
 	t_scoped code = t_code::f_instantiate(v_module, true, false, f_stack(), a_scope.v_shareds, 0, 0);
 	v_code = &f_as<t_code&>(code);
-	std::list<t_code::t_label> labels;
+	std::list<t_label> labels;
 	v_labels = &labels;
 	t_targets targets{nullptr, nullptr, false, false, nullptr, nullptr, nullptr, nullptr, false};
 	v_targets = &targets;

@@ -497,15 +497,21 @@ struct t_set_at : t_node
 
 struct t_emit
 {
+	class t_label : std::vector<size_t>
+	{
+		friend struct t_emit;
+
+		size_t v_target;
+	};
 	struct t_targets
 	{
-		t_code::t_label* v_break;
+		t_label* v_break;
 		ast::t_block* v_break_junction;
 		bool v_break_is_tail;
 		bool v_break_must_clear;
-		t_code::t_label* v_continue;
+		t_label* v_continue;
 		ast::t_block* v_continue_junction;
-		t_code::t_label* v_return;
+		t_label* v_return;
 		ast::t_block* v_return_junction;
 		bool v_return_is_tail;
 	};
@@ -522,7 +528,7 @@ struct t_emit
 	t_code* v_code;
 	size_t v_arguments;
 	std::vector<bool>* v_stack;
-	std::list<t_code::t_label>* v_labels;
+	std::list<t_label>* v_labels;
 	t_targets* v_targets;
 	std::vector<std::tuple<size_t, size_t, size_t>>* v_safe_positions;
 
@@ -532,8 +538,12 @@ struct t_emit
 	t_scoped operator()(ast::t_scope& a_scope);
 	t_emit& operator<<(t_instruction a_instruction)
 	{
-		v_code->f_emit(a_instruction);
+		v_code->v_instructions.push_back(v_code->f_p(a_instruction));
 		return *this;
+	}
+	size_t f_last() const
+	{
+		return v_code->v_instructions.size();
 	}
 	size_t f_stack() const
 	{
@@ -552,30 +562,64 @@ struct t_emit
 	}
 	t_emit& f_stack_map(int a_offset = 0)
 	{
-		v_code->f_stack_map(a_offset, *v_stack);
+		v_code->v_stack_map.push_back({f_last() + a_offset, &*v_code->v_stack_patterns.insert(*v_stack).first});
 		return *this;
 	}
 	template<typename T>
-	t_emit& operator<<(T&& a_operand)
+	t_emit& operator<<(T a_operand)
 	{
-		v_code->f_operand(std::forward<T>(a_operand));
+		v_code->v_instructions.push_back(reinterpret_cast<void*>(a_operand));
 		return *this;
 	}
-	void f_target(t_code::t_label& a_label)
+	t_emit& operator<<(bool a_operand)
 	{
-		v_code->f_target(a_label);
+		v_code->v_instructions.push_back(reinterpret_cast<void*>(a_operand ? 1 : 0));
+		return *this;
 	}
-	t_code::t_label& f_label()
+	t_emit& operator<<(double a_operand)
+	{
+		union
+		{
+			double v0;
+			void* v1[sizeof(double) / sizeof(void*)];
+		};
+		v0 = a_operand;
+		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_code->v_instructions.push_back(v1[i]);
+		return *this;
+	}
+	t_emit& operator<<(const t_value& a_operand)
+	{
+		v_code->v_instructions.push_back(const_cast<t_value*>(&a_operand));
+		return *this;
+	}
+	t_emit& operator<<(t_slot& a_operand)
+	{
+		v_code->v_instructions.push_back(&a_operand);
+		return *this;
+	}
+	t_emit& operator<<(t_label& a_label)
+	{
+		a_label.push_back(f_last());
+		return *this << size_t(0);
+	}
+	void f_target(t_label& a_label)
+	{
+		a_label.v_target = f_last();
+	}
+	t_label& f_label()
 	{
 		return v_labels->emplace_back();
 	}
 	void f_resolve()
 	{
-		for (const auto& label : *v_labels) v_code->f_resolve(label);
+		for (const auto& label : *v_labels) {
+			void* p = &v_code->v_instructions[label.v_target];
+			for (auto i : label) v_code->v_instructions[i] = p;
+		}
 	}
 	void f_at(ast::t_node* a_node)
 	{
-		v_code->f_at(a_node->v_at);
+		v_code->v_ats.push_back({a_node->v_at, f_last()});
 	}
 	void f_emit_clear()
 	{
@@ -589,7 +633,7 @@ struct t_emit
 	void f_emit_safe_point(ast::t_node* a_node)
 	{
 		if (!v_safe_points) return;
-		v_safe_positions->emplace_back(a_node->v_at.v_line, v_code->f_last(), a_node->v_at.v_column);
+		v_safe_positions->emplace_back(a_node->v_at.v_line, f_last(), a_node->v_at.v_column);
 		*this << e_instruction__SAFE_POINT;
 		f_at(a_node);
 	}

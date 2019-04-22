@@ -194,16 +194,10 @@ struct t_code
 	{
 		size_t v_address;
 
-		bool operator<(const t_at_address& a_other) const
+		bool operator<(size_t a_address) const
 		{
-			return v_address < a_other.v_address;
+			return v_address < a_address;
 		}
-	};
-	class t_label : std::vector<size_t>
-	{
-		friend struct t_code;
-
-		size_t v_target;
 	};
 	enum t_try
 	{
@@ -219,9 +213,9 @@ struct t_code
 		size_t v_address;
 		const std::vector<bool>* v_pattern;
 
-		bool operator<(const t_stack_map& a_other) const
+		bool operator<(size_t a_address) const
 		{
-			return v_address < a_other.v_address;
+			return v_address < a_address;
 		}
 	};
 
@@ -265,21 +259,9 @@ struct t_code
 	{
 	}
 	const t_at* f_at(void** a_address) const;
-	void f_at(size_t a_address, const t_at& a_at)
-	{
-		v_ats.push_back({a_at, a_address});
-	}
 	const std::vector<bool>& f_stack_map(void** a_address) const;
-	void f_stack_map(int a_offset, const std::vector<bool>& a_pattern)
-	{
-		v_stack_map.push_back({f_last() + a_offset, &*v_stack_patterns.insert(a_pattern).first});
-	}
 	void f_stack_clear(void** a_address, t_stacked* a_base) const;
 	void f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_stack) const;
-	size_t f_last() const
-	{
-		return v_instructions.size();
-	}
 	void* f_p(t_instruction a_instruction) const
 	{
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
@@ -287,55 +269,6 @@ struct t_code
 #else
 		return reinterpret_cast<void*>(a_instruction);
 #endif
-	}
-	void f_emit(t_instruction a_instruction)
-	{
-		v_instructions.push_back(f_p(a_instruction));
-	}
-	template<typename T>
-	void f_operand(T a_operand)
-	{
-		v_instructions.push_back(reinterpret_cast<void*>(a_operand));
-	}
-	void f_operand(bool a_operand)
-	{
-		v_instructions.push_back(reinterpret_cast<void*>(a_operand ? 1 : 0));
-	}
-	void f_operand(double a_operand)
-	{
-		union
-		{
-			double v0;
-			void* v1[sizeof(double) / sizeof(void*)];
-		};
-		v0 = a_operand;
-		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_instructions.push_back(v1[i]);
-	}
-	void f_operand(const t_value& a_operand)
-	{
-		v_instructions.push_back(const_cast<t_value*>(&a_operand));
-	}
-	void f_operand(t_slot& a_operand)
-	{
-		v_instructions.push_back(&a_operand);
-	}
-	void f_operand(t_label& a_label)
-	{
-		a_label.push_back(f_last());
-		f_operand(size_t(0));
-	}
-	void f_target(t_label& a_label)
-	{
-		a_label.v_target = f_last();
-	}
-	void f_resolve(const t_label& a_label)
-	{
-		void* p = &v_instructions[a_label.v_target];
-		for (auto i : a_label) v_instructions[i] = p;
-	}
-	void f_at(const t_at& a_at)
-	{
-		f_at(f_last(), a_at);
 	}
 };
 
