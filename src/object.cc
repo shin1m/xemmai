@@ -133,7 +133,7 @@ void t_object::f_cyclic_decrement()
 		v_fields = nullptr;
 	}
 	v_type->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
-	if (v_type != f_engine()->v_type_class) v_type->f_finalize(this);
+	v_type->f_finalize(this);
 	if (v_type->v_this) v_type->v_this->f_cyclic_decrement_push();
 }
 

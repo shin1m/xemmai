@@ -24,10 +24,6 @@ struct t_type_of<t_type> : t_underivable<t_bears<t_type>>
 		f_call_nonowned = f_do_call_nonowned;
 	}
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
-	static void f_do_finalize(t_object* a_this)
-	{
-		f_as<t_type&>(a_this).f_destruct();
-	}
 	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
 	void f_do_get_nonowned(t_object* a_this, t_object* a_key, t_stacked* a_stack);
 	t_scoped f_do_get(t_object* a_this, t_object* a_key);
