@@ -241,13 +241,13 @@ t_engine::~t_engine()
 	{
 		auto& thread = f_as<t_thread&>(v_thread);
 		thread.v_active = nullptr;
-		v_thread = nullptr;
 		std::lock_guard<std::mutex> lock(v_thread__mutex);
 		auto internal = thread.v_internal;
 		++internal->v_done;
 		internal->v_cache_hit = t_thread::v_cache_hit;
 		internal->v_cache_missed = t_thread::v_cache_missed;
 	}
+	v_thread = nullptr;
 	f_pools__return();
 	v_options.v_collector__threshold = 0;
 	f_wait();
