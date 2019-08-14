@@ -21,7 +21,7 @@ class t_engine;
 class t_object;
 struct t_slot;
 class t_scoped;
-class t_stacked;
+struct t_stacked;
 struct t_context;
 struct t_backtrace;
 struct t_fiber;
@@ -207,26 +207,26 @@ protected:
 	void f_assign(t_object* a_p)
 	{
 		if (a_p) f_increments()->f_push(a_p);
-		t_object* p = v_p;
+		auto p = v_p;
 		v_p = a_p;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 	void f_assign(t_object& a_p)
 	{
 		f_increments()->f_push(&a_p);
-		t_object* p = v_p;
+		auto p = v_p;
 		v_p = &a_p;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(const t_value& a_value)
 	{
-		t_object* p = v_p;
+		auto p = v_p;
 		f_copy_construct(a_value);
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_assign(t_value&& a_value)
 	{
-		t_object* p = v_p;
+		auto p = v_p;
 		f_move_construct(a_value);
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 	}
@@ -498,15 +498,12 @@ public:
 	}
 };
 
-class t_stacked : public t_value
+struct t_stacked : t_value
 {
-	using t_value::t_value;
-
-public:
 	~t_stacked() = delete;
 	t_stacked& operator=(bool a_value)
 	{
-		t_object* p = v_p;
+		auto p = v_p;
 		v_p = reinterpret_cast<t_object*>(e_tag__BOOLEAN);
 		v_boolean = a_value;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
@@ -514,7 +511,7 @@ public:
 	}
 	t_stacked& operator=(intptr_t a_value)
 	{
-		t_object* p = v_p;
+		auto p = v_p;
 		v_p = reinterpret_cast<t_object*>(e_tag__INTEGER);
 		v_integer = a_value;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
@@ -522,7 +519,7 @@ public:
 	}
 	t_stacked& operator=(double a_value)
 	{
-		t_object* p = v_p;
+		auto p = v_p;
 		v_p = reinterpret_cast<t_object*>(e_tag__FLOAT);
 		v_float = a_value;
 		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
@@ -622,7 +619,7 @@ void t_value::t_queue<A_SIZE>::f_next(t_object* a_object) noexcept
 
 inline XEMMAI__PORTABLE__ALWAYS_INLINE void t_value::f_assign(t_stacked&& a_value)
 {
-	t_object* p = v_p;
+	auto p = v_p;
 	f_copy(a_value);
 	if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) f_decrements()->f_push(p);
 }
@@ -694,7 +691,7 @@ public:
 	}
 };
 
-template<size_t A_N = -1>
+template<size_t A_N = size_t(-1)>
 struct t_destruct
 {
 	t_stacked* v_p;
@@ -709,7 +706,7 @@ struct t_destruct
 };
 
 template<>
-struct t_destruct<-1>
+struct t_destruct<size_t(-1)>
 {
 	t_stacked& v_p;
 
