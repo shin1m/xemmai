@@ -145,7 +145,7 @@ private:
 			v_object__allocated += 1024;
 			v_local_object__allocated = 0;
 		}
-		return new(new char[sizeof(t_object) + a_size]) t_object(4);
+		return new(new char[sizeof(t_object) - sizeof(t_object::v_data) + a_size]) t_object(4);
 	}
 	t_scoped f_object__allocate_on_boot(size_t a_size)
 	{
