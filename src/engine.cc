@@ -290,7 +290,7 @@ t_engine::~t_engine()
 			size_t base = v_thread__cache_hit + v_thread__cache_missed;
 			std::fprintf(stderr, "\tfield cache: hit = %zu, missed = %zu, ratio = %.1f%%\n", v_thread__cache_hit, v_thread__cache_missed, base > 0 ? v_thread__cache_hit * 100.0 / base : 0.0);
 		}
-		if (allocated > freed) throw std::exception();
+		if (allocated != freed) throw std::exception();
 	}
 }
 
