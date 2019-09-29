@@ -31,13 +31,7 @@ void t_engine::f_collector()
 			v_collector__running = false;
 			v_collector__done.notify_all();
 			do v_collector__wake.wait(lock); while (!v_collector__running);
-		}
-		if (v_collector__quitting) {
-			if (v_options.v_verbose) std::fprintf(stderr, "collector quitting...\n");
-			std::lock_guard<std::mutex> lock(v_collector__mutex);
-			v_collector__running = false;
-			v_collector__done.notify_one();
-			break;
+			if (v_collector__quitting) break;
 		}
 		++v_collector__epoch;
 		{
@@ -65,7 +59,7 @@ void t_engine::f_collector()
 				}
 				if (q->v_done > 0) ++q->v_done;
 				if (q->v_done < 3) {
-					p = &(*p)->v_next;
+					p = &q->v_next;
 				} else {
 					*p = q->v_next;
 					v_thread__cache_hit += q->v_cache_hit;
@@ -80,6 +74,10 @@ void t_engine::f_collector()
 		if (v_object__pool2.v_freed > 0) v_object__pool2.f_return();
 		if (v_object__pool3.v_freed > 0) v_object__pool3.f_return();
 	}
+	if (v_options.v_verbose) std::fprintf(stderr, "collector quitting...\n");
+	std::lock_guard<std::mutex> lock(v_collector__mutex);
+	v_collector__running = false;
+	v_collector__done.notify_one();
 }
 
 void t_engine::f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock)
@@ -156,7 +154,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	{
 		std::unique_lock<std::mutex> lock(v_collector__mutex);
 		std::thread(&t_engine::f_collector, this).detach();
-		while (v_collector__running) v_collector__done.wait(lock);
+		do v_collector__done.wait(lock); while (v_collector__running);
 	}
 	library.v_extension = new t_global(v_module_global, std::move(type_object), std::move(type_class), std::move(type_structure), std::move(type_module), std::move(type_fiber), std::move(type_thread));
 	v_module_system = t_module::f_new<t_module>(L"system"sv, L""sv);

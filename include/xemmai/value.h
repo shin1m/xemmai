@@ -629,8 +629,6 @@ inline t_scoped::t_scoped(t_stacked&& a_value) : t_value(t_pass())
 	f_copy(a_value);
 }
 
-typedef void (*t_scan)(t_slot&);
-
 struct t_stack
 {
 	static XEMMAI__PORTABLE__THREAD t_stack* v_instance;

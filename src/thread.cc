@@ -27,7 +27,7 @@ void t_thread::f_main(t_object* a_p)
 {
 	v_current = a_p;
 	auto& p = f_as<t_thread&>(v_current);
-	t_internal* internal = p.v_internal;
+	auto internal = p.v_internal;
 	t_value::v_collector = internal->v_collector;
 	internal->f_initialize();
 	if (f_engine()->v_debugger) {
@@ -47,14 +47,17 @@ void t_thread::f_main(t_object* a_p)
 		t_fiber::f_main<t_context>(main);
 	f_cache_clear();
 	p.v_active = nullptr;
-	p.v_internal = nullptr;
-	t_value::v_decrements->f_push(v_current);
 	f_engine()->f_pools__return();
-	std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
-	if (f_engine()->v_debugger) {
-		if (f_engine()->v_debug__stepping == v_current) f_engine()->v_debug__stepping = nullptr;
-		f_engine()->f_debug_safe_point(lock);
+	{
+		std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
+		if (f_engine()->v_debugger) {
+			if (f_engine()->v_debug__stepping == v_current) f_engine()->v_debug__stepping = nullptr;
+			f_engine()->f_debug_safe_point(lock);
+		}
+		p.v_internal = nullptr;
 	}
+	t_value::v_decrements->f_push(v_current);
+	std::unique_lock<std::mutex> lock(f_engine()->v_thread__mutex);
 	++internal->v_done;
 	internal->v_cache_hit = v_cache_hit;
 	internal->v_cache_missed = v_cache_missed;

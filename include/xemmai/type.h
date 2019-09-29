@@ -87,6 +87,8 @@ public:
 	}
 };
 
+typedef void (*t_scan)(t_slot&);
+
 template<>
 struct t_type_of<t_object>
 {
