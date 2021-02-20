@@ -195,10 +195,6 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__SCOPE_GET1,
 			&&label__SCOPE_GET2,
 			&&label__SCOPE_GET,
-			&&label__SCOPE_GET0_WITHOUT_LOCK,
-			&&label__SCOPE_GET1_WITHOUT_LOCK,
-			&&label__SCOPE_GET2_WITHOUT_LOCK,
-			&&label__SCOPE_GET_WITHOUT_LOCK,
 			&&label__SCOPE_PUT0,
 			&&label__SCOPE_PUT,
 			&&label__LAMBDA,
@@ -655,9 +651,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				auto index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				auto scope = a_context->v_scope;
-				t_with_lock_for_read lock(t_scope::f_this(scope));
-				stack[0] = scope[index];
+				stack[0] = a_context->v_scope[index];
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET1)
@@ -665,9 +659,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				auto index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				auto lambda = a_context->v_lambda;
-				t_with_lock_for_read lock(lambda->v_scope);
-				stack[0] = lambda->v_scope_entries[index];
+				stack[0] = a_context->v_lambda->v_scope_entries[index];
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET2)
@@ -675,49 +667,10 @@ size_t t_code::f_loop(t_context* a_context)
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				auto index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				auto scope = t_scope::f_outer(a_context->v_lambda->v_scope_entries);
-				t_with_lock_for_read lock(t_scope::f_this(scope));
-				stack[0] = scope[index];
-			}
-			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(SCOPE_GET)
-			{
-				auto stack = base + reinterpret_cast<size_t>(*++pc);
-				auto outer = reinterpret_cast<size_t>(*++pc);
-				auto index = reinterpret_cast<size_t>(*++pc);
-				++pc;
-				assert(outer >= 3);
-				auto scope = t_scope::f_outer(t_scope::f_outer(a_context->v_lambda->v_scope_entries));
-				for (size_t i = 3; i < outer; ++i) scope = t_scope::f_outer(scope);
-				t_with_lock_for_read lock(t_scope::f_this(scope));
-				stack[0] = scope[index];
-			}
-			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(SCOPE_GET0_WITHOUT_LOCK)
-			{
-				auto stack = base + reinterpret_cast<size_t>(*++pc);
-				auto index = reinterpret_cast<size_t>(*++pc);
-				++pc;
-				stack[0] = a_context->v_scope[index];
-			}
-			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(SCOPE_GET1_WITHOUT_LOCK)
-			{
-				auto stack = base + reinterpret_cast<size_t>(*++pc);
-				auto index = reinterpret_cast<size_t>(*++pc);
-				++pc;
-				stack[0] = a_context->v_lambda->v_scope_entries[index];
-			}
-			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(SCOPE_GET2_WITHOUT_LOCK)
-			{
-				auto stack = base + reinterpret_cast<size_t>(*++pc);
-				auto index = reinterpret_cast<size_t>(*++pc);
-				++pc;
 				stack[0] = t_scope::f_outer(a_context->v_lambda->v_scope_entries)[index];
 			}
 			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(SCOPE_GET_WITHOUT_LOCK)
+		XEMMAI__CODE__CASE(SCOPE_GET)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				auto outer = reinterpret_cast<size_t>(*++pc);
@@ -734,9 +687,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				auto index = reinterpret_cast<size_t>(*++pc);
 				++pc;
-				auto scope = a_context->v_scope;
-				t_with_lock_for_write lock(t_scope::f_this(scope));
-				scope[index] = stack[0];
+				a_context->v_scope[index] = stack[0];
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_PUT)
@@ -748,7 +699,6 @@ size_t t_code::f_loop(t_context* a_context)
 				assert(outer >= 1);
 				auto scope = a_context->v_lambda->v_scope_entries;
 				for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
-				t_with_lock_for_write lock(t_scope::f_this(scope));
 				scope[index] = stack[0];
 			}
 			XEMMAI__CODE__BREAK
@@ -1486,13 +1436,10 @@ void t_code::f_try(t_context* a_context)
 						auto index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						p.f_caught(thrown, t_object::f_of(a_context->v_lambda), caught);
-						if ((index & ~(~0 >> 1)) != 0) {
-							auto scope = a_context->v_scope;
-							t_with_lock_for_write lock(t_scope::f_this(scope));
-							scope[~index] = thrown;
-						} else {
+						if ((index & ~(~0 >> 1)) != 0)
+							a_context->v_scope[~index] = thrown;
+						else
 							base[index] = thrown;
-						}
 					} else {
 						pc = static_cast<void**>(*pc);
 					}

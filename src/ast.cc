@@ -668,7 +668,7 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 		return t_operand();
 	}
 	if (v_variable->v_shared) {
-		size_t instruction = (v_variable->v_varies ? e_instruction__SCOPE_GET0 : e_instruction__SCOPE_GET0_WITHOUT_LOCK) + (v_resolved < 3 ? v_resolved : 3);
+		size_t instruction = e_instruction__SCOPE_GET0 + (v_resolved < 3 ? v_resolved : 3);
 		if (a_tail) a_emit.f_emit_safe_point(this);
 		a_emit << static_cast<t_instruction>(instruction) << a_emit.f_stack();
 		if (v_resolved >= 3) a_emit << v_resolved;
@@ -760,7 +760,7 @@ t_operand t_self::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	if (a_clear) return t_operand();
 	if (a_tail) a_emit.f_emit_safe_point(this);
 	if (v_outer > 0) {
-		a_emit << static_cast<t_instruction>(e_instruction__SCOPE_GET0_WITHOUT_LOCK + (v_outer < 3 ? v_outer : 3)) << a_emit.f_stack();
+		a_emit << static_cast<t_instruction>(e_instruction__SCOPE_GET0 + (v_outer < 3 ? v_outer : 3)) << a_emit.f_stack();
 		if (v_outer >= 3) a_emit << v_outer;
 		a_emit << 0;
 	} else {
