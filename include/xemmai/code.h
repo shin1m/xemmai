@@ -2,7 +2,6 @@
 #define XEMMAI__CODE_H
 
 #include "object.h"
-#include <set>
 #include <vector>
 
 namespace xemmai
@@ -195,16 +194,6 @@ struct t_code
 		e_try__RETURN,
 		e_try__THROW
 	};
-	struct t_stack_map
-	{
-		size_t v_address;
-		const std::vector<bool>* v_pattern;
-
-		bool operator<(size_t a_address) const
-		{
-			return v_address < a_address;
-		}
-	};
 
 	static void f_object_get(t_pvalue* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
 	static void f_object_put(t_pvalue* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
@@ -237,15 +226,12 @@ struct t_code
 	size_t v_minimum;
 	std::vector<void*> v_instructions;
 	std::vector<t_at_address> v_ats;
-	std::set<std::vector<bool>> v_stack_patterns;
-	std::vector<t_stack_map> v_stack_map;
 	std::map<std::wstring, t_variable, std::less<>> v_variables;
 
 	t_code(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum) : v_module(a_module), v_shared(a_shared), v_variadic(a_variadic), v_size(a_privates), v_privates(a_privates), v_shareds(a_shareds), v_arguments(a_arguments), v_minimum(a_minimum)
 	{
 	}
 	const t_at* f_at(void** a_address) const;
-	const std::vector<bool>& f_stack_map(void** a_address) const;
 	void* f_p(t_instruction a_instruction) const
 	{
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO

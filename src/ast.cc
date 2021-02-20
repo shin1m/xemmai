@@ -431,12 +431,6 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		a_emit.v_targets = &targets2;
 		f_emit_block_without_value(a_emit, v_finally);
 	}
-	if (a_clear) {
-		a_emit.f_stack_map();
-	} else {
-		bool live = a_emit.v_stack->back();
-		a_emit.f_pop().f_stack_map().f_push(live);
-	}
 	a_emit << e_instruction__YRT;
 	auto operand = [&](t_emit::t_label* a_label, t_block* a_junction) -> t_emit::t_label*
 	{
@@ -484,7 +478,6 @@ t_operand t_throw::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit.f_emit_safe_point(this);
 	a_emit.f_pop();
 	a_emit << e_instruction__THROW << a_emit.f_stack();
-	a_emit.f_stack_map();
 	if (!a_clear) a_emit.f_push(false);
 	a_emit.f_at(this);
 	return t_operand();
@@ -501,7 +494,6 @@ t_operand t_object_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
 	a_emit << e_instruction__OBJECT_GET << a_emit.f_stack() - 1 << v_key << 0 << script.f_slot({}) << 0;
-	a_emit.f_stack_map();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -514,7 +506,7 @@ void t_object_get::f_method(t_emit& a_emit)
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
 	a_emit.f_pop();
 	a_emit << e_instruction__METHOD_GET << a_emit.f_stack() << v_key << 0 << script.f_slot({}) << 0;
-	a_emit.f_stack_map().f_push(true).f_push(true);
+	a_emit.f_push(true).f_push(true);
 	a_emit.f_at(this);
 }
 
@@ -530,7 +522,7 @@ t_operand t_object_get_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__OBJECT_GET_INDIRECT << a_emit.f_stack() - 2;
-	a_emit.f_stack_map().f_pop();
+	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -549,9 +541,9 @@ t_operand t_object_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
 	a_emit << e_instruction__OBJECT_PUT << a_emit.f_stack() - 2 << v_key << 0 << script.f_slot({}) << 0;
-	a_emit.f_stack_map().f_pop();
-	if (a_clear) a_emit.f_pop();
+	a_emit.f_pop();
 	a_emit.f_at(this);
+	if (a_clear) a_emit.f_pop();
 	return t_operand();
 }
 
@@ -569,7 +561,7 @@ t_operand t_object_put_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__OBJECT_PUT_INDIRECT << a_emit.f_stack() - 3;
-	a_emit.f_stack_map().f_pop().f_pop();
+	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -618,7 +610,6 @@ t_operand t_object_remove::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, b
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__OBJECT_REMOVE << a_emit.f_stack() - 1 << v_key;
-	a_emit.f_stack_map();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -636,7 +627,7 @@ t_operand t_object_remove_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_o
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__OBJECT_REMOVE_INDIRECT << a_emit.f_stack() - 2;
-	a_emit.f_stack_map().f_pop();
+	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -662,7 +653,7 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	if (!v_variable) {
 		if (a_tail) a_emit.f_emit_safe_point(this);
 		a_emit << e_instruction__GLOBAL_GET << a_emit.f_stack() << v_symbol;
-		a_emit.f_stack_map().f_push(true);
+		a_emit.f_push(true);
 		a_emit.f_at(this);
 		if (a_clear) a_emit.f_pop();
 		return t_operand();
@@ -750,8 +741,8 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 		a_emit << e_instruction__STACK_PUT << a_emit.f_stack() - 1;
 	}
 	a_emit << v_variable.v_index;
-	if (a_clear) a_emit.f_pop();
 	a_emit.f_at(this);
+	if (a_clear) a_emit.f_pop();
 	return t_operand();
 }
 
@@ -796,7 +787,6 @@ t_operand t_super::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	v_target->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__SUPER << a_emit.f_stack() - 1;
-	a_emit.f_stack_map();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -874,7 +864,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		a_emit << operand.v_index;
 		break;
 	}
-	a_emit.f_stack_map().f_push(true);
+	a_emit.f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1093,10 +1083,9 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		a_emit << right.v_index;
 		break;
 	}
-	a_emit.f_stack_map(-1);
 	if (left.v_tag == t_operand::e_tag__TEMPORARY) a_emit.f_pop();
 	if (right.v_tag == t_operand::e_tag__TEMPORARY) a_emit.f_pop();
-	a_emit.f_pop().f_stack_map().f_push(true);
+	a_emit.f_pop().f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1140,7 +1129,7 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	if (!a_tail) a_emit << a_emit.f_stack();
 	if (get) a_emit << get->v_variable->v_index;
 	a_emit << v_arguments.size();
-	a_emit.f_stack_map().f_push(true);
+	a_emit.f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1162,7 +1151,7 @@ t_operand t_get_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit << (a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT);
 	assert(!a_tail || a_emit.f_stack() - 3 == a_emit.v_scope->v_privates.size());
 	if (!a_tail) a_emit << a_emit.f_stack() - 3;
-	a_emit.f_stack_map(-1).f_pop().f_pop().f_pop().f_stack_map().f_push(true);
+	a_emit.f_pop().f_pop().f_pop().f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1174,7 +1163,7 @@ void t_get_at::f_bind(t_emit& a_emit)
 	v_index->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__METHOD_BIND << a_emit.f_stack() - 2;
-	a_emit.f_stack_map(-1).f_push(true).f_pop().f_pop().f_pop().f_stack_map().f_push(true).f_push(true);
+	a_emit.f_push(true).f_pop().f_pop().f_pop().f_push(true).f_push(true);
 	a_emit.f_at(this);
 }
 
@@ -1196,7 +1185,7 @@ t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit << (a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT);
 	assert(!a_tail || a_emit.f_stack() - 4 == a_emit.v_scope->v_privates.size());
 	if (!a_tail) a_emit << a_emit.f_stack() - 4;
-	a_emit.f_stack_map(-1).f_pop().f_pop().f_pop().f_pop().f_stack_map().f_push(true);
+	a_emit.f_pop().f_pop().f_pop().f_pop().f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();

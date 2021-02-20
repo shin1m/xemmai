@@ -568,11 +568,6 @@ struct t_emit
 		v_stack->pop_back();
 		return *this;
 	}
-	t_emit& f_stack_map(int a_offset = 0)
-	{
-		v_code->v_stack_map.push_back({f_last() + a_offset, &*v_code->v_stack_patterns.insert(*v_stack).first});
-		return *this;
-	}
 	template<typename T>
 	t_emit& operator<<(T a_operand)
 	{

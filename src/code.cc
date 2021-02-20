@@ -1496,9 +1496,4 @@ const t_at* t_code::f_at(void** a_address) const
 	return i == v_ats.end() ? nullptr : &*i;
 }
 
-const std::vector<bool>& t_code::f_stack_map(void** a_address) const
-{
-	return *std::lower_bound(v_stack_map.begin(), v_stack_map.end(), static_cast<size_t>(a_address - v_instructions.data()))->v_pattern;
-}
-
 }
