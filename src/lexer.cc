@@ -1,5 +1,3 @@
-#include <xemmai/lexer.h>
-
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -7,7 +5,7 @@ namespace xemmai
 
 void t_lexer::f_throw()
 {
-	throw t_error::f_instantiate(*this);
+	throw t_pvalue(t_error::f_instantiate(*this));
 }
 
 void t_lexer::f_get()
@@ -654,7 +652,7 @@ void t_lexer::f_next()
 	}
 }
 
-t_scoped t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
+t_object* t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 {
 	return f_new<t_error>(f_global(), false, a_lexer);
 }

@@ -66,9 +66,9 @@ public:
 		return const_cast<t_io*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
-	t_scoped f_as(T&& a_value) const
+	t_pvalue f_as(T&& a_value) const
 	{
-		typedef t_type_of<typename t_fundamental<T>::t_type> t;
+		using t = t_type_of<typename t_fundamental<T>::t_type>;
 		return t::f_transfer(f_extension<typename t::t_extension>(), std::forward<T>(a_value));
 	}
 };
@@ -104,13 +104,13 @@ inline t_slot_of<t_type>& t_io::f_type_slot<portable::t_path>()
 }
 
 template<typename... T_an>
-inline t_scoped io::t_file::f_instantiate(T_an&&... a_an)
+inline t_object* io::t_file::f_instantiate(T_an&&... a_an)
 {
 	return f_new<t_file>(f_extension<t_io>(f_engine()->f_module_io()), false, std::forward<T_an>(a_an)...);
 }
 
 template<typename T>
-inline t_scoped t_type_of<portable::t_path>::f_transfer(const t_io* a_extension, T&& a_value)
+inline t_object* t_type_of<portable::t_path>::f_transfer(const t_io* a_extension, T&& a_value)
 {
 	return xemmai::f_new<portable::t_path>(a_extension, true, std::forward<T>(a_value));
 }

@@ -114,7 +114,7 @@ private:
 public:
 	struct t_error : t_throwable
 	{
-		static t_scoped f_instantiate(t_lexer& a_lexer);
+		static t_object* f_instantiate(t_lexer& a_lexer);
 
 		std::wstring v_path;
 		const t_at v_at;

@@ -1,10 +1,8 @@
 #include <xemmai/engine.h>
-
 #include <xemmai/portable/path.h>
 #include <xemmai/array.h>
 #include <xemmai/global.h>
 #include <xemmai/io/file.h>
-
 #include <clocale>
 #include <cstring>
 #ifdef __unix__
@@ -19,7 +17,7 @@ using namespace xemmai;
 
 class t_debugger : public xemmai::t_debugger
 {
-	static t_debugger* v_instance;
+	static inline t_debugger* v_instance;
 
 #ifdef _WIN32
 	static BOOL WINAPI f_interrupted(DWORD a_type)
@@ -35,8 +33,8 @@ class t_debugger : public xemmai::t_debugger
 	std::thread v_thread;
 	std::mutex v_mutex;
 	std::condition_variable v_posted;
-	t_object* v_stopped = nullptr;
-	t_object* v_loaded = nullptr;
+	t_thread* v_stopped = nullptr;
+	t_thread* v_loaded = nullptr;
 	std::map<std::wstring, std::set<size_t>, std::less<>> v_break_points;
 	bool v_interrupted = false;
 #ifdef __unix__
@@ -143,9 +141,9 @@ class t_debugger : public xemmai::t_debugger
 		}
 		if (i->second.empty()) v_break_points.erase(i);
 	}
-	t_debug_context* f_context(t_object* a_thread)
+	t_debug_context* f_context(t_thread* a_thread)
 	{
-		return f_as<t_fiber&>(f_as<t_thread&>(a_thread).v_active).v_context;
+		return a_thread->v_internal->v_active->v_context;
 	}
 	void f_print(t_context* a_context)
 	{
@@ -158,13 +156,13 @@ class t_debugger : public xemmai::t_debugger
 			f_print(a_context);
 		}
 	}
-	void f_print_thread(size_t a_i, t_object* a_thread)
+	void f_print_thread(size_t a_i, t_thread* a_thread)
 	{
 		std::fprintf(v_out, "[%zu]: %p\n", a_i, a_thread);
 		auto context = f_context(a_thread);
 		if (context) f_print(context);
 	}
-	void f_print_threads(const std::vector<t_object*>& a_threads)
+	void f_print_threads(const std::vector<t_thread*>& a_threads)
 	{
 		size_t i = 0;
 		for (auto p : a_threads) f_print_thread(i++, p);
@@ -188,19 +186,19 @@ class t_debugger : public xemmai::t_debugger
 			}
 		}
 	}
-	void f_print_value(const t_value& a_value, size_t a_depth)
+	void f_print_value(const t_pvalue& a_value, size_t a_depth)
 	{
 		switch (a_value.f_tag()) {
-		case t_value::e_tag__NULL:
+		case e_tag__NULL:
 			std::fputs("null", v_out);
 			break;
-		case t_value::e_tag__BOOLEAN:
+		case e_tag__BOOLEAN:
 			std::fputs(f_as<bool>(a_value) ? "true" : "false", v_out);
 			break;
-		case t_value::e_tag__INTEGER:
+		case e_tag__INTEGER:
 			std::fprintf(v_out, "%" PRIdPTR, f_as<intptr_t>(a_value));
 			break;
-		case t_value::e_tag__FLOAT:
+		case e_tag__FLOAT:
 			std::fprintf(v_out, "%g", f_as<double>(a_value));
 			break;
 		default:
@@ -254,7 +252,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print_variable(t_context* a_context, std::wstring_view a_name, size_t a_depth)
 	{
-		const t_value* variable = a_context->f_variable(a_name);
+		auto variable = a_context->f_variable(a_name);
 		if (!variable) return;
 		f_print_value(*variable, a_depth);
 		std::fputc('\n', v_out);
@@ -264,10 +262,10 @@ class t_debugger : public xemmai::t_debugger
 		auto& code = f_as<t_code&>(a_context->v_lambda->f_code());
 		for (auto& pair : code.v_variables) std::fprintf(v_out, "%ls\n", pair.first.c_str());
 	}
-	void f_prompt(t_object* a_thread)
+	void f_prompt(t_thread* a_thread)
 	{
-		std::vector<t_object*> threads;
-		v_engine.f_threads([&threads](t_object* a_thread)
+		std::vector<t_thread*> threads;
+		v_engine.f_threads([&threads](auto a_thread)
 		{
 			threads.push_back(a_thread);
 		});
@@ -378,11 +376,11 @@ class t_debugger : public xemmai::t_debugger
 	void f_run()
 	{
 		while (true) {
-			t_object* stopped = nullptr;
-			t_object* loaded = nullptr;
+			t_thread* stopped = nullptr;
+			t_thread* loaded = nullptr;
 			bool interrupted = false;
 			{
-				std::unique_lock<std::mutex> lock(v_mutex);
+				std::unique_lock lock(v_mutex);
 				while (true) {
 					if (!v_instance) return;
 					std::swap(stopped, v_stopped);
@@ -402,7 +400,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_interrupted()
 	{
-		std::lock_guard<std::mutex> lock(v_mutex);
+		std::lock_guard lock(v_mutex);
 		v_interrupted = true;
 		v_posted.notify_one();
 	}
@@ -422,7 +420,7 @@ public:
 	~t_debugger()
 	{
 		{
-			std::lock_guard<std::mutex> lock(v_mutex);
+			std::lock_guard lock(v_mutex);
 			v_instance = nullptr;
 			v_posted.notify_one();
 		}
@@ -435,21 +433,19 @@ public:
 #endif
 		v_thread.join();
 	}
-	virtual void f_stopped(t_object* a_thread)
+	virtual void f_stopped(t_thread* a_thread)
 	{
-		std::lock_guard<std::mutex> lock(v_mutex);
+		std::lock_guard lock(v_mutex);
 		v_stopped = a_thread;
 		v_posted.notify_one();
 	}
-	virtual void f_loaded(t_object* a_thread)
+	virtual void f_loaded(t_thread* a_thread)
 	{
-		std::lock_guard<std::mutex> lock(v_mutex);
+		std::lock_guard lock(v_mutex);
 		v_loaded = a_thread;
 		v_posted.notify_one();
 	}
 };
-
-t_debugger* t_debugger::v_instance;
 
 }
 

@@ -26,10 +26,10 @@ class t_reader
 	wint_t f_get(t_io* a_extension);
 
 public:
-	static t_scoped f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer);
+	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer);
 
-	t_reader(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer);
-	t_reader(t_scoped&& a_stream, std::wstring_view a_encoding) : t_reader(std::move(a_stream), a_encoding, 1024)
+	t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer);
+	t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding) : t_reader(a_stream, a_encoding, 1024)
 	{
 	}
 	~t_reader()
@@ -37,8 +37,8 @@ public:
 		iconv_close(v_cd);
 	}
 	void f_close(t_io* a_extension);
-	t_scoped f_read(t_io* a_extension, size_t a_size);
-	t_scoped f_read_line(t_io* a_extension);
+	t_object* f_read(t_io* a_extension, size_t a_size);
+	t_object* f_read_line(t_io* a_extension);
 };
 
 }
@@ -46,7 +46,7 @@ public:
 template<>
 struct t_type_of<io::t_reader> : t_derivable<t_holds<io::t_reader>>
 {
-	typedef t_io t_extension;
+	using t_extension = t_io;
 
 	static void f_define(t_io* a_extension);
 
@@ -57,7 +57,7 @@ struct t_type_of<io::t_reader> : t_derivable<t_holds<io::t_reader>>
 		a_scan(p.v_stream);
 		a_scan(p.v_buffer);
 	}
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 }

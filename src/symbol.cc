@@ -1,5 +1,3 @@
-#include <xemmai/symbol.h>
-
 #include <xemmai/convert.h>
 
 namespace xemmai
@@ -10,9 +8,9 @@ t_symbol::~t_symbol()
 	f_engine()->v_symbol__instances.erase(v_entry);
 }
 
-t_scoped t_symbol::f_instantiate(std::wstring_view a_value)
+t_object* t_symbol::f_instantiate(std::wstring_view a_value)
 {
-	std::lock_guard<std::mutex> lock(f_engine()->v_symbol__instantiate__mutex);
+	std::lock_guard lock(f_engine()->v_symbol__instantiate__mutex);
 	f_engine()->v_object__reviving__mutex.lock();
 	auto& instances = f_engine()->v_symbol__instances;
 	auto i = instances.lower_bound(a_value);
@@ -33,7 +31,11 @@ void t_symbol::f_revise(t_object* a_this)
 	if (f_atomic_increment(f_as<t_symbol&>(a_this).v_revision) != 0) return;
 	for (size_t i = 0; i < t_thread::t_cache::V_SIZE; ++i) {
 		auto& cache = t_thread::v_cache[i];
-		if (static_cast<t_object*>(cache.v_key) == a_this) cache.v_object = cache.v_key = cache.v_value = nullptr;
+		if (cache.v_key == a_this) {
+			cache.v_object = nullptr;
+			cache.v_key = nullptr;
+			cache.v_value = nullptr;
+		}
 		cache.v_revision = t_thread::t_cache::f_revise(i);
 	}
 }
@@ -46,12 +48,11 @@ void t_type_of<t_symbol>::f_define()
 	;
 }
 
-void t_type_of<t_symbol>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
+void t_type_of<t_symbol>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 {
-	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument."sv);
-	t_destruct<> a0(a_stack[2]);
-	f_check<t_string>(a0.v_p, L"argument0");
-	a_stack[0].f_construct(t_symbol::f_instantiate(f_as<std::wstring_view>(a0.v_p)));
+	if (a_n != 1) f_throw(L"must be called with an argument."sv);
+	f_check<t_string>(a_stack[2], L"argument0");
+	a_stack[0] = t_symbol::f_instantiate(f_as<std::wstring_view>(a_stack[2]));
 }
 
 }

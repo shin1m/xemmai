@@ -24,11 +24,11 @@ struct t_type_of<bool> : t_uninstantiatable<t_underivable<t_bears<bool, t_type_i
 		template<typename T1>
 		static bool f_call(T1&& a_object)
 		{
-			return reinterpret_cast<size_t>(f_object(std::forward<T1>(a_object))) == t_value::e_tag__BOOLEAN;
+			return reinterpret_cast<size_t>(f_object(std::forward<T1>(a_object))) == e_tag__BOOLEAN;
 		}
 	};
 
-	static t_scoped f_string(bool a_self);
+	static t_object* f_string(bool a_self);
 	static intptr_t f__hash(bool a_self)
 	{
 		return a_self ? 1 : 0;

@@ -1,5 +1,3 @@
-#include <xemmai/io/reader.h>
-
 #include <xemmai/bytes.h>
 #include <xemmai/convert.h>
 #include <xemmai/io.h>
@@ -16,7 +14,7 @@ size_t t_reader::f_read(t_io* a_extension)
 	auto p = reinterpret_cast<char*>(&buffer[0]);
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;
-	t_scoped n = v_stream.f_invoke(a_extension->f_symbol_read(), v_buffer, f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
+	auto n = t_pvalue(v_stream).f_invoke(a_extension->f_symbol_read(), t_pvalue(v_buffer), f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
 	f_check<size_t>(n, L"result of read");
 	v_n += f_as<size_t>(n);
 	return f_as<size_t>(n);
@@ -49,27 +47,27 @@ wint_t t_reader::f_get(t_io* a_extension)
 	return c;
 }
 
-t_scoped t_reader::f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer)
+t_object* t_reader::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer)
 {
-	return f_new<t_reader>(f_extension<t_io>(f_engine()->f_module_io()), false, std::move(a_stream), a_encoding, a_buffer);
+	return f_new<t_reader>(f_extension<t_io>(f_engine()->f_module_io()), false, a_stream, a_encoding, a_buffer);
 }
 
-t_reader::t_reader(t_scoped&& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
+t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
 {
 	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open."sv);
-	v_stream = std::move(a_stream);
+	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(std::max(a_buffer, size_t(1)));
-	static_cast<t_object*>(v_buffer)->f_share();
+	v_buffer->f_share();
 }
 
 void t_reader::f_close(t_io* a_extension)
 {
 	if (!v_stream) f_throw(L"already closed."sv);
-	v_stream.f_invoke(a_extension->f_symbol_close());
+	t_pvalue(v_stream).f_invoke(a_extension->f_symbol_close());
 	v_stream = nullptr;
 }
 
-t_scoped t_reader::f_read(t_io* a_extension, size_t a_size)
+t_object* t_reader::f_read(t_io* a_extension, size_t a_size)
 {
 	if (!v_stream) f_throw(L"already closed."sv);
 	std::vector<wchar_t> cs(a_size);
@@ -84,7 +82,7 @@ t_scoped t_reader::f_read(t_io* a_extension, size_t a_size)
 	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
-t_scoped t_reader::f_read_line(t_io* a_extension)
+t_object* t_reader::f_read_line(t_io* a_extension)
 {
 	if (!v_stream) f_throw(L"already closed."sv);
 	std::vector<wchar_t> cs;
@@ -103,20 +101,20 @@ void t_type_of<io::t_reader>::f_define(t_io* a_extension)
 {
 	t_define<io::t_reader, t_object>(a_extension, L"Reader"sv)
 		(
-			t_construct<false, t_scoped&&, t_string&>(),
-			t_construct<false, t_scoped&&, t_string&, size_t>()
+			t_construct<false, const t_pvalue&, t_string&>(),
+			t_construct<false, const t_pvalue&, t_string&, size_t>()
 		)
 		(a_extension->f_symbol_close(), t_member<void(io::t_reader::*)(t_io*), &io::t_reader::f_close, t_with_lock_for_write>())
-		(a_extension->f_symbol_read(), t_member<t_scoped(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
-		(a_extension->f_symbol_read_line(), t_member<t_scoped(io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
+		(a_extension->f_symbol_read(), t_member<t_object*(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read, t_with_lock_for_write>())
+		(a_extension->f_symbol_read_line(), t_member<t_object*(io::t_reader::*)(t_io*), &io::t_reader::f_read_line, t_with_lock_for_write>())
 	;
 }
 
-t_scoped t_type_of<io::t_reader>::f_do_construct(t_stacked* a_stack, size_t a_n)
+t_pvalue t_type_of<io::t_reader>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct<false, t_scoped&&, const t_string&>,
-		t_construct<false, t_scoped&&, const t_string&, size_t>
+		t_construct<false, const t_pvalue&, const t_string&>,
+		t_construct<false, const t_pvalue&, const t_string&, size_t>
 	>::t_bind<io::t_reader>::f_do(this, a_stack, a_n);
 }
 

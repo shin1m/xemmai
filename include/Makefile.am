@@ -19,6 +19,7 @@ nobase_includeversion_HEADERS = \
 	xemmai/fiber.h \
 	xemmai/float.h \
 	xemmai/global.h \
+	xemmai/heap.h \
 	xemmai/integer.h \
 	xemmai/lambda.h \
 	xemmai/lexer.h \
@@ -29,7 +30,6 @@ nobase_includeversion_HEADERS = \
 	xemmai/null.h \
 	xemmai/object.h \
 	xemmai/parser.h \
-	xemmai/pool.h \
 	xemmai/scope.h \
 	xemmai/string.h \
 	xemmai/structure.h \

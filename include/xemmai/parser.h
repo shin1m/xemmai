@@ -24,13 +24,13 @@ class t_parser
 	}
 	void f_throw [[noreturn]] (std::wstring_view a_message, const t_at& a_at)
 	{
-		throw t_error::f_instantiate(a_message, v_lexer.f_path(), a_at);
+		throw t_pvalue(t_error::f_instantiate(a_message, v_lexer.f_path(), a_at));
 	}
 	void f_throw [[noreturn]] (std::wstring_view a_message)
 	{
 		f_throw(a_message, v_lexer.f_at());
 	}
-	t_slot& f_symbol() const
+	t_svalue& f_symbol() const
 	{
 		return v_module.f_slot(t_symbol::f_instantiate({v_lexer.f_value().data(), v_lexer.f_value().size()}));
 	}
@@ -91,7 +91,7 @@ class t_parser
 public:
 	struct t_error : t_throwable
 	{
-		static t_scoped f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at);
+		static t_object* f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at);
 
 		std::wstring v_path;
 		const t_at v_at;

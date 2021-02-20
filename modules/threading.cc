@@ -8,20 +8,20 @@ class t_threading;
 template<>
 struct t_type_of<std::mutex> : t_underivable<t_fixed<t_holds<std::mutex>>>
 {
-	typedef t_threading t_extension;
+	using t_extension = t_threading;
 
 	static void f_acquire(std::mutex& a_self);
 	static void f_release(std::mutex& a_self);
 	static void f_define(t_threading* a_extension);
 
 	using t_base::t_base;
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 template<>
 struct t_type_of<std::condition_variable> : t_underivable<t_fixed<t_holds<std::condition_variable>>>
 {
-	typedef t_threading t_extension;
+	using t_extension = t_threading;
 
 	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex);
 	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds);
@@ -30,7 +30,7 @@ struct t_type_of<std::condition_variable> : t_underivable<t_fixed<t_holds<std::c
 	static void f_define(t_threading* a_extension);
 
 	using t_base::t_base;
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 class t_threading : public t_extension
@@ -56,7 +56,7 @@ public:
 		return const_cast<t_threading*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
-	t_scoped f_as(T&& a_value) const
+	t_pvalue f_as(T&& a_value) const
 	{
 		return f_global()->f_as(std::forward<T>(a_value));
 	}
@@ -95,7 +95,7 @@ void t_type_of<std::mutex>::f_define(t_threading* a_extension)
 	;
 }
 
-t_scoped t_type_of<std::mutex>::f_do_construct(t_stacked* a_stack, size_t a_n)
+t_pvalue t_type_of<std::mutex>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_construct<true>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
 }
@@ -105,7 +105,7 @@ void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self,
 	t_safe_region region;
 	t_thread::f_cache_release();
 	{
-		std::unique_lock<std::mutex> lock(a_mutex, std::defer_lock);
+		std::unique_lock lock(a_mutex, std::defer_lock);
 		a_self.wait(lock);
 	}
 	t_thread::f_cache_acquire();
@@ -116,7 +116,7 @@ void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self,
 	t_safe_region region;
 	t_thread::f_cache_release();
 	{
-		std::unique_lock<std::mutex> lock(a_mutex, std::defer_lock);
+		std::unique_lock lock(a_mutex, std::defer_lock);
 		a_self.wait_for(lock, std::chrono::milliseconds(a_milliseconds));
 	}
 	t_thread::f_cache_acquire();
@@ -146,7 +146,7 @@ void t_type_of<std::condition_variable>::f_define(t_threading* a_extension)
 	;
 }
 
-t_scoped t_type_of<std::condition_variable>::f_do_construct(t_stacked* a_stack, size_t a_n)
+t_pvalue t_type_of<std::condition_variable>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_construct<true>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
 }

@@ -24,7 +24,7 @@ class t_symbol
 	~t_symbol();
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_value);
+	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_value);
 	static void f_revise(t_object* a_this);
 
 	const std::wstring& f_string() const
@@ -43,7 +43,7 @@ struct t_type_of<t_symbol> : t_underivable<t_holds<t_symbol, t_type_immutable>>
 	{
 		a_scan(a_this->f_as<t_symbol>().v_entry->second);
 	}
-	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
+	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 };
 
 }

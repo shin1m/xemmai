@@ -40,9 +40,9 @@ class t_bytes
 	}
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_scoped f_instantiate(size_t a_size);
+	static XEMMAI__PORTABLE__EXPORT t_object* f_instantiate(size_t a_size);
 
-	t_scoped f_string() const;
+	t_object* f_string() const;
 	intptr_t f_get_at(intptr_t a_index) const
 	{
 		f_validate(a_index);
@@ -77,17 +77,17 @@ public:
 template<>
 struct t_type_of<t_bytes> : t_derivable<t_holds<t_bytes>>
 {
-	static t_scoped f__construct(t_type* a_class, size_t a_size)
+	static t_pvalue f__construct(t_type* a_class, size_t a_size)
 	{
 		return a_class->f_new_sized<t_bytes>(false, a_size, a_size);
 	}
-	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
+	static void f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n);
 	static void f_define();
 
 	using t_base::t_base;
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_set_at(t_object* a_this, t_pvalue* a_stack);
 };
 
 }

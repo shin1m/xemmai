@@ -28,7 +28,7 @@ public:
 	{
 		delete v_stack;
 	}
-	void f_make(void (*a_f)())
+	void f_make(void(*a_f)())
 	{
 		getcontext(&v_context);
 		v_context.uc_link = nullptr;
@@ -66,7 +66,7 @@ public:
 	{
 		if (!v_main && v_handle != NULL) DeleteFiber(v_handle);
 	}
-	void f_make(void (*a_f)())
+	void f_make(void(*a_f)())
 	{
 		if (v_handle != NULL) DeleteFiber(v_handle);
 		v_handle = CreateFiber(0, f_start, a_f);

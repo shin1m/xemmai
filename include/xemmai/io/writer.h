@@ -31,17 +31,17 @@ class t_writer
 	void f_unshift(t_io* a_extension);
 
 public:
-	static t_scoped f_instantiate(t_scoped&& a_stream, std::wstring_view a_encoding);
+	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding);
 
-	t_writer(t_scoped&& a_stream, std::wstring_view a_encoding);
+	t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding);
 	~t_writer()
 	{
 		iconv_close(v_cd);
 	}
 	void f_close(t_io* a_extension);
-	void f_write(t_io* a_extension, const t_value& a_value);
+	void f_write(t_io* a_extension, const t_pvalue& a_value);
 	void f_write_line(t_io* a_extension);
-	void f_write_line(t_io* a_extension, const t_value& a_value);
+	void f_write_line(t_io* a_extension, const t_pvalue& a_value);
 	void f_flush(t_io* a_extension);
 };
 
@@ -50,7 +50,7 @@ public:
 template<>
 struct t_type_of<io::t_writer> : t_derivable<t_holds<io::t_writer>>
 {
-	typedef t_io t_extension;
+	using t_extension = t_io;
 
 	static void f_define(t_io* a_extension);
 
@@ -61,7 +61,7 @@ struct t_type_of<io::t_writer> : t_derivable<t_holds<io::t_writer>>
 		a_scan(p.v_stream);
 		a_scan(p.v_buffer);
 	}
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 }

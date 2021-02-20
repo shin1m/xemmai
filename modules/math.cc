@@ -1,5 +1,4 @@
 #include <cmath>
-#include <xemmai/tuple.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
@@ -17,7 +16,7 @@ struct t_math : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_scoped f_as(T&& a_value) const
+	t_pvalue f_as(T&& a_value) const
 	{
 		return f_global()->f_as(std::forward<T>(a_value));
 	}
@@ -26,14 +25,14 @@ struct t_math : t_extension
 namespace
 {
 
-t_scoped f_frexp(double a_value)
+t_object* f_frexp(double a_value)
 {
 	int e;
 	double m = std::frexp(a_value, &e);
 	return f_tuple(m, e);
 }
 
-t_scoped f_modf(double a_value)
+t_object* f_modf(double a_value)
 {
 	double i;
 	double f = std::modf(a_value, &i);
@@ -67,11 +66,11 @@ t_math::t_math(t_object* a_module) : t_extension(a_module)
 	f_define<double(*)(double), std::fabs>(this, L"fabs"sv);
 	f_define<double(*)(double), std::floor>(this, L"floor"sv);
 	f_define<double(*)(double, double), std::fmod>(this, L"fmod"sv);
-	f_define<t_scoped(*)(double), f_frexp>(this, L"frexp"sv);
+	f_define<t_object*(*)(double), f_frexp>(this, L"frexp"sv);
 	f_define<double(*)(double, int), std::ldexp>(this, L"ldexp"sv);
 	f_define<double(*)(double), std::log>(this, L"log"sv);
 	f_define<double(*)(double), std::log10>(this, L"log10"sv);
-	f_define<t_scoped(*)(double), f_modf>(this, L"modf"sv);
+	f_define<t_object*(*)(double), f_modf>(this, L"modf"sv);
 	f_define<double(*)(double, double), std::pow>(this, L"pow"sv);
 	f_define<double(*)(double), std::sin>(this, L"sin"sv);
 	f_define<double(*)(double), std::sinh>(this, L"sinh"sv);

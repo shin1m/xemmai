@@ -1,5 +1,4 @@
 #include <xemmai/convert.h>
-#include <xemmai/tuple.h>
 #ifdef __unix__
 #include <unistd.h>
 #endif
@@ -19,7 +18,7 @@ struct t_os : t_extension
 		return f_global()->f_type<T>();
 	}
 	template<typename T>
-	t_scoped f_as(T&& a_value) const
+	t_pvalue f_as(T&& a_value) const
 	{
 		return f_global()->f_as(std::forward<T>(a_value));
 	}
@@ -49,7 +48,7 @@ void f_sleep(intptr_t a_miliseconds)
 }
 
 #ifdef __unix__
-t_scoped f_pipe()
+t_object* f_pipe()
 {
 	int fds[2];
 	if (pipe(fds) != 0) f_throw(L"pipe failed."sv);
@@ -64,7 +63,7 @@ t_os::t_os(t_object* a_module) : t_extension(a_module)
 	f_define<int(*)(const t_string&), f_system>(this, L"system"sv);
 	f_define<void(*)(intptr_t), f_sleep>(this, L"sleep"sv);
 #ifdef __unix__
-	f_define<t_scoped(*)(), f_pipe>(this, L"pipe"sv);
+	f_define<t_object*(*)(), f_pipe>(this, L"pipe"sv);
 #endif
 }
 

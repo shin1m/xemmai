@@ -1,9 +1,8 @@
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
-#include <xemmai/convert.h>
-
 #include "queue.h"
+#include <xemmai/convert.h>
 
 using namespace xemmai;
 
@@ -15,8 +14,8 @@ namespace xemmai
 template<>
 struct t_type_of<t_pair> : t_uninstantiatable<t_underivable<t_holds<t_pair>>>
 {
-	static t_scoped f_instantiate(t_container* a_extension, t_scoped&& a_value);
-	static t_scoped f_define(t_container* a_extension);
+	static t_object* f_instantiate(t_container* a_extension, const t_pvalue& a_value);
+	static t_object* f_define(t_container* a_extension);
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
@@ -28,7 +27,7 @@ struct t_type_of<t_pair> : t_uninstantiatable<t_underivable<t_holds<t_pair>>>
 template<>
 struct t_type_of<t_queue> : t_derivable<t_holds<t_queue>>
 {
-	typedef t_container t_extension;
+	using t_extension = t_container;
 
 	static void f_define(t_container* a_extension);
 
@@ -37,7 +36,7 @@ struct t_type_of<t_queue> : t_derivable<t_holds<t_queue>>
 	{
 		a_this->f_as<t_queue>().f_scan(a_scan);
 	}
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 }
@@ -60,7 +59,7 @@ struct t_container : t_extension
 		return const_cast<t_container*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
-	t_scoped f_as(T&& a_value) const
+	t_pvalue f_as(T&& a_value) const
 	{
 		return f_global()->f_as(std::forward<T>(a_value));
 	}

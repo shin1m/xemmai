@@ -2,25 +2,23 @@
 #define XEMMAI__OBJECT_H
 
 #include "atomic.h"
-#include "pool.h"
+#include "heap.h"
 #include "type.h"
 #include <map>
+#include <cassert>
 
 namespace xemmai
 {
 
-class t_with_lock_for_read;
-class t_with_lock_for_write;
-
 class t_structure
 {
-	friend class t_engine;
-	friend class t_global;
 	friend class t_object;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_structure>;
 	friend struct t_thread;
 	friend struct t_code;
+	friend class t_engine;
+	friend class t_global;
 
 	struct t_entry
 	{
@@ -47,7 +45,7 @@ class t_structure
 
 		void* operator new(size_t a_size, size_t a_n)
 		{
-			return new char[a_size + sizeof(t_slot) * a_n];
+			return new char[a_size + sizeof(t_svalue) * a_n];
 		}
 		void operator delete(void* a_p)
 		{
@@ -60,32 +58,20 @@ class t_structure
 
 		t_fields(size_t a_size) : v_size(a_size)
 		{
-			t_slot* p = *this;
-			for (size_t i = 0; i < v_size; ++i) new(p + i) t_slot();
 		}
-		operator t_slot*() const
+		operator t_svalue*() const
 		{
-			return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
+			return const_cast<t_svalue*>(reinterpret_cast<const t_svalue*>(this + 1));
 		}
-		template<typename T_scan>
-		void f_scan(T_scan a_scan)
+		void f_scan(t_scan a_scan)
 		{
-			t_slot* p = *this;
+			t_svalue* p = *this;
 			for (size_t i = 0; i < v_size; ++i) a_scan(p[i]);
 		}
 	};
-	struct t_discard
-	{
-		t_fields* v_fields;
+	friend struct t_type_of<std::unique_ptr<t_fields>>;
 
-		~t_discard()
-		{
-			delete v_fields;
-		}
-	};
-	friend struct t_type_of<t_structure::t_discard>;
-
-	static XEMMAI__PORTABLE__THREAD t_cache* v_cache;
+	static inline XEMMAI__PORTABLE__THREAD t_cache* v_cache;
 
 	size_t v_size;
 	std::map<t_object*, t_object*>::iterator v_iterator;
@@ -97,9 +83,9 @@ class t_structure
 	t_structure();
 	t_structure(size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_structure* a_parent);
 	~t_structure() = default;
-	t_slot* f_fields() const
+	t_svalue* f_fields() const
 	{
-		return const_cast<t_slot*>(reinterpret_cast<const t_slot*>(this + 1));
+		return const_cast<t_svalue*>(reinterpret_cast<const t_svalue*>(this + 1));
 	}
 	t_entry* f_entries() const
 	{
@@ -111,7 +97,7 @@ public:
 	{
 		a_scan(v_this);
 		a_scan(v_parent);
-		t_slot* p = f_fields();
+		auto p = f_fields();
 		for (size_t i = 0; i < v_size; ++i) a_scan(p[i]);
 	}
 	size_t f_size() const
@@ -120,24 +106,22 @@ public:
 	}
 	intptr_t f_index(t_object* a_key, t_cache& a_cache) const;
 	intptr_t f_index(t_object* a_key) const;
-	t_scoped f_append(t_object* a_key);
-	t_scoped f_remove(size_t a_index);
+	t_object* f_append(t_object* a_key);
+	t_object* f_remove(size_t a_index);
 };
 
 template<typename T>
-void f_get_of_type(T& a_this, t_object* a_key, t_stacked* a_stack);
+void f_get_of_type(T& a_this, t_object* a_key, t_pvalue* a_stack);
 template<typename T>
-void f_call_of_type(T& a_this, t_object* a_key, t_stacked* a_stack, size_t a_n);
+void f_call_of_type(T& a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n);
 
 class t_object
 {
-	friend class t_value;
-	template<typename T, size_t A_size> friend class t_shared_pool;
-	template<typename T> friend class t_local_pool;
-	template<size_t A_rank> friend class t_object_and;
+	template<typename> friend class t_heap;
+	friend class t_slot;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_type>;
-	friend struct t_type_of<t_structure>;
+	friend struct t_fiber;
 	friend struct t_code;
 	friend class t_engine;
 	friend class t_with_lock_for_read;
@@ -154,14 +138,14 @@ class t_object
 		e_color__RED
 	};
 
-	static XEMMAI__PORTABLE__THREAD struct
+	static inline XEMMAI__PORTABLE__THREAD struct
 	{
 		t_object* v_next;
 		t_object* v_previous;
 	} v_roots;
-	static XEMMAI__PORTABLE__THREAD t_object* v_scan_stack;
-	static XEMMAI__PORTABLE__THREAD t_object* v_cycle;
-	static XEMMAI__PORTABLE__THREAD t_object* v_cycles;
+	static inline XEMMAI__PORTABLE__THREAD t_object* v_scan_stack;
+	static inline XEMMAI__PORTABLE__THREAD t_object* v_cycle;
+	static inline XEMMAI__PORTABLE__THREAD t_object* v_cycles;
 
 	XEMMAI__PORTABLE__FORCE_INLINE static void f_append(t_object* a_p)
 	{
@@ -177,21 +161,18 @@ class t_object
 	template<void (t_object::*A_push)()>
 	static void f_push(t_slot& a_slot)
 	{
-		auto p = a_slot.v_p;
-		if (reinterpret_cast<size_t>(p) >= t_value::e_tag__OBJECT) (p->*A_push)();
+		auto p = a_slot.v_p.load(std::memory_order_relaxed);
+		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) (p->*A_push)();
 	}
 	template<void (t_object::*A_push)()>
 	static void f_push_and_clear(t_slot& a_slot)
 	{
-		auto p = a_slot.v_p;
-		if (reinterpret_cast<size_t>(p) < t_value::e_tag__OBJECT) return;
+		auto p = a_slot.v_p.load(std::memory_order_relaxed);
+		if (reinterpret_cast<size_t>(p) < e_tag__OBJECT) return;
 		(p->*A_push)();
-		a_slot.v_p = nullptr;
+		a_slot.v_p.store(nullptr, std::memory_order_relaxed);
 	}
 	static void f_collect();
-	template<size_t A_rank>
-	static t_object* f_pool__allocate();
-	static t_object* f_local_pool__allocate(size_t a_size);
 
 	t_object* v_next;
 	t_object* v_previous;
@@ -201,14 +182,13 @@ class t_object
 	size_t v_cyclic;
 	size_t v_rank;
 	t_object* v_next_cycle;
-	t_type* v_type;
-	t_value::t_increments* v_owner = nullptr;
+	t_type* v_type = nullptr;
+	decltype(t_slot::t_increments::v_instance) v_owner = nullptr;
 	t_structure* v_structure;
 	t_structure::t_fields* v_fields = nullptr;
 	t_lock v_lock;
 	char v_data[sizeof(void*) * 3];
 
-	t_object(size_t a_rank);
 	template<void (t_object::*A_push)()>
 	void f_step()
 	{
@@ -334,25 +314,21 @@ class t_object
 		}
 	}
 	void f_cyclic_decrement();
-	void f_field_add(t_scoped&& a_structure, t_scoped&& a_value);
+	void f_field_add(t_object* a_structure, const t_pvalue& a_value);
 
 public:
-	static t_scoped f_allocate(t_type* a_type, bool a_shared, size_t a_size)
-	{
-		auto p = f_local_pool__allocate(a_size);
-		p->v_next = nullptr;
-		auto increments = t_value::f_increments();
-		increments->f_push(f_of(a_type));
-		p->v_type = a_type;
-		if (!a_shared) p->v_owner = increments;
-		increments->f_push(f_of(p->v_structure));
-		return {p, t_scoped::t_pass()};
-	}
 	static t_object* f_of(void* a_data)
 	{
 		return reinterpret_cast<t_object*>(reinterpret_cast<char*>(a_data) - offsetof(t_object, v_data));
 	}
 
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_be(t_type* a_type)
+	{
+		t_slot::t_increments::f_push(f_of(a_type));
+		std::atomic_signal_fence(std::memory_order_release);
+		v_type = a_type;
+		t_slot::t_decrements::f_push(this);
+	}
 	t_type* f_type() const
 	{
 		return v_type;
@@ -363,7 +339,7 @@ public:
 	}
 	bool f_owned() const
 	{
-		return v_owner == t_value::f_increments();
+		return v_owner == t_slot::t_increments::v_instance;
 	}
 	bool f_shared() const
 	{
@@ -383,50 +359,50 @@ public:
 	{
 		return v_structure->f_fields()[a_index];
 	}
-	t_slot& f_field_get(size_t a_index) const
+	t_svalue& f_field_get(size_t a_index) const
 	{
 		return (*v_fields)[a_index];
 	}
-	void f_field_put(t_object* a_key, t_scoped&& a_value);
+	void f_field_put(t_object* a_key, const t_pvalue& a_value);
 	void f_field_remove(size_t a_index);
-	t_scoped f_get(t_object* a_key)
+	t_pvalue f_get(t_object* a_key)
 	{
 		return v_type->f_get(this, a_key);
 	}
-	void f_get_owned(t_object* a_key, t_stacked* a_stack)
+	void f_get_owned(t_object* a_key, t_pvalue* a_stack)
 	{
 		intptr_t index = f_field_index(a_key);
 		if (index < 0) {
 			f_get_of_type(*this, a_key, a_stack);
 		} else {
-			a_stack[0].f_construct(f_field_get(index));
-			a_stack[1].f_construct();
+			a_stack[0] = f_field_get(index);
+			a_stack[1] = nullptr;
 		}
 	}
-	void f_get(t_object* a_key, t_stacked* a_stack)
+	void f_get(t_object* a_key, t_pvalue* a_stack)
 	{
 		if (f_owned())
 			f_get_owned(a_key, a_stack);
 		else
 			v_type->f_get_nonowned(this, a_key, a_stack);
 	}
-	void f_put(t_object* a_key, t_scoped&& a_value)
+	void f_put(t_object* a_key, const t_pvalue& a_value)
 	{
-		v_type->f_put(this, a_key, std::move(a_value));
+		v_type->f_put(this, a_key, a_value);
 	}
 	bool f_has(t_object* a_key)
 	{
 		return v_type->f_has(this, a_key);
 	}
-	t_scoped f_remove(t_object* a_key)
+	t_pvalue f_remove(t_object* a_key)
 	{
 		return v_type->f_remove(this, a_key);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_stacked* a_stack, size_t a_n)
+	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_pvalue* a_stack, size_t a_n)
 	{
 		return v_type->f_call(this, a_stack, a_n);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_object* a_key, t_stacked* a_stack, size_t a_n)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_object* a_key, t_pvalue* a_stack, size_t a_n)
 	{
 		if (f_owned()) {
 			intptr_t index = f_field_index(a_key);
@@ -439,22 +415,8 @@ public:
 		}
 	}
 	template<typename... T>
-	t_scoped f_invoke(t_object* a_key, T&&... a_arguments)
-	{
-		t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
-		stack[1].f_construct();
-		f_call(a_key, stack, sizeof...(a_arguments));
-		return stack.f_return();
-	}
-	t_scoped f_call_preserved(t_object* a_key, t_stacked* a_stack, size_t a_n)
-	{
-		size_t n = a_n + 2;
-		t_scoped_stack stack(n);
-		stack[1].f_construct();
-		for (size_t i = 2; i < n; ++i) stack[i].f_construct(a_stack[i]);
-		f_call(a_key, stack, a_n);
-		return stack.f_return();
-	}
+	t_pvalue f_invoke(t_object* a_key, T&&... a_arguments);
+	t_pvalue f_call_preserved(t_object* a_key, t_pvalue* a_stack, size_t a_n);
 	void* f_data()
 	{
 		return v_data;
@@ -466,182 +428,32 @@ public:
 	}
 };
 
-template<size_t A_rank>
-struct t_object_and : t_object
+template<typename T_tag>
+inline intptr_t t_value<T_tag>::f_integer() const
 {
-	char v_data[sizeof(void*) * 8 * A_rank];
-
-	t_object_and() : t_object(A_rank)
-	{
-	}
-};
-
-inline intptr_t t_value::f_integer() const
-{
-	return f_tag() < e_tag__OBJECT ? v_integer : v_p->f_as<intptr_t>();
+	auto p = static_cast<t_object*>(*this);
+	return reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT ? v_integer : p->f_as<intptr_t>();
 }
 
-inline double t_value::f_float() const
+template<typename T_tag>
+inline double t_value<T_tag>::f_float() const
 {
-	return f_tag() < e_tag__OBJECT ? v_float : v_p->f_as<double>();
+	auto p = static_cast<t_object*>(*this);
+	return reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT ? v_float : p->f_as<double>();
 }
 
-inline bool t_value::f_is(t_type* a_class) const
+template<typename T_tag>
+inline bool t_value<T_tag>::f_has(t_object* a_key) const
 {
-	return f_type()->f_derives(a_class);
+	auto p = static_cast<t_object*>(*this);
+	return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_has(a_key);
 }
 
-inline void t_value::f_put(t_object* a_key, t_scoped&& a_value) const
+template<typename T_tag>
+inline t_pvalue t_value<T_tag>::f_remove(t_object* a_key) const
 {
-	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported."sv);
-	v_p->f_type()->f_put(v_p, a_key, std::move(a_value));
-}
-
-inline bool t_value::f_has(t_object* a_key) const
-{
-	return f_tag() >= e_tag__OBJECT && v_p->f_has(a_key);
-}
-
-inline t_scoped t_value::f_remove(t_object* a_key) const
-{
-	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported."sv);
-	return v_p->f_type()->f_remove(v_p, a_key);
-}
-
-XEMMAI__PORTABLE__ALWAYS_INLINE inline size_t t_value::f_call_without_loop(t_stacked* a_stack, size_t a_n) const
-{
-	if (f_tag() < e_tag__OBJECT) {
-		t_destruct_n(a_stack, a_n);
-		f_throw(L"not supported."sv);
-	}
-	return v_p->f_call_without_loop(a_stack, a_n);
-}
-
-inline void t_value::f_loop(t_stacked* a_stack, size_t a_n)
-{
-	do {
-		t_scoped x = std::move(a_stack[0]);
-		a_n = x.f_call_without_loop(a_stack, a_n);
-	} while (a_n != size_t(-1));
-}
-
-#define XEMMAI__VALUE__UNARY(a_method)\
-		{\
-			t_scoped_stack stack(2);\
-			size_t n = v_p->f_type()->a_method(v_p, stack);\
-			if (n != size_t(-1)) f_loop(stack, n);\
-			return stack.f_return();\
-		}
-#define XEMMAI__VALUE__BINARY(a_method)\
-		{\
-			t_scoped_stack stack(3);\
-			stack[2].f_construct(a_value);\
-			size_t n = v_p->f_type()->a_method(v_p, stack);\
-			if (n != size_t(-1)) f_loop(stack, n);\
-			return stack.f_return();\
-		}
-
-template<typename... T>
-inline t_scoped t_value::operator()(T&&... a_arguments) const
-{
-	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
-	stack[1].f_construct();
-	f_call(stack, sizeof...(a_arguments));
-	return stack.f_return();
-}
-
-template<typename... T>
-inline t_scoped t_value::f_invoke(t_object* a_key, T&&... a_arguments) const
-{
-	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
-	stack[1].f_construct();
-	f_call(a_key, stack, sizeof...(a_arguments));
-	return stack.f_return();
-}
-
-inline t_scoped t_value::f_get_at(const t_value& a_index) const
-{
-	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported."sv);
-	t_scoped_stack stack(3);
-	stack[2].f_construct(a_index);
-	size_t n = v_p->f_type()->f_get_at(v_p, stack);
-	if (n != size_t(-1)) f_loop(stack, n);
-	return stack.f_return();
-}
-
-inline t_scoped t_value::f_set_at(const t_value& a_index, const t_value& a_value) const
-{
-	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported."sv);
-	t_scoped_stack stack(4);
-	stack[2].f_construct(a_index);
-	stack[3].f_construct(a_value);
-	size_t n = v_p->f_type()->f_set_at(v_p, stack);
-	if (n != size_t(-1)) f_loop(stack, n);
-	return stack.f_return();
-}
-
-inline t_scoped t_value::f_plus() const
-{
-	switch (f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_scoped(v_integer);
-	case e_tag__FLOAT:
-		return t_scoped(v_float);
-	default:
-		XEMMAI__VALUE__UNARY(f_plus)
-	}
-}
-
-inline t_scoped t_value::f_minus() const
-{
-	switch (f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_scoped(-v_integer);
-	case e_tag__FLOAT:
-		return t_scoped(-v_float);
-	default:
-		XEMMAI__VALUE__UNARY(f_minus)
-	}
-}
-
-inline t_scoped t_value::f_not() const
-{
-	switch (f_tag()) {
-	case e_tag__BOOLEAN:
-		return t_scoped(!v_boolean);
-	case e_tag__NULL:
-	case e_tag__INTEGER:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__UNARY(f_not)
-	}
-}
-
-inline t_scoped t_value::f_complement() const
-{
-	switch (f_tag()) {
-	case e_tag__INTEGER:
-		return t_scoped(~v_integer);
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__UNARY(f_complement)
-	}
-}
-
-inline t_scoped t_value::f_send(const t_value& a_value) const
-{
-	if (f_tag() < e_tag__OBJECT) f_throw(L"not supported."sv);
-	XEMMAI__VALUE__BINARY(f_send)
+	auto p = f_object_or_throw();
+	return p->f_type()->f_remove(p, a_key);
 }
 
 template<typename T_lock, typename T>
@@ -663,23 +475,15 @@ inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids) : v_this(t_obj
 }
 
 template<size_t A_n>
-inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_scoped&& a_module) : v_this(t_object::f_of(this)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(std::move(a_module))
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module) : v_this(t_object::f_of(this)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(a_module)
 {
 	v_super.f_construct(t_object::f_of(a_super));
 }
 
-template<typename T, typename... T_an>
-inline t_scoped t_type::f_new_sized(bool a_shared, size_t a_data, T_an&&... a_an)
-{
-	auto object = t_object::f_allocate(this, a_shared, sizeof(T) + a_data);
-	new(object->f_data()) T(std::forward<T_an>(a_an)...);
-	return object;
-}
-
 template<typename T>
-t_scoped t_type::f_derive()
+t_object* t_type::f_derive()
 {
-	return t_object::f_of(this)->v_type->f_new<T>(true, T::V_ids, this, t_scoped(v_module));
+	return t_object::f_of(this)->v_type->f_new<T>(true, T::V_ids, this, v_module);
 }
 
 template<typename T_base>

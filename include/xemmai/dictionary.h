@@ -9,9 +9,9 @@ namespace xemmai
 
 class t_dictionary
 {
-	friend class t_global;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_dictionary>;
+	friend class t_global;
 
 public:
 	class t_iterator;
@@ -22,12 +22,12 @@ public:
 
 		size_t v_gap = 0;
 		size_t v_hash;
-		t_slot v_key;
+		t_svalue v_key;
 
 	public:
-		t_slot v_value;
+		t_svalue v_value;
 
-		const t_slot& f_key() const
+		const t_svalue& f_key() const
 		{
 			return v_key;
 		}
@@ -47,7 +47,7 @@ private:
 			size_t v_capacity;
 			size_t v_upper;
 			size_t v_lower;
-			size_t (*v_slot)(size_t);
+			size_t(*v_slot)(size_t);
 
 			template<size_t A_capacity>
 			constexpr t_rank(std::integral_constant<size_t, A_capacity>, size_t a_lower = A_capacity / 4) : v_capacity(A_capacity), v_upper(A_capacity / 2), v_lower(a_lower), v_slot(f_slot<A_capacity>)
@@ -56,12 +56,12 @@ private:
 		};
 		static const t_rank v_ranks[];
 
-		size_t (*v_slot)(size_t);
+		size_t(*v_slot)(size_t);
 		t_entry* v_end;
 		size_t v_size = 0;
 		const t_rank& v_rank;
 
-		static t_scoped f_instantiate(t_type* a_type, const t_rank& a_rank)
+		static t_object* f_instantiate(t_type* a_type, const t_rank& a_rank)
 		{
 			return a_type->f_new_sized<t_table>(true, sizeof(t_entry) * a_rank.v_capacity, a_rank);
 		}
@@ -81,11 +81,11 @@ private:
 				a_scan(p->v_value);
 			}
 		}
-		static bool f_equals(const t_entry& a_p, size_t a_hash, const t_value& a_key)
+		static bool f_equals(const t_entry& a_p, size_t a_hash, const t_pvalue& a_key)
 		{
 			return a_p.v_hash == a_hash && f_as<bool>(a_p.v_key.f_equals(a_key));
 		}
-		XEMMAI__PORTABLE__ALWAYS_INLINE t_entry* f_find(const t_value& a_key) const
+		XEMMAI__PORTABLE__ALWAYS_INLINE t_entry* f_find(const t_pvalue& a_key) const
 		{
 			size_t hash = f_as<size_t>(a_key.f_hash());
 			auto p = f_entries() + v_slot(hash);
@@ -97,7 +97,7 @@ private:
 			}
 			return nullptr;
 		}
-		std::pair<t_entry*, size_t> f_find(size_t a_hash, const t_value& a_key) const
+		std::pair<t_entry*, size_t> f_find(size_t a_hash, const t_pvalue& a_key) const
 		{
 			auto p = f_entries() + v_slot(a_hash);
 			size_t gap = 1;
@@ -105,7 +105,7 @@ private:
 			for (; p->v_gap >= gap && !f_equals(*p, a_hash, a_key); ++gap) if (++p >= v_end) p = f_entries();
 			return {p, gap};
 		}
-		void f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_scoped&& a_key, t_scoped&& a_value);
+		void f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_pvalue a_key, t_pvalue a_value);
 	};
 	friend struct t_type_of<t_table>;
 
@@ -119,7 +119,7 @@ private:
 public:
 	class t_iterator
 	{
-		t_scoped v_table;
+		t_root v_table;
 		t_entry* v_entry;
 		t_entry* v_end;
 
@@ -136,17 +136,17 @@ public:
 		}
 	};
 
-	static t_scoped f_instantiate();
+	static t_object* f_instantiate();
 
 	void f_clear()
 	{
 		v_table = t_table::f_instantiate(v_table->f_type(), t_table::v_ranks[0]);
 	}
 	size_t f_size() const;
-	const t_value& f_get(const t_value& a_key) const;
-	t_scoped f_put(const t_value& a_key, t_scoped&& a_value);
-	bool f_has(const t_value& a_key) const;
-	t_scoped f_remove(const t_value& a_key);
+	const t_svalue& f_get(const t_pvalue& a_key) const;
+	t_pvalue f_put(const t_pvalue& a_key, const t_pvalue& a_value);
+	bool f_has(const t_pvalue& a_key) const;
+	t_pvalue f_remove(const t_pvalue& a_key);
 };
 
 template<>
@@ -162,15 +162,15 @@ struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_fin
 template<>
 struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
-	static void f__construct(xemmai::t_extension* a_extension, t_stacked* a_stack, size_t a_n);
-	static t_scoped f_string(const t_value& a_self);
-	static void f_clear(const t_value& a_self);
-	static size_t f_size(const t_value& a_self);
-	static t_scoped f__get_at(const t_value& a_self, const t_value& a_key);
-	static t_scoped f__set_at(const t_value& a_self, const t_value& a_key, t_scoped&& a_value);
-	static bool f_has(const t_value& a_self, const t_value& a_key);
-	static t_scoped f_remove(const t_value& a_self, const t_value& a_key);
-	static void f_each(const t_value& a_self, const t_value& a_callable);
+	static void f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n);
+	static t_object* f_string(const t_pvalue& a_self);
+	static void f_clear(const t_pvalue& a_self);
+	static size_t f_size(const t_pvalue& a_self);
+	static t_pvalue f__get_at(const t_pvalue& a_self, const t_pvalue& a_key);
+	static t_pvalue f__set_at(const t_pvalue& a_self, const t_pvalue& a_key, const t_pvalue& a_value);
+	static bool f_has(const t_pvalue& a_self, const t_pvalue& a_key);
+	static t_pvalue f_remove(const t_pvalue& a_self, const t_pvalue& a_key);
+	static void f_each(const t_pvalue& a_self, const t_pvalue& a_callable);
 	static void f_define();
 
 	using t_base::t_base;
@@ -178,9 +178,9 @@ struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 	{
 		a_scan(a_this->f_as<t_dictionary>().v_table);
 	}
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_set_at(t_object* a_this, t_stacked* a_stack);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_set_at(t_object* a_this, t_pvalue* a_stack);
 };
 
 inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(a_dictionary.v_table), v_entry(f_as<t_table&>(v_table).f_entries()), v_end(f_as<t_table&>(v_table).v_end)
@@ -194,14 +194,14 @@ inline size_t t_dictionary::f_size() const
 	return f_as<t_table&>(v_table).v_size;
 }
 
-inline const t_value& t_dictionary::f_get(const t_value& a_key) const
+inline const t_svalue& t_dictionary::f_get(const t_pvalue& a_key) const
 {
 	auto p = f_as<t_table&>(v_table).f_find(a_key);
 	if (!p) f_throw(L"key not found."sv);
 	return p->v_value;
 }
 
-inline bool t_dictionary::f_has(const t_value& a_key) const
+inline bool t_dictionary::f_has(const t_pvalue& a_key) const
 {
 	return f_as<t_table&>(v_table).f_find(a_key);
 }

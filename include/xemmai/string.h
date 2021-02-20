@@ -2,7 +2,6 @@
 #define XEMMAI__STRING_H
 
 #include "object.h"
-#include <algorithm>
 
 namespace xemmai
 {
@@ -24,8 +23,8 @@ class t_string
 	}
 
 public:
-	static t_scoped f_instantiate(const wchar_t* a_p, size_t a_n);
-	static t_scoped f_instantiate(std::wstring_view a_value)
+	static t_object* f_instantiate(const wchar_t* a_p, size_t a_n);
+	static t_object* f_instantiate(std::wstring_view a_value)
 	{
 		return f_instantiate(a_value.data(), a_value.size());
 	}
@@ -69,13 +68,13 @@ public:
 template<>
 struct t_fundamental<std::wstring>
 {
-	typedef t_string t_type;
+	using t_type = t_string;
 };
 
 template<>
 struct t_fundamental<std::wstring_view>
 {
-	typedef t_string t_type;
+	using t_type = t_string;
 };
 
 template<>
@@ -93,49 +92,38 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	template<typename T0>
 	struct t_as<T0*>
 	{
-		static_assert(std::is_same<std::decay_t<T0>, t_string>::value);
+		static_assert(std::is_same_v<std::decay_t<T0>, t_string>);
 
 		template<typename T1>
 		static T0* f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) == t_value::e_tag__NULL ? nullptr : &p->template f_as<t_string>();
+			return reinterpret_cast<size_t>(p) == e_tag__NULL ? nullptr : &p->template f_as<t_string>();
 		}
 	};
 
-	static t_scoped f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n)
-	{
-		auto object = t_object::f_allocate(a_class, true, sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
-		*std::copy_n(a_p, a_n, (new(object->f_data()) t_string(a_n))->f_entries()) = L'\0';
-		return object;
-	}
-	static t_scoped f__construct(t_type* a_class, const t_string& a_value)
+	static t_object* f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n);
+	static t_pvalue f__construct(t_type* a_class, const t_string& a_value)
 	{
 		return f__construct(a_class, static_cast<const wchar_t*>(a_value), a_value.v_size);
 	}
-	static t_scoped f__construct(t_type* a_class, std::wstring_view a_value)
+	static t_object* f__construct(t_type* a_class, std::wstring_view a_value)
 	{
 		return f__construct(a_class, a_value.data(), a_value.size());
 	}
-	static t_scoped f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y)
-	{
-		size_t n = a_x.v_size + a_y.v_size;
-		auto object = t_object::f_allocate(a_class, true, sizeof(t_string) + sizeof(wchar_t) * (n + 1));
-		*std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, (new(object->f_data()) t_string(n))->f_entries())) = L'\0';
-		return object;
-	}
+	static t_object* f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y);
 	template<typename T>
-	static t_scoped f_transfer(const t_global* a_extension, T&& a_value);
-	static t_scoped f_from_code(t_global* a_extension, intptr_t a_code);
-	static t_scoped f_string(t_scoped&& a_self)
+	static t_pvalue f_transfer(const t_global* a_extension, T&& a_value);
+	static t_object* f_from_code(t_global* a_extension, intptr_t a_code);
+	static t_object* f_string(const t_pvalue& a_self)
 	{
-		return std::move(a_self);
+		return a_self;
 	}
-	static t_scoped f__add(t_object* a_self, t_scoped&& a_value);
-	static t_scoped f__add(const t_value& a_self, t_scoped&& a_value)
+	static t_object* f__add(t_object* a_self, const t_pvalue& a_value);
+	static t_object* f__add(const t_pvalue& a_self, const t_pvalue& a_value)
 	{
 		f_check<t_string>(a_self, L"self");
-		return f__add(static_cast<t_object*>(a_self), std::move(a_value));
+		return f__add(static_cast<t_object*>(a_self), a_value);
 	}
 	static bool f__less(const t_string& a_self, const t_string& a_value)
 	{
@@ -153,14 +141,14 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	{
 		return a_self.f_compare(a_value) >= 0;
 	}
-	static bool f__equals(const t_string& a_self, const t_value& a_value);
-	static bool f__not_equals(const t_string& a_self, const t_value& a_value);
-	static t_scoped f__substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n);
-	static t_scoped f_substring(t_global* a_extension, const t_string& a_self, size_t a_i)
+	static bool f__equals(const t_string& a_self, const t_pvalue& a_value);
+	static bool f__not_equals(const t_string& a_self, const t_pvalue& a_value);
+	static t_object* f__substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n);
+	static t_object* f_substring(t_global* a_extension, const t_string& a_self, size_t a_i)
 	{
 		return f__substring(a_extension, a_self, a_i, a_self.f_size() - a_i);
 	}
-	static t_scoped f_substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n)
+	static t_object* f_substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n)
 	{
 		return f__substring(a_extension, a_self, a_i, std::min(a_n, a_self.f_size() - a_i));
 	}
@@ -171,15 +159,15 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	static void f_define();
 
 	using t_base::t_base;
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	static void f_do_hash(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_add(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_less(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_less_equal(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_greater(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_greater_equal(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_equals(t_object* a_this, t_stacked* a_stack);
-	static size_t f_do_not_equals(t_object* a_this, t_stacked* a_stack);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	static void f_do_hash(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_add(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_less(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_less_equal(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_greater(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_greater_equal(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_equals(t_object* a_this, t_pvalue* a_stack);
+	static size_t f_do_not_equals(t_object* a_this, t_pvalue* a_stack);
 };
 
 template<>

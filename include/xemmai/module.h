@@ -23,11 +23,11 @@ struct t_module
 
 
 	template<typename T, typename... T_an>
-	static t_scoped f_new(std::wstring_view a_name, T_an&&... a_an);
-	static t_scoped f_load_library(std::wstring_view a_name, std::wstring_view a_path);
+	static t_object* f_new(std::wstring_view a_name, T_an&&... a_an);
+	static t_object* f_load_library(std::wstring_view a_name, std::wstring_view a_path);
 	static void f_execute_script(t_object* a_this, t_object* a_code);
-	static t_scoped f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path);
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_name);
+	static t_object* f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path);
+	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_name);
 	static void f_main();
 
 	std::map<std::wstring, t_slot, std::less<>>::iterator v_iterator;
@@ -43,15 +43,15 @@ struct t_module
 
 struct t_script : t_module
 {
-	std::vector<std::unique_ptr<t_slot>> v_slots;
+	std::vector<std::unique_ptr<t_svalue>> v_slots;
 	std::mutex v_mutex;
 
 	using t_module::t_module;
 	virtual void f_scan(t_scan a_scan);
-	t_slot& f_slot(t_scoped&& a_p)
+	t_svalue& f_slot(t_object* a_p)
 	{
-		auto p = new t_slot(std::move(a_p));
-		std::lock_guard<std::mutex> lock(v_mutex);
+		auto p = new t_svalue(a_p);
+		std::lock_guard lock(v_mutex);
 		return *v_slots.emplace_back(p);
 	}
 };
@@ -79,7 +79,7 @@ class XEMMAI__PORTABLE__EXPORT t_extension
 	t_object* v_module;
 
 public:
-	typedef void (*t_function)(t_extension*, t_stacked*, size_t);
+	using t_function = void(*)(t_extension*, t_pvalue*, size_t);
 
 	t_extension(t_object* a_module) : v_module(a_module)
 	{
@@ -115,7 +115,7 @@ struct t_type_of<t_module> : t_underivable<t_holds<t_module>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
-	void f_do_instantiate(t_stacked* a_stack, size_t a_n);
+	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 };
 
 template<typename T>
@@ -125,7 +125,7 @@ inline T* f_extension(t_object* a_module)
 }
 
 template<typename T_type, typename T_extension, typename... T_an>
-inline t_scoped f_new(T_extension* a_extension, bool a_shared, T_an&&... a_an)
+inline t_object* f_new(T_extension* a_extension, bool a_shared, T_an&&... a_an)
 {
 	return a_extension->template f_type<T_type>()->template f_new<T_type>(a_shared, std::forward<T_an>(a_an)...);
 }

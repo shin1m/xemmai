@@ -3,12 +3,12 @@
 namespace xemmai
 {
 
-t_scoped t_type_of<t_pair>::f_instantiate(t_container* a_extension, t_scoped&& a_value)
+t_object* t_type_of<t_pair>::f_instantiate(t_container* a_extension, const t_pvalue& a_value)
 {
-	return a_extension->v_type_pair->f_new<t_pair>(false, std::move(a_value));
+	return a_extension->v_type_pair->f_new<t_pair>(false, a_value);
 }
 
-t_scoped t_type_of<t_pair>::f_define(t_container* a_extension)
+t_object* t_type_of<t_pair>::f_define(t_container* a_extension)
 {
 	auto super = a_extension->f_type<t_object>();
 	return t_object::f_of(super)->f_type()->f_new<t_type_of>(true, V_ids, super, a_extension->f_module());
@@ -17,14 +17,14 @@ t_scoped t_type_of<t_pair>::f_define(t_container* a_extension)
 void t_type_of<t_queue>::f_define(t_container* a_extension)
 {
 	t_define<t_queue, t_object>(a_extension, L"Queue"sv)
-		(f_global()->f_symbol_string(), t_member<t_scoped(t_queue::*)() const, &t_queue::f_string>())
+		(f_global()->f_symbol_string(), t_member<t_object*(t_queue::*)() const, &t_queue::f_string>())
 		(L"empty"sv, t_member<bool(t_queue::*)() const, &t_queue::f_empty>())
-		(L"push"sv, t_member<void(t_queue::*)(t_container*, t_scoped&&), &t_queue::f_push>())
-		(L"pop"sv, t_member<t_scoped(t_queue::*)(), &t_queue::f_pop>())
+		(L"push"sv, t_member<void(t_queue::*)(t_container*, const t_pvalue&), &t_queue::f_push>())
+		(L"pop"sv, t_member<t_pvalue(t_queue::*)(), &t_queue::f_pop>())
 	;
 }
 
-t_scoped t_type_of<t_queue>::f_do_construct(t_stacked* a_stack, size_t a_n)
+t_pvalue t_type_of<t_queue>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_overload<
 		t_construct<false>,

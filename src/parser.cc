@@ -1,5 +1,3 @@
-#include <xemmai/parser.h>
-
 #include <xemmai/global.h>
 
 namespace xemmai
@@ -82,13 +80,13 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			{
 				auto& symbol = f_symbol();
 				v_lexer.f_next();
-				return std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, symbol));
+				return std::unique_ptr<ast::t_node>(new ast::t_literal<t_svalue&>(at, symbol));
 			}
 		case t_lexer::e_token__LEFT_PARENTHESIS:
 			{
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
-				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))))));
+				std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<t_svalue&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))))));
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) call->v_expand = f_expressions(indent, call->v_arguments);
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_PARENTHESIS) v_lexer.f_next();
 				return std::move(call);
@@ -195,7 +193,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_array>()))))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<t_svalue&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_array>()))))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) call->v_expand = f_expressions(indent, call->v_arguments);
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_BRACKET) v_lexer.f_next();
 			return std::move(call);
@@ -204,7 +202,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_dictionary>()))))));
+			std::unique_ptr<ast::t_call> call(new ast::t_call(at, std::unique_ptr<ast::t_node>(new ast::t_literal<t_svalue&>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_dictionary>()))))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE) {
 				size_t i = v_lexer.f_indent();
 				while (true) {
@@ -255,7 +253,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			std::wstring value(v_lexer.f_value().begin(), v_lexer.f_value().end());
 			v_lexer.f_next();
-			return std::unique_ptr<ast::t_node>(new ast::t_literal<const t_value&>(at, v_module.f_slot(f_global()->f_as(std::move(value)))));
+			return std::unique_ptr<ast::t_node>(new ast::t_literal<t_svalue&>(at, v_module.f_slot(f_global()->f_as(std::move(value)))));
 		}
 	case t_lexer::e_token__BREAK:
 		{
@@ -826,7 +824,7 @@ void t_parser::operator()(ast::t_scope& a_scope)
 	}
 }
 
-t_scoped t_parser::t_error::f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at)
+t_object* t_parser::t_error::f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at)
 {
 	return f_new<t_error>(f_global(), false, a_message, a_path, a_at);
 }

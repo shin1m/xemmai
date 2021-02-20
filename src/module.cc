@@ -1,7 +1,4 @@
-#include <xemmai/module.h>
-
 #include <xemmai/portable/path.h>
-#include <xemmai/parser.h>
 #include <xemmai/convert.h>
 #include <xemmai/io/file.h>
 
@@ -15,7 +12,7 @@ t_module::t_scoped_lock::t_scoped_lock()
 	if (thread == current) return;
 	auto& mutex = f_engine()->v_module__mutex;
 	auto& condition = f_engine()->v_module__condition;
-	std::unique_lock<std::mutex> lock(mutex);
+	std::unique_lock lock(mutex);
 	while (thread) condition.wait(lock);
 	v_own = true;
 	thread = current;
@@ -24,15 +21,15 @@ t_module::t_scoped_lock::t_scoped_lock()
 t_module::t_scoped_lock::~t_scoped_lock()
 {
 	if (!v_own) return;
-	std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
+	std::lock_guard lock(f_engine()->v_module__mutex);
 	f_engine()->v_module__thread = nullptr;
 	f_engine()->v_module__condition.notify_all();
 }
 
-t_scoped t_module::f_load_library(std::wstring_view a_name, std::wstring_view a_path)
+t_object* t_module::f_load_library(std::wstring_view a_name, std::wstring_view a_path)
 {
 	portable::t_library library{std::wstring(a_path)};
-	if (!library) return {};
+	if (!library) return nullptr;
 	auto factory = library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
 	if (!factory) f_throw(L"f_factory not found."sv);
 	auto handle = new t_library::t_handle();
@@ -47,15 +44,14 @@ void t_module::f_execute_script(t_object* a_this, t_object* a_code)
 	auto scope = xemmai::f_new<t_scope>(f_global(), true);
 	auto lambda = t_lambda::f_instantiate(scope->f_as<t_scope>().f_entries(), a_code);
 	t_scoped_stack stack(2);
-	stack[1].f_construct(*a_this);
-	static_cast<t_object*>(lambda)->f_call_without_loop(stack, 0);
-	stack.f_return();
+	stack[1] = a_this;
+	lambda->f_call_without_loop(stack, 0);
 }
 
-t_scoped t_module::f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path)
+t_object* t_module::f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path)
 {
 	io::t_file stream(a_path, "r");
-	if (!stream) return {};
+	if (!stream) return nullptr;
 	ast::t_scope scope(nullptr);
 	if (f_engine()->v_debugger) {
 		auto module = f_new<t_debug_script>(a_name, a_path);
@@ -73,7 +69,7 @@ t_scoped t_module::f_load_and_execute_script(std::wstring_view a_name, std::wstr
 	}
 }
 
-t_scoped t_module::f_instantiate(std::wstring_view a_name)
+t_object* t_module::f_instantiate(std::wstring_view a_name)
 {
 	t_scoped_lock lock;
 	f_engine()->v_object__reviving__mutex.lock();
@@ -91,25 +87,25 @@ t_scoped t_module::f_instantiate(std::wstring_view a_name)
 	}
 	f_engine()->v_module__mutex.unlock();
 	f_engine()->v_object__reviving__mutex.unlock();
-	t_scoped paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
-	t_scoped n = paths.f_invoke(f_global()->f_symbol_size());
+	auto paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
+	auto n = paths.f_invoke(f_global()->f_symbol_size());
 	f_check<size_t>(n, L"size");
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
-		t_scoped x = paths.f_get_at(f_global()->f_as(i));
+		auto x = paths.f_get_at(f_global()->f_as(i));
 		f_check<t_string>(x, L"path");
 		std::wstring path = portable::t_path(f_as<const t_string&>(x)) / a_name;
-		t_scoped module = f_load_and_execute_script(a_name, path + L".xm");
+		auto module = f_load_and_execute_script(a_name, path + L".xm");
 		if (module) return module;
 		module = f_load_library(a_name, path);
 		if (module) return module;
 	}
 	f_throw(L"module \"" + std::wstring(a_name) + L"\" not found.");
-	return {};
+	return nullptr;
 }
 
 void t_module::f_main()
 {
-	t_scoped x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
+	auto x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
 	f_check<t_string>(x, L"script");
 	auto path = f_as<std::wstring_view>(x);
 	if (path.empty()) f_throw(L"script path is empty."sv);
@@ -119,7 +115,7 @@ void t_module::f_main()
 t_module::~t_module()
 {
 	if (v_iterator == decltype(v_iterator){}) return;
-	std::lock_guard<std::mutex> lock(f_engine()->v_module__mutex);
+	std::lock_guard lock(f_engine()->v_module__mutex);
 	f_engine()->v_module__instances.erase(v_iterator);
 }
 
@@ -131,7 +127,7 @@ void t_module::f_scan(t_scan a_scan)
 void t_script::f_scan(t_scan a_scan)
 {
 	t_module::f_scan(a_scan);
-	std::lock_guard<std::mutex> lock(v_mutex);
+	std::lock_guard lock(v_mutex);
 	for (auto& p : v_slots) a_scan(*p);
 }
 
@@ -178,12 +174,11 @@ void t_type_of<t_module>::f_do_scan(t_object* a_this, t_scan a_scan)
 	a_this->f_as<t_module>().f_scan(a_scan);
 }
 
-void t_type_of<t_module>::f_do_instantiate(t_stacked* a_stack, size_t a_n)
+void t_type_of<t_module>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 {
-	if (a_n != 1) f_throw(a_stack, a_n, L"must be called with an argument."sv);
-	t_destruct<> a0(a_stack[2]);
-	f_check<t_string>(a0.v_p, L"argument0");
-	a_stack[0].f_construct(t_module::f_instantiate(f_as<const t_string&>(a0.v_p)));
+	if (a_n != 1) f_throw(L"must be called with an argument."sv);
+	f_check<t_string>(a_stack[2], L"argument0");
+	a_stack[0] = t_module::f_instantiate(f_as<const t_string&>(a_stack[2]));
 }
 
 }

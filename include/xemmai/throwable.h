@@ -9,18 +9,14 @@ namespace xemmai
 
 struct t_backtrace
 {
-	static void f_push(const t_value& a_throwable, const t_scoped& a_lambda, void** a_pc);
+	static void f_push(t_object* a_throwable, t_object* a_lambda, void** a_pc);
 
 	t_backtrace* v_next;
 	t_slot v_lambda;
+	void** v_pc;
 
-	t_backtrace(t_backtrace* a_next, const t_scoped& a_lambda, void** a_pc) : v_next(a_next), v_lambda(a_lambda)
+	t_backtrace(t_backtrace* a_next, t_object* a_lambda, void** a_pc) : v_next(a_next), v_lambda(a_lambda), v_pc(a_pc)
 	{
-		*reinterpret_cast<void***>(&v_lambda.v_integer) = a_pc;
-	}
-	void** const& f_pc() const
-	{
-		return *reinterpret_cast<void** const*>(&v_lambda.v_integer);
 	}
 	void f_dump() const;
 };
@@ -38,7 +34,7 @@ protected:
 	XEMMAI__PORTABLE__EXPORT virtual ~t_throwable();
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(std::wstring_view a_message);
+	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_message);
 
 	t_throwable(std::wstring_view a_message) : v_message(a_message)
 	{
@@ -60,7 +56,7 @@ struct t_type_of<t_throwable> : t_derivable<t_holds<t_throwable>>
 	{
 		for (auto p = a_this->f_as<t_throwable>().v_backtrace; p; p = p->v_next) a_scan(p->v_lambda);
 	}
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 }

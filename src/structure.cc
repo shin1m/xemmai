@@ -1,11 +1,8 @@
 #include <xemmai/structure.h>
-
-#include <xemmai/engine.h>
+#include <xemmai/global.h>
 
 namespace xemmai
 {
-
-XEMMAI__PORTABLE__THREAD t_structure::t_cache* t_structure::v_cache;
 
 t_structure::t_structure(size_t a_size, std::map<t_object*, t_object*>::iterator a_iterator, t_structure* a_parent) : v_size(a_size), v_iterator(a_iterator), v_this(t_object::f_of(this)), v_parent(t_object::f_of(a_parent))
 {
@@ -13,13 +10,13 @@ t_structure::t_structure(size_t a_size, std::map<t_object*, t_object*>::iterator
 	auto key = v_iterator->first;
 	size_t n = a_parent->v_size;
 	{
-		t_slot* p0 = a_parent->f_fields();
-		t_slot* p1 = f_fields();
-		for (size_t i = 0; i < n; ++i) new(p1++) t_slot(*p0++);
-		new(p1) t_slot(key);
+		auto p0 = a_parent->f_fields();
+		auto p1 = f_fields();
+		for (size_t i = 0; i < n; ++i) new(p1++) t_svalue(*p0++);
+		new(p1) t_svalue(key);
 	}
-	t_entry* p0 = a_parent->f_entries();
-	t_entry* p1 = f_entries();
+	auto p0 = a_parent->f_entries();
+	auto p1 = f_entries();
 	size_t i = 0;
 	for (; i < n && p0->v_key < key; ++i) {
 		new(p1++) t_entry{p0->v_key, p0->v_index};
@@ -36,12 +33,12 @@ intptr_t t_structure::f_index(t_object* a_key, t_cache& a_cache) const
 {
 	a_cache.v_structure = t_object::f_of(const_cast<t_structure*>(this));
 	a_cache.v_key = a_key;
-	const t_entry* p = f_entries();
+	auto p = f_entries();
 	size_t i = 0;
 	size_t j = v_size;
 	while (i < j) {
 		size_t k = (i + j) / 2;
-		const t_entry& entry = p[k];
+		auto& entry = p[k];
 		if (entry.v_key == a_key) return a_cache.v_index = entry.v_index;
 		if (entry.v_key < a_key)
 			i = k + 1;
@@ -51,15 +48,15 @@ intptr_t t_structure::f_index(t_object* a_key, t_cache& a_cache) const
 	return a_cache.v_index = -1;
 }
 
-t_scoped t_structure::f_append(t_object* a_key)
+t_object* t_structure::f_append(t_object* a_key)
 {
-	std::lock_guard<std::mutex> lock(v_mutex);
+	std::lock_guard lock(v_mutex);
 	f_engine()->v_object__reviving__mutex.lock();
 	auto i = v_children.lower_bound(a_key);
 	if (i == v_children.end() || i->first != a_key) {
 		i = v_children.emplace_hint(i, a_key, nullptr);
 		f_engine()->v_object__reviving__mutex.unlock();
-		return t_object::f_of(this)->f_type()->f_new_sized<t_structure>(true, (sizeof(t_slot) + sizeof(t_entry)) * (v_size + 1), v_size + 1, i, this);
+		return t_object::f_of(this)->f_type()->f_new_sized<t_structure>(true, (sizeof(t_svalue) + sizeof(t_entry)) * (v_size + 1), v_size + 1, i, this);
 	} else {
 		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
@@ -68,11 +65,11 @@ t_scoped t_structure::f_append(t_object* a_key)
 	}
 }
 
-t_scoped t_structure::f_remove(size_t a_index)
+t_object* t_structure::f_remove(size_t a_index)
 {
-	t_structure* p = this;
+	auto p = this;
 	while (p->v_size > a_index) p = &f_as<t_structure&>(p->v_parent);
-	t_scoped q = t_object::f_of(p);
+	auto q = t_object::f_of(p);
 	while (++a_index < v_size) q = f_as<t_structure&>(q).f_append(f_fields()[a_index]);
 	return q;
 }

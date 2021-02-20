@@ -14,38 +14,38 @@ class t_scope
 
 	size_t v_size;
 	t_slot v_outer;
-	t_slot* v_outer_entries;
+	t_svalue* v_outer_entries;
 
 	t_scope() : v_size(0)
 	{
 	}
-	t_scope(size_t a_size, t_slot* a_outer) : v_size(a_size), v_outer(f_this(a_outer)), v_outer_entries(a_outer)
+	t_scope(size_t a_size, t_svalue* a_outer) : v_size(a_size), v_outer(f_this(a_outer)), v_outer_entries(a_outer)
 	{
 		auto p = f_entries();
 		auto q = p + v_size;
-		for (; p < q; ++p) new(p) t_slot();
+		for (; p < q; ++p) new(p) t_svalue();
 	}
 	void f_scan(t_scan a_scan)
 	{
 		a_scan(v_outer);
 		auto p = f_entries();
 		auto q = p + v_size;
-		for (; p < q; ++p) if (*p) a_scan(*p);
+		for (; p < q; ++p) a_scan(*p);
 	}
 
 public:
-	static t_slot* f_outer(t_slot* a_entries)
+	static t_svalue* f_outer(t_svalue* a_entries)
 	{
 		return reinterpret_cast<t_scope*>(a_entries)[-1].v_outer_entries;
 	}
-	static t_object* f_this(t_slot* a_entries)
+	static t_object* f_this(t_svalue* a_entries)
 	{
 		return t_object::f_of(reinterpret_cast<t_scope*>(a_entries) - 1);
 	}
 
-	t_slot* f_entries()
+	t_svalue* f_entries()
 	{
-		return reinterpret_cast<t_slot*>(this + 1);
+		return reinterpret_cast<t_svalue*>(this + 1);
 	}
 };
 

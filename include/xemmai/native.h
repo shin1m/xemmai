@@ -22,7 +22,7 @@ class t_native
 	~t_native() = default;
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_scoped f_instantiate(t_extension::t_function a_function, t_extension* a_extension);
+	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(t_extension::t_function a_function, t_extension* a_extension);
 };
 
 template<>
@@ -33,8 +33,8 @@ struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_holds<t_native>>
 	{
 		a_scan(a_this->f_as<t_native>().v_module);
 	}
-	static size_t f_do_call(t_object* a_this, t_stacked* a_stack, size_t a_n);
-	static size_t f_do_get_at(t_object* a_this, t_stacked* a_stack);
+	static size_t f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n);
+	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
 };
 
 }

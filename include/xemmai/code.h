@@ -8,6 +8,7 @@
 namespace xemmai
 {
 
+struct t_context;
 class t_lambda;
 
 enum t_instruction
@@ -19,7 +20,6 @@ enum t_instruction
 	e_instruction__FINALLY,
 	e_instruction__YRT,
 	e_instruction__THROW,
-	e_instruction__CLEAR,
 	e_instruction__OBJECT_GET,
 	e_instruction__OBJECT_GET_MONOMORPHIC_CLASS,
 	e_instruction__OBJECT_GET_MONOMORPHIC_INSTANCE,
@@ -29,10 +29,6 @@ enum t_instruction
 	e_instruction__OBJECT_PUT_MONOMORPHIC_ADD,
 	e_instruction__OBJECT_PUT_MONOMORPHIC_SET,
 	e_instruction__OBJECT_PUT_MEGAMORPHIC,
-	e_instruction__OBJECT_PUT_CLEAR,
-	e_instruction__OBJECT_PUT_CLEAR_MONOMORPHIC_ADD,
-	e_instruction__OBJECT_PUT_CLEAR_MONOMORPHIC_SET,
-	e_instruction__OBJECT_PUT_CLEAR_MEGAMORPHIC,
 	e_instruction__OBJECT_PUT_INDIRECT,
 	e_instruction__OBJECT_HAS,
 	e_instruction__OBJECT_HAS_INDIRECT,
@@ -44,11 +40,8 @@ enum t_instruction
 	e_instruction__METHOD_GET_MEGAMORPHIC,
 	e_instruction__METHOD_BIND,
 	e_instruction__GLOBAL_GET,
-	e_instruction__STACK_LET,
-	e_instruction__STACK_LET_CLEAR,
 	e_instruction__STACK_GET,
 	e_instruction__STACK_PUT,
-	e_instruction__STACK_PUT_CLEAR,
 	e_instruction__SCOPE_GET0,
 	e_instruction__SCOPE_GET1,
 	e_instruction__SCOPE_GET2,
@@ -59,8 +52,6 @@ enum t_instruction
 	e_instruction__SCOPE_GET_WITHOUT_LOCK,
 	e_instruction__SCOPE_PUT0,
 	e_instruction__SCOPE_PUT,
-	e_instruction__SCOPE_PUT0_CLEAR,
-	e_instruction__SCOPE_PUT_CLEAR,
 	e_instruction__LAMBDA,
 	e_instruction__ADVANCED_LAMBDA,
 	e_instruction__SELF,
@@ -219,14 +210,11 @@ struct t_code
 		}
 	};
 
-	static void f_object_get(t_stacked* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
-	static void f_object_put(t_stacked* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
-	static void f_object_put_clear(t_stacked* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
-	static void f_method_get(t_stacked* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
+	static void f_object_get(t_pvalue* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
+	static void f_object_put(t_pvalue* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
+	static void f_method_get(t_pvalue* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-	static const void** v_labels;
-
 	static size_t f_loop(t_context* a_context, const void*** a_labels = nullptr);
 	static const void** f_labels()
 	{
@@ -234,12 +222,14 @@ struct t_code
 		f_loop(nullptr, &labels);
 		return labels;
 	}
+
+	static inline const void** v_labels = f_labels();
 #else
 	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_context* a_context);
 #endif
 	static void f_try(t_context* a_context);
 	static size_t f_loop(t_context& a_context);
-	static t_scoped f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
+	static t_object* f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
 
 	t_slot v_module;
 	bool v_shared;
@@ -260,8 +250,6 @@ struct t_code
 	}
 	const t_at* f_at(void** a_address) const;
 	const std::vector<bool>& f_stack_map(void** a_address) const;
-	void f_stack_clear(void** a_address, t_stacked* a_base) const;
-	void f_stack_clear(void** a_address, t_stacked* a_base, t_stacked* a_stack) const;
 	void* f_p(t_instruction a_instruction) const
 	{
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO

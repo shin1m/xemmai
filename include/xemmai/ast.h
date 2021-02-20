@@ -2,6 +2,7 @@
 #define XEMMAI__AST_H
 
 #include "code.h"
+#include <list>
 #include <set>
 
 namespace xemmai
@@ -51,16 +52,23 @@ struct t_operand
 		e_tag__TEMPORARY
 	};
 
+	static inline const t_pvalue v_null{};
+	static inline const t_pvalue v_true{true};
+	static inline const t_pvalue v_false{false};
+
 	t_tag v_tag;
 	union
 	{
 		intptr_t v_integer;
 		double v_float;
-		const t_value* v_value;
+		const t_pvalue* v_value;
 		size_t v_index;
 	};
 
-	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(a_value ? &t_value::v_true : &t_value::v_false)
+	t_operand(nullptr_t) : v_tag(e_tag__LITERAL), v_value(&v_null)
+	{
+	}
+	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(a_value ? &v_true : &v_false)
 	{
 	}
 	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_integer(a_value)
@@ -69,7 +77,7 @@ struct t_operand
 	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_float(a_value)
 	{
 	}
-	t_operand(const t_value& a_value) : v_tag(e_tag__LITERAL), v_value(&a_value)
+	t_operand(t_svalue& a_value) : v_tag(e_tag__LITERAL), v_value(reinterpret_cast<const t_pvalue*>(&a_value))
 	{
 	}
 	t_operand() : v_tag(e_tag__TEMPORARY)
@@ -535,7 +543,7 @@ struct t_emit
 	t_emit(t_object* a_module, std::map<std::pair<size_t, void**>, size_t>* a_safe_points) : v_module(a_module), v_safe_points(a_safe_points)
 	{
 	}
-	t_scoped operator()(ast::t_scope& a_scope);
+	t_object* operator()(ast::t_scope& a_scope);
 	t_emit& operator<<(t_instruction a_instruction)
 	{
 		v_code->v_instructions.push_back(v_code->f_p(a_instruction));
@@ -587,12 +595,12 @@ struct t_emit
 		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_code->v_instructions.push_back(v1[i]);
 		return *this;
 	}
-	t_emit& operator<<(const t_value& a_operand)
+	t_emit& operator<<(const t_pvalue& a_operand)
 	{
-		v_code->v_instructions.push_back(const_cast<t_value*>(&a_operand));
+		v_code->v_instructions.push_back(const_cast<t_pvalue*>(&a_operand));
 		return *this;
 	}
-	t_emit& operator<<(t_slot& a_operand)
+	t_emit& operator<<(t_svalue& a_operand)
 	{
 		v_code->v_instructions.push_back(&a_operand);
 		return *this;
@@ -620,11 +628,6 @@ struct t_emit
 	void f_at(ast::t_node* a_node)
 	{
 		v_code->v_ats.push_back({a_node->v_at, f_last()});
-	}
-	void f_emit_clear()
-	{
-		f_pop();
-		*this << e_instruction__CLEAR << f_stack();
 	}
 	void f_emit_null()
 	{

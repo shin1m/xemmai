@@ -1,5 +1,3 @@
-#include <xemmai/global.h>
-
 #include <xemmai/structure.h>
 #include <xemmai/array.h>
 #include <xemmai/bytes.h>
@@ -8,18 +6,16 @@
 namespace xemmai
 {
 
-XEMMAI__PORTABLE__THREAD t_global* t_global::v_instance;
-
-t_global::t_global(t_object* a_module, t_scoped&& a_type_object, t_scoped&& a_type_class, t_scoped&& a_type_structure, t_scoped&& a_type_module, t_scoped&& a_type_fiber, t_scoped&& a_type_thread) : t_extension(a_module)
+t_global::t_global(t_object* a_module, t_object* a_type_object, t_object* a_type_class, t_object* a_type_structure, t_object* a_type_module, t_object* a_type_fiber, t_object* a_type_thread) : t_extension(a_module)
 {
 	v_instance = this;
-	v_type_object.f_construct(std::move(a_type_object));
-	v_type_class.f_construct(std::move(a_type_class));
-	v_type_structure__discard.f_construct(v_type_object->f_derive<t_type_of<t_structure::t_discard>>());
-	v_type_structure.f_construct(std::move(a_type_structure));
-	v_type_module.f_construct(std::move(a_type_module));
-	v_type_fiber.f_construct(std::move(a_type_fiber));
-	v_type_thread.f_construct(std::move(a_type_thread));
+	v_type_object.f_construct(a_type_object);
+	v_type_class.f_construct(a_type_class);
+	v_type_structure__discard.f_construct(v_type_object->f_derive<t_type_of<std::unique_ptr<t_structure::t_fields>>>());
+	v_type_structure.f_construct(a_type_structure);
+	v_type_module.f_construct(a_type_module);
+	v_type_fiber.f_construct(a_type_fiber);
+	v_type_thread.f_construct(a_type_thread);
 	v_type_tuple.f_construct(v_type_object->f_derive<t_type_of<t_tuple>>());
 	v_type_symbol.f_construct(v_type_object->f_derive<t_type_of<t_symbol>>());
 	v_type_method.f_construct(v_type_object->f_derive<t_type_of<t_method>>());

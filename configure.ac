@@ -1,4 +1,4 @@
-AC_INIT([xemmai], [201908])
+AC_INIT([xemmai], [202102])
 AM_INIT_AUTOMAKE([foreign nostdinc dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR([src/main.cc])
 
@@ -38,7 +38,7 @@ AC_ARG_ENABLE(
 )
 AM_CONDITIONAL([PROFILE], [test x$profile = xtrue])
 
-AM_CONFIG_HEADER([include/xemmai/portable/configure.h])
+AC_CONFIG_HEADERS([include/xemmai/portable/configure.h])
 AC_CONFIG_FILES([
 	Makefile
 	doc/Makefile

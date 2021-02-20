@@ -32,9 +32,9 @@ struct t_enum : t_extension
 		return const_cast<t_enum*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
-	t_scoped f_as(T&& a_value) const
+	t_pvalue f_as(T&& a_value) const
 	{
-		typedef t_type_of<typename t_fundamental<T>::t_type> t;
+		using t = t_type_of<typename t_fundamental<T>::t_type>;
 		return t::f_transfer(f_extension<typename t::t_extension>(), std::forward<T>(a_value));
 	}
 };

@@ -12,11 +12,11 @@ class t_io;
 template<>
 struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path, t_type_immutable>>
 {
-	typedef t_io t_extension;
+	using t_extension = t_io;
 
 	template<typename T>
-	static t_scoped f_transfer(const t_io* a_extension, T&& a_value);
-	static t_scoped f_construct(t_type* a_class, const t_string& a_value)
+	static t_object* f_transfer(const t_io* a_extension, T&& a_value);
+	static t_pvalue f_construct(t_type* a_class, const t_string& a_value)
 	{
 		return a_class->f_new<portable::t_path>(true, a_value);
 	}
@@ -27,8 +27,8 @@ struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path, t_typ
 	static void f_define(t_io* a_extension);
 
 	using t_base::t_base;
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
-	static size_t f_do_divide(t_object* a_this, t_stacked* a_stack);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	static size_t f_do_divide(t_object* a_this, t_pvalue* a_stack);
 };
 
 }

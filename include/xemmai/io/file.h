@@ -22,7 +22,7 @@ class t_file
 
 public:
 	template<typename... T_an>
-	static t_scoped f_instantiate(T_an&&... a_an);
+	static t_object* f_instantiate(T_an&&... a_an);
 
 	t_file(std::FILE* a_stream) : v_stream(a_stream)
 	{
@@ -80,12 +80,12 @@ public:
 template<>
 struct t_type_of<io::t_file> : t_derivable<t_holds<io::t_file>>
 {
-	typedef t_io t_extension;
+	using t_extension = t_io;
 
 	static void f_define(t_io* a_extension);
 
 	using t_base::t_base;
-	t_scoped f_do_construct(t_stacked* a_stack, size_t a_n);
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 }
