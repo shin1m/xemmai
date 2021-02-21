@@ -5,16 +5,15 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++-8
+      - g++-10
 env:
-  - CONFIGURE_OPTION='--enable-debug CXX=g++-8' ULIMIT_OPTION='-Ss 65536'
-  - CONFIGURE_OPTION='CXX=g++-8'
+  - CONFIGURE_OPTION='--enable-debug CXX=g++-10'
+  - CONFIGURE_OPTION='CXX=g++-10'
 before_script:
   - autoreconf -is
   - ./configure $CONFIGURE_OPTION
   - make
 script:
-  - ulimit $ULIMIT_OPTION
   - make check
   - cat test/*.log
   - XM_LOG_FLAGS='--collector-threshold=0' make check
