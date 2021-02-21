@@ -4,7 +4,6 @@
 
 This document walks through xemmai language.
 
-
 ## Basic Types
 
     # This is a comment.
@@ -16,13 +15,11 @@ This document walks through xemmai language.
     true
     false
 
-
 ## Variables
 
     a = 1
     b = 2
     c = a + b # => 3
-
 
 ## Control Flows
 
@@ -38,7 +35,6 @@ This document walks through xemmai language.
 A single line form:
 
     if a > 0: greater = true else: greater = false
-
 
 ### `while` Expression
 
@@ -62,7 +58,6 @@ Using `break` and `continue` expressions:
         if b + c >= 100: break
         a = a + 1
 
-
 ### `for` Expression
 
     n = 0
@@ -73,7 +68,6 @@ A single line form:
 
     n = 0
     for i = 0; i < 10; i = i + 1: n = n + i
-
 
 ## Functions
 
@@ -117,7 +111,6 @@ An example of high order function:
     xy = @(x)@(y) x * y
     xy(11)(5) # => 55
 
-
 ### Scopes
 
 xemmai has a static scoping.
@@ -136,7 +129,6 @@ Each function is a lambda closure and has its own scope.
 Each reference is resolved from its local scope to an outer scope.
 Assigning to an outer variable must be explicitly prefixed with `:`.
 
-
 ### More on Function Calls
 
 Arguments list can be written using block form:
@@ -147,7 +139,6 @@ Arguments list can be written using block form:
         1
         2
     )
-
 
 ## Exceptions
 
@@ -161,7 +152,6 @@ Arguments list can be written using block form:
         # Executed whenever exiting try clause.
 
 Any object can be thrown.
-
 
 ## Classes
 
@@ -209,7 +199,6 @@ More verbose definition of `Foo`:
             # $ is this instance in this scope.
             $.x * $.x + $.y * $.y
 
-
 ### Inheritance
 
 xemmai supports a single inheritance.
@@ -228,7 +217,6 @@ xemmai supports a single inheritance.
 So `:$^` in an instance method refers to the super class of its defining class.
 
 `[]` operator of method binds this instance to a method.
-
 
 ## Containers
 
@@ -249,7 +237,6 @@ Tuple literals can be written using block form:
         2
     )
 
-
 ### Arrays
 
     a = [0, 1]
@@ -266,7 +253,6 @@ Array literals can be written using block form:
         1
         2
     ]
-
 
 ### Dictionaries
 
@@ -288,7 +274,6 @@ Dictionary literals can be written using block form:
         2:
             "two"
     }
-
 
 ## Omitting Closing Braces
 
@@ -360,7 +345,6 @@ In the subsequent examples, closing parentheses, brackets, and braces are omitte
             'id: 3
             'name: "three"
 
-
 ## Modules
 
 `$` in a module scope denotes this module.
@@ -371,7 +355,6 @@ So objects can be exported by assigning to a field of a module.
 
     foo = Module("foo"
     foo.add(1, 2 # => 3
-
 
 ## Threads
 
@@ -389,7 +372,6 @@ So objects can be exported by assigning to a field of a module.
             i = i + 1
     t0.join(
     t1.join(
-
 
 ## Fibers
 

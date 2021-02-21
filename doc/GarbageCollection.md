@@ -4,7 +4,6 @@ xemmai has a modified version of David F. Bacon's [Recycler](http://www.research
 
 Below are modifications.
 
-
 ## Increment/Decrement Queues
 
 Each mutator thread has its own increment/decrement queues.
@@ -13,32 +12,28 @@ They are single producer single consumer circular queues.
 
 This makes memory synchronization between mutators and collector simple.
 
-
 ## Scanning Stacks
 
-There is no special treatment for scanning stacks.
+Stacks are scanned conservatively.
 
-Language level stacks are tracked by smart pointers as part of `Fiber` object.
+Only the pointers that differ from the last epoch are checked as candidates.
 
-Other references including those on native stacks are also tracked by smart pointers.
-
+Other references are tracked by smart pointers.
 
 ## Frequency of Cycle Collection
 
 The cycle collection runs only when an increased number of live objects has exceeded a certain threshold.
 
-The key point is that the list of root candidates is represented by an intrusive doubly linked list.
+The key point is that the list of root candidates is represented as an intrusive doubly linked list.
 
 This avoids the overflow of the list.
-And this also allows the decrement phase removing objects from the list and freeing them immediately when their reference counts have reached to zero.
+And this also allows the decrement phase to remove objects from the list and free them immediately when their reference counts have reached to zero.
 
-Therefore, the cycle collection can be skipped as long as the number of live objects does not increase.
-
+Therefore, the cycle collection can be skipped unless the number of live objects increases.
 
 ## Scanning Object Graphs
 
-Scanning object graphs is done non-recursively.
-
+Scanning object graphs is done non-recursively by using an intrusive linked list.
 
 ## No Scanning Blacks on Each Increment/Decrement Operation
 
@@ -46,4 +41,4 @@ Increment/decrement operations do not recursively scan blacks.
 
 Scanning blacks on every increment/decrement operation turned out to be expensive in the implementation.
 
-Therefore, the increment/decrement operations switched to marking just only their target objects as black/purple respectively.
+The increment/decrement operations are changed to mark just only their target objects as black/purple respectively.

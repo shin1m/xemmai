@@ -1,6 +1,5 @@
 # Other Internals
 
-
 ## Fat Values
 
 Object references in xemmai are represented as fat values in C++:
@@ -34,7 +33,6 @@ Using fat values reduces redundant increment/decrement operations.
 
 This is desirable because increment/decrement operations are relatively expensive.
 
-
 ## Transferable Values (Obsoleted)
 
 `t_transfer` is a derived class of `t_value`, and it also is a tricky stuff.
@@ -47,7 +45,6 @@ Using move semantics reduces redundant increment/decrement operations.
 
 This is desirable because increment/decrement operations are relatively expensive.
 
-
 ## Moving Values
 
 As xemmai is migrating to C++11, the tricky `t_transfer` has been obsoleted.
@@ -57,7 +54,6 @@ Now, xemmai utilizes C++11 move semantics for `t_value` as much as possible.
 Using move semantics reduces redundant increment/decrement operations.
 
 This is desirable because increment/decrement operations are relatively expensive.
-
 
 ## Minimal Locks for Objects
 
@@ -69,7 +65,6 @@ Note that this is not a general purpose synchronization mechanism but just only 
 
 Use standard synchronization mechanisms such as mutexes and condition variables to implement application logics.
 
-
 ## Hidden Structures
 
 Almost every object in xemmai except for several immutable objects can have arbitrary fields as key/value pairs.
@@ -77,7 +72,6 @@ Almost every object in xemmai except for several immutable objects can have arbi
 The so-called hidden structures or hidden classes is used to represent this dictionary structure.
 
 Some of field accesses are optimized a little by utilizing this.
-
 
 ## Computed Goto
 
@@ -88,7 +82,6 @@ Actually the bytecode is a machine word code which means each code has 64-bit si
 During compilation to bytecode, each instruction code is replaced with the address of the corresponding label.
 
 And during execution of the bytecode, stepping to the next instruction is done by jumping to the value of the next instruction.
-
 
 ## Operand Based Instructions
 
@@ -104,7 +97,6 @@ Operand based instructions tend to copy less object references than stack based 
 
 This is desirable because increment/decrement operations are relatively expensive.
 
-
 ## Thread Local Field Cache
 
 Because threads in xemmai are preemptive, each thread has its own field cache in order to avoid expensive synchronizations.
@@ -114,7 +106,6 @@ Instead, acquire/release operations for the field cache are required in order to
 This is modeled from native memory barriers for SMP.
 
 As long as standard synchronization mechanisms such as mutexes and condition variables are used, these operations are called implicitly as appropriate.
-
 
 ## Inline Field Cache
 

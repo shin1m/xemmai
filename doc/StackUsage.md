@@ -1,6 +1,5 @@
 # Stack Usage
 
-
 ## Context
 
     [-2] = return value
@@ -8,7 +7,6 @@
     [0...v_arguments] = arguments...
     [v_arguments...v_privates] = variables...
     [v_privates...] = temporaries...
-
 
 ## Stack Usage by Instructions
 

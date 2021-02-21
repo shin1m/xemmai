@@ -46,7 +46,6 @@ It runs on linux, windows, and hopefully other unix systems.
 Internally, codes are executed on a bytecode interpreter.
 It also has a concurrent garbage collector to utilize multiple processors.
 
-
 ## How to Build
 
 ### On Linux:
@@ -60,7 +59,6 @@ It also has a concurrent garbage collector to utilize multiple processors.
 
     msbuild xemmai.sln
 
-
 ## How to Run Tests
 
 ### On Linux:
@@ -71,19 +69,16 @@ It also has a concurrent garbage collector to utilize multiple processors.
 
     msbuild test/test.proj
 
-
 ## Documentation
 
  * [Walk Through](doc/WalkThrough.md)
  * [Expressions](doc/Expressions.md)
  * [Object Traits](doc/ObjectTraits.md)
 
-
 ## Implementation Details
 
  * [Garbage Collection](doc/GarbageCollection.md)
  * [Other Internals](doc/OtherInternals.md)
-
 
 ## License
 

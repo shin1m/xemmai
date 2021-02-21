@@ -2,11 +2,9 @@
 
 This describes several traits of builtin objects.
 
-
 ## Derivable or Not
 
 Some builtin classes are not derivable.
-
 
 ## Immutable or Not
 
@@ -15,7 +13,6 @@ Some builtin objects are immutable.
 Which means the fields of them can not be modified.
 
 Thread model below is not applicable to immutable objects.
-
 
 ## Thread Model
 
@@ -27,7 +24,6 @@ So, xemmai requires programmers some involvement to make this more efficient.
 
 Each mutable object in xemmai is in one of two thread models: shared and owned.
 
-
 ### Shared
 
 Objects in this thread model are shared accross threads.
@@ -36,7 +32,6 @@ Which means the fields of them can be freely accessed by any thread.
 
 Instead, it is more expensive than in the owned thread model.
 
-
 ### Owned
 
 Objects in this thread model are owned by a certain thread.
@@ -44,7 +39,6 @@ Objects in this thread model are owned by a certain thread.
 Which means the fields of them can be accessed only by the owning thread and it is more efficient than in the shared thread model.
 
 Other threads can not access the fields, or doing so throws an exception.
-
 
 ### Switching to the Other Thread Model
 
@@ -59,7 +53,6 @@ It can be called only if the object is in the shared thread model which means no
 `Object.share` does the opposite.
 
 Only the owning thread of the object can call it.
-
 
 ## Table of Builtin Classes
 
