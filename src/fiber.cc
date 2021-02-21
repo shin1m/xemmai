@@ -80,17 +80,16 @@ void t_fiber::t_internal::f_epoch_scan()
 	auto used1 = v_estack_last_head + m;
 	auto used2 = v_estack_last_used;
 	v_estack_last_used = used1;
-	v_estack_decrements = v_estack_last_head;
+	v_estack_decrements = v_estack_buffer.get();
 	std::lock_guard lock(f_engine()->v_object__heap.f_mutex());
-	if (top1 < top2) {
+	if (top1 < top2)
 		do {
 			auto p = f_engine()->f_object__find(*top0++);
 			if (p) p->f_increment();
 			*top1++ = p;
 		} while (top1 < top2);
-	} else {
+	else
 		for (; top2 < top1; ++top2) if (*top2) *v_stack_decrements++ = *top2;
-	}
 	for (; top0 < v_stack_copy; ++top1) {
 		auto p = *top0++;
 		auto q = *top1;
@@ -101,31 +100,32 @@ void t_fiber::t_internal::f_epoch_scan()
 		if (q) *v_stack_decrements++ = q;
 		*top1 = p;
 	}
-	if (used1 > used2) {
-		do {
-			auto p = f_engine()->f_object__find(*--used0);
-			if (p) p->f_increment();
-			*--used1 = p;
-		} while (used1 > used2);
-	} else {
-		while (used2 > used1) if (*--used2) *--v_estack_decrements = *used2;
-	}
-	while (used0 > v_estack_buffer.get()) {
-		auto p = *--used0;
-		auto q = *--used1;
+	auto p0 = v_estack_buffer.get();
+	auto p1 = v_estack_last_head;
+	for (auto used = std::min(used1, used2); p1 < used; ++p1) {
+		auto p = *p0++;
+		auto q = *p1;
 		if (p == q) continue;
 		p = f_engine()->f_object__find(p);
 		if (p == q) continue;
 		if (p) p->f_increment();
-		if (q) *--v_estack_decrements = q;
-		*used1 = p;
+		if (q) *v_estack_decrements++ = q;
+		*p1 = p;
 	}
+	if (used1 > used2)
+		do {
+			auto p = f_engine()->f_object__find(*p0++);
+			if (p) p->f_increment();
+			*p1++ = p;
+		} while (p1 < used1);
+	else
+		for (; p1 < used2; ++p1) if (*p1) *v_estack_decrements++ = *p1;
 }
 
 void t_fiber::t_internal::f_epoch_decrement()
 {
 	for (auto p = v_stack_last_bottom; p != v_stack_decrements; ++p) (*p)->f_decrement();
-	for (auto p = v_estack_decrements; p != v_estack_last_head; ++p) (*p)->f_decrement();
+	for (auto p = v_estack_buffer.get(); p != v_estack_decrements; ++p) (*p)->f_decrement();
 }
 
 t_object* t_fiber::f_instantiate(const t_pvalue& a_callable, size_t a_stack)
