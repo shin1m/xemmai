@@ -879,7 +879,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 					auto p = thrown.f_invoke(f_global()->f_symbol_string());
 					if (f_is<t_string>(p)) {
 						auto& s = f_as<const t_string&>(p);
-						std::fprintf(stderr, "caught: %.*ls\n", s.f_size(), static_cast<const wchar_t*>(s));
+						std::fprintf(stderr, "caught: %.*ls\n", static_cast<int>(s.f_size()), static_cast<const wchar_t*>(s));
 						break;
 					}
 				} catch (...) {

@@ -463,7 +463,7 @@ int main(int argc, char* argv[])
 				if (std::strcmp(v, "verbose") == 0) {
 					options.v_verbose = true;
 				} else if (std::strncmp(v, "collector-threshold=", 20) == 0) {
-					std::sscanf(v + 20, "%u", &options.v_collector__threshold);
+					std::sscanf(v + 20, "%zu", &options.v_collector__threshold);
 				} else if (std::strncmp(v, "debug", 5) == 0) {
 					debug = 2;
 					if (v[5] == '=') std::sscanf(v + 6, "%u", &debug);

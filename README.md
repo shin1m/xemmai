@@ -1,4 +1,4 @@
-# xemmai [![Build Status](https://travis-ci.org/shin1m/xemmai.svg?branch=master)](https://travis-ci.org/shin1m/xemmai)
+# xemmai
 
 xemmai is a dynamic programming language.
 Its syntax is based on the off-side rule.

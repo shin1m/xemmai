@@ -34,7 +34,7 @@ public:
 	}
 	t_queue(std::wstring_view a_message)
 	{
-		std::printf("t_queue::t_queue(a_message = %.*ls)\n", a_message.size(), a_message.data());
+		std::printf("t_queue::t_queue(a_message = %.*ls)\n", static_cast<int>(a_message.size()), a_message.data());
 	}
 	void f_scan(t_scan a_scan)
 	{
