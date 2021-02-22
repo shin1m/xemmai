@@ -115,6 +115,17 @@ void f_get_of_type(T& a_this, t_object* a_key, t_pvalue* a_stack);
 template<typename T>
 void f_call_of_type(T& a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n);
 
+enum t_color
+{
+	e_color__BLACK,
+	e_color__PURPLE,
+	e_color__GRAY,
+	e_color__WHITING,
+	e_color__WHITE,
+	e_color__ORANGE,
+	e_color__RED
+};
+
 class t_object
 {
 	template<typename> friend class t_heap;
@@ -127,17 +138,6 @@ class t_object
 	friend class t_with_lock_for_read;
 	friend class t_with_lock_for_write;
 
-	enum t_color
-	{
-		e_color__BLACK,
-		e_color__PURPLE,
-		e_color__GRAY,
-		e_color__WHITING,
-		e_color__WHITE,
-		e_color__ORANGE,
-		e_color__RED
-	};
-
 	static inline XEMMAI__PORTABLE__THREAD struct
 	{
 		t_object* v_next;
@@ -145,7 +145,6 @@ class t_object
 	} v_roots;
 	static inline XEMMAI__PORTABLE__THREAD t_object* v_scan_stack;
 	static inline XEMMAI__PORTABLE__THREAD t_object* v_cycle;
-	static inline XEMMAI__PORTABLE__THREAD t_object* v_cycles;
 
 	XEMMAI__PORTABLE__FORCE_INLINE static void f_append(t_object* a_p)
 	{
@@ -172,7 +171,6 @@ class t_object
 		(p->*A_push)();
 		a_slot.v_p.store(nullptr, std::memory_order_relaxed);
 	}
-	static void f_collect();
 
 	t_object* v_next;
 	t_object* v_previous;
