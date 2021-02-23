@@ -1,21 +1,21 @@
 ^debugger stopped: 0x[0-9a-f]+
 debugger> debugger> debugger> debugger stopped: 0x[0-9a-f]+
-.*/hanoi3\.xmd:16:12
+.*/hanoi3\.xm:16:12
 	do_hanoi = @\(n, move\)
 	           \^
-debugger> .*/hanoi3\.xmd
+debugger> .*/hanoi3\.xm
 	16
 	23
 debugger> debugger stopped: 0x[0-9a-f]+
-.*/hanoi3\.xmd:23:14
+.*/hanoi3\.xm:23:14
 		do_hanoi\(3, @\(from, to\)
 		            \^
 debugger> debugger stopped: 0x[0-9a-f]+
-.*/hanoi3\.xmd:23:10
+.*/hanoi3\.xm:23:10
 		do_hanoi\(3, @\(from, to\)
 		        \^
 debugger> debugger stopped: 0x[0-9a-f]+
-.*/hanoi3\.xmd:17:17
+.*/hanoi3\.xm:17:17
 		towers = \[tower\(n\), tower\(0\), tower\(0\)
 		               \^
 debugger> \$
@@ -28,7 +28,7 @@ n
 towers
 debugger> 3
 debugger> \[0\]: 0x[0-9a-f]+
-.*/hanoi3\.xmd:17:17
+.*/hanoi3\.xm:17:17
 		towers = \[tower\(n\), tower\(0\), tower\(0\)
 		               \^
 \[1\]: 0x[0-9a-f]+

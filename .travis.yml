@@ -7,16 +7,14 @@ addons:
     packages:
       - g++-10
 env:
-  - CONFIGURE_OPTION='--enable-debug CXX=g++-10'
-  - CONFIGURE_OPTION='CXX=g++-10'
+  global:
+    - CXX=g++-10
+  jobs:
+    - CONFIGURATION=Debug
+    - CONFIGURATION=Release
 before_script:
-  - autoreconf -is
-  - ./configure $CONFIGURE_OPTION
-  - make
+  - cmake -E make_directory build
+  - cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION -S . -B build
+  - cmake --build build
 script:
-  - make check
-  - cat test/*.log
-  - XM_LOG_FLAGS='--collector-threshold=0' make check
-  - cat test/*.log
-  - XM_LOG_FLAGS='--debug </dev/null' make check
-  - cat test/*.log
+  - cd build && ctest --verbose

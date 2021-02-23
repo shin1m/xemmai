@@ -23,6 +23,6 @@ f2 = Fiber(@(x)
 	assert(x == 2
 	f0(x + 1
 
-a = f0(0)
+a = f0(0
 print("fm: " + a
 assert(a == 4

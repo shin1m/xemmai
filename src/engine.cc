@@ -266,35 +266,33 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	v_module_system = t_module::f_new<t_module>(L"system"sv, L""sv);
 	auto path = t_array::f_instantiate();
 	path->v_owner = nullptr;
-	{
-		char* p = std::getenv("XEMMAI_MODULE_PATH");
-		if (p != NULL) {
-			std::wstring s = portable::f_convert(p);
+	if (auto p = std::getenv("XEMMAI_MODULE_PATH")) {
+		std::wstring s = portable::f_convert(p);
 #ifdef _WIN32
-			s.erase(std::remove(s.begin(), s.end(), L'"'), s.end());
+		s.erase(std::remove(s.begin(), s.end(), L'"'), s.end());
 #endif
-			std::wstring_view sv = s;
-			size_t i = 0;
-			while (true) {
+		std::wstring_view sv = s;
+		size_t i = 0;
+		while (true) {
 #ifdef __unix__
-				size_t j = sv.find(L':', i);
+			size_t j = sv.find(L':', i);
 #endif
 #ifdef _WIN32
-				size_t j = sv.find(L';', i);
+			size_t j = sv.find(L';', i);
 #endif
-				if (j == std::wstring_view::npos) break;
-				if (i < j) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i, j - i)));
-				i = j + 1;
-			}
-			if (i < sv.size()) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i)));
+			if (j == std::wstring_view::npos) break;
+			if (i < j) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i, j - i)));
+			i = j + 1;
 		}
+		if (i < sv.size()) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i)));
 	}
-#ifdef XEMMAI_MODULE_PATH
-	f_as<t_array&>(path).f_push(f_global()->f_as(std::wstring_view(XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH))));
-#endif
 	t_pvalue system{v_module_system};
 	if (a_count > 0) {
-		system.f_put(f_global()->f_symbol_executable(), f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_convert(a_arguments[0])))));
+		portable::t_path executable(portable::f_convert(a_arguments[0]));
+		system.f_put(f_global()->f_symbol_executable(), f_global()->f_as(static_cast<const std::wstring&>(executable)));
+#ifdef XEMMAI_MODULE_PATH
+		f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(executable / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
+#endif
 		if (a_count > 1) {
 			portable::t_path script(portable::f_convert(a_arguments[1]));
 			system.f_put(f_global()->f_symbol_script(), f_global()->f_as(static_cast<const std::wstring&>(script)));

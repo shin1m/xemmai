@@ -1,11 +1,11 @@
-at .*/dump\.xmo:3:3
+at .*/dump\.xm:3:3
 			throw Throwable\(x
 			\^
-from .*/dump\.xmo:5:3
+from .*/dump\.xm:5:3
 		f\(
 		 \^
 caught: b
-at .*/dump\.xmo:9:1
+at .*/dump\.xm:9:1
 	throw Throwable\("b"
 	\^
 from <fiber>

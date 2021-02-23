@@ -46,28 +46,14 @@ It runs on linux, windows, and hopefully other unix systems.
 Internally, codes are executed on a bytecode interpreter.
 It also has a concurrent garbage collector to utilize multiple processors.
 
-## How to Build
+## How to Build, Run Tests, and Install
 
-### On Linux:
-
-    autoreconf -is
-    ./configure
-    make
-    make install
-
-### On Windows:
-
-    msbuild xemmai.sln
-
-## How to Run Tests
-
-### On Linux:
-
-    make check
-
-### On Windows:
-
-    msbuild test/test.proj
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    cmake --build .
+    ctest
+    cmake --install .
 
 ## Documentation
 

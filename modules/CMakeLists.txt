@@ -1,0 +1,6 @@
+link_libraries(xemmai)
+add_library(math MODULE math.cc)
+add_library(os MODULE os.cc)
+add_library(threading MODULE threading.cc)
+add_library(time MODULE time.cc)
+set_target_properties(math os threading time PROPERTIES PREFIX "")
