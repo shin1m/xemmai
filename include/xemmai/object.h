@@ -213,6 +213,7 @@ class t_object
 	}
 	void f_decrement_push()
 	{
+		assert(v_count > 0);
 		if (--v_count > 0) {
 			v_color = e_color__PURPLE;
 			if (!v_next) f_append(this);
@@ -289,12 +290,14 @@ class t_object
 		v_color = e_color__ORANGE;
 		v_next = v_cycle->v_next;
 		v_cycle->v_next = this;
+		v_previous = nullptr;
 		f_push(this);
 	}
 	void f_collect_white()
 	{
 		v_color = e_color__ORANGE;
 		v_cycle = v_next = this;
+		v_previous = nullptr;
 		f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
 	}
 	void f_scan_red()
@@ -304,14 +307,26 @@ class t_object
 	void f_cyclic_decrement_push()
 	{
 		if (v_color == e_color__RED) return;
-		if (v_color == e_color__ORANGE) {
-			--v_count;
-			--v_cyclic;
-		} else {
+		if (v_color != e_color__ORANGE)
 			f_decrement();
-		}
+		else if (--v_count > 0)
+			--v_cyclic;
+		else
+			f_loop<&t_object::f_decrement_step>();
 	}
-	void f_cyclic_decrement();
+	void f_cyclic_decrement()
+	{
+		if (v_structure->v_this) v_structure->v_this->f_cyclic_decrement_push();
+		if (v_fields) {
+			v_fields->f_scan(f_push_and_clear<&t_object::f_cyclic_decrement_push>);
+			delete v_fields;
+			v_fields = nullptr;
+		}
+		v_type->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
+		v_type->f_finalize(this);
+		if (v_type->v_this) v_type->v_this->f_cyclic_decrement_push();
+		v_type = nullptr;
+	}
 	void f_field_add(t_object* a_structure, const t_pvalue& a_value);
 
 public:

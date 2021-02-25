@@ -119,7 +119,7 @@ private:
 public:
 	class t_iterator
 	{
-		t_root v_table;
+		t_object* v_table;
 		t_entry* v_entry;
 		t_entry* v_end;
 

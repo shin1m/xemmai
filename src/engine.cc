@@ -57,37 +57,37 @@ void t_engine::f_collector()
 			std::lock_guard lock(v_object__reviving__mutex);
 			auto cycle = v_cycles;
 			v_cycles = cycle->v_next_cycle;
+			auto mutated = false;
 			auto p = cycle;
-			auto mutated = [&]
-			{
-				if (v_object__reviving)
-					do if (p->v_color != e_color__ORANGE || p->v_cyclic > 0 || p->v_type->v_revive) return true; while ((p = p->v_next) != cycle);
-				else
-					do if (p->v_color != e_color__ORANGE || p->v_cyclic > 0) return true; while ((p = p->v_next) != cycle);
-				return false;
-			};
-			if (mutated()) {
-				p = cycle;
+			while (true) {
 				auto q = p->v_next;
-				if (p->v_color == e_color__ORANGE) {
-					p->v_color = e_color__PURPLE;
-					t_object::f_append(p);
-				} else if (p->v_color == e_color__PURPLE) {
-					t_object::f_append(p);
-				} else {
-					p->v_color = e_color__BLACK;
-					p->v_next = nullptr;
-				}
-				while (q != cycle) {
+				if (q->v_type) {
+					if (q->v_color != e_color__ORANGE || q->v_cyclic > 0 || v_object__reviving && q->v_type->v_revive) mutated = true;
 					p = q;
-					q = p->v_next;
+					if (p == cycle) break;
+				} else {
+					p->v_next = q->v_next;
+					f_free_as_collect(q);
+					if (q == cycle) {
+						cycle = p == q ? nullptr : p;
+						break;
+					}
+				}
+			}
+			if (!cycle) continue;
+			if (mutated) {
+				p = cycle;
+				if (p->v_color == e_color__ORANGE) p->v_color = e_color__PURPLE;
+				do {
+					auto q = p->v_next;
 					if (p->v_color == e_color__PURPLE) {
 						t_object::f_append(p);
 					} else {
 						p->v_color = e_color__BLACK;
 						p->v_next = nullptr;
 					}
-				}
+					p = q;
+				} while (p != cycle);
 			} else {
 				do p->v_color = e_color__RED; while ((p = p->v_next) != cycle);
 				do p->f_cyclic_decrement(); while ((p = p->v_next) != cycle);
@@ -175,7 +175,7 @@ void t_engine::f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock)
 {
 	v_debug__stopping = true;
 	size_t n = 0;
-	for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done <= 0 && p->v_thread) ++n;
+	for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done == 0) ++n;
 	while (v_debug__safe < n) v_thread__condition.wait(a_lock);
 }
 
@@ -351,7 +351,7 @@ t_engine::~t_engine()
 		internal->v_cache_hit = t_thread::v_cache_hit;
 		internal->v_cache_missed = t_thread::v_cache_missed;
 	}
-	f_object__return();
+	v_object__heap.f_return();
 	v_options.v_collector__threshold = 0;
 	f_wait();
 	f_wait();
@@ -390,7 +390,6 @@ t_engine::~t_engine()
 t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 {
 	auto internal = new t_thread::t_internal();
-	internal->v_thread = nullptr;
 	{
 		std::lock_guard lock(v_thread__mutex);
 		internal->v_next = v_thread__internals;
@@ -421,7 +420,7 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 			else
 				t_fiber::f_main<t_context>(main);
 			t_thread::f_cache_clear();
-			f_object__return();
+			v_object__heap.f_return();
 			{
 				std::unique_lock lock(v_thread__mutex);
 				if (v_debugger) {

@@ -97,10 +97,6 @@ private:
 	size_t v_debug__safe = 0;
 	t_thread* v_debug__stepping = nullptr;
 
-	void f_object__return()
-	{
-		v_object__heap.f_return();
-	}
 	t_object* f_allocate_on_boot(size_t a_size)
 	{
 		auto p = v_object__heap.f_allocate(sizeof(t_object) - sizeof(t_object::v_data) + a_size);
@@ -214,7 +210,7 @@ public:
 	template<typename T>
 	void f_threads(T a_callback)
 	{
-		for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done <= 0 && p->v_thread) a_callback(p->v_thread);
+		for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done == 0) a_callback(p->v_thread);
 	}
 	const std::map<std::wstring, t_slot, std::less<>>& f_modules() const
 	{
@@ -292,6 +288,7 @@ inline void t_object::f_decrement_step()
 	v_type = nullptr;
 	v_color = e_color__BLACK;
 	if (v_next) {
+		if (!v_previous) return;
 		v_next->v_previous = v_previous;
 		v_previous->v_next = v_next;
 	}
