@@ -287,7 +287,8 @@ class t_object
 	void f_collect_white_push()
 	{
 		if (v_color != e_color__WHITE) return;
-		v_color = e_color__ORANGE;
+		v_color = e_color__RED;
+		v_cyclic = v_count;
 		v_next = v_cycle->v_next;
 		v_cycle->v_next = this;
 		v_previous = nullptr;
@@ -295,7 +296,8 @@ class t_object
 	}
 	void f_collect_white()
 	{
-		v_color = e_color__ORANGE;
+		v_color = e_color__RED;
+		v_cyclic = v_count;
 		v_cycle = v_next = this;
 		v_previous = nullptr;
 		f_loop<&t_object::f_step<&t_object::f_collect_white_push>>();
