@@ -1,4 +1,4 @@
-dist: bionic
+dist: focal
 language: cpp
 addons:
   apt:
@@ -14,7 +14,8 @@ env:
     - CONFIGURATION=Release
 before_script:
   - cmake -E make_directory build
-  - cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION -S . -B build
-  - cmake --build build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION ..
+  - cmake --build .
 script:
-  - cd build && ctest --verbose
+  - ctest --verbose
