@@ -104,7 +104,7 @@ struct t_signature
 
 struct t_with_none
 {
-	t_with_none(const t_pvalue& a_self)
+	t_with_none(t_object*)
 	{
 	}
 };

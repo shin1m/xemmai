@@ -24,7 +24,7 @@ struct t_type_of<bool> : t_uninstantiatable<t_underivable<t_bears<bool, t_type_i
 		template<typename T1>
 		static bool f_call(T1&& a_object)
 		{
-			return reinterpret_cast<size_t>(f_object(std::forward<T1>(a_object))) == e_tag__BOOLEAN;
+			return reinterpret_cast<uintptr_t>(f_object(std::forward<T1>(a_object))) == e_tag__BOOLEAN;
 		}
 	};
 

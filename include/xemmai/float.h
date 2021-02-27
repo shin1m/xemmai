@@ -25,7 +25,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 		static t_type f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			switch (reinterpret_cast<size_t>(p)) {
+			switch (reinterpret_cast<uintptr_t>(p)) {
 			case e_tag__INTEGER:
 				return a_object.f_integer();
 			case e_tag__FLOAT:
@@ -46,8 +46,8 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 		static bool f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			if (!std::is_same_v<typename t_fundamental<T0>::t_type, double>) return reinterpret_cast<size_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
-			switch (reinterpret_cast<size_t>(p)) {
+			if (!std::is_same_v<typename t_fundamental<T0>::t_type, double>) return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
+			switch (reinterpret_cast<uintptr_t>(p)) {
 			case e_tag__NULL:
 			case e_tag__BOOLEAN:
 				return false;

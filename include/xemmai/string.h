@@ -98,7 +98,7 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 		static T0* f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) == e_tag__NULL ? nullptr : &p->template f_as<t_string>();
+			return p ? &p->template f_as<t_string>() : nullptr;
 		}
 	};
 

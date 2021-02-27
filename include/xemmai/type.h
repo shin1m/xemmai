@@ -110,7 +110,7 @@ struct t_type_of<t_object>
 		static T0* f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) == e_tag__NULL ? nullptr : &p->template f_as<T0>();
+			return p ? &p->template f_as<T0>() : nullptr;
 		}
 	};
 	template<typename T0>
@@ -121,7 +121,7 @@ struct t_type_of<t_object>
 		{
 			if (std::is_same_v<typename t_fundamental<T0>::t_type, t_object>) return true;
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<size_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
+			return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
 		}
 	};
 	template<typename T0>
@@ -133,7 +133,7 @@ struct t_type_of<t_object>
 		static bool f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			switch (reinterpret_cast<size_t>(p)) {
+			switch (reinterpret_cast<uintptr_t>(p)) {
 			case e_tag__NULL:
 				return true;
 			case e_tag__BOOLEAN:

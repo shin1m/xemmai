@@ -29,7 +29,7 @@ struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 		static T0* f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			return reinterpret_cast<uintptr_t>(p) == e_tag__NULL ? nullptr : p->template f_as<t_client*>();
+			return p ? p->template f_as<t_client*>() : nullptr;
 		}
 	};
 

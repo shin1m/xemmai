@@ -161,13 +161,13 @@ class t_object
 	static void f_push(t_slot& a_slot)
 	{
 		auto p = a_slot.v_p.load(std::memory_order_relaxed);
-		if (reinterpret_cast<size_t>(p) >= e_tag__OBJECT) (p->*A_push)();
+		if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) (p->*A_push)();
 	}
 	template<void (t_object::*A_push)()>
 	static void f_push_and_clear(t_slot& a_slot)
 	{
 		auto p = a_slot.v_p.load(std::memory_order_relaxed);
-		if (reinterpret_cast<size_t>(p) < e_tag__OBJECT) return;
+		if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) return;
 		(p->*A_push)();
 		a_slot.v_p.store(nullptr, std::memory_order_relaxed);
 	}

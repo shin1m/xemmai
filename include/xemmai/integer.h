@@ -70,8 +70,8 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 		static bool f_call(T1&& a_object)
 		{
 			auto p = f_object(std::forward<T1>(a_object));
-			if (!std::is_same_v<typename t_fundamental<T0>::t_type, intptr_t>) return reinterpret_cast<size_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
-			switch (reinterpret_cast<size_t>(p)) {
+			if (!std::is_same_v<typename t_fundamental<T0>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
+			switch (reinterpret_cast<uintptr_t>(p)) {
 			case e_tag__INTEGER:
 				return true;
 			case e_tag__NULL:
