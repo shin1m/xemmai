@@ -34,7 +34,10 @@ add_executable(xemmai
 	main.cc
 	)
 target_compile_features(xemmai PUBLIC cxx_std_17)
-target_include_directories(xemmai PUBLIC "${PROJECT_SOURCE_DIR}/include")
+target_include_directories(xemmai PUBLIC
+	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+	"$<INSTALL_INTERFACE:include/xemmai-${xemmai_VERSION}>"
+	)
 target_compile_definitions(xemmai PRIVATE "XEMMAI_MODULE_PATH=../lib/xemmai-${xemmai_VERSION}")
 target_link_libraries(xemmai PRIVATE dl pthread)
 set_property(TARGET xemmai PROPERTY ENABLE_EXPORTS 1)
