@@ -840,9 +840,14 @@ template<typename T, typename... T_an>
 inline t_object* t_type::f_new_sized(bool a_shared, size_t a_data, T_an&&... a_an)
 {
 	auto p = f_engine()->f_allocate(a_shared, sizeof(T) + a_data);
-	new(p->f_data()) T(std::forward<T_an>(a_an)...);
-	p->f_be(this);
-	return p;
+	try {
+		new(p->f_data()) T(std::forward<T_an>(a_an)...);
+		p->f_be(this);
+		return p;
+	} catch (...) {
+		p->f_be(this);
+		throw;
+	}
 }
 
 template<typename T>
