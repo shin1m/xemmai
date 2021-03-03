@@ -309,11 +309,11 @@ struct t_type_of<t_object>
 	template<typename T, typename U>
 	void f_override()
 	{
-		if (&T::f_do_derive != &U::f_do_derive) v_derive = static_cast<t_object* (t_type::*)()>(&T::f_do_derive);
+		if (&T::f_do_derive != &U::f_do_derive) v_derive = static_cast<t_object*(t_type::*)()>(&T::f_do_derive);
 		if (T::f_do_scan != U::f_do_scan) f_scan = T::f_do_scan;
 		if (T::f_do_finalize != U::f_do_finalize) f_finalize = T::f_do_finalize;
-		if (&T::f_do_construct != &U::f_do_construct) v_construct = static_cast<t_pvalue (t_type::*)(t_pvalue*, size_t)>(&T::f_do_construct);
-		if (&T::f_do_instantiate != &U::f_do_instantiate) v_instantiate = static_cast<void (t_type::*)(t_pvalue*, size_t)>(&T::f_do_instantiate);
+		if (&T::f_do_construct != &U::f_do_construct) v_construct = static_cast<t_pvalue(t_type::*)(t_pvalue*, size_t)>(&T::f_do_construct);
+		if (&T::f_do_instantiate != &U::f_do_instantiate) v_instantiate = static_cast<void(t_type::*)(t_pvalue*, size_t)>(&T::f_do_instantiate);
 		if (T::f_do_call != U::f_do_call) f_call = T::f_do_call;
 		if (T::f_do_hash != U::f_do_hash) f_hash = T::f_do_hash;
 		if (T::f_do_get_at != U::f_do_get_at) f_get_at = T::f_do_get_at;
@@ -463,10 +463,10 @@ struct t_type_immutable : t_fixed<t_type>
 	template<size_t A_n>
 	t_type_immutable(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module) : t_base(a_ids, a_super, a_module)
 	{
-		v_get_nonowned = static_cast<void (t_type::*)(t_object*, t_object*, t_pvalue*)>(&t_type_immutable::f_do_get_nonowned);
-		v_get = static_cast<t_pvalue (t_type::*)(t_object*, t_object*)>(&t_type_immutable::f_do_get);
+		v_get_nonowned = static_cast<void(t_type::*)(t_object*, t_object*, t_pvalue*)>(&t_type_immutable::f_do_get_nonowned);
+		v_get = static_cast<t_pvalue(t_type::*)(t_object*, t_object*)>(&t_type_immutable::f_do_get);
 		f_put = f_do_put;
-		v_has = static_cast<bool (t_type::*)(t_object*, t_object*)>(&t_type_immutable::f_do_has);
+		v_has = static_cast<bool(t_type::*)(t_object*, t_object*)>(&t_type_immutable::f_do_has);
 		f_remove = f_do_remove;
 		f_call_nonowned = f_do_call_nonowned;
 	}
@@ -484,7 +484,7 @@ struct t_derived : T
 	template<size_t A_n>
 	t_derived(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module) : T(a_ids, a_super, a_module)
 	{
-		this->v_construct = static_cast<t_pvalue (t_type::*)(t_pvalue*, size_t)>(&t_derived::f_do_construct);
+		this->v_construct = static_cast<t_pvalue(t_type::*)(t_pvalue*, size_t)>(&t_derived::f_do_construct);
 		this->f_call = t_type::f_do_call;
 		this->f_hash = t_type::f_do_hash;
 		this->f_get_at = t_type::f_do_get_at;
