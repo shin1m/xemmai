@@ -146,7 +146,7 @@ void t_fiber::f_run()
 		T_context context;
 		try {
 			x = q->v_callable(x);
-		} catch (const t_pvalue& thrown) {
+		} catch (const t_rvalue& thrown) {
 			q->f_caught(thrown, nullptr);
 			b = true;
 			x = thrown;
@@ -220,7 +220,7 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 	t_thread::v_current->v_mutex.unlock();
 	if (!q->v_throw) return -1;
 	q->v_throw = false;
-	throw *q->v_return;
+	throw t_rvalue(*q->v_return);
 }
 
 void t_context::f_backtrace(const t_pvalue& a_value)

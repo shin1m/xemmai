@@ -24,7 +24,7 @@ class t_parser
 	}
 	void f_throw [[noreturn]] (std::wstring_view a_message, const t_at& a_at)
 	{
-		throw t_pvalue(t_error::f_instantiate(a_message, v_lexer.f_path(), a_at));
+		throw t_rvalue(t_error::f_instantiate(a_message, v_lexer.f_path(), a_at));
 	}
 	void f_throw [[noreturn]] (std::wstring_view a_message)
 	{

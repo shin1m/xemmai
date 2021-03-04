@@ -361,7 +361,7 @@ t_engine::~t_engine()
 	if (sigaction(SIGUSR1, &v_epoch__old_sigusr1, NULL) == -1) std::exit(errno);
 	if (sigaction(SIGUSR2, &v_epoch__old_sigusr2, NULL) == -1) std::exit(errno);
 	if (v_options.v_verbose) {
-		std::fprintf(stderr, "statistics:\n\tt_object:\n");
+		std::fprintf(stderr, "statistics:\n\tobject:\n");
 		size_t allocated = 0;
 		size_t freed = 0;
 		v_object__heap.f_statistics([&](auto a_rank, auto a_grown, auto a_allocated, auto a_freed)

@@ -355,7 +355,7 @@ size_t t_code::f_loop(t_context* a_context)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				++pc;
-				throw stack[0];
+				throw t_rvalue(stack[0]);
 			}
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 #define XEMMAI__CODE__INSTRUCTION(a_name) &&XEMMAI__MACRO__CONCATENATE(label__, a_name)
@@ -1336,12 +1336,12 @@ void t_code::f_try(t_context* a_context)
 	try {
 		try {
 			try0 = static_cast<t_try>(f_loop(a_context));
-		} catch (const t_pvalue&) {
+		} catch (const t_rvalue&) {
 			throw;
 		} catch (...) {
-			throw t_pvalue(t_throwable::f_instantiate(L"<unknown>."sv));
+			throw t_rvalue(t_throwable::f_instantiate(L"<unknown>."sv));
 		}
-	} catch (const t_pvalue& thrown) {
+	} catch (const t_rvalue& thrown) {
 		stack[0] = nullptr;
 		auto& p = f_as<t_fiber&>(t_fiber::f_current());
 		void** caught = p.v_caught == nullptr ? pc : p.v_caught;
@@ -1365,12 +1365,12 @@ void t_code::f_try(t_context* a_context)
 					} else {
 						pc = static_cast<void**>(*pc);
 					}
-				} catch (const t_pvalue&) {
+				} catch (const t_rvalue&) {
 					throw;
 				} catch (...) {
-					throw t_pvalue(t_throwable::f_instantiate(L"<unknown>."sv));
+					throw t_rvalue(t_throwable::f_instantiate(L"<unknown>."sv));
 				}
-			} catch (const t_pvalue& thrown) {
+			} catch (const t_rvalue& thrown) {
 				stack[0] = nullptr;
 				caught = p.v_caught == nullptr ? pc : p.v_caught;
 				p.v_caught = nullptr;

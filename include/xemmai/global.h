@@ -877,7 +877,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 		try {
 			a_main();
 			n = 0;
-		} catch (const t_pvalue& thrown) {
+		} catch (const t_rvalue& thrown) {
 			fiber.f_caught(thrown, nullptr);
 			do {
 				try {
@@ -919,13 +919,13 @@ inline size_t t_code::f_loop(t_context& a_context)
 {
 	try {
 		return f_loop(&a_context);
-	} catch (const t_pvalue& thrown) {
+	} catch (const t_rvalue& thrown) {
 		a_context.f_backtrace(thrown);
 		throw thrown;
 	} catch (...) {
-		t_pvalue thrown = t_throwable::f_instantiate(L"<unknown>."sv);
+		auto thrown = t_throwable::f_instantiate(L"<unknown>."sv);
 		a_context.f_backtrace(thrown);
-		throw thrown;
+		throw t_rvalue(thrown);
 	}
 }
 

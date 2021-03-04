@@ -137,7 +137,7 @@ bool t_type::f_do_has(t_object* a_this, t_object* a_key)
 	try {
 		f_get(a_this, a_key);
 		return true;
-	} catch (const t_pvalue&) {
+	} catch (const t_rvalue&) {
 		f_as<t_fiber&>(t_fiber::f_current()).f_caught({}, nullptr);
 		return false;
 	}

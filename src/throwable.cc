@@ -23,7 +23,7 @@ void t_backtrace::f_dump() const
 
 void f_throw(std::wstring_view a_message)
 {
-	throw t_pvalue(t_throwable::f_instantiate(a_message));
+	throw t_rvalue(t_throwable::f_instantiate(a_message));
 }
 
 t_throwable::~t_throwable()

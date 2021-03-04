@@ -5,7 +5,7 @@ namespace xemmai
 
 void t_lexer::f_throw()
 {
-	throw t_pvalue(t_error::f_instantiate(*this));
+	throw t_rvalue(t_error::f_instantiate(*this));
 }
 
 void t_lexer::f_get()
