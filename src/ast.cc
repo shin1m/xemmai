@@ -816,8 +816,8 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 {
 	a_emit.f_push(false);
 	auto operand = v_expression->f_emit(a_emit, false, true);
-	a_emit.f_pop();
 	if (operand.v_tag == t_operand::e_tag__INTEGER) {
+		a_emit.f_pop();
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
 			return t_literal<intptr_t>(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
@@ -829,6 +829,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 			f_throw(L"not supported."sv);
 		}
 	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
+		a_emit.f_pop();
 		switch (v_instruction) {
 		case e_instruction__PLUS_T:
 			return t_literal<double>(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
@@ -852,7 +853,8 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		break;
 	}
 	a_emit.f_emit_safe_point(this);
-	if (operand.v_tag == t_operand::e_tag__TEMPORARY) a_emit.f_pop();
+	if (operand.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push(false);
+	a_emit.f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
 	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
 	if (!a_tail) a_emit << a_emit.f_stack();
@@ -1049,12 +1051,12 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		break;
 	}
 	a_emit.f_emit_safe_point(this);
-	size_t stack = a_emit.f_stack() - 1;
-	if (left.v_tag == t_operand::e_tag__TEMPORARY) --stack;
-	if (right.v_tag == t_operand::e_tag__TEMPORARY) --stack;
+	if (left.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push(false);
+	if (right.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push(false);
+	a_emit.f_pop().f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
-	assert(!a_tail || stack == a_emit.v_scope->v_privates.size());
-	if (!a_tail) a_emit << stack;
+	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.f_stack();
 	switch (left.v_tag) {
 	case t_operand::e_tag__INTEGER:
 		a_emit << left.v_integer;
@@ -1083,9 +1085,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		a_emit << right.v_index;
 		break;
 	}
-	if (left.v_tag == t_operand::e_tag__TEMPORARY) a_emit.f_pop();
-	if (right.v_tag == t_operand::e_tag__TEMPORARY) a_emit.f_pop();
-	a_emit.f_pop().f_push(true);
+	a_emit.f_push(true);
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
