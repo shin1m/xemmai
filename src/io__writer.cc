@@ -27,9 +27,10 @@ void t_writer::f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n)
 			f_throw(L"invalid character."sv);
 		case E2BIG:
 			f_write(a_extension);
+		case EINTR:
 			break;
 		default:
-			f_throw(L"failed to iconv."sv);
+			throw std::system_error(errno, std::generic_category());
 		}
 	}
 }
@@ -40,9 +41,10 @@ void t_writer::f_unshift(t_io* a_extension)
 		switch (errno) {
 		case E2BIG:
 			f_write(a_extension);
+		case EINTR:
 			break;
 		default:
-			f_throw(L"failed to iconv."sv);
+			throw std::system_error(errno, std::generic_category());
 		}
 	}
 	f_write(a_extension);

@@ -40,7 +40,7 @@ void f_sleep(intptr_t a_miliseconds)
 	struct timespec nano;
 	nano.tv_sec = a_miliseconds / 1000;
 	nano.tv_nsec = a_miliseconds % 1000 * 1000000;
-	nanosleep(&nano, NULL);
+	while (nanosleep(&nano, &nano) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
 #endif
 #ifdef _WIN32
 	Sleep(a_miliseconds);

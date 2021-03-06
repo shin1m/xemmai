@@ -33,11 +33,12 @@ wint_t t_reader::f_get(t_io* a_extension)
 				f_throw(L"invalid sequence."sv);
 			case EINVAL:
 				if (f_read(a_extension) <= 0) f_throw(L"incomplete sequence."sv);
+			case EINTR:
 				continue;
 			case E2BIG:
 				break;
 			default:
-				f_throw(L"failed to iconv."sv);
+				throw std::system_error(errno, std::generic_category());
 			}
 			break;
 		}
