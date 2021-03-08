@@ -18,7 +18,7 @@ void t_backtrace::f_dump() const
 	} else {
 		std::fputs("at ", stderr);
 	}
-	f_engine()->f_context_print(stderr, v_lambda ? f_as<t_lambda*>(v_lambda) : nullptr, v_pc);
+	f_engine()->f_context_print(stderr, f_as<t_lambda*>(v_lambda), v_pc);
 }
 
 void f_throw(std::wstring_view a_message)

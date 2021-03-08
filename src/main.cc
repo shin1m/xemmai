@@ -147,7 +147,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print(t_context* a_context)
 	{
-		v_engine.f_context_print(v_out, a_context->v_lambda, a_context->v_pc);
+		v_engine.f_context_print(v_out, f_as<t_lambda*>(a_context->v_lambda), a_context->v_pc);
 	}
 	void f_print_contexts(t_debug_context* a_context, t_context* a_current)
 	{
@@ -259,7 +259,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print_variables(t_context* a_context)
 	{
-		auto& code = f_as<t_code&>(a_context->v_lambda->f_code());
+		auto& code = f_as<t_code&>(f_as<t_lambda&>(a_context->v_lambda).f_code());
 		for (auto& pair : code.v_variables) std::fprintf(v_out, "%ls\n", pair.first.c_str());
 	}
 	void f_prompt(t_thread* a_thread)

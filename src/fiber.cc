@@ -227,7 +227,7 @@ void t_context::f_backtrace(const t_pvalue& a_value)
 {
 	if (f_is<t_throwable>(a_value)) {
 		auto& p = f_as<t_fiber&>(t_fiber::f_current());
-		t_backtrace::f_push(a_value, t_object::f_of(v_lambda), p.v_caught == nullptr ? v_pc : p.v_caught);
+		t_backtrace::f_push(a_value, v_lambda, p.v_caught == nullptr ? v_pc : p.v_caught);
 		p.v_caught = nullptr;
 	}
 	f_stack__(v_previous);
@@ -235,14 +235,15 @@ void t_context::f_backtrace(const t_pvalue& a_value)
 
 const t_pvalue* t_context::f_variable(std::wstring_view a_name) const
 {
-	auto& code = f_as<t_code&>(v_lambda->v_code);
+	auto& lambda = f_as<t_lambda&>(v_lambda);
+	auto& code = f_as<t_code&>(lambda.v_code);
 	auto i = code.v_variables.find(a_name);
 	if (i == code.v_variables.end()) return nullptr;
 	size_t outer = 0;
 	for (auto i = a_name.begin(); i != a_name.end() && *i == L':'; ++i) ++outer;
 	size_t index = i->second.v_index;
 	if (outer <= 0) return (i->second.v_shared ? reinterpret_cast<const t_pvalue*>(v_scope) : v_base) + index;
-	auto scope = v_lambda->v_scope_entries;
+	auto scope = lambda.v_scope_entries;
 	for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
 	return reinterpret_cast<const t_pvalue*>(scope) + index;
 }

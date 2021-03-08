@@ -1,3 +1,6 @@
+align catch <unknown>.
+make t_tuple::f_instatiate not null clear.
+further remove code for stack map.
 //resolve race condition between t_hash::f_scan and t_hash::f_rehash.
 //	for each t_slot: call f_acquire and f_release in order to simulate duplication of t_entry.
 //make t_type uninstantiatable and immutable,
@@ -46,5 +49,3 @@ performance improvement ideas:
 //	use variant to hold primitives and objects.
 //	implement thread local memory pool.
 //	use direct function table instead of virtual function.
-	allocate variables in threaded code.
-	implement scope cache.

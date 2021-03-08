@@ -39,7 +39,7 @@ protected:
 	template<typename T_context>
 	size_t f_call(t_pvalue* a_stack)
 	{
-		T_context context(this, a_stack);
+		T_context context(t_object::f_of(this), a_stack);
 		return t_code::f_loop(context);
 	}
 
