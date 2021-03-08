@@ -32,6 +32,8 @@ public:
 	}
 };
 
+std::wstring f_executable_path();
+
 }
 
 #endif

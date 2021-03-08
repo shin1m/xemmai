@@ -281,10 +281,9 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	}
 	t_pvalue system{v_module_system};
 	if (a_count > 0) {
-		portable::t_path executable(portable::f_convert(a_arguments[0]));
-		system.f_put(f_global()->f_symbol_executable(), f_global()->f_as(static_cast<const std::wstring&>(executable)));
+		system.f_put(f_global()->f_symbol_executable(), f_global()->f_as(portable::f_convert(a_arguments[0])));
 #ifdef XEMMAI_MODULE_PATH
-		f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(executable / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
+		f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
 #endif
 		if (a_count > 1) {
 			portable::t_path script(portable::f_convert(a_arguments[1]));

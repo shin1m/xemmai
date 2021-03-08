@@ -1,6 +1,8 @@
 #include <xemmai/portable/path.h>
 #include <xemmai/portable/convert.h>
+#include <system_error>
 #include <vector>
+#include <climits>
 #ifdef __unix__
 #include <unistd.h>
 #endif
@@ -86,5 +88,15 @@ std::wstring f_convert(std::string_view a_string)
 	std::mbsrtowcs(cs.data(), &p, n, &state);
 	return cs.data();
 }
+
+#ifdef __unix__
+std::wstring f_executable_path()
+{
+	char cs[PATH_MAX];
+	auto n = readlink("/proc/self/exe", cs, sizeof(cs));
+	if (n == -1) throw std::system_error(errno, std::generic_category());
+	return portable::f_convert({cs, static_cast<size_t>(n)});
+}
+#endif
 
 }
