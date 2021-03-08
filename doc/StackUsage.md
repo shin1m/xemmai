@@ -43,9 +43,6 @@
     THROW
         |x
         !
-    CLEAR
-        |x
-        |
     OBJECT_GET
         ?x
         |x
@@ -55,9 +52,6 @@
     OBJECT_PUT
         ?xx
         |x
-    OBJECT_PUT_CLEAR
-        ?xx
-        |
     OBJECT_PUT_INDIRECT
         ?xxx
         |x
@@ -92,27 +86,18 @@
     STACK_LET
         |x
         |x
-    STACK_LET_CLEAR
-        |x
-        |
     STACK_GET
         |
         |x
     STACK_PUT
         |x
         |x
-    STACK_PUT_CLEAR
-        |x
-        |
     SCOPE_GET
         |
         |x
     SCOPE_PUT
         |x
         |x
-    SCOPE_PUT_CLEAR
-        |x
-        |
     LAMBDA
         |
         |x
