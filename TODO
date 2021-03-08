@@ -1,6 +1,6 @@
-align catch <unknown>.
-make t_tuple::f_instatiate not null clear.
 further remove code for stack map.
+make t_tuple::f_instatiate not null clear.
+//align catch <unknown>.
 //resolve race condition between t_hash::f_scan and t_hash::f_rehash.
 //	for each t_slot: call f_acquire and f_release in order to simulate duplication of t_entry.
 //make t_type uninstantiatable and immutable,

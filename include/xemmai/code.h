@@ -212,6 +212,7 @@ struct t_code
 #else
 	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_context* a_context);
 #endif
+	static void f_rethrow [[noreturn]] ();
 	static void f_try(t_context* a_context);
 	static size_t f_loop(t_context& a_context);
 	static t_object* f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);

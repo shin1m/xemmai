@@ -918,14 +918,14 @@ intptr_t t_fiber::f_main(T_main a_main)
 inline size_t t_code::f_loop(t_context& a_context)
 {
 	try {
-		return f_loop(&a_context);
+		try {
+			return f_loop(&a_context);
+		} catch (...) {
+			f_rethrow();
+		}
 	} catch (const t_rvalue& thrown) {
 		a_context.f_backtrace(thrown);
-		throw thrown;
-	} catch (...) {
-		auto thrown = t_throwable::f_instantiate(L"<unknown>."sv);
-		a_context.f_backtrace(thrown);
-		throw t_rvalue(thrown);
+		throw;
 	}
 }
 

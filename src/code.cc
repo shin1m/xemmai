@@ -1324,6 +1324,19 @@ label__THROW_NOT_SUPPORTED:
 	f_throw(L"not supported."sv);
 }
 
+void t_code::f_rethrow()
+{
+	try {
+		std::rethrow_exception(std::current_exception());
+	} catch (const t_rvalue&) {
+		throw;
+	} catch (std::exception& e) {
+		throw t_rvalue(t_throwable::f_instantiate(portable::f_convert(e.what())));
+	} catch (...) {
+		throw t_rvalue(t_throwable::f_instantiate(L"<unknown>."sv));
+	}
+}
+
 void t_code::f_try(t_context* a_context)
 {
 	auto& pc = a_context->v_pc;
@@ -1336,10 +1349,8 @@ void t_code::f_try(t_context* a_context)
 	try {
 		try {
 			try0 = static_cast<t_try>(f_loop(a_context));
-		} catch (const t_rvalue&) {
-			throw;
 		} catch (...) {
-			throw t_rvalue(t_throwable::f_instantiate(L"<unknown>."sv));
+			f_rethrow();
 		}
 	} catch (const t_rvalue& thrown) {
 		stack[0] = nullptr;
@@ -1365,10 +1376,8 @@ void t_code::f_try(t_context* a_context)
 					} else {
 						pc = static_cast<void**>(*pc);
 					}
-				} catch (const t_rvalue&) {
-					throw;
 				} catch (...) {
-					throw t_rvalue(t_throwable::f_instantiate(L"<unknown>."sv));
+					f_rethrow();
 				}
 			} catch (const t_rvalue& thrown) {
 				stack[0] = nullptr;
