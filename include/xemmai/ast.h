@@ -535,7 +535,8 @@ struct t_emit
 	ast::t_scope* v_scope;
 	t_code* v_code;
 	size_t v_arguments;
-	std::vector<bool>* v_stack;
+	std::vector<bool>* v_privates;
+	size_t v_stack;
 	std::list<t_label>* v_labels;
 	t_targets* v_targets;
 	std::vector<std::tuple<size_t, size_t, size_t>>* v_safe_positions;
@@ -553,19 +554,14 @@ struct t_emit
 	{
 		return v_code->v_instructions.size();
 	}
-	size_t f_stack() const
+	t_emit& f_push()
 	{
-		return v_arguments + v_stack->size();
-	}
-	t_emit& f_push(bool a_live)
-	{
-		v_stack->push_back(a_live);
-		if (f_stack() > v_code->v_size) v_code->v_size = f_stack();
+		if (++v_stack > v_code->v_size) v_code->v_size = v_stack;
 		return *this;
 	}
 	t_emit& f_pop()
 	{
-		v_stack->pop_back();
+		--v_stack;
 		return *this;
 	}
 	template<typename T>
@@ -626,7 +622,7 @@ struct t_emit
 	}
 	void f_emit_null()
 	{
-		(*this << e_instruction__NUL << f_stack()).f_push(false);
+		(*this << e_instruction__NUL << v_stack).f_push();
 	}
 	void f_emit_safe_point(ast::t_node* a_node)
 	{
@@ -638,7 +634,7 @@ struct t_emit
 	void f_join(const ast::t_block& a_junction);
 	void f_merge(const ast::t_block& a_junction)
 	{
-		std::copy(a_junction.v_uses.begin(), a_junction.v_uses.end(), v_stack->begin());
+		std::copy(a_junction.v_uses.begin(), a_junction.v_uses.end(), v_privates->begin());
 	}
 };
 
@@ -671,9 +667,9 @@ t_operand t_literal<T>::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 		a_emit.f_join(*a_emit.v_targets->v_return_junction);
 		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + e_instruction__RETURN_B - e_instruction__BOOLEAN) << v_value;
 	} else {
-		a_emit << t_emit::f_instruction_of<T>() << a_emit.f_stack() << v_value;
+		a_emit << t_emit::f_instruction_of<T>() << a_emit.v_stack << v_value;
 	}
-	a_emit.f_push(true);
+	a_emit.f_push();
 	a_emit.f_at(this);
 	return t_operand();
 }

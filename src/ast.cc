@@ -117,9 +117,11 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.v_code = &code1;
 	auto arguments0 = a_emit.v_arguments;
 	a_emit.v_arguments = v_arguments;
+	auto privates0 = a_emit.v_privates;
+	std::vector<bool> privates1(v_privates.size() - v_arguments, false);
+	a_emit.v_privates = &privates1;
 	auto stack0 = a_emit.v_stack;
-	std::vector<bool> stack1(v_privates.size() - v_arguments, false);
-	a_emit.v_stack = &stack1;
+	a_emit.v_stack = v_privates.size();
 	auto labels0 = a_emit.v_labels;
 	std::list<t_emit::t_label> labels1;
 	a_emit.v_labels = &labels1;
@@ -131,22 +133,23 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions1;
 	a_emit.v_safe_positions = &safe_positions1;
 	if (v_self_shared) a_emit
-		<< e_instruction__SELF << a_emit.f_stack()
-		<< e_instruction__SCOPE_PUT0 << a_emit.f_stack() << 0;
+		<< e_instruction__SELF << a_emit.v_stack
+		<< e_instruction__SCOPE_PUT0 << a_emit.v_stack << 0;
 	for (size_t i = 0; i < v_arguments; ++i)
 		if (v_privates[i]->v_shared) a_emit
-			<< e_instruction__STACK_GET << a_emit.f_stack() << i
-			<< e_instruction__SCOPE_PUT0 << a_emit.f_stack() << v_privates[i]->v_index;
+			<< e_instruction__STACK_GET << a_emit.v_stack << i
+			<< e_instruction__SCOPE_PUT0 << a_emit.v_stack << v_privates[i]->v_index;
 	f_emit_block(a_emit, v_block, true, false);
 	a_emit.f_pop();
 	a_emit.f_target(return0);
 	a_emit.f_join(v_junction);
-	assert(a_emit.f_stack() == v_privates.size());
+	assert(a_emit.v_stack == v_privates.size());
 	a_emit << e_instruction__RETURN_T;
 	a_emit.f_resolve();
 	a_emit.v_scope = scope0;
 	a_emit.v_code = code0;
 	a_emit.v_arguments = arguments0;
+	a_emit.v_privates = privates0;
 	a_emit.v_stack = stack0;
 	a_emit.v_labels = labels0;
 	a_emit.v_targets = targets0;
@@ -160,7 +163,7 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	} else {
 		a_emit << e_instruction__LAMBDA;
 	}
-	(a_emit << a_emit.f_stack() << code).f_push(true);
+	(a_emit << a_emit.v_stack << code).f_push();
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
 }
@@ -185,14 +188,16 @@ t_operand t_if::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear
 	v_condition->f_emit(a_emit, false, false);
 	auto& label0 = a_emit.f_label();
 	a_emit.f_pop();
-	a_emit << e_instruction__BRANCH << a_emit.f_stack() << label0;
-	auto stack = *a_emit.v_stack;
+	a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
+	auto privates = *a_emit.v_privates;
+	auto stack = a_emit.v_stack;
 	f_emit_block(a_emit, v_true, a_tail, a_clear);
 	a_emit.f_join(v_junction);
 	auto& label1 = a_emit.f_label();
 	a_emit << e_instruction__JUMP << label1;
 	a_emit.f_target(label0);
-	*a_emit.v_stack = stack;
+	*a_emit.v_privates = privates;
+	a_emit.v_stack = stack;
 	f_emit_block(a_emit, v_false, a_tail, a_clear);
 	a_emit.f_join(v_junction);
 	a_emit.f_target(label1);
@@ -228,7 +233,7 @@ t_operand t_while::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	v_condition->f_emit(a_emit, false, false);
 	auto& label0 = a_emit.f_label();
 	a_emit.f_pop();
-	a_emit << e_instruction__BRANCH << a_emit.f_stack() << label0;
+	a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
 	t_emit::t_targets targets1{&break0, &v_junction_exit, a_tail, a_clear, &loop, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_is_tail};
@@ -280,7 +285,7 @@ t_operand t_for::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	if (v_condition) {
 		v_condition->f_emit(a_emit, false, false);
 		a_emit.f_pop();
-		a_emit << e_instruction__BRANCH << a_emit.f_stack() << label0;
+		a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
 	}
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
@@ -314,7 +319,7 @@ t_operand t_break::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	else if (!a_emit.v_targets->v_break_must_clear)
 		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, false);
 	if (!a_emit.v_targets->v_break_must_clear) a_emit.f_pop();
-	if (!a_clear) a_emit.f_push(false);
+	if (!a_clear) a_emit.f_push();
 	a_emit.f_join(*a_emit.v_targets->v_break_junction);
 	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_break;
 	return t_operand();
@@ -327,7 +332,7 @@ void t_continue::f_flow(t_flow& a_flow)
 
 t_operand t_continue::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	if (!a_clear) a_emit.f_push(false);
+	if (!a_clear) a_emit.f_push();
 	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_continue;
 	return t_operand();
 }
@@ -346,7 +351,7 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false, false);
 	a_emit.f_join(*a_emit.v_targets->v_return_junction);
 	if (a_emit.v_targets->v_return_is_tail) {
-		assert(a_emit.f_stack() - 1 == a_emit.v_scope->v_privates.size());
+		assert(a_emit.v_stack == a_emit.v_scope->v_privates.size() + 1);
 		a_emit << e_instruction__RETURN_T;
 	} else {
 		a_emit << e_instruction__JUMP << *a_emit.v_targets->v_return;
@@ -397,7 +402,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	a_emit.f_merge(v_junction_try);
 	auto& catch0 = a_emit.f_label();
 	auto& finally0 = a_emit.f_label();
-	a_emit << e_instruction__TRY << a_emit.f_stack() << catch0 << finally0;
+	a_emit << e_instruction__TRY << a_emit.v_stack << catch0 << finally0;
 	auto targets0 = a_emit.v_targets;
 	{
 		auto& break0 = a_emit.f_label();
@@ -439,7 +444,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 			return nullptr;
 		}
 		for (size_t i = 0; i < a_junction->v_uses.size(); ++i) {
-			if ((*a_emit.v_stack)[i] || !a_junction->v_uses[i]) continue;
+			if ((*a_emit.v_privates)[i] || !a_junction->v_uses[i]) continue;
 			auto label = &a_emit.f_label();
 			a_emit << *label;
 			return label;
@@ -477,8 +482,8 @@ t_operand t_throw::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	v_expression->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit.f_pop();
-	a_emit << e_instruction__THROW << a_emit.f_stack();
-	if (!a_clear) a_emit.f_push(false);
+	a_emit << e_instruction__THROW << a_emit.v_stack;
+	if (!a_clear) a_emit.f_push();
 	a_emit.f_at(this);
 	return t_operand();
 }
@@ -493,7 +498,7 @@ t_operand t_object_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
-	a_emit << e_instruction__OBJECT_GET << a_emit.f_stack() - 1 << v_key << 0 << script.f_slot({}) << 0;
+	a_emit << e_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0 << script.f_slot({}) << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -505,8 +510,8 @@ void t_object_get::f_method(t_emit& a_emit)
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
 	a_emit.f_pop();
-	a_emit << e_instruction__METHOD_GET << a_emit.f_stack() << v_key << 0 << script.f_slot({}) << 0;
-	a_emit.f_push(true).f_push(true);
+	a_emit << e_instruction__METHOD_GET << a_emit.v_stack << v_key << 0 << script.f_slot({}) << 0;
+	a_emit.f_push().f_push();
 	a_emit.f_at(this);
 }
 
@@ -521,7 +526,7 @@ t_operand t_object_get_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_target->f_emit(a_emit, false, false);
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_GET_INDIRECT << a_emit.f_stack() - 2;
+	a_emit << e_instruction__OBJECT_GET_INDIRECT << a_emit.v_stack - 2;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -540,7 +545,7 @@ t_operand t_object_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
-	a_emit << e_instruction__OBJECT_PUT << a_emit.f_stack() - 2 << v_key << 0 << script.f_slot({}) << 0;
+	a_emit << e_instruction__OBJECT_PUT << a_emit.v_stack - 2 << v_key << 0 << script.f_slot({}) << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -560,7 +565,7 @@ t_operand t_object_put_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_key->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_PUT_INDIRECT << a_emit.f_stack() - 3;
+	a_emit << e_instruction__OBJECT_PUT_INDIRECT << a_emit.v_stack - 3;
 	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -576,7 +581,7 @@ t_operand t_object_has::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_HAS << a_emit.f_stack() - 1 << v_key;
+	a_emit << e_instruction__OBJECT_HAS << a_emit.v_stack - 1 << v_key;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -593,7 +598,7 @@ t_operand t_object_has_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_target->f_emit(a_emit, false, false);
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_HAS_INDIRECT << a_emit.f_stack() - 2;
+	a_emit << e_instruction__OBJECT_HAS_INDIRECT << a_emit.v_stack - 2;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -609,7 +614,7 @@ t_operand t_object_remove::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, b
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_REMOVE << a_emit.f_stack() - 1 << v_key;
+	a_emit << e_instruction__OBJECT_REMOVE << a_emit.v_stack - 1 << v_key;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -626,7 +631,7 @@ t_operand t_object_remove_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_o
 	v_target->f_emit(a_emit, false, false);
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_REMOVE_INDIRECT << a_emit.f_stack() - 2;
+	a_emit << e_instruction__OBJECT_REMOVE_INDIRECT << a_emit.v_stack - 2;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -652,8 +657,8 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	f_resolve();
 	if (!v_variable) {
 		if (a_tail) a_emit.f_emit_safe_point(this);
-		a_emit << e_instruction__GLOBAL_GET << a_emit.f_stack() << v_symbol;
-		a_emit.f_push(true);
+		a_emit << e_instruction__GLOBAL_GET << a_emit.v_stack << v_symbol;
+		a_emit.f_push();
 		a_emit.f_at(this);
 		if (a_clear) a_emit.f_pop();
 		return t_operand();
@@ -661,19 +666,19 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	if (v_variable->v_shared) {
 		size_t instruction = e_instruction__SCOPE_GET0 + (v_resolved < 3 ? v_resolved : 3);
 		if (a_tail) a_emit.f_emit_safe_point(this);
-		a_emit << static_cast<t_instruction>(instruction) << a_emit.f_stack();
+		a_emit << static_cast<t_instruction>(instruction) << a_emit.v_stack;
 		if (v_resolved >= 3) a_emit << v_resolved;
-		a_emit.f_push(true);
+		a_emit.f_push();
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
 			a_emit.f_emit_safe_point(this);
 			a_emit.f_join(*a_emit.v_targets->v_return_junction);
 			a_emit << e_instruction__RETURN_V;
-			a_emit.f_push(false);
+			a_emit.f_push();
 		} else {
-			a_emit << e_instruction__STACK_GET << a_emit.f_stack();
-			a_emit.f_push(true);
+			a_emit << e_instruction__STACK_GET << a_emit.v_stack;
+			a_emit.f_push();
 		}
 	}
 	a_emit << v_variable->v_index;
@@ -694,10 +699,10 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 {
 	if (a_clear && !v_variable.v_shared) {
 		int i = v_variable.v_index - a_emit.v_arguments;
-		if (i >= 0 && !(*a_emit.v_stack)[i]) {
+		if (i >= 0 && !(*a_emit.v_privates)[i]) {
 			auto operand = v_value->f_emit(a_emit, false, true);
 			a_emit.f_emit_safe_point(this);
-			(*a_emit.v_stack)[i] = true;
+			(*a_emit.v_privates)[i] = true;
 			switch (operand.v_tag) {
 			case t_operand::e_tag__INTEGER:
 				a_emit << e_instruction__INTEGER << v_variable.v_index << operand.v_integer;
@@ -721,7 +726,7 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 				a_emit << e_instruction__STACK_PUT << operand.v_index << v_variable.v_index;
 				break;
 			default:
-				a_emit << e_instruction__STACK_PUT << a_emit.f_stack() - 1 << v_variable.v_index;
+				a_emit << e_instruction__STACK_PUT << a_emit.v_stack - 1 << v_variable.v_index;
 				a_emit.f_pop();
 			}
 			a_emit.f_at(this);
@@ -732,13 +737,13 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 	a_emit.f_emit_safe_point(this);
 	if (v_variable.v_shared) {
 		if (v_outer > 0)
-			a_emit << e_instruction__SCOPE_PUT << a_emit.f_stack() - 1 << v_outer;
+			a_emit << e_instruction__SCOPE_PUT << a_emit.v_stack - 1 << v_outer;
 		else
-			a_emit << e_instruction__SCOPE_PUT0 << a_emit.f_stack() - 1;
+			a_emit << e_instruction__SCOPE_PUT0 << a_emit.v_stack - 1;
 	} else {
 		int i = v_variable.v_index - a_emit.v_arguments;
-		if (i >= 0) (*a_emit.v_stack)[i] = true;
-		a_emit << e_instruction__STACK_PUT << a_emit.f_stack() - 1;
+		if (i >= 0) (*a_emit.v_privates)[i] = true;
+		a_emit << e_instruction__STACK_PUT << a_emit.v_stack - 1;
 	}
 	a_emit << v_variable.v_index;
 	a_emit.f_at(this);
@@ -751,13 +756,13 @@ t_operand t_self::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	if (a_clear) return t_operand();
 	if (a_tail) a_emit.f_emit_safe_point(this);
 	if (v_outer > 0) {
-		a_emit << static_cast<t_instruction>(e_instruction__SCOPE_GET0 + (v_outer < 3 ? v_outer : 3)) << a_emit.f_stack();
+		a_emit << static_cast<t_instruction>(e_instruction__SCOPE_GET0 + (v_outer < 3 ? v_outer : 3)) << a_emit.v_stack;
 		if (v_outer >= 3) a_emit << v_outer;
 		a_emit << 0;
 	} else {
-		a_emit << e_instruction__SELF << a_emit.f_stack();
+		a_emit << e_instruction__SELF << a_emit.v_stack;
 	}
-	a_emit.f_push(true);
+	a_emit.f_push();
 	a_emit.f_at(this);
 	return t_operand();
 }
@@ -771,7 +776,7 @@ t_operand t_class::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 {
 	v_target->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__CLASS << a_emit.f_stack() - 1;
+	a_emit << e_instruction__CLASS << a_emit.v_stack - 1;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -786,7 +791,7 @@ t_operand t_super::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 {
 	v_target->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__SUPER << a_emit.f_stack() - 1;
+	a_emit << e_instruction__SUPER << a_emit.v_stack - 1;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -799,7 +804,7 @@ t_operand t_null::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
 		a_emit.f_join(*a_emit.v_targets->v_return_junction);
-		(a_emit << e_instruction__RETURN_N).f_push(false);
+		(a_emit << e_instruction__RETURN_N).f_push();
 	} else {
 		a_emit.f_emit_null();
 	}
@@ -814,7 +819,7 @@ void t_unary::f_flow(t_flow& a_flow)
 
 t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_emit.f_push(false);
+	a_emit.f_push();
 	auto operand = v_expression->f_emit(a_emit, false, true);
 	if (operand.v_tag == t_operand::e_tag__INTEGER) {
 		a_emit.f_pop();
@@ -853,11 +858,11 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		break;
 	}
 	a_emit.f_emit_safe_point(this);
-	if (operand.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push(false);
+	if (operand.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push();
 	a_emit.f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
-	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
-	if (!a_tail) a_emit << a_emit.f_stack();
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.v_stack;
 	switch (operand.v_tag) {
 	case t_operand::e_tag__LITERAL:
 		a_emit << *operand.v_value;
@@ -866,7 +871,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		a_emit << operand.v_index;
 		break;
 	}
-	a_emit.f_push(true);
+	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -880,7 +885,7 @@ void t_binary::f_flow(t_flow& a_flow)
 
 t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_emit.f_push(false);
+	a_emit.f_push();
 	size_t instruction = v_instruction;
 	bool operand = instruction != e_instruction__SEND;
 	auto left = v_left->f_emit(a_emit, false, operand);
@@ -1051,12 +1056,12 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		break;
 	}
 	a_emit.f_emit_safe_point(this);
-	if (left.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push(false);
-	if (right.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push(false);
+	if (left.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push();
+	if (right.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push();
 	a_emit.f_pop().f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
-	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
-	if (!a_tail) a_emit << a_emit.f_stack();
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.v_stack;
 	switch (left.v_tag) {
 	case t_operand::e_tag__INTEGER:
 		a_emit << left.v_integer;
@@ -1085,7 +1090,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		a_emit << right.v_index;
 		break;
 	}
-	a_emit.f_push(true);
+	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1107,7 +1112,7 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	}
 	if (get) {
 		instruction = get->v_variable->v_shared ? e_instruction__SCOPE_CALL0 + get->v_resolved : e_instruction__STACK_CALL;
-		a_emit.f_push(false).f_push(false);
+		a_emit.f_push().f_push();
 	} else if (auto p = dynamic_cast<t_object_get*>(v_target.get())) {
 		p->f_method(a_emit);
 	} else if (auto p = dynamic_cast<t_get_at*>(v_target.get())) {
@@ -1125,11 +1130,11 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	}
 	a_emit.f_emit_safe_point(this);
 	a_emit << static_cast<t_instruction>(instruction);
-	assert(!a_tail || a_emit.f_stack() == a_emit.v_scope->v_privates.size());
-	if (!a_tail) a_emit << a_emit.f_stack();
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
+	if (!a_tail) a_emit << a_emit.v_stack;
 	if (get) a_emit << get->v_variable->v_index;
 	a_emit << v_arguments.size();
-	a_emit.f_push(true);
+	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1143,15 +1148,15 @@ void t_get_at::f_flow(t_flow& a_flow)
 
 t_operand t_get_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_emit.f_push(false);
+	a_emit.f_push();
 	v_target->f_emit(a_emit, false, false);
 	v_index->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
 	a_emit.f_emit_safe_point(this);
 	a_emit << (a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT);
-	assert(!a_tail || a_emit.f_stack() - 3 == a_emit.v_scope->v_privates.size());
-	if (!a_tail) a_emit << a_emit.f_stack() - 3;
-	a_emit.f_pop().f_pop().f_pop().f_push(true);
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size() + 3);
+	if (!a_tail) a_emit << a_emit.v_stack - 3;
+	a_emit.f_pop().f_pop().f_pop().f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1162,8 +1167,8 @@ void t_get_at::f_bind(t_emit& a_emit)
 	v_target->f_emit(a_emit, false, false);
 	v_index->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__METHOD_BIND << a_emit.f_stack() - 2;
-	a_emit.f_push(true).f_pop().f_pop().f_pop().f_push(true).f_push(true);
+	a_emit << e_instruction__METHOD_BIND << a_emit.v_stack - 2;
+	a_emit.f_push().f_pop().f_pop().f_pop().f_push().f_push();
 	a_emit.f_at(this);
 }
 
@@ -1176,16 +1181,16 @@ void t_set_at::f_flow(t_flow& a_flow)
 
 t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	a_emit.f_push(false);
+	a_emit.f_push();
 	v_target->f_emit(a_emit, false, false);
 	v_index->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
 	a_emit.f_emit_safe_point(this);
 	a_emit << (a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT);
-	assert(!a_tail || a_emit.f_stack() - 4 == a_emit.v_scope->v_privates.size());
-	if (!a_tail) a_emit << a_emit.f_stack() - 4;
-	a_emit.f_pop().f_pop().f_pop().f_pop().f_push(true);
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size() + 4);
+	if (!a_tail) a_emit << a_emit.v_stack - 4;
+	a_emit.f_pop().f_pop().f_pop().f_pop().f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1205,9 +1210,10 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 	}
 	v_scope = &a_scope;
 	v_arguments = 0;
-	std::vector<bool> stack(a_scope.v_privates.size(), false);
-	v_stack = &stack;
-	auto code = t_code::f_instantiate(v_module, true, false, f_stack(), a_scope.v_shareds, 0, 0);
+	std::vector<bool> privates(a_scope.v_privates.size(), false);
+	v_privates = &privates;
+	v_stack = privates.size();
+	auto code = t_code::f_instantiate(v_module, true, false, privates.size(), a_scope.v_shareds, 0, 0);
 	v_code = &f_as<t_code&>(code);
 	std::list<t_label> labels;
 	v_labels = &labels;
@@ -1216,8 +1222,8 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions;
 	v_safe_positions = &safe_positions;
 	if (a_scope.v_self_shared) *this
-		<< e_instruction__STACK_GET << f_stack() << 0
-		<< e_instruction__SCOPE_PUT0 << f_stack() << 0;
+		<< e_instruction__STACK_GET << v_stack << 0
+		<< e_instruction__SCOPE_PUT0 << v_stack << 0;
 	ast::f_emit_block_without_value(*this, a_scope.v_block);
 	*this << e_instruction__END;
 	f_resolve();
@@ -1235,7 +1241,7 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 void t_emit::f_join(const ast::t_block& a_junction)
 {
 	for (size_t i = 0; i < a_junction.v_uses.size(); ++i)
-		if (!(*v_stack)[i] && a_junction.v_uses[i]) *this << e_instruction__NUL << v_arguments + i;
+		if (!(*v_privates)[i] && a_junction.v_uses[i]) *this << e_instruction__NUL << v_arguments + i;
 }
 
 }
