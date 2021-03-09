@@ -17,11 +17,10 @@ t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code, t_pvalue*
 	t_object* defaults = nullptr;
 	size_t n = code.v_arguments - code.v_minimum;
 	if (code.v_variadic) --n;
-	if (n > 0) {
-		defaults = t_tuple::f_instantiate(n);
-		auto& tuple = f_as<t_tuple&>(defaults);
+	if (n > 0) defaults = t_tuple::f_instantiate(n, [&](auto& tuple)
+	{
 		for (size_t i = 0; i < n; ++i) new(&tuple[i]) t_svalue(a_stack[i]);
-	}
+	});
 	if (code.v_shared)
 		return f_new<t_advanced_lambda<t_lambda_shared>>(f_global(), true, a_scope, a_code, defaults);
 	else

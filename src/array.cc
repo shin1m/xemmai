@@ -6,19 +6,23 @@ namespace xemmai
 
 void t_array::f_resize()
 {
-	auto object = t_tuple::f_instantiate(v_size * 2);
 	auto& tuple0 = f_as<t_tuple&>(v_tuple);
-	auto& tuple1 = f_as<t_tuple&>(object);
-	for (size_t i = 0; i < v_size; ++i) new(&tuple1[i]) t_svalue(tuple0[v_head + i & v_mask]);
-	v_tuple = object;
+	v_tuple = t_tuple::f_instantiate(v_size * 2, [&](auto& tuple1)
+	{
+		for (size_t i = 0; i < v_size; ++i) new(&tuple1[i]) t_svalue(tuple0[v_head + i & v_mask]);
+		for (size_t i = v_size; i < v_size * 2; ++i) new(&tuple1[i]) t_svalue();
+	});
 	v_head = 0;
-	v_mask = tuple1.f_size() - 1;
+	v_mask = v_size * 2 - 1;
 }
 
 void t_array::f_grow()
 {
 	if (v_size <= 0) {
-		v_tuple = t_tuple::f_instantiate(4);
+		v_tuple = t_tuple::f_instantiate(4, [](auto& tuple)
+		{
+			for (size_t i = 0; i < 4; ++i) new(&tuple[i]) t_svalue();
+		});
 		v_mask = 3;
 	} else if (v_size >= f_as<t_tuple&>(v_tuple).f_size()) {
 		f_resize();

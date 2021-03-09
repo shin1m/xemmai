@@ -3,11 +3,6 @@
 namespace xemmai
 {
 
-t_object* t_tuple::f_instantiate(size_t a_size)
-{
-	return f_global()->f_type<t_tuple>()->f_new_sized<t_tuple>(true, sizeof(t_svalue) * a_size, a_size);
-}
-
 t_object* t_tuple::f_string() const
 {
 	std::vector<wchar_t> cs{L'\'', L'('};
@@ -113,9 +108,10 @@ void t_tuple::f_each(const t_pvalue& a_callable) const
 void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n)
 {
 	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
-	auto object = a_stack[1]->f_as<t_type>().f_new_sized<t_tuple>(true, sizeof(t_svalue) * a_n, a_n);
-	auto& tuple = object->f_as<t_tuple>();
+	auto object = f_engine()->f_allocate(true, sizeof(t_tuple) + sizeof(t_svalue) * a_n);
+	auto& tuple = *new(object->f_data()) t_tuple(a_n);
 	for (size_t i = 0; i < a_n; ++i) new(&tuple[i]) t_svalue(a_stack[i + 2]);
+	object->f_be(&a_stack[1]->f_as<t_type>());
 	a_stack[0] = object;
 }
 
@@ -140,10 +136,10 @@ void t_type_of<t_tuple>::f_define()
 
 t_pvalue t_type_of<t_tuple>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	auto object = f_new_sized<t_tuple>(true, sizeof(t_svalue) * a_n, a_n);
-	auto& tuple = object->f_as<t_tuple>();
-	for (size_t i = 0; i < a_n; ++i) new(&tuple[i]) t_svalue(a_stack[i + 2]);
-	return object;
+	return t_tuple::f_instantiate(a_n, [&](auto& tuple)
+	{
+		for (size_t i = 0; i < a_n; ++i) new(&tuple[i]) t_svalue(a_stack[i + 2]);
+	});
 }
 
 void t_type_of<t_tuple>::f_do_hash(t_object* a_this, t_pvalue* a_stack)

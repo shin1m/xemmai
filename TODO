@@ -1,4 +1,5 @@
-make t_tuple::f_instatiate not null clear.
+get rid of f_engine() in f_allocate().
+//make t_tuple require constructing elements.
 //further reduce code for stack estimation.
 //align catch <unknown>.
 //resolve race condition between t_hash::f_scan and t_hash::f_rehash.

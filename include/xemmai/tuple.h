@@ -9,14 +9,12 @@ namespace xemmai
 class t_tuple
 {
 	friend struct t_finalizes<t_bears<t_tuple, t_type_immutable>>;
-	friend struct t_type_of<t_object>;
+	friend struct t_type_of<t_tuple>;
 
 	size_t v_size;
 
 	t_tuple(size_t a_size) : v_size(a_size)
 	{
-		auto p = f_entries();
-		for (size_t i = 0; i < v_size; ++i) new(p + i) t_svalue();
 	}
 	~t_tuple() = default;
 	t_svalue* f_entries() const
@@ -25,7 +23,8 @@ class t_tuple
 	}
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_object* f_instantiate(size_t a_size);
+	template<typename T>
+	static t_object* f_instantiate(size_t a_size, T a_construct);
 
 	void f_scan(t_scan a_scan)
 	{
@@ -93,16 +92,17 @@ inline void f_tuple(t_tuple& a_tuple)
 template<size_t A_i, typename T_x, typename... T_xs>
 inline void f_tuple(t_tuple& a_tuple, T_x&& a_x, T_xs&&... a_xs)
 {
-	a_tuple[A_i] = std::forward<T_x>(a_x);
-	f_tuple<A_i + 1>(a_tuple, a_xs...);
+	new(&a_tuple[A_i]) t_svalue(std::forward<T_x>(a_x));
+	f_tuple<A_i + 1>(a_tuple, std::forward<T_xs>(a_xs)...);
 }
 
 template<typename... T_xs>
 inline t_object* f_tuple(T_xs&&... a_xs)
 {
-	auto object = t_tuple::f_instantiate(sizeof...(T_xs));
-	f_tuple<0>(object->f_as<t_tuple>(), a_xs...);
-	return object;
+	return t_tuple::f_instantiate(sizeof...(T_xs), [&](auto& tuple)
+	{
+		f_tuple<0>(tuple, std::forward<T_xs>(a_xs)...);
+	});
 }
 
 }

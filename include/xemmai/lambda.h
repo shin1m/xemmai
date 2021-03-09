@@ -139,14 +139,16 @@ struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>,
 			auto& t0 = f_as<const t_tuple&>(p.v_defaults);
 			auto t1 = a_stack + p.v_minimum + 2;
 			for (size_t i = a_n - p.v_minimum; i < t0.f_size(); ++i) t1[i] = t0[i];
-			if (p.v_variadic) a_stack[p.v_arguments + 1] = t_tuple::f_instantiate(0);
+			if (p.v_variadic) a_stack[p.v_arguments + 1] = t_tuple::f_instantiate(0, [](auto&)
+			{
+			});
 		} else if (p.v_variadic) {
 			size_t n = a_n - arguments;
-			auto x = t_tuple::f_instantiate(n);
 			auto t0 = a_stack + arguments + 2;
-			auto& t1 = f_as<t_tuple&>(x);
-			for (size_t i = 0; i < n; ++i) new(&t1[i]) t_svalue(t0[i]);
-			t0[0] = x;
+			t0[0] = t_tuple::f_instantiate(n, [&](auto& t1)
+			{
+				for (size_t i = 0; i < n; ++i) new(&t1[i]) t_svalue(t0[i]);
+			});
 		}
 		return p.template f_call<T_context>(a_stack);
 	}

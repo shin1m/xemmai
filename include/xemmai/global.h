@@ -915,6 +915,15 @@ intptr_t t_fiber::f_main(T_main a_main)
 	return n;
 }
 
+template<typename T>
+inline t_object* t_tuple::f_instantiate(size_t a_size, T a_construct)
+{
+	auto p = f_engine()->f_allocate(true, sizeof(t_tuple) + sizeof(t_svalue) * a_size);
+	a_construct(*new(p->f_data()) t_tuple(a_size));
+	p->f_be(f_global()->f_type<t_tuple>());
+	return p;
+}
+
 inline size_t t_code::f_loop(t_context& a_context)
 {
 	try {
