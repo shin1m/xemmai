@@ -180,10 +180,10 @@ class t_object
 	size_t v_cyclic;
 	size_t v_rank;
 	t_object* v_next_cycle;
-	t_type* v_type = nullptr;
-	decltype(t_slot::t_increments::v_instance) v_owner = nullptr;
+	t_type* v_type;
+	decltype(t_slot::t_increments::v_instance) v_owner;
 	t_structure* v_structure;
-	t_structure::t_fields* v_fields = nullptr;
+	t_structure::t_fields* v_fields;
 	t_lock v_lock;
 	char v_data[sizeof(void*) * 3];
 
