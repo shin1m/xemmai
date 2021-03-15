@@ -197,7 +197,7 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 
 t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_arguments) : v_object__heap([]
 {
-	v_instance->f_wait();
+	v_instance->f_tick();
 }), v_options(a_options)
 {
 	v_instance = this;
