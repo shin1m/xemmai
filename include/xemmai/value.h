@@ -240,22 +240,8 @@ public:
 	t_value(bool a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__BOOLEAN)), v_boolean(a_value)
 	{
 	}
-	t_value(short a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
-	{
-	}
-	t_value(unsigned short a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
-	{
-	}
-	t_value(int a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
-	{
-	}
-	t_value(unsigned a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
-	{
-	}
-	t_value(long a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
-	{
-	}
-	t_value(unsigned long a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
+	template<typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+	t_value(T a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
 	{
 	}
 	t_value(double a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__FLOAT)), v_float(a_value)

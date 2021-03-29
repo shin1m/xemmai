@@ -11,34 +11,16 @@ namespace xemmai
 class t_extension;
 class t_global;
 
-template<typename T>
+template<typename T, typename = void>
 struct t_fundamental
 {
 	using t_type = T;
 };
 
 template<typename T>
-struct t_fundamental<const T>
+struct t_fundamental<T, std::enable_if_t<std::disjunction_v<std::is_const<T>, std::is_pointer<T>, std::is_reference<T>>>>
 {
-	using t_type = typename t_fundamental<T>::t_type;
-};
-
-template<typename T>
-struct t_fundamental<T*>
-{
-	using t_type = typename t_fundamental<T>::t_type;
-};
-
-template<typename T>
-struct t_fundamental<T&>
-{
-	using t_type = typename t_fundamental<T>::t_type;
-};
-
-template<typename T>
-struct t_fundamental<T&&>
-{
-	using t_type = typename t_fundamental<T>::t_type;
+	using t_type = typename t_fundamental<std::remove_const_t<std::remove_pointer_t<std::remove_reference_t<T>>>>::t_type;
 };
 
 template<typename T_tag>

@@ -9,38 +9,8 @@
 namespace xemmai
 {
 
-template<>
-struct t_fundamental<short>
-{
-	using t_type = intptr_t;
-};
-
-template<>
-struct t_fundamental<unsigned short>
-{
-	using t_type = intptr_t;
-};
-
-template<>
-struct t_fundamental<int>
-{
-	using t_type = intptr_t;
-};
-
-template<>
-struct t_fundamental<unsigned>
-{
-	using t_type = intptr_t;
-};
-
-template<>
-struct t_fundamental<long>
-{
-	using t_type = intptr_t;
-};
-
-template<>
-struct t_fundamental<unsigned long>
+template<typename T>
+struct t_fundamental<T, std::enable_if_t<std::conjunction_v<std::is_same<T, std::remove_const_t<T>>, std::is_integral<T>, std::negation<std::is_same<T, bool>>>>>
 {
 	using t_type = intptr_t;
 };
