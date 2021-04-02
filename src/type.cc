@@ -3,8 +3,6 @@
 namespace xemmai
 {
 
-constexpr decltype(t_type::V_ids) t_type::V_ids;
-
 void t_type::f_initialize(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n)
 {
 	a_stack[0] = nullptr;

@@ -615,7 +615,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				++pc;
 				auto p = static_cast<t_object*>(stack[0]);
-				if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED_M1;
+				if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
 				if (p->f_type() == f_global()->f_type<t_method>())
 					stack[0] = f_as<t_method&>(p).f_function();
 				else if (!f_is<t_lambda>(p) && p->f_type() != f_global()->f_type<t_native>())
@@ -1318,8 +1318,6 @@ size_t t_code::f_loop(t_context* a_context)
 		}
 	}
 #endif
-label__THROW_NOT_SUPPORTED_M1:
-	--pc;
 label__THROW_NOT_SUPPORTED:
 	f_throw(L"not supported."sv);
 }

@@ -396,9 +396,6 @@ struct t_bears : t_derives<T, T_base>
 	using t_derives<T, T_base>::t_derives;
 };
 
-template<typename T, typename T_base>
-constexpr std::array<t_type_id, T_base::V_ids.size() + 1> t_bears<T, T_base>::V_ids;
-
 template<typename T_base>
 struct t_finalizes : T_base
 {
