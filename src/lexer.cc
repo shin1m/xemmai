@@ -10,10 +10,9 @@ void t_lexer::f_throw()
 
 void t_lexer::f_get()
 {
-	++v_p;
 	switch (v_c) {
 	case L'\n':
-		v_position = v_p;
+		v_position = std::ftell(v_stream);
 		++v_line;
 		v_column = 1;
 		break;

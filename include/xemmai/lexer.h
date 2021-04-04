@@ -80,7 +80,6 @@ private:
 
 	std::wstring v_path;
 	std::FILE* v_stream;
-	long v_p = 0;
 	long v_position = 0;
 	size_t v_line = 1;
 	size_t v_column = 1;
