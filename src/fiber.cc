@@ -1,7 +1,6 @@
 #include <xemmai/convert.h>
 #include <xemmai/io/file.h>
 #include <cstring>
-#include <sys/resource.h>
 
 namespace xemmai
 {
@@ -31,19 +30,22 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, size_t a_stack, size_t a_n) : 
 {
 	v_next = v_thread->v_internal->v_fibers;
 	v_thread->v_internal->v_fibers = this;
-	rlimit limit;
-	if (getrlimit(RLIMIT_STACK, &limit) == -1) throw std::system_error(errno, std::generic_category());
-	v_stack_buffer = std::make_unique<char[]>(limit.rlim_cur * a_n);
-	auto p = v_stack_buffer.get() + limit.rlim_cur;
+	auto limit = f_limit();
+	v_stack_buffer = std::make_unique<char[]>(limit * a_n);
+	auto p = v_stack_buffer.get() + limit;
 	v_stack_last_top = v_stack_last_bottom = reinterpret_cast<t_object**>(p);
-	v_stack_copy = reinterpret_cast<t_object**>(p + limit.rlim_cur);
+	v_stack_copy = reinterpret_cast<t_object**>(p + limit);
 }
 
 t_fiber::t_internal::t_internal(t_fiber* a_fiber, void* a_bottom) : t_internal(a_fiber, a_fiber->v_stack, 2)
 {
 	v_stack_bottom = reinterpret_cast<t_object**>(a_bottom);
+#ifdef _WIN32
+	v_handle = ConvertThreadToFiber(NULL);
+#endif
 }
 
+#ifdef __unix__
 t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber, a_fiber->v_stack, 3)
 {
 	auto n = v_stack_copy - v_stack_last_bottom;
@@ -54,6 +56,13 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 	v_context.uc_stack.ss_size = n * sizeof(t_object*);
 	makecontext(&v_context, a_f, 0);
 }
+#endif
+#ifdef _WIN32
+t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber, a_fiber->v_stack, 2)
+{
+	v_handle = CreateFiber(0, f_start, a_f);
+}
+#endif
 
 void t_fiber::t_internal::f_epoch_copy()
 {
@@ -162,9 +171,15 @@ void t_fiber::f_run()
 	auto& p = f_as<t_fiber&>(t_thread::v_current->v_thread->v_fiber);
 	p.v_throw = b;
 	*p.v_return = x;
-	f_stack__(p.v_internal->v_estack_used);
 	t_thread::v_current->v_active = &p;
+#ifdef __unix__
+	f_stack__(p.v_internal->v_estack_used);
 	setcontext(&p.v_internal->v_context);
+#endif
+#ifdef _WIN32
+	v_current = p.v_internal;
+	SwitchToFiber(p.v_internal->v_handle);
+#endif
 }
 
 void t_fiber::f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
@@ -214,9 +229,15 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 	auto q = t_thread::v_current->v_active;
 	q->v_internal->f_epoch_get();
 	q->v_return = a_stack;
-	f_stack__(p.v_internal->v_estack_used);
 	t_thread::v_current->v_active = &p;
+#ifdef __unix__
+	f_stack__(p.v_internal->v_estack_used);
 	swapcontext(&q->v_internal->v_context, &p.v_internal->v_context);
+#endif
+#ifdef _WIN32
+	t_fiber::v_current = p.v_internal;
+	SwitchToFiber(p.v_internal->v_handle);
+#endif
 	t_thread::v_current->v_mutex.unlock();
 	if (!q->v_throw) return -1;
 	q->v_throw = false;
@@ -247,5 +268,18 @@ const t_pvalue* t_context::f_variable(std::wstring_view a_name) const
 	for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
 	return reinterpret_cast<const t_pvalue*>(scope) + index;
 }
+
+#ifdef _WIN32
+t_pvalue* f_stack()
+{
+	return t_fiber::v_current->v_estack_used;
+}
+
+void f_stack__(t_pvalue* a_p)
+{
+	std::atomic_signal_fence(std::memory_order_release);
+	t_fiber::v_current->v_estack_used = a_p;
+}
+#endif
 
 }

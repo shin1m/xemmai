@@ -104,8 +104,13 @@ public:
 	{
 		return v_size;
 	}
-	intptr_t f_index(t_object* a_key, t_cache& a_cache) const;
+	XEMMAI__PORTABLE__EXPORT intptr_t f_index(t_object* a_key, t_cache& a_cache) const;
+#ifdef _WIN32
+	intptr_t f__index(t_object* a_key) const;
+	XEMMAI__PORTABLE__EXPORT intptr_t f_index(t_object* a_key) const;
+#else
 	intptr_t f_index(t_object* a_key) const;
+#endif
 	t_object* f_append(t_object* a_key);
 	t_object* f_remove(size_t a_index);
 };
@@ -352,7 +357,12 @@ public:
 	{
 		return v_type->f_derives(a_class);
 	}
+#ifdef _WIN32
+	XEMMAI__PORTABLE__EXPORT bool f_owned() const;
+	bool f__owned() const
+#else
 	bool f_owned() const
+#endif
 	{
 		return v_owner == t_slot::t_increments::v_instance;
 	}
@@ -512,7 +522,11 @@ inline t_structure::t_structure() : v_size(0), v_this(t_object::f_of(this))
 {
 }
 
+#ifdef _WIN32
+inline intptr_t t_structure::f__index(t_object* a_key) const
+#else
 inline intptr_t t_structure::f_index(t_object* a_key) const
+#endif
 {
 	auto p = t_object::f_of(const_cast<t_structure*>(this));
 	auto& cache = v_cache[t_cache::f_index(p, a_key)];

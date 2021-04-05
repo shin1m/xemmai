@@ -1,10 +1,10 @@
 x
-at .*/dump3\.xm:7:9
+at .*dump3\.xm:7:9
 				\(@ ""\.x\)\(
 				     \^
-from .*/dump3\.xm:7:12
+from .*dump3\.xm:7:12
 				\(@ ""\.x\)\(
 				        \^
-from .*/dump3\.xm:9:3
+from .*dump3\.xm:9:3
 		\)\(
 		 \^

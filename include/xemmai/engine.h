@@ -5,8 +5,10 @@
 #include "thread.h"
 #include <condition_variable>
 #include <csignal>
+#ifdef __unix__
 #include <unistd.h>
 #include <semaphore.h>
+#endif
 
 namespace xemmai
 {
@@ -32,9 +34,9 @@ class t_engine
 	friend struct t_thread;
 	friend struct t_type_of<t_thread>;
 	friend class t_symbol;
-	friend class t_code;
+	friend struct t_code;
 	friend struct t_safe_region;
-	friend t_engine* f_engine();
+	friend XEMMAI__PORTABLE__EXPORT t_engine* f_engine();
 
 public:
 	struct t_options
@@ -67,10 +69,12 @@ private:
 	std::mutex v_object__reviving__mutex;
 	size_t v_object__release = 0;
 	size_t v_object__collect = 0;
+#ifdef __unix__
 	sem_t v_epoch__received;
 	sigset_t v_epoch__notsigusr2;
 	struct sigaction v_epoch__old_sigusr1;
 	struct sigaction v_epoch__old_sigusr2;
+#endif
 	t_thread::t_internal* v_thread__internals = new t_thread::t_internal{nullptr};
 	size_t v_thread__cache_hit = 0;
 	size_t v_thread__cache_missed = 0;
@@ -126,6 +130,7 @@ private:
 		auto p = v_object__heap.f_find(a_p);
 		return p && p->v_type ? p : nullptr;
 	}
+#ifdef __unix__
 	void f_epoch_suspend()
 	{
 		if (sem_post(&v_epoch__received) == -1) _exit(errno);
@@ -137,6 +142,7 @@ private:
 		pthread_kill(a_thread, a_signal);
 		while (sem_wait(&v_epoch__received) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
 	}
+#endif
 	void f_collector();
 	void f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock);
 	void f_debug_enter_and_notify()
@@ -165,7 +171,12 @@ private:
 public:
 	t_engine(const t_options& a_options, size_t a_count, char** a_arguments);
 	~t_engine();
+#ifdef _WIN32
+	XEMMAI__PORTABLE__EXPORT t_object* f_allocate(bool a_shared, size_t a_size);
+	t_object* f__allocate(bool a_shared, size_t a_size)
+#else
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f_allocate(bool a_shared, size_t a_size)
+#endif
 	{
 		auto p = v_object__heap.f_allocate(sizeof(t_object) - sizeof(t_object::v_data) + a_size);
 		p->v_next = nullptr;
@@ -219,8 +230,8 @@ public:
 	void f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc);
 	void f_debug_safe_point();
 	void f_debug_break_point();
-	void f_debug_safe_region_enter();
-	void f_debug_safe_region_leave();
+	XEMMAI__PORTABLE__EXPORT void f_debug_safe_region_enter();
+	XEMMAI__PORTABLE__EXPORT void f_debug_safe_region_leave();
 	void f_debug_stop();
 	t_thread* f_debug_stepping() const
 	{
@@ -239,10 +250,12 @@ void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_mem
 	f_debug_wait_and_leave(a_lock);
 }
 
+#ifndef _WIN32
 inline t_engine* f_engine()
 {
 	return t_engine::v_instance;
 }
+#endif
 
 struct t_safe_region
 {
@@ -297,20 +310,31 @@ inline void t_object::f_decrement_step()
 
 inline void t_thread::t_internal::f_epoch_suspend()
 {
-#if WIN32
-	SuspendThread(v_handle);
-	f_epoch_get();
-#else
+#ifdef __unix__
 	f_engine()->f_epoch_send(v_handle, SIGUSR1);
+#endif
+#ifdef _WIN32
+	SuspendThread(v_handle);
+	CONTEXT context;
+	context.ContextFlags = CONTEXT_CONTROL;
+	GetThreadContext(v_handle, &context);
+	auto sp = reinterpret_cast<void*>(context.Rsp);
+	MEMORY_BASIC_INFORMATION mbi;
+	VirtualQuery(sp, &mbi, sizeof(mbi));
+	if (mbi.Protect & PAGE_GUARD) sp = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
+	v_active->v_internal->v_stack_top = static_cast<t_object**>(sp);
+	v_increments.v_epoch.store(v_increments.v_head, std::memory_order_relaxed);
+	v_decrements.v_epoch.store(v_decrements.v_head, std::memory_order_relaxed);
 #endif
 }
 
 inline void t_thread::t_internal::f_epoch_resume()
 {
-#if WIN32
-	ResumeThread(v_handle);
-#else
+#ifdef __unix__
 	f_engine()->f_epoch_send(v_handle, SIGUSR2);
+#endif
+#ifdef _WIN32
+	ResumeThread(v_handle);
 #endif
 }
 

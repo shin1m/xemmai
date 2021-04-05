@@ -4,13 +4,14 @@
 #include "lambda.h"
 #include <cassert>
 #ifdef __unix__
+#include <sys/resource.h>
 #include <ucontext.h>
 #endif
 
 namespace xemmai
 {
 
-class t_thread;
+struct t_thread;
 struct t_debug_context;
 void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column);
 
@@ -18,6 +19,29 @@ struct t_fiber
 {
 	struct t_internal
 	{
+		static size_t f_limit()
+		{
+#ifdef __unix__
+			rlimit limit;
+			if (getrlimit(RLIMIT_STACK, &limit) == -1) throw std::system_error(errno, std::generic_category());
+			return limit.rlim_cur;
+#endif
+#ifdef _WIN32
+			ULONG_PTR low;
+			ULONG_PTR high;
+			GetCurrentThreadStackLimits(&low, &high);
+			return high - low;
+#endif
+		}
+#ifdef _WIN32
+		static void CALLBACK f_start(PVOID a_f)
+		{
+			t_object* dummy = nullptr;
+			v_current->v_stack_bottom = &dummy;
+			reinterpret_cast<void (*)()>(a_f)();
+		}
+#endif
+
 		t_internal* v_next;
 		t_thread* v_thread;
 		t_fiber* v_fiber;
@@ -34,23 +58,40 @@ struct t_fiber
 		t_object** v_estack_last_head;
 		t_object** v_estack_last_used;
 		t_object** v_estack_decrements;
+#ifdef __unix__
 		ucontext_t v_context;
+#endif
+#ifdef _WIN32
+		LPVOID v_handle;
+#endif
 
 		t_internal(t_fiber* a_fiber, size_t a_stack, size_t a_n);
 		t_internal(t_fiber* a_fiber, void* a_bottom);
 		t_internal(t_fiber* a_fiber, void(*a_f)());
+#ifdef _WIN32
+		~t_internal()
+		{
+			if (v_handle != NULL) DeleteFiber(v_handle);
+		}
+#endif
 		void f_epoch_get()
 		{
 			t_object* dummy = nullptr;
 			v_stack_top = &dummy;
+#ifndef _WIN32
 			v_estack_used = v_stack_used;
+#endif
 		}
 		void f_epoch_copy();
 		void f_epoch_scan();
 		void f_epoch_decrement();
 	};
 
+#ifdef _WIN32
+	static inline XEMMAI__PORTABLE__THREAD t_internal* v_current;
+#else
 	static inline XEMMAI__PORTABLE__THREAD t_pvalue* v_stack_used;
+#endif
 
 	static t_object* f_current();
 	static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
@@ -87,6 +128,10 @@ struct t_type_of<t_fiber> : t_underivable<t_holds<t_fiber>>
 	static size_t f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n);
 };
 
+#ifdef _WIN32
+XEMMAI__PORTABLE__EXPORT t_pvalue* f_stack();
+XEMMAI__PORTABLE__EXPORT void f_stack__(t_pvalue* a_p);
+#else
 inline t_pvalue* f_stack()
 {
 	return t_fiber::v_stack_used;
@@ -97,6 +142,7 @@ inline void f_stack__(t_pvalue* a_p)
 	std::atomic_signal_fence(std::memory_order_release);
 	t_fiber::v_stack_used = a_p;
 }
+#endif
 
 struct t_context
 {

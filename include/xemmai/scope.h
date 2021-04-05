@@ -9,8 +9,8 @@ namespace xemmai
 class t_scope
 {
 	friend class t_lambda_shared;
-	friend class t_type_of<t_object>;
-	friend class t_type_of<t_scope>;
+	friend struct t_type_of<t_object>;
+	friend struct t_type_of<t_scope>;
 
 	size_t v_size;
 	t_slot v_outer;

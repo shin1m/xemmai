@@ -14,7 +14,7 @@ using namespace std::literals;
 template<typename> struct t_type_of;
 class t_object;
 class t_engine;
-t_engine* f_engine();
+XEMMAI__PORTABLE__EXPORT t_engine* f_engine();
 
 using t_type = t_type_of<t_object>;
 
@@ -30,7 +30,7 @@ enum t_tag
 class t_slot
 {
 	friend class t_object;
-	friend class t_thread;
+	friend struct t_thread;
 	friend class t_engine;
 
 protected:
@@ -40,17 +40,33 @@ protected:
 		static constexpr size_t V_SIZE = A_SIZE;
 
 		static inline XEMMAI__PORTABLE__THREAD t_queue* v_instance;
+#ifdef _WIN32
+		t_object* volatile* v_head;
+#else
 		static inline XEMMAI__PORTABLE__THREAD t_object* volatile* v_head;
+#endif
 		static inline XEMMAI__PORTABLE__THREAD t_object* volatile* v_next;
 
+#ifdef _WIN32
+		static void f__push(t_object* a_object)
+#else
 		XEMMAI__PORTABLE__ALWAYS_INLINE static void f_push(t_object* a_object)
+#endif
 		{
+#ifdef _WIN32
+			auto p = v_instance->v_head;
+#else
 			auto p = v_head;
+#endif
 			*p = a_object;
 			if (p == v_next)
 				v_instance->f_next();
 			else
+#ifdef _WIN32
+				[[likely]] v_instance->v_head = p + 1;
+#else
 				[[likely]] v_head = p + 1;
+#endif
 		}
 
 		t_object* volatile v_objects[V_SIZE];
@@ -88,6 +104,9 @@ protected:
 	struct t_increments : t_queue<128>
 #endif
 	{
+#ifdef _WIN32
+		static XEMMAI__PORTABLE__EXPORT void f_push(t_object* a_object);
+#endif
 		void f_flush()
 		{
 			this->f__flush(this->v_epoch.load(std::memory_order_acquire), [](auto x)
@@ -104,6 +123,9 @@ protected:
 	{
 		t_object* volatile* v_last = this->v_objects;
 
+#ifdef _WIN32
+		static XEMMAI__PORTABLE__EXPORT void f_push(t_object* a_object);
+#endif
 		void f_flush()
 		{
 			this->f__flush(v_last, [](auto x)
@@ -178,7 +200,7 @@ struct t_root : t_slot
 class t_pointer
 {
 	template<typename> friend class t_value;
-	friend class t_code;
+	friend struct t_code;
 
 	t_object* v_p;
 
@@ -210,14 +232,14 @@ public:
 	}
 };
 
-void f_throw [[noreturn]] (std::wstring_view a_message);
+void XEMMAI__PORTABLE__EXPORT f_throw [[noreturn]] (std::wstring_view a_message);
 
 template<typename T_tag>
 class t_value : public T_tag
 {
 	template<typename> friend class t_value;
 	template<typename> friend struct t_type_of;
-	friend class t_code;
+	friend struct t_code;
 
 	union
 	{

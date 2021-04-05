@@ -31,10 +31,11 @@ t_path::t_path(std::wstring_view a_path)
 #ifdef _WIN32
 t_path::t_path(std::wstring_view a_path)
 {
-	DWORD n = GetFullPathNameW(std::wstring(a_path).c_str(), 0, NULL, NULL);
+	std::wstring path(a_path);
+	DWORD n = GetFullPathNameW(path.c_str(), 0, NULL, NULL);
 	std::vector<wchar_t> cs(n);
 	wchar_t* p;
-	GetFullPathNameW(a_path.c_str(), n, &cs[0], &p);
+	GetFullPathNameW(path.c_str(), n, &cs[0], &p);
 	v_path = &cs[0];
 }
 #endif
@@ -89,14 +90,20 @@ std::wstring f_convert(std::string_view a_string)
 	return cs.data();
 }
 
-#ifdef __unix__
 std::wstring f_executable_path()
 {
+#ifdef __unix__
 	char cs[PATH_MAX];
 	auto n = readlink("/proc/self/exe", cs, sizeof(cs));
 	if (n == -1) throw std::system_error(errno, std::generic_category());
 	return portable::f_convert({cs, static_cast<size_t>(n)});
-}
 #endif
+#ifdef _WIN32
+	wchar_t cs[MAX_PATH];
+	auto n = GetModuleFileNameW(NULL, cs, MAX_PATH);
+	if (n == 0) throw std::system_error(GetLastError(), std::system_category());
+	return {cs, n};
+#endif
+}
 
 }

@@ -9,6 +9,9 @@
 #include <unistd.h>
 #include <signal.h>
 #endif
+#ifdef _WIN32
+#include <io.h>
+#endif
 
 namespace
 {
@@ -453,7 +456,11 @@ int main(int argc, char* argv[])
 {
 	std::setlocale(LC_ALL, "");
 	t_engine::t_options options;
+#ifdef _WIN32
+	const char* debug = nullptr;
+#else
 	int debug = -1;
+#endif
 	{
 		char** end = argv + argc;
 		char** q = argv;
@@ -465,8 +472,12 @@ int main(int argc, char* argv[])
 				} else if (std::strncmp(v, "collector-threshold=", 20) == 0) {
 					std::sscanf(v + 20, "%zu", &options.v_collector__threshold);
 				} else if (std::strncmp(v, "debug", 5) == 0) {
+#ifdef _WIN32
+					debug = v[5] == '=' ? v + 6 : v + 5;
+#else
 					debug = 2;
 					if (v[5] == '=') std::sscanf(v + 6, "%u", &debug);
+#endif
 				}
 			} else {
 				*q++ = *p;
@@ -478,17 +489,24 @@ int main(int argc, char* argv[])
 		std::fprintf(stderr, "usage: %s [options] <script> ...\n", argv[0]);
 		return -1;
 	}
-	if (debug >= 0) {
 #ifdef __unix__
+	if (debug >= 0) {
 		sigset_t set;
 		sigemptyset(&set);
 		sigaddset(&set, SIGINT);
 		pthread_sigmask(SIG_BLOCK, &set, NULL);
-#endif
 	}
+#endif
 	xemmai::t_engine engine(options, argc, argv);
+#ifdef _WIN32
+	if (!debug) return static_cast<int>(engine.f_run(nullptr));
+	auto fd = debug[0] ? creat(debug, S_IREAD | S_IWRITE) : dup(2);
+	if (fd == -1) throw std::system_error(errno, std::generic_category());
+	io::t_file out(fd, "w");
+#else
 	if (debug < 0) return static_cast<int>(engine.f_run(nullptr));
 	io::t_file out(debug == 2 ? dup(2) : debug, "w");
+#endif
 	::t_debugger debugger(engine, out);
 	return static_cast<int>(engine.f_run(&debugger));
 }

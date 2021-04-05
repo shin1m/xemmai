@@ -1,12 +1,9 @@
 #ifndef XEMMAI__PORTABLE__LIBRARY_H
 #define XEMMAI__PORTABLE__LIBRARY_H
 
+#include "convert.h"
 #ifdef __unix__
 #include <dlfcn.h>
-#include "convert.h"
-#endif
-#ifdef _WIN32
-#include <windows.h>
 #endif
 #include <cstdio>
 #include <string>

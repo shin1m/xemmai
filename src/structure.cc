@@ -80,4 +80,11 @@ void t_type_of<t_structure>::f_do_finalize(t_object* a_this)
 	if (p.v_parent) p.v_parent->f_as<t_structure>().v_children.erase(p.v_iterator);
 }
 
+#ifdef _WIN32
+intptr_t t_structure::f_index(t_object* a_key) const
+{
+	return f__index(a_key);
+}
+#endif
+
 }

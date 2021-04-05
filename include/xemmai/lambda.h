@@ -119,7 +119,7 @@ class t_advanced_lambda : public T_base
 template<typename T_base>
 struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>, t_type_of<T_base>>
 {
-	using t_type_of::t_base::t_base;
+	using t_holds<t_advanced_lambda<T_base>, t_type_of<T_base>>::t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
 		t_type_of::t_base::f_do_scan(a_this, a_scan);

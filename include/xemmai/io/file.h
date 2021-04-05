@@ -29,10 +29,8 @@ public:
 	}
 	t_file(std::wstring_view a_path, const char* a_mode);
 	t_file(std::wstring_view a_path, std::wstring_view a_mode);
-#ifdef __unix__
 	t_file(int a_fd, const char* a_mode);
 	t_file(int a_fd, std::wstring_view a_mode);
-#endif
 	~t_file()
 	{
 		if (v_stream != NULL && v_own) std::fclose(v_stream);

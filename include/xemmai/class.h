@@ -22,7 +22,7 @@ struct t_type_of<t_type> : t_underivable<t_bears<t_type>>
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 	void f_do_get_nonowned(t_object* a_this, t_object* a_key, t_pvalue* a_stack);
-	t_pvalue f_do_get(t_object* a_this, t_object* a_key);
+	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_get(t_object* a_this, t_object* a_key);
 	static void f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value);
 	static t_pvalue f_do_remove(t_object* a_this, t_object* a_key);
 	static void f_do_call_nonowned(t_object* a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n);

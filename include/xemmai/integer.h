@@ -130,7 +130,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t, t_type_immutable>>
 	static void f_define();
 
 	using t_base::t_base;
-	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 }

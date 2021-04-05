@@ -37,10 +37,11 @@ struct t_thread
 		std::mutex v_mutex;
 		t_fiber::t_internal* v_fibers = nullptr;
 		t_fiber* v_active;
-#if WIN32
-		HANDLE v_handle;
-#else
+#ifdef __unix__
 		pthread_t v_handle;
+#endif
+#ifdef _WIN32
+		HANDLE v_handle = NULL;
 #endif
 		t_object* volatile* v_reviving = nullptr;
 		t_structure::t_cache v_index_cache[t_structure::t_cache::V_SIZE];
@@ -48,6 +49,12 @@ struct t_thread
 		size_t v_cache_hit = 0;
 		size_t v_cache_missed = 0;
 
+#ifdef _WIN32
+		~t_internal()
+		{
+			if (v_handle != NULL) CloseHandle(v_handle);
+		}
+#endif
 		void f_initialize();
 		void f_initialize(t_thread* a_thread, void* a_bottom);
 		void f_epoch_get()

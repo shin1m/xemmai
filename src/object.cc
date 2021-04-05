@@ -84,4 +84,11 @@ void t_object::f_field_remove(size_t a_index)
 	}
 }
 
+#ifdef _WIN32
+bool t_object::f_owned() const
+{
+	return f__owned();
+}
+#endif
+
 }

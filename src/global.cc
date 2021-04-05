@@ -175,7 +175,7 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_string_empty);
 }
 
-#ifndef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+#ifdef _WIN32
 t_global* f_global()
 {
 	return t_global::v_instance;

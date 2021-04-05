@@ -201,6 +201,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 }), v_options(a_options)
 {
 	v_instance = this;
+#ifdef __unix__
 	if (sem_init(&v_epoch__received, 0, 0) == -1) throw std::system_error(errno, std::generic_category());
 	sigfillset(&v_epoch__notsigusr2);
 	sigdelset(&v_epoch__notsigusr2, SIGUSR2);
@@ -218,6 +219,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	};
 	sigaddset(&sa.sa_mask, SIGUSR2);
 	if (sigaction(SIGUSR1, &sa, &v_epoch__old_sigusr1) == -1) throw std::system_error(errno, std::generic_category());
+#endif
 	v_thread__internals->f_initialize();
 	{
 		std::unique_lock lock(v_collector__mutex);
@@ -356,9 +358,11 @@ t_engine::~t_engine()
 		do v_collector__done.wait(lock); while (v_collector__running);
 	}
 	assert(!v_thread__internals);
+#ifdef __unix__
 	if (sem_destroy(&v_epoch__received) == -1) std::exit(errno);
 	if (sigaction(SIGUSR1, &v_epoch__old_sigusr1, NULL) == -1) std::exit(errno);
 	if (sigaction(SIGUSR2, &v_epoch__old_sigusr2, NULL) == -1) std::exit(errno);
+#endif
 	if (v_options.v_verbose) {
 		std::fprintf(stderr, "statistics:\n\tobject:\n");
 		size_t allocated = 0;
@@ -557,5 +561,27 @@ void t_engine::f_debug_continue(t_thread* a_stepping)
 	v_debug__stepping = a_stepping;
 	v_thread__condition.notify_all();
 }
+
+#ifdef _WIN32
+void t_slot::t_increments::f_push(t_object* a_object)
+{
+	f__push(a_object);
+}
+
+void t_slot::t_decrements::f_push(t_object* a_object)
+{
+	f__push(a_object);
+}
+
+t_object* t_engine::f_allocate(bool a_shared, size_t a_size)
+{
+	return f__allocate(a_shared, a_size);
+}
+
+t_engine* f_engine()
+{
+	return t_engine::v_instance;
+}
+#endif
 
 }

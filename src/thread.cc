@@ -17,10 +17,10 @@ size_t t_thread::t_cache::f_revise(size_t a_i)
 void t_thread::t_internal::f_initialize()
 {
 	t_slot::t_increments::v_instance = &v_increments;
-	t_slot::t_increments::v_head = v_increments.v_objects;
+	v_increments.v_head = v_increments.v_objects;
 	t_slot::t_increments::v_next = v_increments.v_objects + t_slot::t_increments::V_SIZE / 8;
 	t_slot::t_decrements::v_instance = &v_decrements;
-	t_slot::t_decrements::v_head = v_decrements.v_objects;
+	v_decrements.v_head = v_decrements.v_objects;
 	t_slot::t_decrements::v_next = v_decrements.v_objects + t_slot::t_decrements::V_SIZE / 8;
 }
 
@@ -30,11 +30,13 @@ void t_thread::t_internal::f_initialize(t_thread* a_thread, void* a_bottom)
 	v_current = v_thread->v_internal;
 	v_active = &f_as<t_fiber&>(v_thread->v_fiber);
 	v_active->v_internal = new t_fiber::t_internal(v_active, a_bottom);
+#ifdef __unix__
 	f_stack__(v_active->v_internal->v_estack_used);
-#if WIN32
-	v_handle = GetCurrentThread();
-#else
 	v_handle = pthread_self();
+#endif
+#ifdef _WIN32
+	t_fiber::v_current = v_active->v_internal;
+	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &v_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
 #endif
 	t_structure::v_cache = v_index_cache;
 	t_thread::v_cache = v_cache;

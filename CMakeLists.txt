@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(xemmai VERSION 202102)
+find_package(Iconv REQUIRED)
+find_package(Threads REQUIRED)
 set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
 add_subdirectory(src)
 add_subdirectory(modules)

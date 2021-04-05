@@ -19,12 +19,8 @@ class t_bytes;
 class t_global : public t_extension
 {
 	friend struct t_type_of<t_dictionary>;
-	friend struct t_engine;
-#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
-	friend t_global* f_global();
-#else
+	friend class t_engine;
 	friend XEMMAI__PORTABLE__EXPORT t_global* f_global();
-#endif
 
 	static inline XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
@@ -425,7 +421,7 @@ inline t_slot_of<t_type>& t_global::f_type_slot<t_parser::t_error>()
 	return v_type_parser__error;
 }
 
-#ifdef XEMMAI__PORTABLE__SUPPORTS_THREAD_EXPORT
+#ifndef _WIN32
 inline t_global* f_global()
 {
 	return t_global::v_instance;
@@ -907,10 +903,20 @@ intptr_t t_fiber::f_main(T_main a_main)
 		if (p == fiber.v_internal) break;
 		p->v_fiber->v_throw = true;
 		*p->v_fiber->v_return = f_engine()->v_fiber_exit;
-		f_stack__(p->v_estack_used);
 		t_thread::v_current->v_active = p->v_fiber;
+#ifdef __unix__
+		f_stack__(p->v_estack_used);
 		swapcontext(&fiber.v_internal->v_context, &p->v_context);
+#endif
+#ifdef _WIN32
+		v_current = p;
+		SwitchToFiber(p->v_handle);
+#endif
 	}
+#ifdef _WIN32
+	fiber.v_internal->v_handle = NULL;
+	ConvertFiberToThread();
+#endif
 	t_thread::v_current->v_mutex.unlock();
 	return n;
 }

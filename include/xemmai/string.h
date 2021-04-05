@@ -23,7 +23,7 @@ class t_string
 	}
 
 public:
-	static t_object* f_instantiate(const wchar_t* a_p, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(const wchar_t* a_p, size_t a_n);
 	static t_object* f_instantiate(std::wstring_view a_value)
 	{
 		return f_instantiate(a_value.data(), a_value.size());

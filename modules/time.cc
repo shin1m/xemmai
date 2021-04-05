@@ -117,7 +117,12 @@ t_object* f_decompose(double a_value)
 intptr_t f_offset()
 {
 	tzset();
+#ifdef __unix__
 	return -timezone;
+#endif
+#ifdef _WIN32
+	return -_timezone;
+#endif
 }
 
 intptr_t f_month_name_to_number(const wchar_t* a_name)
