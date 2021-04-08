@@ -318,11 +318,18 @@ inline void t_thread::t_internal::f_epoch_suspend()
 	CONTEXT context;
 	context.ContextFlags = CONTEXT_CONTROL;
 	GetThreadContext(v_handle, &context);
-	auto sp = reinterpret_cast<void*>(context.Rsp);
+	auto sp = reinterpret_cast<t_object**>(context.Rsp);
 	MEMORY_BASIC_INFORMATION mbi;
-	VirtualQuery(sp, &mbi, sizeof(mbi));
-	if (mbi.Protect & PAGE_GUARD) sp = static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize;
-	v_active->v_internal->v_stack_top = static_cast<t_object**>(sp);
+	for (auto p = sp;;) {
+		VirtualQuery(p, &mbi, sizeof(mbi));
+		p = reinterpret_cast<t_object**>(static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize);
+		if (mbi.Protect & PAGE_GUARD) {
+			sp = p;
+			break;
+		}
+		if (p >= v_active->v_internal->v_stack_bottom) break;
+	}
+	v_active->v_internal->v_stack_top = sp;
 	v_increments.v_epoch.store(v_increments.v_head, std::memory_order_relaxed);
 	v_decrements.v_epoch.store(v_decrements.v_head, std::memory_order_relaxed);
 #endif
