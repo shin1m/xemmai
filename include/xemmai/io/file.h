@@ -17,6 +17,7 @@ class t_file
 {
 	friend struct t_type_of<t_file>;
 
+	t_lock v_lock;
 	std::FILE* v_stream;
 	bool v_own = false;
 
@@ -42,6 +43,7 @@ public:
 	void f_reopen(std::wstring_view a_path, std::wstring_view a_mode);
 	void f_close()
 	{
+		t_scoped_lock_for_write lock(v_lock);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		if (!v_own) f_throw(L"can not close unown."sv);
 		std::fclose(v_stream);
@@ -49,11 +51,13 @@ public:
 	}
 	void f_seek(intptr_t a_offset, int a_whence)
 	{
+		t_scoped_lock_for_write lock(v_lock);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		if (std::fseek(v_stream, a_offset, a_whence) == -1) f_throw(L"failed to seek."sv);
 	}
-	intptr_t f_tell() const
+	intptr_t f_tell()
 	{
+		t_scoped_lock_for_read lock(v_lock);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		intptr_t n = std::ftell(v_stream);
 		if (n == -1) f_throw(L"failed to tell."sv);
@@ -63,12 +67,13 @@ public:
 	XEMMAI__PORTABLE__EXPORT void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	void f_flush()
 	{
+		t_scoped_lock_for_write lock(v_lock);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		std::fflush(v_stream);
 	}
-	bool f_tty() const;
+	bool f_tty();
 #ifdef __unix__
-	bool f_blocking() const;
+	bool f_blocking();
 	void f_blocking__(bool a_value);
 #endif
 };
@@ -78,9 +83,9 @@ public:
 template<>
 struct t_type_of<io::t_file> : t_derivable<t_holds<io::t_file>>
 {
-	using t_extension = t_io;
+	using t_library = t_io;
 
-	static void f_define(t_io* a_extension);
+	static void f_define(t_io* a_library);
 
 	using t_base::t_base;
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);

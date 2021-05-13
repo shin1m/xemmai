@@ -26,14 +26,13 @@ t_object* t_bytes::f_string() const
 
 void t_type_of<t_bytes>::f_define()
 {
-	t_define<t_bytes, t_object>(f_global(), L"Bytes"sv)
-		(t_construct_with<t_pvalue(*)(t_type*, size_t), f__construct>())
+	t_define<t_bytes, t_object>{f_global()}
 		(f_global()->f_symbol_string(), t_member<t_object*(t_bytes::*)() const, &t_bytes::f_string>())
 		(f_global()->f_symbol_get_at(), t_member<intptr_t(t_bytes::*)(intptr_t) const, &t_bytes::f_get_at>())
 		(f_global()->f_symbol_set_at(), t_member<intptr_t(t_bytes::*)(intptr_t, intptr_t), &t_bytes::f_set_at>())
 		(L"size"sv, t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())
 		(L"copy"sv, t_member<void(t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<t_bytes>::f_do_construct(t_pvalue* a_stack, size_t a_n)

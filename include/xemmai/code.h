@@ -2,7 +2,6 @@
 #define XEMMAI__CODE_H
 
 #include "object.h"
-#include <vector>
 
 namespace xemmai
 {
@@ -20,22 +19,19 @@ enum t_instruction
 	e_instruction__YRT,
 	e_instruction__THROW,
 	e_instruction__OBJECT_GET,
-	e_instruction__OBJECT_GET_MONOMORPHIC_CLASS,
 	e_instruction__OBJECT_GET_MONOMORPHIC_INSTANCE,
+	e_instruction__OBJECT_GET_MONOMORPHIC_CLASS,
 	e_instruction__OBJECT_GET_MEGAMORPHIC,
 	e_instruction__OBJECT_GET_INDIRECT,
 	e_instruction__OBJECT_PUT,
-	e_instruction__OBJECT_PUT_MONOMORPHIC_ADD,
 	e_instruction__OBJECT_PUT_MONOMORPHIC_SET,
 	e_instruction__OBJECT_PUT_MEGAMORPHIC,
 	e_instruction__OBJECT_PUT_INDIRECT,
 	e_instruction__OBJECT_HAS,
 	e_instruction__OBJECT_HAS_INDIRECT,
-	e_instruction__OBJECT_REMOVE,
-	e_instruction__OBJECT_REMOVE_INDIRECT,
 	e_instruction__METHOD_GET,
-	e_instruction__METHOD_GET_MONOMORPHIC_CLASS,
 	e_instruction__METHOD_GET_MONOMORPHIC_INSTANCE,
+	e_instruction__METHOD_GET_MONOMORPHIC_CLASS,
 	e_instruction__METHOD_GET_MEGAMORPHIC,
 	e_instruction__METHOD_BIND,
 	e_instruction__GLOBAL_GET,
@@ -124,7 +120,6 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_BINARY(AND)
 	XEMMAI__CODE__INSTRUCTION_BINARY(XOR)
 	XEMMAI__CODE__INSTRUCTION_BINARY(OR)
-	e_instruction__SEND,
 	e_instruction__CALL_TAIL,
 	e_instruction__CALL_WITH_EXPANSION_TAIL,
 	e_instruction__STACK_CALL_TAIL,
@@ -155,7 +150,6 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_BINARY(AND_TAIL)
 	XEMMAI__CODE__INSTRUCTION_BINARY(XOR_TAIL)
 	XEMMAI__CODE__INSTRUCTION_BINARY(OR_TAIL)
-	e_instruction__SEND_TAIL,
 	e_instruction__END,
 	e_instruction__SAFE_POINT,
 	e_instruction__BREAK_POINT
@@ -196,7 +190,7 @@ struct t_code
 	};
 
 	static void f_object_get(t_pvalue* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
-	static void f_object_put(t_pvalue* a_base, void**& a_pc, void* a_add, void* a_set, void* a_megamorphic);
+	static void f_object_put(t_pvalue* a_base, void**& a_pc, void* a_set, void* a_megamorphic);
 	static void f_method_get(t_pvalue* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
@@ -244,7 +238,7 @@ struct t_code
 };
 
 template<>
-struct t_type_of<t_code> : t_uninstantiatable<t_underivable<t_finalizes<t_derives<t_code>>>>
+struct t_type_of<t_code> : t_uninstantiatable<t_finalizes<t_derives<t_code>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

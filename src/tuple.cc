@@ -105,21 +105,9 @@ void t_tuple::f_each(const t_pvalue& a_callable) const
 	}
 }
 
-void t_type_of<t_tuple>::f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n)
-{
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
-	auto object = f_engine()->f_allocate(true, sizeof(t_tuple) + sizeof(t_svalue) * a_n);
-	auto& tuple = *new(object->f_data()) t_tuple(a_n);
-	for (size_t i = 0; i < a_n; ++i) new(&tuple[i]) t_svalue(a_stack[i + 2]);
-	object->f_be(&a_stack[1]->f_as<t_type>());
-	a_stack[0] = object;
-}
-
 void t_type_of<t_tuple>::f_define()
 {
-	v_builtin = true;
-	t_define<t_tuple, t_object>(f_global(), L"Tuple"sv, t_object::f_of(this))
-		(f_global()->f_symbol_construct(), f__construct)
+	t_define<t_tuple, t_object>{f_global()}
 		(f_global()->f_symbol_string(), t_member<t_object*(t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_tuple::*)() const, &t_tuple::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_svalue&(t_tuple::*)(size_t) const, &t_tuple::f_get_at>())
@@ -131,7 +119,7 @@ void t_type_of<t_tuple>::f_define()
 		(f_global()->f_symbol_not_equals(), t_member<bool(t_tuple::*)(const t_pvalue&) const, &t_tuple::f_not_equals>())
 		(f_global()->f_symbol_size(), t_member<size_t(t_tuple::*)() const, &t_tuple::f_size>())
 		(L"each"sv, t_member<void(t_tuple::*)(const t_pvalue&) const, &t_tuple::f_each>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<t_tuple>::f_do_construct(t_pvalue* a_stack, size_t a_n)

@@ -57,7 +57,6 @@ class t_parser
 	std::unique_ptr<ast::t_node> f_or(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_and_also(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_or_else(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_send(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_conditional(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_expression();
 	bool f_expressions(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
@@ -109,7 +108,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_parser::t_error> : t_uninstantiatable<t_underivable<t_bears<t_parser::t_error, t_type_of<t_throwable>>>>
+struct t_type_of<t_parser::t_error> : t_uninstantiatable<t_bears<t_parser::t_error, t_type_of<t_throwable>>>
 {
 	using t_base::t_base;
 };

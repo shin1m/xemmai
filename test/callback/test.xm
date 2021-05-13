@@ -2,10 +2,10 @@ system = Module("system"
 callback = Module("callback"
 write = system.out.write
 
-Derived = Class(callback.Client) :: @
+Derived = callback.Client + @
 	$on_message = @(message)
 		write("Derived.on_message(\n\t"
-		:$^on_message[$](message
+		callback.Client.on_message[$](message
 		write(")\n"
 
 client0 = callback.Client(

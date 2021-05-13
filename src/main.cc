@@ -37,7 +37,7 @@ class t_debugger : public xemmai::t_debugger
 	std::mutex v_mutex;
 	std::condition_variable v_posted;
 	t_thread* v_stopped = nullptr;
-	t_thread* v_loaded = nullptr;
+	t_debug_script* v_loaded = nullptr;
 	std::map<std::wstring, std::set<size_t>, std::less<>> v_break_points;
 	bool v_interrupted = false;
 #ifdef __unix__
@@ -95,8 +95,9 @@ class t_debugger : public xemmai::t_debugger
 	t_debug_script* f_find_module(std::wstring_view a_path)
 	{
 		for (auto& pair : v_engine.f_modules()) {
-			if (!pair.second) continue;
-			auto debug = dynamic_cast<t_debug_script*>(&f_as<t_module&>(pair.second));
+			auto& body = pair.second->f_as<t_module>().v_body;
+			if (!body) continue;
+			auto debug = dynamic_cast<t_debug_script*>(&body->f_as<t_module::t_body>());
 			if (debug && debug->v_path == a_path) return debug;
 		}
 		return nullptr;
@@ -112,17 +113,13 @@ class t_debugger : public xemmai::t_debugger
 		if (i == v_break_points.end() || i->first != a_path) i = v_break_points.emplace_hint(i, a_path, std::set<size_t>());
 		i->second.insert(a_line);
 	}
-	void f_set_break_points()
+	void f_set_break_points(t_debug_script* a_debug)
 	{
-		for (auto& pair : v_engine.f_modules()) {
-			if (!pair.second) continue;
-			auto debug = dynamic_cast<t_debug_script*>(&f_as<t_module&>(pair.second));
-			if (!debug) continue;
-			auto i = v_break_points.find(debug->v_path);
-			if (i == v_break_points.end()) continue;
+		auto i = v_break_points.find(a_debug->v_path);
+		if (i != v_break_points.end()) {
 			std::set<size_t> lines;
 			for (auto line : i->second) {
-				line = debug->f_set_break_point(line).first;
+				line = a_debug->f_set_break_point(line).first;
 				if (line > 0) lines.insert(line);
 			}
 			if (lines.empty())
@@ -208,13 +205,13 @@ class t_debugger : public xemmai::t_debugger
 			std::fprintf(v_out, "@%p", static_cast<t_object*>(a_value));
 			if (--a_depth > 0) {
 				std::fputc('(', v_out);
-				auto p = static_cast<t_object*>(a_value);
-				size_t n = p->f_field_size();
+				auto type = a_value->f_type();
+				auto n = type->v_instance_fields;
 				if (n > 0) {
 					size_t i = 0;
 					while (true) {
-						std::fprintf(v_out, "%ls: ", f_as<t_symbol&>(p->f_field_key(i)).f_string().c_str());
-						f_print_value(p->f_field_get(i), a_depth);
+						std::fprintf(v_out, "%ls: ", f_as<t_symbol&>(type->f_fields()[i].first).f_string().c_str());
+						f_print_value(a_value->f_fields()[i], a_depth);
 						if (++i >= n) break;
 						std::fputs(", ", v_out);
 					}
@@ -380,7 +377,7 @@ class t_debugger : public xemmai::t_debugger
 	{
 		while (true) {
 			t_thread* stopped = nullptr;
-			t_thread* loaded = nullptr;
+			t_debug_script* loaded = nullptr;
 			bool interrupted = false;
 			{
 				std::unique_lock lock(v_mutex);
@@ -396,7 +393,7 @@ class t_debugger : public xemmai::t_debugger
 			if (stopped)
 				f_prompt(stopped);
 			else if (loaded)
-				f_set_break_points();
+				f_set_break_points(loaded);
 			else
 				v_engine.f_debug_stop();
 		}
@@ -442,10 +439,10 @@ public:
 		v_stopped = a_thread;
 		v_posted.notify_one();
 	}
-	virtual void f_loaded(t_thread* a_thread)
+	virtual void f_loaded(t_debug_script& a_debug)
 	{
 		std::lock_guard lock(v_mutex);
-		v_loaded = a_thread;
+		v_loaded = &a_debug;
 		v_posted.notify_one();
 	}
 };

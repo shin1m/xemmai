@@ -7,13 +7,21 @@
 namespace xemmai
 {
 
-struct t_time : t_extension
+namespace
+{
+
+double f_now();
+
+}
+
+struct t_time : t_library
 {
 #ifdef __unix__
-	double v_tick_base;
+	double v_tick_base = f_now();
 #endif
 
-	t_time(t_object* a_module);
+	using t_library::t_library;
+	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan)
 	{
 	}
@@ -49,10 +57,10 @@ double f_now()
 #endif
 }
 
-intptr_t f_tick(t_time* a_extension)
+intptr_t f_tick(t_time* a_library)
 {
 #ifdef __unix__
-	return (f_now() - a_extension->v_tick_base) * 1000.0;
+	return (f_now() - a_library->v_tick_base) * 1000.0;
 #endif
 #ifdef _WIN32
 	return GetTickCount();
@@ -526,27 +534,28 @@ t_object* f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_pre
 
 }
 
-t_time::t_time(t_object* a_module) : t_extension(a_module)
-#ifdef __unix__
-, v_tick_base(f_now())
-#endif
+void t_time::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 {
-	f_define<double(*)(), f_now>(this, L"now"sv);
-	f_define<intptr_t(*)(t_time*), f_tick>(this, L"tick"sv);
-	f_define<double(*)(const t_tuple&), f_compose>(this, L"compose"sv);
-	f_define<t_object*(*)(double), f_decompose>(this, L"decompose"sv);
-	f_define<intptr_t(*)(), f_offset>(this, L"offset"sv);
-	f_define<t_object*(*)(std::wstring), f_parse_rfc2822>(this, L"parse_rfc2822"sv);
-	f_define<t_object*(*)(const t_tuple&, intptr_t), f_format_rfc2822>(this, L"format_rfc2822"sv);
-	f_define<t_object*(*)(std::wstring), f_parse_http>(this, L"parse_http"sv);
-	f_define<t_object*(*)(const t_tuple&), f_format_http>(this, L"format_http"sv);
-	f_define<t_object*(*)(std::wstring), f_parse_xsd>(this, L"parse_xsd"sv);
-	f_define<t_object*(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>(this, L"format_xsd"sv);
+	t_export(this, a_fields)
+		(L"now"sv, t_static<double(*)(), f_now>())
+		(L"tick"sv, t_static<intptr_t(*)(t_time*), f_tick>())
+		(L"compose"sv, t_static<double(*)(const t_tuple&), f_compose>())
+		(L"decompose"sv, t_static<t_object*(*)(double), f_decompose>())
+		(L"offset"sv, t_static<intptr_t(*)(), f_offset>())
+		(L"parse_rfc2822"sv, t_static<t_object*(*)(std::wstring), f_parse_rfc2822>())
+		(L"format_rfc2822"sv, t_static<t_object*(*)(const t_tuple&, intptr_t), f_format_rfc2822>())
+		(L"parse_http"sv, t_static<t_object*(*)(std::wstring), f_parse_http>())
+		(L"format_http"sv, t_static<t_object*(*)(const t_tuple&), f_format_http>())
+		(L"parse_xsd"sv, t_static<t_object*(*)(std::wstring), f_parse_xsd>())
+		(L"format_xsd"sv, t_static<t_object*(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>())
+	;
 }
 
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_object* a_module)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
 {
-	return new xemmai::t_time(a_module);
+	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<xemmai::t_time>(a_handle);
+	p->f_as<xemmai::t_time>().f_define(a_fields);
+	return p;
 }

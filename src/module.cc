@@ -26,46 +26,67 @@ t_module::t_scoped_lock::~t_scoped_lock()
 	f_engine()->v_module__condition.notify_all();
 }
 
-t_object* t_module::f_load_library(std::wstring_view a_name, std::wstring_view a_path)
+t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std::vector<std::pair<t_root, t_rvalue>>& a_fields)
+{
+	t_fields fields;
+	for (auto& x : a_fields) fields.v_instance.push_back(x.first);
+	auto type = f_global()->f_type<t_module>()->f_derive<t_type_of<t_module>>(t_object::f_of(f_global()), fields);
+	type->f_as<t_type>().v_builtin = true;
+	decltype(f_engine()->v_module__instances)::iterator i;
+	{
+		std::lock_guard lock(f_engine()->v_module__mutex);
+		i = f_engine()->v_module__instances.emplace(a_name, nullptr).first;
+	}
+	auto n = type->f_as<t_type>().v_instance_fields;
+	auto p = f_engine()->f_allocate(t_object::f_align_for_fields(sizeof(t_module)) + sizeof(t_svalue) * n);
+	auto q = p->f_fields(sizeof(t_module));
+	for (size_t i = 0; i < n; ++i) new(q + i) t_svalue(a_fields[i].second);
+	new(p->f_data()) t_module(i, a_body);
+	p->f_be(&type->f_as<t_type>());
+	return p;
+}
+
+t_object* t_module::f_load_library(std::wstring_view a_path, std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 {
 	portable::t_library library{std::wstring(a_path)};
 	if (!library) return nullptr;
-	auto factory = library.f_symbol<t_extension* (*)(t_object*)>("f_factory");
+	auto factory = library.f_symbol<t_object*(*)(t_library::t_handle*, std::vector<std::pair<t_root, t_rvalue>>&)>("f_factory");
 	if (!factory) f_throw(L"f_factory not found."sv);
 	auto handle = new t_library::t_handle();
 	handle->v_library.f_swap(library);
-	auto module = f_new<t_library>(a_name, a_path, handle);
-	module->f_as<t_library>().v_extension = factory(module);
-	return module;
+	return factory(handle, a_fields);
 }
 
-void t_module::f_execute_script(t_object* a_this, t_object* a_code)
+void t_module::f_execute_script(t_object* a_code, t_fields& a_fields)
 {
-	auto scope = xemmai::f_new<t_scope>(f_global(), true);
+	auto scope = xemmai::f_new<t_scope>(f_global());
 	auto lambda = t_lambda::f_instantiate(scope->f_as<t_scope>().f_entries(), a_code);
-	t_scoped_stack stack(2);
-	stack[1] = a_this;
-	lambda->f_call_without_loop(stack, 0);
+	t_builder::f_do(a_fields, [&](auto builder)
+	{
+		t_scoped_stack stack(2);
+		stack[1] = builder;
+		lambda->f_call_without_loop(stack, 0);
+	});
 }
 
-t_object* t_module::f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path)
+t_object* t_module::f_load_and_execute_script(std::wstring_view a_path, t_fields& a_fields)
 {
 	io::t_file stream(a_path, "r");
 	if (!stream) return nullptr;
 	ast::t_scope scope(nullptr);
 	if (f_engine()->v_debugger) {
-		auto module = f_new<t_debug_script>(a_name, a_path);
-		auto& script = module->f_as<t_debug_script>();
+		auto body = f_global()->f_type<t_module::t_body>()->f_new<t_debug_script>(a_path);
+		auto& script = body->f_as<t_debug_script>();
 		t_parser(script, stream)(scope);
-		script.v_code = t_emit(module, &script.v_safe_points)(scope);
-		f_engine()->f_debug_script_loaded();
-		f_execute_script(module, script.v_code);
-		return module;
+		script.v_code = t_emit(body, &script.v_safe_points)(scope);
+		f_engine()->f_debug_script_loaded(script);
+		f_execute_script(script.v_code, a_fields);
+		return body;
 	} else {
-		auto module = f_new<t_script>(a_name, a_path);
-		t_parser(module->f_as<t_script>(), stream)(scope);
-		f_execute_script(module, t_emit(module, nullptr)(scope));
-		return module;
+		auto body = f_global()->f_type<t_module::t_body>()->f_new<t_script>(a_path);
+		t_parser(body->f_as<t_script>(), stream)(scope);
+		f_execute_script(t_emit(body, nullptr)(scope), a_fields);
+		return body;
 	}
 }
 
@@ -90,14 +111,13 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 	auto paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
 	auto n = paths.f_invoke(f_global()->f_symbol_size());
 	f_check<size_t>(n, L"size");
+	t_fields fields;
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
 		auto x = paths.f_get_at(f_global()->f_as(i));
 		f_check<t_string>(x, L"path");
 		std::wstring path = portable::t_path(f_as<const t_string&>(x)) / a_name;
-		auto module = f_load_and_execute_script(a_name, path + L".xm");
-		if (module) return module;
-		module = f_load_library(a_name, path);
-		if (module) return module;
+		if (auto body = f_load_and_execute_script(path + L".xm", fields)) return f_new(a_name, body, fields.v_class);
+		if (auto body = f_load_library(path, fields.v_class)) return f_new(a_name, body, fields.v_class);
 	}
 	f_throw(L"module \"" + std::wstring(a_name) + L"\" not found.");
 	return nullptr;
@@ -105,28 +125,20 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 
 void t_module::f_main()
 {
-	auto x = f_engine()->f_module_system()->f_get(f_global()->f_symbol_script());
-	f_check<t_string>(x, L"script");
-	auto path = f_as<std::wstring_view>(x);
+	auto path = f_as<std::wstring_view>(f_engine()->f_module_system()->f_get(f_global()->f_symbol_script()));
 	if (path.empty()) f_throw(L"script path is empty."sv);
-	if (!f_load_and_execute_script(L"__main"sv, path)) f_throw(L"file \"" + std::wstring(path) + L"\" not found.");
+	t_fields fields;
+	if (!f_load_and_execute_script(path, fields)) f_throw(L"file \"" + std::wstring(path) + L"\" not found.");
 }
 
 t_module::~t_module()
 {
-	if (v_iterator == decltype(v_iterator){}) return;
 	std::lock_guard lock(f_engine()->v_module__mutex);
 	f_engine()->v_module__instances.erase(v_iterator);
 }
 
-void t_module::f_scan(t_scan a_scan)
-{
-	if (v_iterator != decltype(v_iterator){}) a_scan(v_iterator->second);
-}
-
 void t_script::f_scan(t_scan a_scan)
 {
-	t_module::f_scan(a_scan);
 	std::lock_guard lock(v_mutex);
 	for (auto& p : v_slots) a_scan(*p);
 }
@@ -155,17 +167,9 @@ std::pair<size_t, size_t> t_debug_script::f_replace_break_point(size_t a_line, s
 
 t_library::~t_library()
 {
-	delete v_extension;
-	if (v_handle) {
-		v_handle->v_next = f_engine()->v_library__handle__finalizing;
-		f_engine()->v_library__handle__finalizing = v_handle;
-	}
-}
-
-void t_library::f_scan(t_scan a_scan)
-{
-	t_module::f_scan(a_scan);
-	if (v_extension) v_extension->f_scan(a_scan);
+	if (!v_handle) return;
+	v_handle->v_next = f_engine()->v_library__handle__finalizing;
+	f_engine()->v_library__handle__finalizing = v_handle;
 }
 
 void t_type_of<t_module>::f_do_scan(t_object* a_this, t_scan a_scan)

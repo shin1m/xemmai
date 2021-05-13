@@ -12,10 +12,10 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<t_pair> : t_uninstantiatable<t_underivable<t_holds<t_pair>>>
+struct t_type_of<t_pair> : t_uninstantiatable<t_holds<t_pair>>
 {
-	static t_object* f_instantiate(t_container* a_extension, const t_pvalue& a_value);
-	static t_object* f_define(t_container* a_extension);
+	static t_object* f_instantiate(t_container* a_library, const t_pvalue& a_value);
+	static t_object* f_define(t_container* a_library);
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
@@ -27,9 +27,9 @@ struct t_type_of<t_pair> : t_uninstantiatable<t_underivable<t_holds<t_pair>>>
 template<>
 struct t_type_of<t_queue> : t_derivable<t_holds<t_queue>>
 {
-	using t_extension = t_container;
+	using t_library = t_container;
 
-	static void f_define(t_container* a_extension);
+	static void f_define(t_container* a_library);
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
@@ -41,12 +41,13 @@ struct t_type_of<t_queue> : t_derivable<t_holds<t_queue>>
 
 }
 
-struct t_container : t_extension
+struct t_container : t_library
 {
 	t_slot_of<t_type> v_type_pair;
 	t_slot_of<t_type> v_type_queue;
 
-	t_container(t_object* a_module);
+	using t_library::t_library;
+	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot()

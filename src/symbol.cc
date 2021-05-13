@@ -17,7 +17,7 @@ t_object* t_symbol::f_instantiate(std::wstring_view a_value)
 	if (i == instances.end() || i->first != a_value) {
 		i = instances.emplace_hint(i, a_value, nullptr);
 		f_engine()->v_object__reviving__mutex.unlock();
-		return f_new<t_symbol>(f_global(), true, i);
+		return f_new<t_symbol>(f_global(), i);
 	} else {
 		f_engine()->v_object__reviving = true;
 		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
@@ -26,26 +26,12 @@ t_object* t_symbol::f_instantiate(std::wstring_view a_value)
 	}
 }
 
-void t_symbol::f_revise(t_object* a_this)
-{
-	if (f_atomic_increment(f_as<t_symbol&>(a_this).v_revision) != 0) return;
-	for (size_t i = 0; i < t_thread::t_cache::V_SIZE; ++i) {
-		auto& cache = t_thread::v_cache[i];
-		if (cache.v_key == a_this) {
-			cache.v_object = nullptr;
-			cache.v_key = nullptr;
-			cache.v_value = nullptr;
-		}
-		cache.v_revision = t_thread::t_cache::f_revise(i);
-	}
-}
-
 void t_type_of<t_symbol>::f_define()
 {
 	v_builtin = v_revive = true;
-	t_define<t_symbol, t_object>(f_global(), L"Symbol"sv, t_object::f_of(this))
+	t_define<t_symbol, t_object>{f_global()}
 		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
-	;
+	.f_derive(t_object::f_of(this));
 }
 
 void t_type_of<t_symbol>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)

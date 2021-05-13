@@ -1,5 +1,5 @@
 try
-	(Class() :: @
+	(Object + @
 		$f = @
 			throw Throwable("foo"
 	)().f(
@@ -7,7 +7,7 @@ catch Throwable e
 
 (@
 	try
-		(Class() :: @
+		(Object + @
 			$f = @
 				throw Throwable("foo"
 		)().f(

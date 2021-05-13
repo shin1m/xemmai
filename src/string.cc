@@ -10,9 +10,8 @@ t_object* t_string::f_instantiate(const wchar_t* a_p, size_t a_n)
 
 void t_type_of<t_string>::f_define()
 {
-	t_define<t_string, t_object>(f_global(), L"String"sv)
+	t_define<t_string, t_object>{f_global()}
 		(L"from_code"sv, t_static<t_object*(*)(t_global*, intptr_t), f_from_code>())
-		(t_construct_with<t_pvalue(*)(t_type*, const t_string&), f__construct>())
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_string::*)() const, &t_string::f_hash>())
 		(f_global()->f_symbol_add(), t_member<t_object*(*)(const t_pvalue&, const t_pvalue&), f__add>())
@@ -28,7 +27,7 @@ void t_type_of<t_string>::f_define()
 			t_member<t_object*(*)(t_global*, const t_string&, size_t, size_t), f_substring>()
 		)
 		(L"code_at"sv, t_member<intptr_t(*)(const t_string&, size_t), f_code_at>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<t_string>::f_do_construct(t_pvalue* a_stack, size_t a_n)

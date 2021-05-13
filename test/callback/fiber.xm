@@ -9,7 +9,7 @@ fc = Fiber(@(x)
 	print("server: " + fm("This is client."
 	"Good bye."
 
-Derived = Class(callback.Client) :: @
+Derived = callback.Client + @
 	$on_message = @(message) print("client: " + fc(message
 
 client = Derived(

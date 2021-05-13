@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_method
 {
-	friend struct t_finalizes<t_bears<t_method, t_type_immutable>>;
+	friend struct t_finalizes<t_bears<t_method>>;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_method>;
 
@@ -21,13 +21,6 @@ class t_method
 	~t_method() = default;
 
 public:
-	static t_object* f_instantiate(t_type* a_type, t_object* a_function, const t_pvalue& a_self)
-	{
-		return a_type->f_new<t_method>(true, a_function, a_self);
-	}
-	template<typename T>
-	static t_pvalue f_bind(const t_pvalue& a_value, T&& a_target);
-
 	t_object* f_function() const
 	{
 		return v_function;
@@ -35,7 +28,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_method> : t_uninstantiatable<t_underivable<t_holds<t_method, t_type_immutable>>>
+struct t_type_of<t_method> : t_uninstantiatable<t_holds<t_method>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
@@ -52,7 +45,7 @@ struct t_type_of<t_method> : t_uninstantiatable<t_underivable<t_holds<t_method, 
 	}
 	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 	{
-		a_stack[0] = t_method::f_instantiate(a_this->f_type(), a_this->f_as<t_method>().v_function, a_stack[2]);
+		a_stack[0] = a_this->f_type()->f_new<t_method>(a_this->f_as<t_method>().v_function, a_stack[2]);
 		return -1;
 	}
 };

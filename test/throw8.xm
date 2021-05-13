@@ -13,6 +13,5 @@ test = @(f)
 test(@ print(*null
 test(@ null["x"](
 test(@ null * "x"
-test(@ null :: "x"
 test(@ null["x"]
 test(@ null["x"] = null

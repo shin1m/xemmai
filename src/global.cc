@@ -1,25 +1,23 @@
-#include <xemmai/structure.h>
 #include <xemmai/array.h>
-#include <xemmai/bytes.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
 {
 
-t_global::t_global(t_object* a_module, t_object* a_type_object, t_object* a_type_class, t_object* a_type_structure, t_object* a_type_module, t_object* a_type_fiber, t_object* a_type_thread) : t_extension(a_module)
+void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_fiber, t_object* a_type_thread, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 {
-	v_instance = this;
 	v_type_object.f_construct(a_type_object);
+	v_type_object->v_module = t_object::f_of(this);
 	v_type_class.f_construct(a_type_class);
-	v_type_structure__discard.f_construct(v_type_object->f_derive<t_type_of<std::unique_ptr<t_structure::t_fields>>>());
-	v_type_structure.f_construct(a_type_structure);
-	v_type_module.f_construct(a_type_module);
+	v_type_class->v_module = t_object::f_of(this);
 	v_type_fiber.f_construct(a_type_fiber);
+	v_type_fiber->v_module = t_object::f_of(this);
 	v_type_thread.f_construct(a_type_thread);
-	v_type_tuple.f_construct(v_type_object->f_derive<t_type_of<t_tuple>>());
-	v_type_symbol.f_construct(v_type_object->f_derive<t_type_of<t_symbol>>());
-	v_type_method.f_construct(v_type_object->f_derive<t_type_of<t_method>>());
-	v_type_native.f_construct(v_type_object->f_derive<t_type_of<t_native>>());
+	v_type_thread->v_module = t_object::f_of(this);
+	v_type_module__body.f_construct(a_type_module__body);
+	v_type_module__body->v_module = t_object::f_of(this);
+	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(5, v_type_object, t_object::f_of(this)));
+	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(5, v_type_object, t_object::f_of(this)));
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct"sv);
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
@@ -47,7 +45,6 @@ t_global::t_global(t_object* a_module, t_object* a_type_object, t_object* a_type
 	v_symbol_and = t_symbol::f_instantiate(L"__and"sv);
 	v_symbol_xor = t_symbol::f_instantiate(L"__xor"sv);
 	v_symbol_or = t_symbol::f_instantiate(L"__or"sv);
-	v_symbol_send = t_symbol::f_instantiate(L"__send"sv);
 	v_symbol_path = t_symbol::f_instantiate(L"path"sv);
 	v_symbol_executable = t_symbol::f_instantiate(L"executable"sv);
 	v_symbol_script = t_symbol::f_instantiate(L"script"sv);
@@ -55,32 +52,33 @@ t_global::t_global(t_object* a_module, t_object* a_type_object, t_object* a_type
 	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
 	v_symbol_dump = t_symbol::f_instantiate(L"dump"sv);
 	v_type_object->f_define();
-	a_module->f_put(t_symbol::f_instantiate(L"Class"sv), t_object::f_of(v_type_class));
+	t_define<t_type, t_object>{this}.f_derive(static_cast<t_slot&>(v_type_class));
 	v_type_class->v_builtin = true;
-	v_type_structure__discard->v_builtin = true;
-	v_type_structure->v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Module"sv), t_object::f_of(v_type_module));
-	v_type_module->v_builtin = true;
+	v_type_builder.f_construct(v_type_object->f_derive<t_type_of<t_builder>>(t_object::f_of(this), {}));
+	v_type_builder->v_builtin = true;
+	t_define<t_module::t_body, t_object>{this}.f_derive(static_cast<t_slot&>(v_type_module__body));
+	v_type_module__body->v_builtin = true;
+	v_type_module.f_construct(v_type_object->f_derive<t_type_of<t_module>>(t_object::f_of(this), {}));
+	v_type_module->v_builtin = v_type_module->v_revive = true;
 	static_cast<t_type_of<t_fiber>*>(static_cast<t_type*>(v_type_fiber))->f_define();
 	static_cast<t_type_of<t_thread>*>(static_cast<t_type*>(v_type_thread))->f_define();
-	static_cast<t_type_of<t_tuple>*>(static_cast<t_type*>(v_type_tuple))->f_define();
 	static_cast<t_type_of<t_symbol>*>(static_cast<t_type*>(v_type_symbol))->f_define();
-	v_type_scope.f_construct(v_type_object->f_derive<t_type_of<t_scope>>());
-	v_type_scope->v_builtin = true;
-	t_define<t_method, t_object>(this, L"Method"sv, t_object::f_of(v_type_method));
-	v_type_method->v_builtin = true;
-	t_define<t_code, t_object>(this, L"Code"sv);
-	v_type_code->v_builtin = true;
-	t_define<t_lambda, t_object>(this, L"Lambda"sv);
-	v_type_lambda->v_builtin = true;
-	v_type_lambda_shared.f_construct(v_type_lambda->f_derive<t_type_of<t_lambda_shared>>());
-	v_type_lambda_shared->v_builtin = true;
-	v_type_advanced_lambda.f_construct(v_type_lambda->f_derive<t_type_of<t_advanced_lambda<t_lambda>>>());
-	v_type_advanced_lambda->v_builtin = true;
-	v_type_advanced_lambda_shared.f_construct(v_type_lambda_shared->f_derive<t_type_of<t_advanced_lambda<t_lambda_shared>>>());
-	v_type_advanced_lambda_shared->v_builtin = true;
-	a_module->f_put(t_symbol::f_instantiate(L"Native"sv), t_object::f_of(v_type_native));
+	t_define<t_native, t_object>{this}.f_derive(static_cast<t_slot&>(v_type_native));
 	v_type_native->v_builtin = true;
+	v_type_scope.f_construct(v_type_object->f_derive<t_type_of<t_scope>>(t_object::f_of(this), {}));
+	v_type_scope->v_builtin = true;
+	t_define<t_code, t_object>(this).f_derive();
+	v_type_code->v_builtin = true;
+	t_define<t_lambda, t_object>(this).f_derive();
+	v_type_lambda->v_builtin = true;
+	v_type_lambda_shared.f_construct(v_type_lambda->f_derive<t_type_of<t_lambda_shared>>(t_object::f_of(this), {}));
+	v_type_lambda_shared->v_builtin = true;
+	v_type_advanced_lambda.f_construct(v_type_lambda->f_derive<t_type_of<t_advanced_lambda<t_lambda>>>(t_object::f_of(this), {}));
+	v_type_advanced_lambda->v_builtin = true;
+	v_type_advanced_lambda_shared.f_construct(v_type_lambda_shared->f_derive<t_type_of<t_advanced_lambda<t_lambda_shared>>>(t_object::f_of(this), {}));
+	v_type_advanced_lambda_shared->v_builtin = true;
+	v_type_method.f_construct(v_type_object->f_derive<t_type_of<t_method>>(t_object::f_of(this), {}));
+	v_type_method->v_builtin = true;
 	t_type_of<t_throwable>::f_define();
 	v_type_throwable->v_builtin = true;
 	t_type_of<std::nullptr_t>::f_define();
@@ -94,6 +92,8 @@ t_global::t_global(t_object* a_module, t_object* a_type_object, t_object* a_type
 	t_type_of<t_string>::f_define();
 	v_type_string->v_builtin = true;
 	v_string_empty = t_type_of<t_string>::f__construct(static_cast<t_type*>(v_type_string), L""sv);
+	t_type_of<t_tuple>::f_define();
+	v_type_tuple->v_builtin = true;
 	t_type_of<t_array>::f_define();
 	v_type_array->v_builtin = true;
 	t_type_of<t_dictionary>::f_define();
@@ -101,18 +101,42 @@ t_global::t_global(t_object* a_module, t_object* a_type_object, t_object* a_type
 	v_type_dictionary->v_builtin = true;
 	t_type_of<t_bytes>::f_define();
 	v_type_bytes->v_builtin = true;
-	t_define<t_lexer::t_error, t_throwable>(this, L"LexerError"sv);
+	t_define<t_lexer::t_error, t_throwable>(this).f_derive();
 	v_type_lexer__error->v_builtin = true;
-	t_define<t_parser::t_error, t_throwable>(this, L"ParserError"sv);
+	t_define<t_parser::t_error, t_throwable>(this).f_derive();
 	v_type_parser__error->v_builtin = true;
+	t_export(this, a_fields)
+		(L"Object"sv, t_object::f_of(v_type_object))
+		(L"Class"sv, t_object::f_of(v_type_class))
+		(L"Module"sv, t_object::f_of(v_type_module))
+		(L"Fiber"sv, t_object::f_of(v_type_fiber))
+		(L"Thread"sv, t_object::f_of(v_type_thread))
+		(L"Symbol"sv, t_object::f_of(v_type_symbol))
+		(L"Native"sv, t_object::f_of(v_type_native))
+		(L"Code"sv, t_object::f_of(v_type_code))
+		(L"Lambda"sv, t_object::f_of(v_type_lambda))
+		(L"Method"sv, t_object::f_of(v_type_method))
+		(L"Throwable"sv, t_object::f_of(v_type_throwable))
+		(L"Null"sv, t_object::f_of(v_type_null))
+		(L"Boolean"sv, t_object::f_of(v_type_boolean))
+		(L"Integer"sv, t_object::f_of(v_type_integer))
+		(L"Float"sv, t_object::f_of(v_type_float))
+		(L"String"sv, t_object::f_of(v_type_string))
+		(L"Tuple"sv, t_object::f_of(v_type_tuple))
+		(L"Array"sv, t_object::f_of(v_type_array))
+		(L"Dictionary"sv, t_object::f_of(v_type_dictionary))
+		(L"Bytes"sv, t_object::f_of(v_type_bytes))
+		(L"LexerError"sv, t_object::f_of(v_type_lexer__error))
+		(L"ParserError"sv, t_object::f_of(v_type_parser__error))
+	;
 }
 
 void t_global::f_scan(t_scan a_scan)
 {
 	a_scan(v_type_object);
 	a_scan(v_type_class);
-	a_scan(v_type_structure__discard);
-	a_scan(v_type_structure);
+	a_scan(v_type_builder);
+	a_scan(v_type_module__body);
 	a_scan(v_type_module);
 	a_scan(v_type_fiber);
 	a_scan(v_type_thread);
@@ -165,7 +189,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_and);
 	a_scan(v_symbol_xor);
 	a_scan(v_symbol_or);
-	a_scan(v_symbol_send);
 	a_scan(v_symbol_path);
 	a_scan(v_symbol_executable);
 	a_scan(v_symbol_script);

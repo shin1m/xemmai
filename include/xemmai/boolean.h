@@ -7,7 +7,7 @@ namespace xemmai
 {
 
 template<>
-struct t_type_of<bool> : t_uninstantiatable<t_underivable<t_bears<bool, t_type_immutable>>>
+struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 {
 	template<typename T0>
 	struct t_as

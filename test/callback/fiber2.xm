@@ -4,7 +4,7 @@ print = system.out.write_line
 
 fm = Fiber.current(
 
-Derived = Class(callback.Client) :: @
+Derived = callback.Client + @
 	$on_message = @(message)
 		print("fc: " + message
 		fm("Good bye."

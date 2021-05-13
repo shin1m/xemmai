@@ -13,22 +13,18 @@ test = @(x, error)
 
 test_not_supported = @(x) test(x, "not supported."
 test_not_supported(@ null.a = ""
-test_not_supported(@ null.~a
 test_not_supported(@ null("", ""
 test_not_supported(@ null[""]
 test_not_supported(@ null[""] = ""
 test_not_supported(@ null + ""
 test_not_supported(@ 0 + ""
 test_not_supported(@ 0.0 & ""
-test_not_supported(@ null :: ""
 
 test_owned = @(x) test(x, "owned by another thread."
-foo = Object(
+foo = [
 foo.share(
 Thread(@ foo.own()).join(
-test_owned(@ foo.a = ""
-test_owned(@ foo.~a
+test_owned(@ foo.push(""
 
-test_immutable = @(x) test(x, "immutable."
-test_immutable(@ 'foo.a = ""
-test_immutable(@ 'foo.~a
+test_undefined_field = @(x) test(x, "foo"
+test_undefined_field(@ Object().foo = ""

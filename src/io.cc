@@ -1,9 +1,10 @@
 #include <xemmai/io.h>
+#include <xemmai/convert.h>
 
 namespace xemmai
 {
 
-t_io::t_io(t_object* a_module) : t_extension(a_module)
+void t_io::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 {
 	v_symbol_close = t_symbol::f_instantiate(L"close"sv);
 	v_symbol_read = t_symbol::f_instantiate(L"read"sv);
@@ -19,6 +20,12 @@ t_io::t_io(t_object* a_module) : t_extension(a_module)
 	v_type_writer->v_builtin = true;
 	t_type_of<portable::t_path>::f_define(this);
 	v_type_path->v_builtin = true;
+	t_export(this, a_fields)
+		(L"File"sv, t_object::f_of(v_type_file))
+		(L"Reader"sv, t_object::f_of(v_type_reader))
+		(L"Writer"sv, t_object::f_of(v_type_writer))
+		(L"Path"sv, t_object::f_of(v_type_path))
+	;
 }
 
 void t_io::f_scan(t_scan a_scan)

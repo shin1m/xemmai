@@ -16,19 +16,20 @@ class t_writer
 {
 	friend struct t_type_of<t_writer>;
 
+	t_lock v_lock;
 	iconv_t v_cd;
 	t_slot v_stream;
 	t_slot v_buffer;
 	char* v_p;
 	size_t v_n;
 
-	void f_write(t_io* a_extension);
-	void f_write(t_io* a_extension, const wchar_t* a_p, size_t a_n);
-	void f_write(t_io* a_extension, const t_string& a_text)
+	void f_write(t_io* a_library);
+	void f_write(t_io* a_library, const wchar_t* a_p, size_t a_n);
+	void f_write(t_io* a_library, const t_string& a_text)
 	{
-		f_write(a_extension, a_text, a_text.f_size());
+		f_write(a_library, a_text, a_text.f_size());
 	}
-	void f_unshift(t_io* a_extension);
+	void f_unshift(t_io* a_library);
 
 public:
 	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding);
@@ -38,11 +39,11 @@ public:
 	{
 		iconv_close(v_cd);
 	}
-	void f_close(t_io* a_extension);
-	void f_write(t_io* a_extension, const t_pvalue& a_value);
-	void f_write_line(t_io* a_extension);
-	void f_write_line(t_io* a_extension, const t_pvalue& a_value);
-	void f_flush(t_io* a_extension);
+	void f_close(t_io* a_library);
+	void f_write(t_io* a_library, const t_pvalue& a_value);
+	void f_write_line(t_io* a_library);
+	void f_write_line(t_io* a_library, const t_pvalue& a_value);
+	void f_flush(t_io* a_library);
 };
 
 }
@@ -50,9 +51,9 @@ public:
 template<>
 struct t_type_of<io::t_writer> : t_derivable<t_holds<io::t_writer>>
 {
-	using t_extension = t_io;
+	using t_library = t_io;
 
-	static void f_define(t_io* a_extension);
+	static void f_define(t_io* a_library);
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

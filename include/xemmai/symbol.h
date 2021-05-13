@@ -9,13 +9,12 @@ namespace xemmai
 class t_symbol
 {
 	friend class t_object;
-	friend struct t_finalizes<t_bears<t_symbol, t_type_immutable>>;
+	friend struct t_finalizes<t_bears<t_symbol>>;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_type>;
 	friend struct t_type_of<t_symbol>;
 
 	std::map<std::wstring, t_slot, std::less<>>::iterator v_entry;
-	volatile size_t v_revision = 0;
 
 	t_symbol(std::map<std::wstring, t_slot, std::less<>>::iterator a_entry) : v_entry(a_entry)
 	{
@@ -25,7 +24,6 @@ class t_symbol
 
 public:
 	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_value);
-	static void f_revise(t_object* a_this);
 
 	const std::wstring& f_string() const
 	{
@@ -34,7 +32,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_symbol> : t_underivable<t_holds<t_symbol, t_type_immutable>>
+struct t_type_of<t_symbol> : t_holds<t_symbol>
 {
 	void f_define();
 

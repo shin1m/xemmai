@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_tuple
 {
-	friend struct t_finalizes<t_bears<t_tuple, t_type_immutable>>;
+	friend struct t_finalizes<t_bears<t_tuple>>;
 	friend struct t_type_of<t_tuple>;
 
 	size_t v_size;
@@ -63,10 +63,9 @@ public:
 };
 
 template<>
-struct t_type_of<t_tuple> : t_derivable<t_holds<t_tuple, t_type_immutable>>
+struct t_type_of<t_tuple> : t_holds<t_tuple>
 {
-	static void f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n);
-	void f_define();
+	static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

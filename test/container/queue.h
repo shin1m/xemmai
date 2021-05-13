@@ -42,7 +42,7 @@ public:
 	}
 	t_object* f_string() const;
 	bool f_empty() const;
-	void f_push(t_container* a_extension, const t_pvalue& a_value);
+	void f_push(t_container* a_library, const t_pvalue& a_value);
 	t_pvalue f_pop();
 };
 

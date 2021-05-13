@@ -34,6 +34,11 @@ base32_decode = @(source)
 	j < 8 && bs.push(c << j
 	bs
 
+Hash = Object + @
+	$byte
+	$bytes
+	$done
+
 sha1 = @
 	rotate_left = @(x, b) x << b | (x & 0xFFFFFFFF) >> 32 - b
 	V = 0x67452301
@@ -77,7 +82,7 @@ sha1 = @
 		:x = 0
 		:n = 0
 	length = 0
-	self = Object(
+	self = Hash(
 	self.byte = @(b)
 		put(b
 		:length = length + 1

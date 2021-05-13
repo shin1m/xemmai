@@ -37,8 +37,8 @@ for i = 0; i < 1000; i = i + 1: d[i] = i
 assert(d.size() == 1000
 for i = 0; i < 1000; i = i + 1: assert(d[i] == i
 
-Foo = Class(Dictionary) :: @
-	$__construct = @(*xs) :$^__construct[$]("zero", 0, *xs
+Foo = Dictionary + @
+	$__construct = @(*xs) Dictionary.__construct[$]("zero", 0, *xs
 	$__initialize = @(*xs) $[3] = "three"
 
 foo = Foo(1, "one", "two", 2

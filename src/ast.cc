@@ -73,9 +73,7 @@ t_object* t_lambda::f_code(t_object* a_module)
 {
 	size_t minimum = v_arguments - v_defaults.size();
 	if (v_variadic) --minimum;
-	auto code = t_code::f_instantiate(a_module, v_shared, v_variadic, v_privates.size(), v_shareds, v_arguments, minimum);
-	auto& script = static_cast<t_script&>(f_as<t_module&>(a_module));
-	return script.f_slot(code);
+	return a_module->f_as<t_script>().f_slot(t_code::f_instantiate(a_module, v_shared, v_variadic, v_privates.size(), v_shareds, v_arguments, minimum));
 }
 
 void t_lambda::f_safe_points(t_code& a_code, std::map<std::pair<size_t, void**>, size_t>& a_safe_points, const std::vector<std::tuple<size_t, size_t, size_t>>& a_safe_positions)
@@ -497,8 +495,7 @@ t_operand t_object_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
-	a_emit << e_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0 << script.f_slot({}) << 0;
+	a_emit << e_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -508,9 +505,8 @@ void t_object_get::f_method(t_emit& a_emit)
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
 	a_emit.f_pop();
-	a_emit << e_instruction__METHOD_GET << a_emit.v_stack << v_key << 0 << script.f_slot({}) << 0;
+	a_emit << e_instruction__METHOD_GET << a_emit.v_stack << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0;
 	a_emit.f_push().f_push();
 	a_emit.f_at(this);
 }
@@ -544,8 +540,7 @@ t_operand t_object_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	v_target->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	auto& script = static_cast<t_script&>(f_as<t_module&>(a_emit.v_module));
-	a_emit << e_instruction__OBJECT_PUT << a_emit.v_stack - 2 << v_key << 0 << script.f_slot({}) << 0;
+	a_emit << e_instruction__OBJECT_PUT << a_emit.v_stack - 2 << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -599,39 +594,6 @@ t_operand t_object_has_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__OBJECT_HAS_INDIRECT << a_emit.v_stack - 2;
-	a_emit.f_pop();
-	a_emit.f_at(this);
-	if (a_clear) a_emit.f_pop();
-	return t_operand();
-}
-
-void t_object_remove::f_flow(t_flow& a_flow)
-{
-	v_target->f_flow(a_flow);
-}
-
-t_operand t_object_remove::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	v_target->f_emit(a_emit, false, false);
-	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_REMOVE << a_emit.v_stack - 1 << v_key;
-	a_emit.f_at(this);
-	if (a_clear) a_emit.f_pop();
-	return t_operand();
-}
-
-void t_object_remove_indirect::f_flow(t_flow& a_flow)
-{
-	v_target->f_flow(a_flow);
-	v_key->f_flow(a_flow);
-}
-
-t_operand t_object_remove_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
-{
-	v_target->f_emit(a_emit, false, false);
-	v_key->f_emit(a_emit, false, false);
-	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_REMOVE_INDIRECT << a_emit.v_stack - 2;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -886,10 +848,8 @@ void t_binary::f_flow(t_flow& a_flow)
 t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	a_emit.f_push();
-	size_t instruction = v_instruction;
-	bool operand = instruction != e_instruction__SEND;
-	auto left = v_left->f_emit(a_emit, false, operand);
-	auto right = v_right->f_emit(a_emit, false, operand);
+	auto left = v_left->f_emit(a_emit, false, true);
+	auto right = v_right->f_emit(a_emit, false, true);
 	if (left.v_tag == t_operand::e_tag__INTEGER) {
 		if (right.v_tag == t_operand::e_tag__INTEGER) {
 			a_emit.f_pop();
@@ -1023,6 +983,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			}
 		}
 	}
+	size_t instruction = v_instruction;
 	if (a_tail) {
 		a_emit.f_join(*a_emit.v_targets->v_return_junction);
 		instruction += e_instruction__CALL_TAIL - e_instruction__CALL;

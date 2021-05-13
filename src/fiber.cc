@@ -139,7 +139,7 @@ void t_fiber::t_internal::f_epoch_decrement()
 
 t_object* t_fiber::f_instantiate(const t_pvalue& a_callable, size_t a_stack)
 {
-	return f_new<t_fiber>(f_global(), false, a_callable, a_stack);
+	return f_new<t_fiber>(f_global(), a_callable, a_stack);
 }
 
 template<typename T_context>
@@ -190,9 +190,9 @@ void t_fiber::f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
 void t_type_of<t_fiber>::f_define()
 {
 	v_builtin = true;
-	t_define<t_fiber, t_object>(f_global(), L"Fiber"sv, t_object::f_of(this))
+	t_define<t_fiber, t_object>{f_global()}
 		(L"current"sv, t_static<t_object*(*)(), t_fiber::f_current>())
-	;
+	.f_derive(t_object::f_of(this));
 }
 
 void t_type_of<t_fiber>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)

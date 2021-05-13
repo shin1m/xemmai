@@ -188,8 +188,8 @@ b.shift(
 print(b
 assert_sequence(b, [2, 1
 
-Foo = Class(Array) :: @
-	$__construct = @(*xs) :$^__construct[$](0, *xs
+Foo = Array + @
+	$__construct = @(*xs) Array.__construct[$](0, *xs
 	$__initialize = @(*xs) $push(4
 
 foo = Foo(1, 2, 3

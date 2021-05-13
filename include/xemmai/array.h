@@ -6,7 +6,7 @@
 namespace xemmai
 {
 
-class t_array
+class t_array : public t_sharable
 {
 	friend struct t_finalizes<t_bears<t_array>>;
 	friend struct t_type_of<t_object>;
@@ -111,7 +111,15 @@ public:
 template<>
 struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 {
-	static void f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n);
+	static void f__construct(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
+	static void f_own(t_array& a_self)
+	{
+		a_self.f_own();
+	}
+	static void f_share(t_array& a_self)
+	{
+		a_self.f_share();
+	}
 	static t_object* f_string(const t_pvalue& a_self);
 	static void f_clear(const t_pvalue& a_self);
 	static size_t f_size(const t_pvalue& a_self);

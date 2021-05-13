@@ -50,7 +50,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_scope> : t_uninstantiatable<t_underivable<t_finalizes<t_derives<t_scope>>>>
+struct t_type_of<t_scope> : t_uninstantiatable<t_finalizes<t_derives<t_scope>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

@@ -6,40 +6,41 @@ namespace xemmai
 class t_threading;
 
 template<>
-struct t_type_of<std::mutex> : t_underivable<t_fixed<t_holds<std::mutex>>>
+struct t_type_of<std::mutex> : t_holds<std::mutex>
 {
-	using t_extension = t_threading;
+	using t_library = t_threading;
 
 	static void f_acquire(std::mutex& a_self);
 	static void f_release(std::mutex& a_self);
-	static void f_define(t_threading* a_extension);
+	static void f_define(t_threading* a_library);
 
 	using t_base::t_base;
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 template<>
-struct t_type_of<std::condition_variable> : t_underivable<t_fixed<t_holds<std::condition_variable>>>
+struct t_type_of<std::condition_variable> : t_holds<std::condition_variable>
 {
-	using t_extension = t_threading;
+	using t_library = t_threading;
 
 	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex);
 	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds);
 	static void f_signal(std::condition_variable& a_self);
 	static void f_broadcast(std::condition_variable& a_self);
-	static void f_define(t_threading* a_extension);
+	static void f_define(t_threading* a_library);
 
 	using t_base::t_base;
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
-class t_threading : public t_extension
+class t_threading : public t_library
 {
 	t_slot_of<t_type> v_type_mutex;
 	t_slot_of<t_type> v_type_condition;
 
 public:
-	t_threading(t_object* a_module);
+	using t_library::t_library;
+	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan)
 	{
 		a_scan(v_type_mutex);
@@ -78,88 +79,82 @@ void t_type_of<std::mutex>::f_acquire(std::mutex& a_self)
 {
 	t_safe_region region;
 	a_self.lock();
-	t_thread::f_cache_acquire();
 }
 
 void t_type_of<std::mutex>::f_release(std::mutex& a_self)
 {
-	t_thread::f_cache_release();
 	a_self.unlock();
 }
 
-void t_type_of<std::mutex>::f_define(t_threading* a_extension)
+void t_type_of<std::mutex>::f_define(t_threading* a_library)
 {
-	t_define<std::mutex, t_object>(a_extension, L"Mutex"sv)
+	t_define<std::mutex, t_object>{a_library}
 		(L"acquire"sv, t_member<void(*)(std::mutex&), f_acquire>())
 		(L"release"sv, t_member<void(*)(std::mutex&), f_release>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<std::mutex>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_construct<true>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
+	return t_construct<>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
 }
 
 void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex)
 {
 	t_safe_region region;
-	t_thread::f_cache_release();
-	{
-		std::unique_lock lock(a_mutex, std::defer_lock);
-		a_self.wait(lock);
-	}
-	t_thread::f_cache_acquire();
+	std::unique_lock lock(a_mutex, std::defer_lock);
+	a_self.wait(lock);
 }
 
 void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds)
 {
 	t_safe_region region;
-	t_thread::f_cache_release();
-	{
-		std::unique_lock lock(a_mutex, std::defer_lock);
-		a_self.wait_for(lock, std::chrono::milliseconds(a_milliseconds));
-	}
-	t_thread::f_cache_acquire();
+	std::unique_lock lock(a_mutex, std::defer_lock);
+	a_self.wait_for(lock, std::chrono::milliseconds(a_milliseconds));
 }
 
 void t_type_of<std::condition_variable>::f_signal(std::condition_variable& a_self)
 {
-	t_thread::f_cache_release();
 	a_self.notify_one();
 }
 
 void t_type_of<std::condition_variable>::f_broadcast(std::condition_variable& a_self)
 {
-	t_thread::f_cache_release();
 	a_self.notify_all();
 }
 
-void t_type_of<std::condition_variable>::f_define(t_threading* a_extension)
+void t_type_of<std::condition_variable>::f_define(t_threading* a_library)
 {
-	t_define<std::condition_variable, t_object>(a_extension, L"Condition"sv)
+	t_define<std::condition_variable, t_object>{a_library}
 		(L"wait"sv,
 			t_member<void(*)(std::condition_variable&, std::mutex&), f_wait>(),
 			t_member<void(*)(std::condition_variable&, std::mutex&, size_t), f_wait>()
 		)
 		(L"signal"sv, t_member<void(*)(std::condition_variable&), f_signal>())
 		(L"broadcast"sv, t_member<void(*)(std::condition_variable&), f_broadcast>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<std::condition_variable>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_construct<true>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
+	return t_construct<>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
 }
 
-t_threading::t_threading(t_object* a_module) : t_extension(a_module)
+void t_threading::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 {
 	t_type_of<std::mutex>::f_define(this);
 	t_type_of<std::condition_variable>::f_define(this);
+	t_export(this, a_fields)
+		(L"Mutex"sv, t_object::f_of(v_type_mutex))
+		(L"Condition"sv, t_object::f_of(v_type_condition))
+	;
 }
 
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_object* a_module)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
 {
-	return new xemmai::t_threading(a_module);
+	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<xemmai::t_threading>(a_handle);
+	p->f_as<xemmai::t_threading>().f_define(a_fields);
+	return p;
 }

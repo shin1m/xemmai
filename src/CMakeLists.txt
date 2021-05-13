@@ -3,7 +3,6 @@ add_executable(xemmai
 	type.cc
 	object.cc
 	class.cc
-	structure.cc
 	module.cc
 	fiber.cc
 	thread.cc

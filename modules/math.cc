@@ -7,9 +7,10 @@
 namespace xemmai
 {
 
-struct t_math : t_extension
+struct t_math : t_library
 {
-	t_math(t_object* a_module);
+	using t_library::t_library;
+	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan)
 	{
 	}
@@ -56,42 +57,46 @@ bool f_boolean(double a_value)
 
 }
 
-t_math::t_math(t_object* a_module) : t_extension(a_module)
+void t_math::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 {
-	f_define<double(*)(double), std::acos>(this, L"acos"sv);
-	f_define<double(*)(double), std::asin>(this, L"asin"sv);
-	f_define<double(*)(double), std::atan>(this, L"atan"sv);
-	f_define<double(*)(double, double), std::atan2>(this, L"atan2"sv);
-	f_define<double(*)(double), std::ceil>(this, L"ceil"sv);
-	f_define<double(*)(double), std::cos>(this, L"cos"sv);
-	f_define<double(*)(double), std::cosh>(this, L"cosh"sv);
-	f_define<double(*)(double), std::exp>(this, L"exp"sv);
-	f_define<double(*)(double), std::fabs>(this, L"fabs"sv);
-	f_define<double(*)(double), std::floor>(this, L"floor"sv);
-	f_define<double(*)(double, double), std::fmod>(this, L"fmod"sv);
-	f_define<t_object*(*)(double), f_frexp>(this, L"frexp"sv);
-	f_define<double(*)(double, int), std::ldexp>(this, L"ldexp"sv);
-	f_define<double(*)(double), std::log>(this, L"log"sv);
-	f_define<double(*)(double), std::log10>(this, L"log10"sv);
-	f_define<t_object*(*)(double), f_modf>(this, L"modf"sv);
-	f_define<double(*)(double, double), std::pow>(this, L"pow"sv);
-	f_define<double(*)(double), std::sin>(this, L"sin"sv);
-	f_define<double(*)(double), std::sinh>(this, L"sinh"sv);
-	f_define<double(*)(double), std::sqrt>(this, L"sqrt"sv);
-	f_define<double(*)(double), std::tan>(this, L"tan"sv);
-	f_define<double(*)(double), std::tanh>(this, L"tanh"sv);
-	f_define<bool(*)(double), f_boolean<std::isfinite>>(this, L"isfinite"sv);
-	f_define<bool(*)(double), f_boolean<std::isinf>>(this, L"isinf"sv);
-	f_define<bool(*)(double), f_boolean<std::isnan>>(this, L"isnan"sv);
-	f_define<bool(*)(double), f_boolean<std::isnormal>>(this, L"isnormal"sv);
-	f_define<bool(*)(double), f_boolean<std::signbit>>(this, L"signbit"sv);
-	a_module->f_put(t_symbol::f_instantiate(L"E"sv), f_as(M_E));
-	a_module->f_put(t_symbol::f_instantiate(L"PI"sv), f_as(M_PI));
+	t_export(this, a_fields)
+		(L"acos"sv, t_static<double(*)(double), std::acos>())
+		(L"asin"sv, t_static<double(*)(double), std::asin>())
+		(L"atan"sv, t_static<double(*)(double), std::atan>())
+		(L"atan2"sv, t_static<double(*)(double, double), std::atan2>())
+		(L"ceil"sv, t_static<double(*)(double), std::ceil>())
+		(L"cos"sv, t_static<double(*)(double), std::cos>())
+		(L"cosh"sv, t_static<double(*)(double), std::cosh>())
+		(L"exp"sv, t_static<double(*)(double), std::exp>())
+		(L"fabs"sv, t_static<double(*)(double), std::fabs>())
+		(L"floor"sv, t_static<double(*)(double), std::floor>())
+		(L"fmod"sv, t_static<double(*)(double, double), std::fmod>())
+		(L"frexp"sv, t_static<t_object*(*)(double), f_frexp>())
+		(L"ldexp"sv, t_static<double(*)(double, int), std::ldexp>())
+		(L"log"sv, t_static<double(*)(double), std::log>())
+		(L"log10"sv, t_static<double(*)(double), std::log10>())
+		(L"modf"sv, t_static<t_object*(*)(double), f_modf>())
+		(L"pow"sv, t_static<double(*)(double, double), std::pow>())
+		(L"sin"sv, t_static<double(*)(double), std::sin>())
+		(L"sinh"sv, t_static<double(*)(double), std::sinh>())
+		(L"sqrt"sv, t_static<double(*)(double), std::sqrt>())
+		(L"tan"sv, t_static<double(*)(double), std::tan>())
+		(L"tanh"sv, t_static<double(*)(double), std::tanh>())
+		(L"isfinite"sv, t_static<bool(*)(double), f_boolean<std::isfinite>>())
+		(L"isinf"sv, t_static<bool(*)(double), f_boolean<std::isinf>>())
+		(L"isnan"sv, t_static<bool(*)(double), f_boolean<std::isnan>>())
+		(L"isnormal"sv, t_static<bool(*)(double), f_boolean<std::isnormal>>())
+		(L"signbit"sv, t_static<bool(*)(double), f_boolean<std::signbit>>())
+		(L"E"sv, M_E)
+		(L"PI"sv, M_PI)
+	;
 }
 
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_object* a_module)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
 {
-	return new xemmai::t_math(a_module);
+	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<xemmai::t_math>(a_handle);
+	p->f_as<xemmai::t_math>().f_define(a_fields);
+	return p;
 }

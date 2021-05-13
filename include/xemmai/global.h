@@ -7,6 +7,7 @@
 #include "null.h"
 #include "string.h"
 #include "dictionary.h"
+#include "bytes.h"
 #include "parser.h"
 #include <algorithm>
 
@@ -14,9 +15,8 @@ namespace xemmai
 {
 
 class t_array;
-class t_bytes;
 
-class t_global : public t_extension
+class t_global : public t_library
 {
 	friend struct t_type_of<t_dictionary>;
 	friend class t_engine;
@@ -26,8 +26,8 @@ class t_global : public t_extension
 
 	t_slot_of<t_type> v_type_object;
 	t_slot_of<t_type> v_type_class;
-	t_slot_of<t_type> v_type_structure__discard;
-	t_slot_of<t_type> v_type_structure;
+	t_slot_of<t_type> v_type_builder;
+	t_slot_of<t_type> v_type_module__body;
 	t_slot_of<t_type> v_type_module;
 	t_slot_of<t_type> v_type_fiber;
 	t_slot_of<t_type> v_type_thread;
@@ -80,7 +80,6 @@ class t_global : public t_extension
 	t_slot v_symbol_and;
 	t_slot v_symbol_xor;
 	t_slot v_symbol_or;
-	t_slot v_symbol_send;
 	t_slot v_symbol_path;
 	t_slot v_symbol_executable;
 	t_slot v_symbol_script;
@@ -90,7 +89,11 @@ class t_global : public t_extension
 	t_slot v_string_empty;
 
 public:
-	t_global(t_object* a_module, t_object* a_type_object, t_object* a_type_class, t_object* a_type_structure, t_object* a_type_module, t_object* a_type_fiber, t_object* a_type_thread);
+	t_global() : t_library(nullptr)
+	{
+		v_instance = this;
+	}
+	void f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_fiber, t_object* a_type_thread, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot();
@@ -207,10 +210,6 @@ public:
 	{
 		return v_symbol_or;
 	}
-	t_object* f_symbol_send() const
-	{
-		return v_symbol_send;
-	}
 	t_object* f_symbol_path() const
 	{
 		return v_symbol_path;
@@ -254,21 +253,21 @@ inline t_slot_of<t_type>& t_global::f_type_slot<t_object>()
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_class>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_type>()
 {
 	return v_type_class;
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<std::unique_ptr<t_structure::t_fields>>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_builder>()
 {
-	return v_type_structure__discard;
+	return v_type_builder;
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_structure>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_module::t_body>()
 {
-	return v_type_structure;
+	return v_type_module__body;
 }
 
 template<>
@@ -446,64 +445,22 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 	}
 }
 
-template<typename T>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline t_pvalue t_method::f_bind(const t_pvalue& a_value, T&& a_target)
-{
-	auto t = a_value.f_type();
-	return t == f_global()->f_type<t_method>() ? t_pvalue(f_instantiate(t, a_value->f_as<t_method>().v_function, std::forward<T>(a_target))) : a_value;
-}
-
 template<typename T_tag>
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_pvalue t_value<T_tag>::f_get(t_object* a_key) const
 {
-	auto p = static_cast<t_object*>(*this);
-	return reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT ? t_method::f_bind(t_object::f_of(f_type())->f_get(a_key), *this) : p->f_get(a_key);
-}
-
-template<typename T>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void f_get_of_type(T& a_this, t_object* a_key, t_pvalue* a_stack)
-{
-	auto value = a_this.f_type()->f_get_of_type(a_key);
-	if (value.f_type() == f_global()->f_type<t_method>()) {
-		a_stack[0] = *f_as<t_method&>(value).f_function();
-		a_stack[1] = a_this;
-	} else {
-		a_stack[0] = value;
-		a_stack[1] = nullptr;
-	}
+	return f_type()->f_get(*this, a_key);
 }
 
 template<typename T_tag>
 XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_get(t_object* a_key, t_pvalue* a_stack) const
 {
-	auto p = static_cast<t_object*>(*this);
-	if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT)
-		p->f_get(a_key, a_stack);
-	else
-		f_get_of_type(*this, a_key, a_stack);
-}
-
-template<typename T>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void f_call_of_type(T& a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n)
-{
-	auto value = a_this.f_type()->f_get_of_type(a_key);
-	if (value.f_type() == f_global()->f_type<t_method>()) {
-		a_stack[1] = a_this;
-		size_t n = f_as<t_method&>(value).f_function()->f_call_without_loop(a_stack, a_n);
-		if (n != size_t(-1)) f_loop(a_stack, n);
-	} else {
-		value.f_call(a_stack, a_n);
-	}
+	f_type()->f_get(*this, a_key, a_stack);
 }
 
 template<typename T_tag>
 XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_call(t_object* a_key, t_pvalue* a_stack, size_t a_n) const
 {
-	auto p = static_cast<t_object*>(*this);
-	if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT)
-		p->f_call(a_key, a_stack, a_n);
-	else
-		f_call_of_type(*this, a_key, a_stack, a_n);
+	f_type()->f_invoke(*this, a_key, a_stack, a_n);
 }
 
 template<typename T_tag>
@@ -825,17 +782,12 @@ inline t_pvalue t_value<T_tag>::f_or(const t_pvalue& a_value) const
 	}
 }
 
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_send(const t_pvalue& a_value) const
-{
-	auto p = f_object_or_throw();
-	XEMMAI__VALUE__BINARY(f_send)
-}
-
 template<typename T, typename... T_an>
-inline t_object* t_type::f_new_sized(bool a_shared, size_t a_data, T_an&&... a_an)
+inline t_object* t_type::f_new(T_an&&... a_an)
 {
-	auto p = f_engine()->f_allocate(a_shared, sizeof(T) + a_data);
+	auto p = f_engine()->f_allocate(t_object::f_align_for_fields(sizeof(T)) + sizeof(t_svalue) * v_instance_fields);
+	auto q = p->f_fields(sizeof(T));
+	for (size_t i = 0; i < v_instance_fields; ++i) new(q + i) t_svalue();
 	try {
 		new(p->f_data()) T(std::forward<T_an>(a_an)...);
 		p->f_be(this);
@@ -846,21 +798,93 @@ inline t_object* t_type::f_new_sized(bool a_shared, size_t a_data, T_an&&... a_a
 	}
 }
 
+inline bool f_is_callable(t_object* a_p)
+{
+	return reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT && (f_is<t_lambda>(a_p) || a_p->f_type() == f_global()->f_type<t_native>());
+}
+
+inline t_pvalue t_type::f_get(const t_pvalue& a_this, t_object* a_key)
+{
+	assert(reinterpret_cast<uintptr_t>(static_cast<t_object*>(a_this)) >= e_tag__OBJECT);
+	auto index = f_index(a_key);
+	if (index < v_instance_fields) return a_this->f_fields()[index];
+	if (index < v_class_fields) {
+		auto& field = f_fields()[index].second;
+		t_object* p = field;
+		return f_is_callable(p) ? t_pvalue(xemmai::f_new<t_method>(f_global(), p, a_this)) : t_pvalue(field);
+	}
+	return (this->*v_get)(a_this, a_key);
+}
+
+inline void t_type::f_get(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_stack)
+{
+	auto index = f_index(a_key);
+	if (index < v_instance_fields) {
+		a_stack[0] = a_this->f_fields()[index];
+		a_stack[1] = nullptr;
+	} else if (index < v_class_fields) {
+		auto& field = f_fields()[index].second;
+		t_object* p = field;
+		if (f_is_callable(p)) {
+			a_stack[0] = p;
+			a_stack[1] = a_this;
+		} else {
+			a_stack[0] = field;
+			a_stack[1] = nullptr;
+		}
+	} else {
+		a_stack[0] = (this->*v_get)(a_this, a_key);
+		a_stack[1] = nullptr;
+	}
+}
+
+inline void t_type::f_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
+{
+	auto index = f_index(a_key);
+	if (index < v_instance_fields)
+		a_this->f_fields()[index] = a_value;
+	else
+		v_put(a_this, a_key, a_value);
+}
+
+inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n)
+{
+	auto index = f_index(a_key);
+	if (index < v_instance_fields) {
+		a_this->f_fields()[index].f_call(a_stack, a_n);
+	} else if (index < v_class_fields) {
+		auto& field = f_fields()[index].second;
+		t_object* p = field;
+		if (f_is_callable(p)) {
+			a_stack[1] = a_this;
+			size_t n = p->f_call_without_loop(a_stack, a_n);
+			if (n != size_t(-1)) f_loop(a_stack, n);
+		} else {
+			field.f_call(a_stack, a_n);
+		}
+	} else {
+		(this->*v_get)(a_this, a_key).f_call(a_stack, a_n);
+	}
+}
+
 template<typename T>
 inline t_pvalue t_derived<T>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_object::f_of(this)->f_call_preserved(f_global()->f_symbol_construct(), a_stack, a_n);
 }
 
-template<typename T, typename... T_an>
-t_object* t_module::f_new(std::wstring_view a_name, T_an&&... a_an)
+template<typename T>
+void t_builder::f_do(t_fields& a_fields, T a_do)
 {
-	typename decltype(f_engine()->v_module__instances)::iterator i;
-	{
-		std::lock_guard lock(f_engine()->v_module__mutex);
-		i = f_engine()->v_module__instances.emplace(a_name, nullptr).first;
+	auto builder = f_new<t_builder>(f_global());
+	builder->f_as<t_builder>().v_fields = &a_fields;
+	try {
+		a_do(builder);
+		builder->f_as<t_builder>().v_fields = nullptr;
+	} catch (...) {
+		builder->f_as<t_builder>().v_fields = nullptr;
+		throw;
 	}
-	return f_global()->f_type<t_module>()->f_new<T>(true, i, std::forward<T_an>(a_an)...);
 }
 
 template<typename T_context, typename T_main>
@@ -924,7 +948,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 template<typename T>
 inline t_object* t_tuple::f_instantiate(size_t a_size, T a_construct)
 {
-	auto p = f_engine()->f_allocate(true, sizeof(t_tuple) + sizeof(t_svalue) * a_size);
+	auto p = f_engine()->f_allocate(sizeof(t_tuple) + sizeof(t_svalue) * a_size);
 	a_construct(*new(p->f_data()) t_tuple(a_size));
 	p->f_be(f_global()->f_type<t_tuple>());
 	return p;
@@ -947,7 +971,7 @@ inline size_t t_code::f_loop(t_context& a_context)
 template<typename T_context>
 inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 {
-	auto scope = f_engine()->f_allocate(true, sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
+	auto scope = f_engine()->f_allocate(sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
 	T_context context(t_object::f_of(this), a_stack);
 	context.v_scope = (new(scope->f_data()) t_scope(v_shareds, v_scope_entries))->f_entries();
 	scope->f_be(f_global()->f_type<t_scope>());
@@ -956,7 +980,7 @@ inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 
 inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n)
 {
-	auto object = f_engine()->f_allocate(true, sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
+	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
 	*std::copy_n(a_p, a_n, (new(object->f_data()) t_string(a_n))->f_entries()) = L'\0';
 	object->f_be(a_class);
 	return object;
@@ -965,22 +989,22 @@ inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, const wchar_
 inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y)
 {
 	size_t n = a_x.v_size + a_y.v_size;
-	auto object = f_engine()->f_allocate(true, sizeof(t_string) + sizeof(wchar_t) * (n + 1));
+	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (n + 1));
 	*std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, (new(object->f_data()) t_string(n))->f_entries())) = L'\0';
 	object->f_be(a_class);
 	return object;
 }
 
 template<typename T>
-inline t_pvalue t_type_of<t_string>::f_transfer(const t_global* a_extension, T&& a_value)
+inline t_pvalue t_type_of<t_string>::f_transfer(const t_global* a_library, T&& a_value)
 {
-	return a_value.empty() ? a_extension->f_string_empty() : f__construct(a_extension->f_type<t_string>(), std::forward<T>(a_value));
+	return a_value.empty() ? a_library->f_string_empty() : f__construct(a_library->f_type<t_string>(), std::forward<T>(a_value));
 }
 
-inline t_object* t_type_of<t_string>::f_from_code(t_global* a_extension, intptr_t a_code)
+inline t_object* t_type_of<t_string>::f_from_code(t_global* a_library, intptr_t a_code)
 {
 	wchar_t c = a_code;
-	return f__construct(a_extension->f_type<t_string>(), &c, 1);
+	return f__construct(a_library->f_type<t_string>(), &c, 1);
 }
 
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_object* t_type_of<t_string>::f__add(t_object* a_self, const t_pvalue& a_value)
@@ -1008,9 +1032,17 @@ inline bool t_type_of<t_string>::f__not_equals(const t_string& a_self, const t_p
 	return !f_is<t_string>(a_value) || a_self != f_as<const t_string&>(a_value);
 }
 
-inline t_object* t_type_of<t_string>::f__substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n)
+inline t_object* t_type_of<t_string>::f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)
 {
-	return a_n > 0 ? f__construct(a_extension->f_type<t_string>(), static_cast<const wchar_t*>(a_self) + a_i, a_n) : a_extension->f_string_empty();
+	return a_n > 0 ? f__construct(a_library->f_type<t_string>(), static_cast<const wchar_t*>(a_self) + a_i, a_n) : a_library->f_string_empty();
+}
+
+inline t_pvalue t_type_of<t_bytes>::f__construct(t_type* a_class, size_t a_size)
+{
+	auto p = f_engine()->f_allocate(sizeof(t_bytes) + a_size);
+	new(p->f_data()) t_bytes(a_size);
+	p->f_be(a_class);
+	return p;
 }
 
 }

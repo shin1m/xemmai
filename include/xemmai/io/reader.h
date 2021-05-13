@@ -16,14 +16,15 @@ class t_reader
 {
 	friend struct t_type_of<t_reader>;
 
+	t_lock v_lock;
 	iconv_t v_cd;
 	t_slot v_stream;
 	t_slot v_buffer;
 	char* v_p;
 	size_t v_n;
 
-	size_t f_read(t_io* a_extension);
-	wint_t f_get(t_io* a_extension);
+	size_t f_read(t_io* a_library);
+	wint_t f_get(t_io* a_library);
 
 public:
 	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer);
@@ -36,9 +37,9 @@ public:
 	{
 		iconv_close(v_cd);
 	}
-	void f_close(t_io* a_extension);
-	t_object* f_read(t_io* a_extension, size_t a_size);
-	t_object* f_read_line(t_io* a_extension);
+	void f_close(t_io* a_library);
+	t_object* f_read(t_io* a_library, size_t a_size);
+	t_object* f_read_line(t_io* a_library);
 };
 
 }
@@ -46,9 +47,9 @@ public:
 template<>
 struct t_type_of<io::t_reader> : t_derivable<t_holds<io::t_reader>>
 {
-	using t_extension = t_io;
+	using t_library = t_io;
 
-	static void f_define(t_io* a_extension);
+	static void f_define(t_io* a_library);
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

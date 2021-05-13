@@ -30,6 +30,8 @@ enum t_tag
 class t_slot
 {
 	friend class t_object;
+	friend class t_owned;
+	friend class t_sharable;
 	friend struct t_thread;
 	friend class t_engine;
 
@@ -340,7 +342,6 @@ public:
 		p->f_type()->f_put(p, a_key, a_value);
 	}
 	bool f_has(t_object* a_key) const;
-	t_value<t_pointer> f_remove(t_object* a_key) const;
 	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_value<t_pointer>* a_stack, size_t a_n) const
 	{
 		return f_object_or_throw()->f_call_without_loop(a_stack, a_n);
@@ -374,7 +375,6 @@ public:
 	t_value<t_pointer> f_and(const t_value<t_pointer>& a_value) const;
 	t_value<t_pointer> f_xor(const t_value<t_pointer>& a_value) const;
 	t_value<t_pointer> f_or(const t_value<t_pointer>& a_value) const;
-	t_value<t_pointer> f_send(const t_value<t_pointer>& a_value) const;
 };
 
 using t_svalue = t_value<t_slot>;
@@ -387,7 +387,7 @@ inline void f_loop(t_pvalue* a_stack, size_t a_n)
 }
 
 template<typename T_tag>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_call(t_value<t_pointer>* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_call(t_pvalue* a_stack, size_t a_n) const
 {
 	size_t n = f_call_without_loop(a_stack, a_n);
 	if (n != size_t(-1)) f_loop(a_stack, n);

@@ -1,10 +1,13 @@
 system = Module("system"
 print = system.out.write_line
 
-Cell = Class() :: @
+Cell = Object + @
+	$value
+	$next
 	$__initialize = @(value) $value = value
 
-Ring = Class() :: @
+Ring = Object + @
+	$ring
 	$__initialize = @
 		$ring = null
 	$__string = @

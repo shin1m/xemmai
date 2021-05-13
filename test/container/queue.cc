@@ -30,10 +30,10 @@ bool t_queue::f_empty() const
 	return !v_head;
 }
 
-void t_queue::f_push(t_container* a_extension, const t_pvalue& a_value)
+void t_queue::f_push(t_container* a_library, const t_pvalue& a_value)
 {
 	t_scoped_lock_for_write lock(v_lock);
-	auto pair = t_type_of<t_pair>::f_instantiate(a_extension, a_value);
+	auto pair = t_type_of<t_pair>::f_instantiate(a_library, a_value);
 	if (v_head) {
 		f_as<t_pair&>(pair).v_next = f_as<t_pair&>(v_head).v_next;
 		f_as<t_pair&>(v_head).v_next = pair;

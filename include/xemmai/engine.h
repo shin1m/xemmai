@@ -20,13 +20,12 @@ struct t_safe_region;
 struct t_debugger
 {
 	virtual void f_stopped(t_thread* a_thread) = 0;
-	virtual void f_loaded(t_thread* a_thread) = 0;
+	virtual void f_loaded(t_debug_script& a_thread) = 0;
 };
 
 class t_engine
 {
 	friend class t_object;
-	friend class t_structure;
 	friend struct t_module;
 	friend struct t_library;
 	friend struct t_fiber;
@@ -76,12 +75,9 @@ private:
 	struct sigaction v_epoch__old_sigusr2;
 #endif
 	t_thread::t_internal* v_thread__internals = new t_thread::t_internal{nullptr};
-	size_t v_thread__cache_hit = 0;
-	size_t v_thread__cache_missed = 0;
 	std::mutex v_thread__mutex;
 	std::condition_variable v_thread__condition;
 	t_type* v_type_class;
-	t_type* v_type_structure;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
 	std::mutex v_module__mutex;
 	std::condition_variable v_module__condition;
@@ -89,7 +85,6 @@ private:
 	t_library::t_handle* v_library__handle__finalizing = nullptr;
 	std::map<std::wstring, t_slot, std::less<>> v_symbol__instances;
 	std::mutex v_symbol__instantiate__mutex;
-	t_structure* v_structure_root;
 	t_root v_module_global;
 	t_root v_module_system;
 	t_root v_module_io;
@@ -101,16 +96,8 @@ private:
 	size_t v_debug__safe = 0;
 	t_thread* v_debug__stepping = nullptr;
 
-	t_object* f_allocate_on_boot(size_t a_size)
-	{
-		auto p = v_object__heap.f_allocate(sizeof(t_object) - sizeof(t_object::v_data) + a_size);
-		p->v_next = nullptr;
-		p->v_structure = v_structure_root;
-		return p;
-	}
 	void f_free(t_object* a_p)
 	{
-		a_p->v_owner = nullptr;
 		a_p->v_count = 1;
 		v_object__heap.f_free(a_p);
 	}
@@ -163,26 +150,36 @@ private:
 	}
 	void f_debug_safe_point(std::unique_lock<std::mutex>& a_lock);
 	template<typename T>
-	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_member);
+	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_do);
 	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock);
-	void f_debug_script_loaded();
+	void f_debug_script_loaded(t_debug_script& a_debug);
 	void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
 
 public:
 	t_engine(const t_options& a_options, size_t a_count, char** a_arguments);
 	~t_engine();
+	template<typename T>
+	t_object* f_allocate_for_type(size_t a_fields)
+	{
+		return f_allocate(t_object::f_align_for_fields(sizeof(T)) + (sizeof(std::pair<t_slot, t_svalue>) + sizeof(std::pair<t_object*, size_t>)) * a_fields);
+	}
+	template<typename T>
+	t_object* f_new_type_on_boot(size_t a_fields, t_type* a_super, t_object* a_module)
+	{
+		auto p = f_allocate_for_type<t_type_of<T>>(a_fields);
+		new(p->f_data()) t_type_of<T>(t_type_of<T>::V_ids, a_super, a_module, t_type_of<T>::V_native, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{});
+		p->f_be(v_type_class);
+		return p;
+	}
 #ifdef _WIN32
-	XEMMAI__PORTABLE__EXPORT t_object* f_allocate(bool a_shared, size_t a_size);
-	t_object* f__allocate(bool a_shared, size_t a_size)
+	XEMMAI__PORTABLE__EXPORT t_object* f_allocate(size_t a_size);
+	t_object* f__allocate(size_t a_size)
 #else
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f_allocate(bool a_shared, size_t a_size)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f_allocate(size_t a_size)
 #endif
 	{
 		auto p = v_object__heap.f_allocate(sizeof(t_object) - sizeof(t_object::v_data) + a_size);
 		p->v_next = nullptr;
-		if (!a_shared) p->v_owner = t_slot::t_increments::v_instance;
-		t_slot::t_increments::f_push(t_object::f_of(v_structure_root));
-		p->v_structure = v_structure_root;
 		return p;
 	}
 	void f_tick()
@@ -241,12 +238,12 @@ public:
 };
 
 template<typename T>
-void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_member)
+void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_do)
 {
 	while (v_debug__stopping) f_debug_enter_leave(a_lock);
 	++v_debug__safe;
 	f_debug_stop_and_wait(a_lock);
-	(v_debugger->*a_member)(t_thread::v_current->v_thread);
+	a_do();
 	f_debug_wait_and_leave(a_lock);
 }
 
@@ -287,12 +284,7 @@ void t_slot::t_queue<A_SIZE>::f_next() noexcept
 
 inline void t_object::f_decrement_step()
 {
-	t_object::f_of(v_structure)->f_decrement_push();
-	if (v_fields) {
-		v_fields->f_scan(f_push_and_clear<&t_object::f_decrement_push>);
-		delete v_fields;
-		v_fields = nullptr;
-	}
+	f_scan_fields(f_push_and_clear<&t_object::f_decrement_push>);
 	if (!v_type->v_primitive) {
 		v_type->f_scan(this, f_push_and_clear<&t_object::f_decrement_push>);
 		v_type->f_finalize(this);
@@ -306,6 +298,16 @@ inline void t_object::f_decrement_step()
 		v_previous->v_next = v_next;
 	}
 	f_engine()->f_free_as_release(this);
+}
+
+template<typename T>
+t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields)
+{
+	auto [fields, key2index] = f_merge(a_fields);
+	auto p = f_engine()->f_allocate_for_type<T>(fields.size());
+	new(p->f_data()) T(T::V_ids, this, a_module, T::V_native, v_instance_fields + a_fields.v_instance.size(), fields, key2index);
+	p->f_be(t_object::f_of(this)->v_type);
+	return p;
 }
 
 inline void t_thread::t_internal::f_epoch_suspend()

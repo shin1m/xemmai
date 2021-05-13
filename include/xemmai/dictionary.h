@@ -7,7 +7,7 @@
 namespace xemmai
 {
 
-class t_dictionary
+class t_dictionary : public t_sharable
 {
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_dictionary>;
@@ -63,7 +63,10 @@ private:
 
 		static t_object* f_instantiate(t_type* a_type, const t_rank& a_rank)
 		{
-			return a_type->f_new_sized<t_table>(true, sizeof(t_entry) * a_rank.v_capacity, a_rank);
+			auto p = f_engine()->f_allocate(sizeof(t_table) + sizeof(t_entry) * a_rank.v_capacity);
+			new(p->f_data()) t_table(a_rank);
+			p->f_be(a_type);
+			return p;
 		}
 
 		t_table(const t_rank& a_rank) : v_slot(a_rank.v_slot), v_end(f_entries() + a_rank.v_capacity), v_rank(a_rank)
@@ -150,7 +153,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_finalizes<t_derives<t_dictionary::t_table>>>>
+struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_finalizes<t_derives<t_dictionary::t_table>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
@@ -162,7 +165,15 @@ struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_underivable<t_fin
 template<>
 struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
-	static void f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n);
+	static void f__construct(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
+	static void f_own(t_dictionary& a_self)
+	{
+		a_self.f_own();
+	}
+	static void f_share(t_dictionary& a_self)
+	{
+		a_self.f_share();
+	}
 	static t_object* f_string(const t_pvalue& a_self);
 	static void f_clear(const t_pvalue& a_self);
 	static size_t f_size(const t_pvalue& a_self);

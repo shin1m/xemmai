@@ -12,26 +12,22 @@ class t_native
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_native>;
 
-	t_extension::t_function v_function;
-	t_extension* v_extension;
-	t_slot v_module;
+	t_library::t_function v_function;
+	t_slot v_library;
 
-	t_native(t_extension::t_function a_function, t_extension* a_extension) : v_function(a_function), v_extension(a_extension), v_module(a_extension->f_module())
+	t_native(t_library::t_function a_function, t_object* a_library) : v_function(a_function), v_library(a_library)
 	{
 	}
 	~t_native() = default;
-
-public:
-	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(t_extension::t_function a_function, t_extension* a_extension);
 };
 
 template<>
-struct t_type_of<t_native> : t_uninstantiatable<t_underivable<t_holds<t_native>>>
+struct t_type_of<t_native> : t_uninstantiatable<t_holds<t_native>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
-		a_scan(a_this->f_as<t_native>().v_module);
+		a_scan(a_this->f_as<t_native>().v_library);
 	}
 	static size_t f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);

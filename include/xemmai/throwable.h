@@ -27,6 +27,7 @@ class t_throwable
 	friend struct t_finalizes<t_bears<t_throwable>>;
 	friend struct t_type_of<t_throwable>;
 
+	t_lock v_lock;
 	t_backtrace* v_backtrace = nullptr;
 	std::wstring v_message;
 

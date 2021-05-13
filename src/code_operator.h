@@ -1266,9 +1266,3 @@
 		XEMMAI__CODE__CASE_NA(XOR)
 		XEMMAI__CODE__CASE_NA(OR)
 #endif
-#ifdef XEMMAI__CODE__OTHERS
-		XEMMAI__CODE__CASE_BEGIN(SEND)
-				if (stack[1].f_tag() < e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
-				XEMMAI__CODE__OBJECT_CALL(f_send)
-		XEMMAI__CODE__CASE_END
-#endif

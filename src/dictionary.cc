@@ -56,7 +56,7 @@ void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
 
 t_object* t_dictionary::f_instantiate()
 {
-	return f_new<t_dictionary>(f_global(), false, f_global()->f_type<t_dictionary::t_table>());
+	return f_new<t_dictionary>(f_global(), f_global()->f_type<t_dictionary::t_table>());
 }
 
 t_pvalue t_dictionary::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
@@ -111,10 +111,10 @@ t_pvalue t_dictionary::f_remove(const t_pvalue& a_key)
 	return value;
 }
 
-void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n)
+void t_type_of<t_dictionary>::f__construct(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_class>()) f_throw(L"must be class."sv);
-	auto object = f_as<t_type&>(a_stack[1]).f_new<t_dictionary>(false, f_global()->f_type<t_dictionary::t_table>());
+	if (a_stack[1].f_type() != f_global()->f_type<t_type>()) f_throw(L"must be class."sv);
+	auto object = f_as<t_type&>(a_stack[1]).f_new<t_dictionary>(f_global()->f_type<t_dictionary::t_table>());
 	auto& dictionary = f_as<t_dictionary&>(object);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
@@ -131,7 +131,8 @@ void t_type_of<t_dictionary>::f__construct(xemmai::t_extension* a_extension, t_p
 t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	t_dictionary::t_iterator i(f_as<const t_dictionary&>(a_self));
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	t_dictionary::t_iterator i(dictionary);
 	std::vector<wchar_t> cs{L'{'};
 	t_pvalue x;
 	t_pvalue y;
@@ -142,7 +143,7 @@ t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
 		y = i.f_entry()->v_value;
 		return true;
 	};
-	if (f_owned_or_shared<t_with_lock_for_read>(a_self, get)) {
+	if (dictionary.f_owned_or_shared<t_scoped_lock_for_read>(get)) {
 		auto push = [&](t_pvalue& x, const wchar_t* name)
 		{
 			x = x.f_invoke(f_global()->f_symbol_string());
@@ -156,7 +157,7 @@ t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
 			cs.push_back(L':');
 			cs.push_back(L' ');
 			push(y, L"value");
-			if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+			if (!dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
 			{
 				i.f_next();
 				return get();
@@ -172,65 +173,72 @@ t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
 void t_type_of<t_dictionary>::f_clear(const t_pvalue& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		f_as<t_dictionary&>(a_self).f_clear();
+		dictionary.f_clear();
 	});
 }
 
 size_t t_type_of<t_dictionary>::f_size(const t_pvalue& a_self)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	return dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return f_as<const t_dictionary&>(a_self).f_size();
+		return dictionary.f_size();
 	});
 }
 
 t_pvalue t_type_of<t_dictionary>::f__get_at(const t_pvalue& a_self, const t_pvalue& a_key)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	return dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return t_pvalue(f_as<const t_dictionary&>(a_self).f_get(a_key));
+		return t_pvalue(dictionary.f_get(a_key));
 	});
 }
 
 t_pvalue t_type_of<t_dictionary>::f__set_at(const t_pvalue& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	return dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return f_as<t_dictionary&>(a_self).f_put(a_key, a_value);
+		return dictionary.f_put(a_key, a_value);
 	});
 }
 
 bool t_type_of<t_dictionary>::f_has(const t_pvalue& a_self, const t_pvalue& a_key)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	return f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	return dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return f_as<t_dictionary&>(a_self).f_has(a_key);
+		return dictionary.f_has(a_key);
 	});
 }
 
 t_pvalue t_type_of<t_dictionary>::f_remove(const t_pvalue& a_self, const t_pvalue& a_key)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	return f_owned_or_shared<t_with_lock_for_write>(a_self, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	return dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return f_as<t_dictionary&>(a_self).f_remove(a_key);
+		return dictionary.f_remove(a_key);
 	});
 }
 
 void t_type_of<t_dictionary>::f_each(const t_pvalue& a_self, const t_pvalue& a_callable)
 {
 	f_check<t_dictionary>(a_self, L"this");
-	t_dictionary::t_iterator i(f_as<const t_dictionary&>(a_self));
+	auto& dictionary = f_as<t_dictionary&>(a_self);
+	t_dictionary::t_iterator i(dictionary);
 	while (true) {
 		t_pvalue key;
 		t_pvalue value;
-		if (!f_owned_or_shared<t_with_lock_for_read>(a_self, [&]
+		if (!dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
 		{
 			if (!i.f_entry()) return false;
 			key = i.f_entry()->f_key();
@@ -244,9 +252,11 @@ void t_type_of<t_dictionary>::f_each(const t_pvalue& a_self, const t_pvalue& a_c
 
 void t_type_of<t_dictionary>::f_define()
 {
-	f_global()->v_type_dictionary__table.f_construct(f_global()->f_type<t_object>()->f_derive<t_type_of<t_dictionary::t_table>>());
-	t_define<t_dictionary, t_object>(f_global(), L"Dictionary"sv)
+	t_define<t_dictionary::t_table, t_object>{f_global()}.f_derive();
+	t_define<t_dictionary, t_object>{f_global()}
 		(f_global()->f_symbol_construct(), f__construct)
+		(L"own"sv, t_member<void(*)(t_dictionary&), f_own>())
+		(L"share"sv, t_member<void(*)(t_dictionary&), f_share>())
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
 		(L"clear"sv, t_member<void(*)(const t_pvalue&), f_clear>())
 		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_pvalue&), f_size>())
@@ -255,12 +265,12 @@ void t_type_of<t_dictionary>::f_define()
 		(L"has"sv, t_member<bool(*)(const t_pvalue&, const t_pvalue&), f_has>())
 		(L"remove"sv, t_member<t_pvalue(*)(const t_pvalue&, const t_pvalue&), f_remove>())
 		(L"each"sv, t_member<void(*)(const t_pvalue&, const t_pvalue&), f_each>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<t_dictionary>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	auto object = f_new<t_dictionary>(false, f_global()->f_type<t_dictionary::t_table>());
+	auto object = f_new<t_dictionary>(f_global()->f_type<t_dictionary::t_table>());
 	auto& dictionary = f_as<t_dictionary&>(object);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
@@ -276,18 +286,20 @@ t_pvalue t_type_of<t_dictionary>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 
 size_t t_type_of<t_dictionary>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 {
-	f_owned_or_shared<t_with_lock_for_read>(a_this, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_this);
+	dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		a_stack[0] = f_as<const t_dictionary&>(a_this).f_get(a_stack[2]);
+		a_stack[0] = dictionary.f_get(a_stack[2]);
 	});
 	return -1;
 }
 
 size_t t_type_of<t_dictionary>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
 {
-	f_owned_or_shared<t_with_lock_for_write>(a_this, [&]
+	auto& dictionary = f_as<t_dictionary&>(a_this);
+	dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		a_stack[0] = f_as<t_dictionary&>(a_this).f_put(a_stack[2], a_stack[3]);
+		a_stack[0] = dictionary.f_put(a_stack[2], a_stack[3]);
 	});
 	return -1;
 }

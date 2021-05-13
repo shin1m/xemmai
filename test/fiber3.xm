@@ -7,9 +7,9 @@ f0 = Fiber(@(co)
 	co("This is shin."
 	"Good bye."
 
-foo = Object(
-foo.__string = @
-	f0(Fiber.current(
+foo = (Object + @
+	$__string = @ f0(Fiber.current(
+)(
 
 a = "" + foo
 print(a

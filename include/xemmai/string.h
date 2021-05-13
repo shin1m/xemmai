@@ -8,7 +8,7 @@ namespace xemmai
 
 class t_string
 {
-	friend struct t_finalizes<t_bears<t_string, t_type_immutable>>;
+	friend struct t_finalizes<t_bears<t_string>>;
 	friend struct t_type_of<t_string>;
 
 	size_t v_size;
@@ -78,7 +78,7 @@ struct t_fundamental<std::wstring_view>
 };
 
 template<>
-struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
+struct t_type_of<t_string> : t_holds<t_string>
 {
 	template<typename T0>
 	struct t_as
@@ -113,8 +113,8 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	}
 	static t_object* f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y);
 	template<typename T>
-	static t_pvalue f_transfer(const t_global* a_extension, T&& a_value);
-	static t_object* f_from_code(t_global* a_extension, intptr_t a_code);
+	static t_pvalue f_transfer(const t_global* a_library, T&& a_value);
+	static t_object* f_from_code(t_global* a_library, intptr_t a_code);
 	static t_object* f_string(const t_pvalue& a_self)
 	{
 		return a_self;
@@ -143,14 +143,14 @@ struct t_type_of<t_string> : t_derivable<t_holds<t_string, t_type_immutable>>
 	}
 	static bool f__equals(const t_string& a_self, const t_pvalue& a_value);
 	static bool f__not_equals(const t_string& a_self, const t_pvalue& a_value);
-	static t_object* f__substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n);
-	static t_object* f_substring(t_global* a_extension, const t_string& a_self, size_t a_i)
+	static t_object* f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n);
+	static t_object* f_substring(t_global* a_library, const t_string& a_self, size_t a_i)
 	{
-		return f__substring(a_extension, a_self, a_i, a_self.f_size() - a_i);
+		return f__substring(a_library, a_self, a_i, a_self.f_size() - a_i);
 	}
-	static t_object* f_substring(t_global* a_extension, const t_string& a_self, size_t a_i, size_t a_n)
+	static t_object* f_substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)
 	{
-		return f__substring(a_extension, a_self, a_i, std::min(a_n, a_self.f_size() - a_i));
+		return f__substring(a_library, a_self, a_i, std::min(a_n, a_self.f_size() - a_i));
 	}
 	static intptr_t f_code_at(const t_string& a_self, size_t a_i)
 	{

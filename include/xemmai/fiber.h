@@ -115,7 +115,7 @@ struct t_fiber
 };
 
 template<>
-struct t_type_of<t_fiber> : t_underivable<t_holds<t_fiber>>
+struct t_type_of<t_fiber> : t_holds<t_fiber>
 {
 	void f_define();
 

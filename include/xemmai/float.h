@@ -14,7 +14,7 @@ struct t_fundamental<float>
 };
 
 template<>
-struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
+struct t_type_of<double> : t_derivable<t_bears<double>>
 {
 	template<typename T0>
 	struct t_as
@@ -74,7 +74,7 @@ struct t_type_of<double> : t_derivable<t_bears<double, t_type_immutable>>
 	}
 	static t_pvalue f_construct_derived(t_type* a_class, double a_value)
 	{
-		return a_class->f_new<double>(true, a_value);
+		return a_class->f_new<double>(a_value);
 	}
 	static double f_parse(const wchar_t* a_value)
 	{

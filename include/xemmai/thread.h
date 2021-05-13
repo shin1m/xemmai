@@ -8,25 +8,6 @@ namespace xemmai
 
 struct t_thread
 {
-	struct t_cache
-	{
-		static const size_t V_SIZE = 1 << 11;
-		static const size_t V_MASK = V_SIZE - 1;
-
-		static inline volatile size_t v_revisions[V_SIZE];
-
-		static size_t f_index(const t_pvalue& a_object, t_object* a_key)
-		{
-			return (a_object.f_tag() ^ reinterpret_cast<size_t>(a_key)) / sizeof(t_object*) & V_MASK;
-		}
-		static size_t f_revise(size_t a_i);
-
-		t_slot v_object;
-		t_slot v_key;
-		t_svalue v_value;
-		volatile size_t v_revision = 0;
-		volatile size_t v_key_revision = 0;
-	};
 	struct t_internal
 	{
 		t_internal* v_next;
@@ -44,10 +25,6 @@ struct t_thread
 		HANDLE v_handle = NULL;
 #endif
 		t_object* volatile* v_reviving = nullptr;
-		t_structure::t_cache v_index_cache[t_structure::t_cache::V_SIZE];
-		t_cache v_cache[t_cache::V_SIZE];
-		size_t v_cache_hit = 0;
-		size_t v_cache_missed = 0;
 
 #ifdef _WIN32
 		~t_internal()
@@ -73,18 +50,10 @@ struct t_thread
 	};
 
 	static inline XEMMAI__PORTABLE__THREAD t_internal* v_current;
-	static inline XEMMAI__PORTABLE__THREAD t_cache* v_cache;
-	static inline XEMMAI__PORTABLE__THREAD size_t v_cache_hit;
-	static inline XEMMAI__PORTABLE__THREAD size_t v_cache_missed;
 
 	static t_object* f_current()
 	{
 		return t_object::f_of(v_current->v_thread);
-	}
-	static void f_cache_clear();
-	static XEMMAI__PORTABLE__EXPORT void f_cache_acquire();
-	static void f_cache_release()
-	{
 	}
 	static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
 
@@ -98,7 +67,7 @@ struct t_thread
 };
 
 template<>
-struct t_type_of<t_thread> : t_underivable<t_fixed<t_holds<t_thread>>>
+struct t_type_of<t_thread> : t_holds<t_thread>
 {
 	void f_define();
 

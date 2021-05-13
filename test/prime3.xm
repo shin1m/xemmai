@@ -9,7 +9,9 @@ delay = @(f)
 		x
 	@ g(
 
-Pair = Class() :: @
+Pair = Object + @
+	$first
+	$second
 	$__initialize = @(first, second)
 		$first = first
 		$second = second

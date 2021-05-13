@@ -336,30 +336,6 @@ struct t_object_has_indirect : t_node
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_object_remove : t_node
-{
-	std::unique_ptr<t_node> v_target;
-	t_object* v_key;
-
-	t_object_remove(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
-	{
-	}
-	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-};
-
-struct t_object_remove_indirect : t_node
-{
-	std::unique_ptr<t_node> v_target;
-	std::unique_ptr<t_node> v_key;
-
-	t_object_remove_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
-	{
-	}
-	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-};
-
 struct t_symbol_get : t_node
 {
 	size_t v_outer;

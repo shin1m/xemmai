@@ -3,7 +3,7 @@
 namespace xemmai
 {
 
-void t_type::f_initialize(xemmai::t_extension* a_extension, t_pvalue* a_stack, size_t a_n)
+void t_type::f_initialize(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
 {
 	a_stack[0] = nullptr;
 }
@@ -15,36 +15,69 @@ t_object* t_type::f_string(const t_pvalue& a_self)
 	return t_string::f_instantiate(cs, n);
 }
 
-void t_type::f_own(const t_pvalue& a_self)
-{
-	auto p = static_cast<t_object*>(a_self);
-	if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) p->f_own();
-}
-
-void t_type::f_share(const t_pvalue& a_self)
-{
-	auto p = static_cast<t_object*>(a_self);
-	if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) p->f_share();
-}
-
 void t_type::f_define()
 {
 	v_builtin = v_primitive = true;
-	t_define<t_object, t_object>(f_global(), L"Object"sv, t_object::f_of(this))
+	t_define<t_object, t_object>{f_global()}
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_pvalue&), f__hash>())
 		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__not_equals>())
-		(L"own"sv, t_member<void(*)(const t_pvalue&), f_own>())
-		(L"share"sv, t_member<void(*)(const t_pvalue&), f_share>())
-	;
+	.f_derive(t_object::f_of(this));
 }
 
-t_object* t_type::f_do_derive()
+size_t t_type::f_index(t_object* a_key)
 {
-	auto p = f_derive<t_type>();
-	p->f_as<t_type>().v_primitive = true;
+	auto p = f_key2index();
+	size_t i = 0;
+	size_t j = v_class_fields;
+	while (i < j) {
+		size_t k = (i + j) / 2;
+		auto& entry = p[k];
+		if (entry.first == a_key) return entry.second;
+		if (entry.first < a_key)
+			i = k + 1;
+		else
+			j = k;
+	}
+	return v_class_fields;
+}
+
+std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> t_type::f_merge(const t_fields& a_fields)
+{
+	std::vector<std::pair<t_root, t_rvalue>> fields{f_fields(), f_fields() + v_instance_fields};
+	std::map<t_object*, size_t> key2index{f_key2index(), f_key2index() + v_class_fields};
+	for (auto& x : a_fields.v_instance) {
+		if (key2index.find(x) != key2index.end()) f_throw(f_as<t_symbol&>(x).f_string());
+		key2index.emplace(x, fields.size());
+		fields.emplace_back(x, nullptr);
+	}
+	auto instance_fields = fields.size();
+	for (size_t i = v_instance_fields; i < v_class_fields; ++i) {
+		auto& x = f_fields()[i];
+		key2index.at(x.first) = fields.size();
+		fields.emplace_back(x);
+	}
+	for (auto& x : a_fields.v_class) {
+		auto i = key2index.lower_bound(x.first);
+		if (i == key2index.end() || i->first != x.first) {
+			key2index.emplace_hint(i, x.first, fields.size());
+			fields.push_back(x);
+		} else {
+			if (i->second < instance_fields) f_throw(f_as<t_symbol&>(x.first).f_string());
+			fields[i->second].second = x.second;
+		}
+	}
+	return {fields, key2index};
+}
+
+t_object* t_type::f_do_derive(const t_fields& a_fields)
+{
+	auto p = f_derive<t_type>(v_module, a_fields);
+	auto& type = p->f_as<t_type>();
+	type.v_derive = &t_type::f_do_derive;
+	type.v_primitive = true;
 	return p;
 }
 
@@ -60,7 +93,9 @@ bool t_type::f_derives(t_type* a_type)
 
 t_pvalue t_type::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	auto p = f_engine()->f_allocate(false, 0);
+	auto p = f_engine()->f_allocate(sizeof(t_svalue) * v_instance_fields);
+	auto q = static_cast<t_svalue*>(p->f_data());
+	for (size_t i = 0; i < v_instance_fields; ++i) new(q + i) t_svalue();
 	p->f_be(this);
 	return p;
 }
@@ -72,62 +107,14 @@ void t_type::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 	a_stack[0] = value;
 }
 
-t_pvalue t_type::f_get_nonowned(t_object* a_this, t_object* a_key)
-{
-	if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
-	size_t i = t_thread::t_cache::f_index(a_this, a_key);
-	auto& cache = t_thread::v_cache[i];
-	auto& symbol = f_as<t_symbol&>(a_key);
-	if (cache.v_object == a_this && cache.v_key == a_key && cache.v_key_revision == symbol.v_revision) {
-		++t_thread::v_cache_hit;
-		return cache.v_value;
-	}
-	++t_thread::v_cache_missed;
-	cache.v_key_revision = symbol.v_revision;
-	intptr_t index = -1;
-	t_pvalue value;
-	{
-		t_with_lock_for_read lock(a_this);
-		if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
-		index = a_this->f_field_index(a_key);
-		if (index >= 0) value = a_this->f_field_get(index);
-	}
-	if (index < 0) value = t_method::f_bind(f_get_of_type(a_key), a_this);
-	cache.v_object = a_this;
-	cache.v_key = a_key;
-	return cache.v_value = value;
-}
-
-void t_type::f_do_get_nonowned(t_object* a_this, t_object* a_key, t_pvalue* a_stack)
-{
-	a_stack[0] = f_get_nonowned(a_this, a_key);
-	a_stack[1] = nullptr;
-}
-
 t_pvalue t_type::f_do_get(t_object* a_this, t_object* a_key)
 {
-	assert(reinterpret_cast<uintptr_t>(a_this) >= e_tag__OBJECT);
-	if (!a_this->f_owned()) return f_get_nonowned(a_this, a_key);
-	intptr_t index = a_this->f_field_index(a_key);
-	return index < 0 ? t_method::f_bind(f_get_of_type(a_key), a_this) : t_pvalue(a_this->f_field_get(index));
+	f_throw(f_as<t_symbol&>(a_key).f_string());
 }
 
 void t_type::f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
 {
-	if (a_this->f_owned()) {
-		a_this->f_field_put(a_key, a_value);
-	} else {
-		{
-			t_with_lock_for_write lock(a_this);
-			if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
-			a_this->f_field_put(a_key, a_value);
-		}
-		size_t i = t_thread::t_cache::f_index(a_this, a_key);
-		auto& cache = t_thread::v_cache[i];
-		if (cache.v_object == a_this && cache.v_key == a_key) cache.v_object = cache.v_key = cache.v_value = nullptr;
-		cache.v_revision = t_thread::t_cache::f_revise(i);
-		cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
-	}
+	f_throw(f_as<t_symbol&>(a_key).f_string());
 }
 
 bool t_type::f_do_has(t_object* a_this, t_object* a_key)
@@ -139,38 +126,6 @@ bool t_type::f_do_has(t_object* a_this, t_object* a_key)
 		f_as<t_fiber&>(t_fiber::f_current()).f_caught({}, nullptr);
 		return false;
 	}
-}
-
-t_pvalue t_type::f_do_remove(t_object* a_this, t_object* a_key)
-{
-	if (a_this->f_owned()) {
-		intptr_t index = a_this->f_field_index(a_key);
-		if (index < 0) f_throw(f_as<t_symbol&>(a_key).f_string());
-		t_pvalue value = a_this->f_field_get(index);
-		a_this->f_field_remove(index);
-		return value;
-	} else {
-		t_pvalue value;
-		{
-			t_with_lock_for_write lock(a_this);
-			if (!a_this->f_shared()) f_throw(L"owned by another thread."sv);
-			intptr_t index = a_this->f_field_index(a_key);
-			if (index < 0) f_throw(f_as<t_symbol&>(a_key).f_string());
-			value = a_this->f_field_get(index);
-			a_this->f_field_remove(index);
-		}
-		size_t i = t_thread::t_cache::f_index(a_this, a_key);
-		auto& cache = t_thread::v_cache[i];
-		if (cache.v_object == a_this && cache.v_key == a_key) cache.v_object = cache.v_key = cache.v_value = nullptr;
-		cache.v_revision = t_thread::t_cache::f_revise(i);
-		cache.v_key_revision = f_as<t_symbol&>(a_key).v_revision;
-		return value;
-	}
-}
-
-void t_type::f_do_call_nonowned(t_object* a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n)
-{
-	a_this->f_type()->f_get_nonowned(a_this, a_key).f_call(a_stack, a_n);
 }
 
 size_t t_type::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)
@@ -214,42 +169,10 @@ XEMMAI__TYPE__METHOD(not_equals, 1)
 XEMMAI__TYPE__METHOD(and, 1)
 XEMMAI__TYPE__METHOD(xor, 1)
 XEMMAI__TYPE__METHOD(or, 1)
-XEMMAI__TYPE__METHOD(send, 1)
 
 void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name)
 {
 	f_throw(std::wstring(a_name) + L" must be " + portable::f_convert(a_type.name()) + L'.');
-}
-
-void t_type_immutable::f_do_get_nonowned(t_object* a_this, t_object* a_key, t_pvalue* a_stack)
-{
-	xemmai::f_get_of_type(*a_this, a_key, a_stack);
-}
-
-t_pvalue t_type_immutable::f_do_get(t_object* a_this, t_object* a_key)
-{
-	assert(reinterpret_cast<uintptr_t>(a_this) >= e_tag__OBJECT);
-	return t_method::f_bind(f_get_of_type(a_key), a_this);
-}
-
-void t_type_immutable::f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
-{
-	f_throw(L"immutable."sv);
-}
-
-bool t_type_immutable::f_do_has(t_object* a_this, t_object* a_key)
-{
-	return false;
-}
-
-t_pvalue t_type_immutable::f_do_remove(t_object* a_this, t_object* a_key)
-{
-	f_throw(L"immutable."sv);
-}
-
-void t_type_immutable::f_do_call_nonowned(t_object* a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n)
-{
-	f_call_of_type(*a_this, a_key, a_stack, a_n);
 }
 
 }

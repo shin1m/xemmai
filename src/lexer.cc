@@ -653,7 +653,7 @@ void t_lexer::f_next()
 
 t_object* t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
 {
-	return f_new<t_error>(f_global(), false, a_lexer);
+	return f_new<t_error>(f_global(), a_lexer);
 }
 
 void t_lexer::t_error::f_dump() const

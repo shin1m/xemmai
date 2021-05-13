@@ -10,7 +10,7 @@
 namespace xemmai
 {
 
-class t_io : public t_extension
+class t_io : public t_library
 {
 	t_slot v_symbol_close;
 	t_slot v_symbol_read;
@@ -24,10 +24,13 @@ class t_io : public t_extension
 	t_slot_of<t_type> v_type_path;
 
 public:
-	t_io(t_object* a_module);
+	t_io() : t_library(nullptr)
+	{
+	}
+	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
-	const T* f_extension() const
+	const T* f_library() const
 	{
 		return f_global();
 	}
@@ -69,12 +72,12 @@ public:
 	t_pvalue f_as(T&& a_value) const
 	{
 		using t = t_type_of<typename t_fundamental<T>::t_type>;
-		return t::f_transfer(f_extension<typename t::t_extension>(), std::forward<T>(a_value));
+		return t::f_transfer(f_library<typename t::t_library>(), std::forward<T>(a_value));
 	}
 };
 
 template<>
-inline const t_io* t_io::f_extension<t_io>() const
+inline const t_io* t_io::f_library<t_io>() const
 {
 	return this;
 }
@@ -106,13 +109,13 @@ inline t_slot_of<t_type>& t_io::f_type_slot<portable::t_path>()
 template<typename... T_an>
 inline t_object* io::t_file::f_instantiate(T_an&&... a_an)
 {
-	return f_new<t_file>(f_extension<t_io>(f_engine()->f_module_io()), false, std::forward<T_an>(a_an)...);
+	return f_new<t_file>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), std::forward<T_an>(a_an)...);
 }
 
 template<typename T>
-inline t_object* t_type_of<portable::t_path>::f_transfer(const t_io* a_extension, T&& a_value)
+inline t_object* t_type_of<portable::t_path>::f_transfer(const t_io* a_library, T&& a_value)
 {
-	return xemmai::f_new<portable::t_path>(a_extension, true, std::forward<T>(a_value));
+	return xemmai::f_new<portable::t_path>(a_library, std::forward<T>(a_value));
 }
 
 }

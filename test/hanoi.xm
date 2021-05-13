@@ -2,16 +2,19 @@ system = Module("system"
 list = Module("list"
 print = system.out.write_line
 
-Tower = Class(list.List) :: @
+Tower = list.List + @
 	$__initialize = @(height)
-		:$^__initialize[$](
+		list.List.__initialize[$](
 		$build(height
 	$build = @(height)
 		if height > 0
 			$push(height
 			$build(height - 1
 
-Towers = Class() :: @
+Towers = Object + @
+	$x
+	$y
+	$z
 	$__initialize = @(x, y, z)
 		$x = x
 		$y = y

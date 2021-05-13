@@ -54,7 +54,7 @@ public:
 };
 
 template<>
-struct t_type_of<t_lambda> : t_uninstantiatable<t_underivable<t_holds<t_lambda>>>
+struct t_type_of<t_lambda> : t_uninstantiatable<t_holds<t_lambda>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

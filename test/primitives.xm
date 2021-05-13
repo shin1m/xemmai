@@ -49,8 +49,8 @@ math = Module("math"
 print("sqrt(2) = " + math.sqrt(2)
 assert(math.sqrt(2) == math.sqrt(2.0)
 
-Foo = Class(Integer
-Foo.f = @(x) $ + x
+Foo = Integer + @
+	$f = @(x) $ + x
 print("Foo(1).@ === Integer = " + (Foo(1).@ === Integer)
 assert(Foo(1).@ !== Integer
 print("Foo(1).f(2) = " + Foo(1).f(2)
@@ -76,8 +76,8 @@ assert(Foo(1).__equals(1)
 print("Foo(1).__equals(2) = " + Foo(1).__equals(2)
 assert(!Foo(1).__equals(2)
 
-Bar = Class(Float
-Bar.f = @(x) $ + x
+Bar = Float + @
+	$f = @(x) $ + x
 print("Bar(1.0).@ === Float = " + (Bar(1.0).@ === Float)
 assert(Bar(1.0).@ !== Float
 print("Bar(1.0).f(2.0) = " + Bar(1.0).f(2.0)
@@ -108,14 +108,3 @@ assert("" + "" === ""
 foo = "a"
 assert(foo + "" === foo
 assert("" + foo === foo
-
-Foo = Class(String) :: @
-	$__construct = @(*xs)
-		s = ""
-		xs.each(@(x) :s = s + x
-		:$^__construct[$](s
-	$__initialize = @(*xs)
-
-foo = Foo(0, "a", 1, "b"
-print(foo
-assert(foo == "0a1b"

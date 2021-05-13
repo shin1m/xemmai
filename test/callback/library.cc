@@ -3,7 +3,7 @@
 
 using namespace xemmai;
 
-struct t_callback_extension;
+struct t_callback_library;
 
 namespace xemmai
 {
@@ -11,7 +11,7 @@ namespace xemmai
 template<>
 struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 {
-	using t_extension = t_callback_extension;
+	using t_library = t_callback_library;
 
 	template<typename T0>
 	struct t_as
@@ -33,7 +33,7 @@ struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 		}
 	};
 
-	static void f_define(t_callback_extension* a_extension);
+	static void f_define(t_callback_library* a_library);
 
 	using t_base::t_base;
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
@@ -43,9 +43,9 @@ struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 template<>
 struct t_type_of<t_server> : t_derivable<t_holds<t_server>>
 {
-	using t_extension = t_callback_extension;
+	using t_library = t_callback_library;
 
-	static void f_define(t_callback_extension* a_extension);
+	static void f_define(t_callback_library* a_library);
 	static void f_post(t_server& a_self, std::wstring_view a_message)
 	{
 		a_self.f_post(a_message);
@@ -57,17 +57,22 @@ struct t_type_of<t_server> : t_derivable<t_holds<t_server>>
 
 }
 
-struct t_callback_extension : t_extension
+struct t_callback_library : t_library
 {
 	t_slot v_symbol_on_message;
 	t_slot_of<t_type> v_type_client;
 	t_slot_of<t_type> v_type_server;
 
-	t_callback_extension(t_object* a_module) : t_extension(a_module)
+	using t_library::t_library;
+	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 	{
 		v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
 		t_type_of<t_client>::f_define(this);
 		t_type_of<t_server>::f_define(this);
+		t_export(this, a_fields)
+			(L"Client"sv, t_object::f_of(v_type_client))
+			(L"Server"sv, t_object::f_of(v_type_server))
+		;
 	}
 	virtual void f_scan(t_scan a_scan)
 	{
@@ -83,7 +88,7 @@ struct t_callback_extension : t_extension
 	template<typename T>
 	t_type* f_type() const
 	{
-		return const_cast<t_callback_extension*>(this)->f_type_slot<T>();
+		return const_cast<t_callback_library*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
 	t_pvalue f_as(T&& a_value) const
@@ -94,27 +99,27 @@ struct t_callback_extension : t_extension
 };
 
 template<>
-inline t_slot_of<t_type>& t_callback_extension::f_type_slot<t_client>()
+inline t_slot_of<t_type>& t_callback_library::f_type_slot<t_client>()
 {
 	return v_type_client;
 }
 
 template<>
-inline t_slot_of<t_type>& t_callback_extension::f_type_slot<t_server>()
+inline t_slot_of<t_type>& t_callback_library::f_type_slot<t_server>()
 {
 	return v_type_server;
 }
 
 class t_client_wrapper : public t_client
 {
-	friend struct t_callback_extension;
+	friend struct t_callback_library;
 
 	t_object* v_self;
 
 public:
 	static t_pvalue f_construct(t_type* a_class)
 	{
-		auto object = a_class->f_new<t_client*>(false, new t_client_wrapper());
+		auto object = a_class->f_new<t_client*>(new t_client_wrapper());
 		object->f_as<t_client_wrapper*>()->v_self = object;
 		return object;
 	}
@@ -128,21 +133,21 @@ public:
 
 	virtual void f_on_message(std::wstring_view a_message)
 	{
-		auto extension = f_extension<t_callback_extension>(v_self->f_type()->v_module);
-		v_self->f_invoke(extension->v_symbol_on_message, extension->f_as(a_message));
+		auto& library = v_self->f_type()->v_module->f_as<t_callback_library>();
+		v_self->f_invoke(library.v_symbol_on_message, library.f_as(a_message));
 	}
 };
 
 namespace xemmai
 {
 
-void t_type_of<t_client>::f_define(t_callback_extension* a_extension)
+void t_type_of<t_client>::f_define(t_callback_library* a_library)
 {
-	t_define<t_client, t_object>(a_extension, L"Client"sv)
+	t_define<t_client, t_object>{a_library}
 		(t_construct_with<t_pvalue(*)(t_type*), t_client_wrapper::f_construct>())
-		(a_extension->v_symbol_on_message, t_member<void(*)(t_client*, std::wstring_view), t_client_wrapper::f_super__on_message>())
+		(a_library->v_symbol_on_message, t_member<void(*)(t_client*, std::wstring_view), t_client_wrapper::f_super__on_message>())
 		(L"remove"sv, t_member<void(t_client::*)(), &t_client::f_remove>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<t_client>::f_do_construct(t_pvalue* a_stack, size_t a_n)
@@ -155,30 +160,32 @@ void t_type_of<t_client>::f_do_finalize(t_object* a_this)
 	delete dynamic_cast<t_client_wrapper*>(a_this->f_as<t_client*>());
 }
 
-void t_type_of<t_server>::f_define(t_callback_extension* a_extension)
+void t_type_of<t_server>::f_define(t_callback_library* a_library)
 {
-	t_define<t_server, t_object>(a_extension, L"Server"sv)
-		(t_construct<false>())
+	t_define<t_server, t_object>{a_library}
+		(t_construct<>())
 		(L"add"sv, t_member<void(t_server::*)(t_client&), &t_server::f_add>())
 		(L"post"sv, t_member<void(*)(t_server&, std::wstring_view), f_post>())
 		(L"run"sv, t_member<void(t_server::*)(), &t_server::f_run>())
-	;
+	.f_derive();
 }
 
 t_pvalue t_type_of<t_server>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_construct<false>::t_bind<t_server>::f_do(this, a_stack, a_n);
+	return t_construct<>::t_bind<t_server>::f_do(this, a_stack, a_n);
 }
 
 }
 
-t_pvalue t_callback_extension::f_as(t_client* a_value) const
+t_pvalue t_callback_library::f_as(t_client* a_value) const
 {
 	auto p = dynamic_cast<t_client_wrapper*>(a_value);
-	return p ? p->v_self : v_type_client->f_new<t_client*>(false, a_value);
+	return p ? p->v_self : v_type_client->f_new<t_client*>(a_value);
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_object* a_module)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
 {
-	return new t_callback_extension(a_module);
+	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<t_callback_library>(a_handle);
+	p->f_as<t_callback_library>().f_define(a_fields);
+	return p;
 }

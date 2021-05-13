@@ -9,13 +9,13 @@ if true
 	a = a + 3
 assert(a == 6
 
-a = Object(
-a
-.f = @(x) x * x
+a = (Object + @
+	$
+	.f = @(x) x * x
+)(
 assert(a.f(2) == 4
-a
-	.g = @(x) x * x * x
-assert(a.g(2) == 8
+assert(a
+.f(2) == 4
 
 f = @(
 	x,

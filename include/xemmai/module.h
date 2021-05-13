@@ -20,33 +20,43 @@ struct t_module
 		t_scoped_lock();
 		~t_scoped_lock();
 	};
+	struct t_body
+	{
+		virtual ~t_body() = default;
+		virtual void f_scan(t_scan a_scan) = 0;
+	};
 
-
-	template<typename T, typename... T_an>
-	static t_object* f_new(std::wstring_view a_name, T_an&&... a_an);
-	static t_object* f_load_library(std::wstring_view a_name, std::wstring_view a_path);
-	static void f_execute_script(t_object* a_this, t_object* a_code);
-	static t_object* f_load_and_execute_script(std::wstring_view a_name, std::wstring_view a_path);
+	static t_object* f_new(std::wstring_view a_name, t_object* a_body, const std::vector<std::pair<t_root, t_rvalue>>& a_fields);
+	static t_object* f_load_library(std::wstring_view a_path, std::vector<std::pair<t_root, t_rvalue>>& a_fields);
+	static void f_execute_script(t_object* a_code, t_fields& a_fields);
+	static t_object* f_load_and_execute_script(std::wstring_view a_path, t_fields& a_fields);
 	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_name);
 	static void f_main();
 
 	std::map<std::wstring, t_slot, std::less<>>::iterator v_iterator;
-	std::wstring v_path;
+	t_slot v_body;
 
-	t_module(std::map<std::wstring, t_slot, std::less<>>::iterator a_iterator, std::wstring_view a_path) : v_iterator(a_iterator), v_path(a_path)
+	t_module(std::map<std::wstring, t_slot, std::less<>>::iterator a_iterator, t_object* a_body) : v_iterator(a_iterator), v_body(a_body)
 	{
 		v_iterator->second = t_object::f_of(this);
 	}
-	virtual ~t_module();
-	virtual void f_scan(t_scan a_scan);
+	~t_module();
+	void f_scan(t_scan a_scan)
+	{
+		a_scan(v_iterator->second);
+		a_scan(v_body);
+	}
 };
 
-struct t_script : t_module
+struct t_script : t_module::t_body
 {
+	std::wstring v_path;
 	std::vector<std::unique_ptr<t_svalue>> v_slots;
 	std::mutex v_mutex;
 
-	using t_module::t_module;
+	t_script(std::wstring_view a_path) : v_path(a_path)
+	{
+	}
 	virtual void f_scan(t_scan a_scan);
 	t_svalue& f_slot(t_object* a_p)
 	{
@@ -74,64 +84,49 @@ struct t_debug_script : t_script
 	}
 };
 
-class XEMMAI__PORTABLE__EXPORT t_extension
-{
-	t_object* v_module;
-
-public:
-	using t_function = void(*)(t_extension*, t_pvalue*, size_t);
-
-	t_extension(t_object* a_module) : v_module(a_module)
-	{
-	}
-	virtual ~t_extension() = default;
-	t_object* f_module() const
-	{
-		return v_module;
-	}
-	virtual void f_scan(t_scan a_scan) = 0;
-};
-
-struct t_library : t_module
+struct t_library : t_module::t_body
 {
 	struct t_handle
 	{
 		t_handle* v_next;
 		portable::t_library v_library;
 	};
+	using t_function = void(*)(t_library*, t_pvalue*, size_t);
 
 	t_handle* v_handle;
-	t_extension* v_extension = nullptr;
 
-	t_library(std::map<std::wstring, t_slot, std::less<>>::iterator a_iterator, std::wstring_view a_path, t_handle* a_handle) : t_module(a_iterator, a_path), v_handle(a_handle)
+	t_library(t_handle* a_handle) : v_handle(a_handle)
 	{
 	}
 	virtual ~t_library();
-	virtual void f_scan(t_scan a_scan);
 };
 
 template<>
-struct t_type_of<t_module> : t_underivable<t_holds<t_module>>
+struct t_type_of<t_module::t_body> : t_uninstantiatable<t_finalizes<t_derives<t_module::t_body>>>
+{
+	using t_base::t_base;
+	static void f_do_scan(t_object* a_this, t_scan a_scan)
+	{
+		a_this->f_as<t_module::t_body>().f_scan(a_scan);
+	}
+};
+
+template<>
+struct t_type_of<t_module> : t_holds<t_module>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 };
 
-template<typename T>
-inline T* f_extension(t_object* a_module)
+template<typename T_type, typename T_library, typename... T_an>
+inline t_object* f_new(T_library* a_library, T_an&&... a_an)
 {
-	return static_cast<T*>(a_module->f_as<t_library>().v_extension);
-}
-
-template<typename T_type, typename T_extension, typename... T_an>
-inline t_object* f_new(T_extension* a_extension, bool a_shared, T_an&&... a_an)
-{
-	return a_extension->template f_type<T_type>()->template f_new<T_type>(a_shared, std::forward<T_an>(a_an)...);
+	return a_library->template f_type<T_type>()->template f_new<T_type>(std::forward<T_an>(a_an)...);
 }
 
 }
 
-#define XEMMAI__MODULE__FACTORY extern "C" XEMMAI__PORTABLE__DEFINE_EXPORT xemmai::t_extension* f_factory
+#define XEMMAI__MODULE__FACTORY extern "C" XEMMAI__PORTABLE__DEFINE_EXPORT xemmai::t_object* f_factory
 
 #endif
