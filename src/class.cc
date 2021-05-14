@@ -13,10 +13,8 @@ t_pvalue t_class::f_do_get(t_object* a_this, t_object* a_key)
 {
 	auto& type = a_this->f_as<t_type>();
 	auto index = type.f_index(a_key);
-	if (index < type.v_instance_fields || index >= type.v_class_fields) f_throw(f_as<t_symbol&>(a_key).f_string());
-	auto& field = type.f_fields()[index].second;
-	t_object* p = field;
-	return f_is_callable(p) ? t_pvalue(xemmai::f_new<t_method>(f_global(), p, a_this)) : t_pvalue(field);
+	if (index < type.v_instance_fields || index >= type.v_fields) f_throw(f_as<t_symbol&>(a_key).f_string());
+	return type.f_fields()[index].second;
 }
 
 size_t t_class::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)

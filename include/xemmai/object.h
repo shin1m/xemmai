@@ -293,7 +293,6 @@ public:
 	}
 	template<typename... T>
 	t_pvalue f_invoke(t_object* a_key, T&&... a_arguments);
-	t_pvalue f_call_preserved(t_object* a_key, t_pvalue* a_stack, size_t a_n);
 };
 
 struct t_owned
@@ -353,20 +352,20 @@ inline bool t_value<T_tag>::f_has(t_object* a_key) const
 	return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_has(a_key);
 }
 
-inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(V_ids.size() - 1), v_ids(V_ids.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_class_fields(0)
+inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(V_ids.size() - 1), v_ids(V_ids.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
 {
 }
 
 template<size_t A_n>
-inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module, size_t a_native, size_t a_instance_fields, const std::vector<std::pair<t_root, t_rvalue>>& a_fields, const std::map<t_object*, size_t>& a_key2index) : v_this(t_object::f_of(this)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(a_module), v_fields_offset(t_object::f_fields_offset(a_native)), v_instance_fields(a_instance_fields), v_class_fields(a_fields.size())
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module, size_t a_native, size_t a_instance_fields, const std::vector<std::pair<t_root, t_rvalue>>& a_fields, const std::map<t_object*, size_t>& a_key2index) : v_this(t_object::f_of(this)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(a_module), v_fields_offset(t_object::f_fields_offset(a_native)), v_instance_fields(a_instance_fields), v_fields(a_fields.size())
 {
 	v_super.f_construct(t_object::f_of(a_super));
-	std::copy(a_fields.begin(), a_fields.end(), f_fields());
+	std::uninitialized_copy(a_fields.begin(), a_fields.end(), f_fields());
 	std::copy(a_key2index.begin(), a_key2index.end(), f_key2index());
 }
 
 template<typename T_base>
-inline void t_finalizes<T_base>::f_do_finalize(t_object* a_this)
+void t_finalizes<T_base>::f_do_finalize(t_object* a_this)
 {
 	using t = typename T_base::t_what;
 	a_this->f_as<t>().~t();

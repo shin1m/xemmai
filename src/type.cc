@@ -31,7 +31,7 @@ size_t t_type::f_index(t_object* a_key)
 {
 	auto p = f_key2index();
 	size_t i = 0;
-	size_t j = v_class_fields;
+	size_t j = v_fields;
 	while (i < j) {
 		size_t k = (i + j) / 2;
 		auto& entry = p[k];
@@ -41,20 +41,20 @@ size_t t_type::f_index(t_object* a_key)
 		else
 			j = k;
 	}
-	return v_class_fields;
+	return v_fields;
 }
 
 std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> t_type::f_merge(const t_fields& a_fields)
 {
 	std::vector<std::pair<t_root, t_rvalue>> fields{f_fields(), f_fields() + v_instance_fields};
-	std::map<t_object*, size_t> key2index{f_key2index(), f_key2index() + v_class_fields};
+	std::map<t_object*, size_t> key2index{f_key2index(), f_key2index() + v_fields};
 	for (auto& x : a_fields.v_instance) {
 		if (key2index.find(x) != key2index.end()) f_throw(f_as<t_symbol&>(x).f_string());
 		key2index.emplace(x, fields.size());
 		fields.emplace_back(x, nullptr);
 	}
 	auto instance_fields = fields.size();
-	for (size_t i = v_instance_fields; i < v_class_fields; ++i) {
+	for (size_t i = v_instance_fields; i < v_fields; ++i) {
 		auto& x = f_fields()[i];
 		key2index.at(x.first) = fields.size();
 		fields.emplace_back(x);
@@ -94,8 +94,7 @@ bool t_type::f_derives(t_type* a_type)
 t_pvalue t_type::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	auto p = f_engine()->f_allocate(sizeof(t_svalue) * v_instance_fields);
-	auto q = static_cast<t_svalue*>(p->f_data());
-	for (size_t i = 0; i < v_instance_fields; ++i) new(q + i) t_svalue();
+	std::uninitialized_default_construct_n(p->f_fields(0), v_instance_fields);
 	p->f_be(this);
 	return p;
 }

@@ -167,7 +167,7 @@ public:
 	t_object* f_new_type_on_boot(size_t a_fields, t_type* a_super, t_object* a_module)
 	{
 		auto p = f_allocate_for_type<t_type_of<T>>(a_fields);
-		new(p->f_data()) t_type_of<T>(t_type_of<T>::V_ids, a_super, a_module, t_type_of<T>::V_native, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{});
+		std::uninitialized_default_construct_n((new(p->f_data()) t_type_of<T>(t_type_of<T>::V_ids, a_super, a_module, t_type_of<T>::V_native, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{}))->f_fields(), a_fields);
 		p->f_be(v_type_class);
 		return p;
 	}

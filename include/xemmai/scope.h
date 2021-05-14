@@ -21,9 +21,7 @@ class t_scope
 	}
 	t_scope(size_t a_size, t_svalue* a_outer) : v_size(a_size), v_outer(f_this(a_outer)), v_outer_entries(a_outer)
 	{
-		auto p = f_entries();
-		auto q = p + v_size;
-		for (; p < q; ++p) new(p) t_svalue();
+		std::uninitialized_default_construct_n(f_entries(), v_size);
 	}
 	void f_scan(t_scan a_scan)
 	{

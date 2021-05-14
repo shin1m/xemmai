@@ -183,7 +183,7 @@ struct t_type_of<t_object>
 	t_slot v_module;
 	size_t v_fields_offset;
 	size_t v_instance_fields;
-	size_t v_class_fields;
+	size_t v_fields;
 	bool v_builtin = false;
 	bool v_primitive = false;
 	bool v_revive = false;
@@ -197,7 +197,7 @@ struct t_type_of<t_object>
 	}
 	std::pair<t_object*, size_t>* f_key2index()
 	{
-		return reinterpret_cast<std::pair<t_object*, size_t>*>(f_fields() + v_class_fields);
+		return reinterpret_cast<std::pair<t_object*, size_t>*>(f_fields() + v_fields);
 	}
 	size_t f_index(t_object* a_key);
 	void f_scan_type(t_scan a_scan)
@@ -206,7 +206,7 @@ struct t_type_of<t_object>
 		a_scan(v_super);
 		a_scan(v_module);
 		auto p = f_fields();
-		for (size_t i = 0; i < v_class_fields; ++i) {
+		for (size_t i = 0; i < v_fields; ++i) {
 			a_scan(p[i].first);
 			a_scan(p[i].second);
 		}

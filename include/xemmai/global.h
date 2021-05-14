@@ -786,8 +786,7 @@ template<typename T, typename... T_an>
 inline t_object* t_type::f_new(T_an&&... a_an)
 {
 	auto p = f_engine()->f_allocate(t_object::f_align_for_fields(sizeof(T)) + sizeof(t_svalue) * v_instance_fields);
-	auto q = p->f_fields(sizeof(T));
-	for (size_t i = 0; i < v_instance_fields; ++i) new(q + i) t_svalue();
+	std::uninitialized_default_construct_n(p->f_fields(sizeof(T)), v_instance_fields);
 	try {
 		new(p->f_data()) T(std::forward<T_an>(a_an)...);
 		p->f_be(this);
@@ -808,7 +807,7 @@ inline t_pvalue t_type::f_get(const t_pvalue& a_this, t_object* a_key)
 	assert(reinterpret_cast<uintptr_t>(static_cast<t_object*>(a_this)) >= e_tag__OBJECT);
 	auto index = f_index(a_key);
 	if (index < v_instance_fields) return a_this->f_fields()[index];
-	if (index < v_class_fields) {
+	if (index < v_fields) {
 		auto& field = f_fields()[index].second;
 		t_object* p = field;
 		return f_is_callable(p) ? t_pvalue(xemmai::f_new<t_method>(f_global(), p, a_this)) : t_pvalue(field);
@@ -822,7 +821,7 @@ inline void t_type::f_get(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_s
 	if (index < v_instance_fields) {
 		a_stack[0] = a_this->f_fields()[index];
 		a_stack[1] = nullptr;
-	} else if (index < v_class_fields) {
+	} else if (index < v_fields) {
 		auto& field = f_fields()[index].second;
 		t_object* p = field;
 		if (f_is_callable(p)) {
@@ -852,7 +851,7 @@ inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, t_pvalue* 
 	auto index = f_index(a_key);
 	if (index < v_instance_fields) {
 		a_this->f_fields()[index].f_call(a_stack, a_n);
-	} else if (index < v_class_fields) {
+	} else if (index < v_fields) {
 		auto& field = f_fields()[index].second;
 		t_object* p = field;
 		if (f_is_callable(p)) {
@@ -870,7 +869,12 @@ inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, t_pvalue* 
 template<typename T>
 inline t_pvalue t_derived<T>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_object::f_of(this)->f_call_preserved(f_global()->f_symbol_construct(), a_stack, a_n);
+	size_t n = a_n + 2;
+	t_scoped_stack stack(n);
+	stack[1] = t_object::f_of(this);
+	for (size_t i = 2; i < n; ++i) stack[i] = a_stack[i];
+	t_object::f_of(this)->f_call(f_global()->f_symbol_construct(), stack, a_n);
+	return stack[0];
 }
 
 template<typename T>

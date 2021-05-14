@@ -369,16 +369,6 @@ inline t_pvalue t_object::f_invoke(t_object* a_key, T&&... a_arguments)
 	return stack[0];
 }
 
-inline t_pvalue t_object::f_call_preserved(t_object* a_key, t_pvalue* a_stack, size_t a_n)
-{
-	size_t n = a_n + 2;
-	t_scoped_stack stack(n);
-	stack[1] = nullptr;
-	for (size_t i = 2; i < n; ++i) stack[i] = a_stack[i];
-	f_call(a_key, stack, a_n);
-	return stack[0];
-}
-
 }
 
 #endif

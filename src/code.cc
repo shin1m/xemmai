@@ -71,7 +71,7 @@ void t_code::f_object_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void
 			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_instance;
 			top = top->f_fields()[index];
-		} else if (index < type->v_class_fields) {
+		} else if (index < type->v_fields) {
 			*reinterpret_cast<size_t*>(pc0 + 5) = index - type->v_instance_fields;
 			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_class;
@@ -138,7 +138,7 @@ void t_code::f_method_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void
 			pc0[0] = a_instance;
 			stack[0] = top->f_fields()[index];
 			stack[1] = nullptr;
-		} else if (index < type->v_class_fields) {
+		} else if (index < type->v_fields) {
 			*reinterpret_cast<size_t*>(pc0 + 5) = index - type->v_instance_fields;
 			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_class;
@@ -413,7 +413,7 @@ size_t t_code::f_loop(t_context* a_context)
 							top = field;
 					} else {
 						auto key = static_cast<t_object*>(pc0[2]);
-						if (index < type->v_class_fields && type->f_fields()[index].first == key) {
+						if (index < type->v_fields && type->f_fields()[index].first == key) {
 							auto& field = type->f_fields()[index].second;
 							t_object* p = field;
 							if (f_is_callable(p))
@@ -583,7 +583,7 @@ size_t t_code::f_loop(t_context* a_context)
 						}
 					} else {
 						auto key = static_cast<t_object*>(pc0[2]);
-						if (index < type->v_class_fields && type->f_fields()[index].first == key) {
+						if (index < type->v_fields && type->f_fields()[index].first == key) {
 							auto& field = type->f_fields()[index].second;
 							t_object* p = field;
 							if (f_is_callable(p)) {

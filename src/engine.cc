@@ -229,8 +229,10 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	auto type_object = f_allocate_for_type<t_type>(5);
 	auto type = new(type_object->f_data()) t_type();
 	type->v_derive = &t_type::f_do_derive;
+	std::uninitialized_default_construct_n(type->f_fields(), 5);
 	auto type_class = f_allocate_for_type<t_class>(5);
 	v_type_class = new(type_class->f_data()) t_class(t_class::V_ids, type);
+	std::uninitialized_default_construct_n(v_type_class->f_fields(), 5);
 	type_object->f_be(v_type_class);
 	type_class->f_be(v_type_class);
 	auto type_fiber = f_new_type_on_boot<t_fiber>(6, type, nullptr);

@@ -529,7 +529,7 @@ public:
 	{
 		auto [fields, key2index] = v_library->template f_type<T_super>()->f_merge({{}, std::move(v_fields)});
 		auto& type = a_type->f_as<t_type>();
-		type.v_class_fields = fields.size();
+		type.v_fields = fields.size();
 		std::copy(fields.begin(), fields.end(), type.f_fields());
 		std::copy(key2index.begin(), key2index.end(), type.f_key2index());
 	}

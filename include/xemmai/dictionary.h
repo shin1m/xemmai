@@ -71,7 +71,7 @@ private:
 
 		t_table(const t_rank& a_rank) : v_slot(a_rank.v_slot), v_end(f_entries() + a_rank.v_capacity), v_rank(a_rank)
 		{
-			for (auto p = f_entries(); p != v_end; ++p) new(p) t_entry();
+			std::uninitialized_default_construct(f_entries(), v_end);
 		}
 		t_entry* f_entries() const
 		{

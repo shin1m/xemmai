@@ -147,7 +147,7 @@ struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>,
 			auto t0 = a_stack + arguments + 2;
 			t0[0] = t_tuple::f_instantiate(n, [&](auto& t1)
 			{
-				for (size_t i = 0; i < n; ++i) new(&t1[i]) t_svalue(t0[i]);
+				std::uninitialized_copy_n(&t0[0], n, &t1[0]);
 			});
 		}
 		return p.template f_call<T_context>(a_stack);

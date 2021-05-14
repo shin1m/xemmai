@@ -126,7 +126,7 @@ t_pvalue t_type_of<t_tuple>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_tuple::f_instantiate(a_n, [&](auto& tuple)
 	{
-		for (size_t i = 0; i < a_n; ++i) new(&tuple[i]) t_svalue(a_stack[i + 2]);
+		std::uninitialized_copy_n(a_stack + 2, a_n, tuple.f_entries());
 	});
 }
 
