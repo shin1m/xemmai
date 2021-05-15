@@ -18,6 +18,7 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 	v_type_module__body->v_module = t_object::f_of(this);
 	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(5, v_type_object, t_object::f_of(this)));
 	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(5, v_type_object, t_object::f_of(this)));
+	v_type_native->v_bindable = true;
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct"sv);
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
@@ -70,13 +71,13 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 	t_define<t_code, t_object>(this).f_derive();
 	v_type_code->v_builtin = true;
 	t_define<t_lambda, t_object>(this).f_derive();
-	v_type_lambda->v_builtin = true;
+	v_type_lambda->v_builtin = v_type_lambda->v_bindable = true;
 	v_type_lambda_shared.f_construct(v_type_lambda->f_derive<t_type_of<t_lambda_shared>>(t_object::f_of(this), {}));
-	v_type_lambda_shared->v_builtin = true;
+	v_type_lambda_shared->v_builtin = v_type_lambda_shared->v_bindable = true;
 	v_type_advanced_lambda.f_construct(v_type_lambda->f_derive<t_type_of<t_advanced_lambda<t_lambda>>>(t_object::f_of(this), {}));
-	v_type_advanced_lambda->v_builtin = true;
+	v_type_advanced_lambda->v_builtin = v_type_advanced_lambda->v_bindable = true;
 	v_type_advanced_lambda_shared.f_construct(v_type_lambda_shared->f_derive<t_type_of<t_advanced_lambda<t_lambda_shared>>>(t_object::f_of(this), {}));
-	v_type_advanced_lambda_shared->v_builtin = true;
+	v_type_advanced_lambda_shared->v_builtin = v_type_advanced_lambda_shared->v_bindable = true;
 	v_type_method.f_construct(v_type_object->f_derive<t_type_of<t_method>>(t_object::f_of(this), {}));
 	v_type_method->v_builtin = true;
 	t_type_of<t_throwable>::f_define();
@@ -113,7 +114,6 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 		(L"Thread"sv, t_object::f_of(v_type_thread))
 		(L"Symbol"sv, t_object::f_of(v_type_symbol))
 		(L"Native"sv, t_object::f_of(v_type_native))
-		(L"Code"sv, t_object::f_of(v_type_code))
 		(L"Lambda"sv, t_object::f_of(v_type_lambda))
 		(L"Method"sv, t_object::f_of(v_type_method))
 		(L"Throwable"sv, t_object::f_of(v_type_throwable))

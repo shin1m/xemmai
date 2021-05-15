@@ -76,9 +76,8 @@ void t_code::f_object_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void
 			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_class;
 			auto& field = type->f_fields()[index].second;
-			t_object* p = field;
-			if (f_is_callable(p))
-				top = f_new<t_method>(f_global(), p, top);
+			if (f_is_bindable(field))
+				top = f_new<t_method>(f_global(), field, top);
 			else
 				top = field;
 		} else {
@@ -144,7 +143,7 @@ void t_code::f_method_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void
 			pc0[0] = a_class;
 			auto& field = type->f_fields()[index].second;
 			t_object* p = field;
-			if (f_is_callable(p)) {
+			if (f_is_bindable(p)) {
 				stack[0] = p;
 				stack[1] = top;
 			} else {
@@ -406,18 +405,16 @@ size_t t_code::f_loop(t_context* a_context)
 					auto index = reinterpret_cast<size_t>(pc0[5]) + type->v_instance_fields;
 					if (type == pc0[4]) {
 						auto& field = type->f_fields()[index].second;
-						t_object* p = field;
-						if (f_is_callable(p))
-							top = f_new<t_method>(f_global(), p, top);
+						if (f_is_bindable(field))
+							top = f_new<t_method>(f_global(), field, top);
 						else
 							top = field;
 					} else {
 						auto key = static_cast<t_object*>(pc0[2]);
 						if (index < type->v_fields && type->f_fields()[index].first == key) {
 							auto& field = type->f_fields()[index].second;
-							t_object* p = field;
-							if (f_is_callable(p))
-								top = f_new<t_method>(f_global(), p, top);
+							if (f_is_bindable(field))
+								top = f_new<t_method>(f_global(), field, top);
 							else
 								top = field;
 						} else {
@@ -574,7 +571,7 @@ size_t t_code::f_loop(t_context* a_context)
 					if (type == pc0[4]) {
 						auto& field = type->f_fields()[index].second;
 						t_object* p = field;
-						if (f_is_callable(p)) {
+						if (f_is_bindable(p)) {
 							stack[0] = p;
 							stack[1] = top;
 						} else {
@@ -586,7 +583,7 @@ size_t t_code::f_loop(t_context* a_context)
 						if (index < type->v_fields && type->f_fields()[index].first == key) {
 							auto& field = type->f_fields()[index].second;
 							t_object* p = field;
-							if (f_is_callable(p)) {
+							if (f_is_bindable(p)) {
 								stack[0] = p;
 								stack[1] = top;
 							} else {
@@ -623,7 +620,7 @@ size_t t_code::f_loop(t_context* a_context)
 				if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
 				if (p->f_type() == f_global()->f_type<t_method>())
 					stack[0] = f_as<t_method&>(p).f_function();
-				else if (!f_is_callable(p))
+				else if (!f_is_bindable(p))
 					f_method_bind(stack);
 			}
 			XEMMAI__CODE__BREAK

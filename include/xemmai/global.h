@@ -797,20 +797,18 @@ inline t_object* t_type::f_new(T_an&&... a_an)
 	}
 }
 
-inline bool f_is_callable(t_object* a_p)
+inline bool f_is_bindable(t_object* a_p)
 {
-	return reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT && (f_is<t_lambda>(a_p) || a_p->f_type() == f_global()->f_type<t_native>());
+	return reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT && a_p->f_type()->v_bindable;
 }
 
 inline t_pvalue t_type::f_get(const t_pvalue& a_this, t_object* a_key)
 {
-	assert(reinterpret_cast<uintptr_t>(static_cast<t_object*>(a_this)) >= e_tag__OBJECT);
 	auto index = f_index(a_key);
 	if (index < v_instance_fields) return a_this->f_fields()[index];
 	if (index < v_fields) {
 		auto& field = f_fields()[index].second;
-		t_object* p = field;
-		return f_is_callable(p) ? t_pvalue(xemmai::f_new<t_method>(f_global(), p, a_this)) : t_pvalue(field);
+		return f_is_bindable(field) ? t_pvalue(xemmai::f_new<t_method>(f_global(), field, a_this)) : t_pvalue(field);
 	}
 	return (this->*v_get)(a_this, a_key);
 }
@@ -824,7 +822,7 @@ inline void t_type::f_get(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_s
 	} else if (index < v_fields) {
 		auto& field = f_fields()[index].second;
 		t_object* p = field;
-		if (f_is_callable(p)) {
+		if (f_is_bindable(p)) {
 			a_stack[0] = p;
 			a_stack[1] = a_this;
 		} else {
@@ -854,7 +852,7 @@ inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, t_pvalue* 
 	} else if (index < v_fields) {
 		auto& field = f_fields()[index].second;
 		t_object* p = field;
-		if (f_is_callable(p)) {
+		if (f_is_bindable(p)) {
 			a_stack[1] = a_this;
 			size_t n = p->f_call_without_loop(a_stack, a_n);
 			if (n != size_t(-1)) f_loop(a_stack, n);

@@ -187,6 +187,7 @@ struct t_type_of<t_object>
 	bool v_builtin = false;
 	bool v_primitive = false;
 	bool v_revive = false;
+	bool v_bindable = false;
 
 	t_type_of();
 	template<size_t A_n>
