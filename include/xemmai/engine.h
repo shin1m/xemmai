@@ -329,9 +329,9 @@ inline void t_thread::t_internal::f_epoch_suspend()
 			sp = p;
 			break;
 		}
-		if (p >= v_active->v_internal->v_stack_bottom) break;
+		if (p >= v_active->v_stack_bottom) break;
 	}
-	v_active->v_internal->v_stack_top = sp;
+	v_active->v_stack_top = sp;
 	v_increments.v_epoch.store(v_increments.v_head, std::memory_order_relaxed);
 	v_decrements.v_epoch.store(v_decrements.v_head, std::memory_order_relaxed);
 #endif

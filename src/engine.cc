@@ -220,7 +220,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	sigaddset(&sa.sa_mask, SIGUSR2);
 	if (sigaction(SIGUSR1, &sa, &v_epoch__old_sigusr1) == -1) throw std::system_error(errno, std::generic_category());
 #endif
-	v_thread__internals->f_initialize();
+	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	{
 		std::unique_lock lock(v_collector__mutex);
 		std::thread(&t_engine::f_collector, this).detach();
@@ -235,19 +235,17 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	std::uninitialized_default_construct_n(v_type_class->f_fields(), 5);
 	type_object->f_be(v_type_class);
 	type_class->f_be(v_type_class);
-	auto type_fiber = f_new_type_on_boot<t_fiber>(6, type, nullptr);
-	auto type_thread = f_new_type_on_boot<t_thread>(7, type, nullptr);
-	v_thread = type_thread->f_as<t_type>().f_new<t_thread>(v_thread__internals, type_fiber->f_as<t_type>().f_new<t_fiber>(nullptr, v_options.v_stack_size));
-	v_thread__internals->f_initialize(&v_thread->f_as<t_thread>(), this);
 	{
 		auto type_module__body = f_new_type_on_boot<t_module::t_body>(5, type, nullptr);
 		auto global = type_module__body->f_as<t_type>().f_new<t_global>();
 		std::vector<std::pair<t_root, t_rvalue>> fields;
-		global->f_as<t_global>().f_define(type_object, type_class, type_fiber, type_thread, type_module__body, fields);
+		global->f_as<t_global>().f_define(type_object, type_class, type_module__body, fields);
 		v_module_global = t_module::f_new(L"__global"sv, global, fields);
 	}
 	v_fiber_exit = f_allocate(0);
 	v_fiber_exit->f_be(type);
+	v_thread = f_new<t_thread>(f_global(), v_thread__internals, f_new<t_fiber>(f_global(), nullptr, v_options.v_stack_size));
+	v_thread__internals->f_initialize(&v_thread->f_as<t_thread>());
 	auto path = t_array::f_instantiate();
 	path->f_as<t_array>().v_owner = nullptr;
 	if (auto p = std::getenv("XEMMAI_MODULE_PATH")) {
@@ -322,11 +320,11 @@ t_engine::~t_engine()
 	v_module_io = nullptr;
 	v_fiber_exit = nullptr;
 	{
-		auto internal = f_as<t_thread&>(v_thread).v_internal;
+		auto internal = v_thread->f_as<t_thread>().v_internal;
 		v_thread = nullptr;
 		internal->f_epoch_get();
 		std::lock_guard lock(v_thread__mutex);
-		internal->v_active->v_internal->v_thread = nullptr;
+		internal->v_active->v_thread = nullptr;
 		++internal->v_done;
 	}
 	v_object__heap.f_return();
@@ -382,8 +380,8 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 			{
 				std::unique_lock lock(v_thread__mutex);
 				if (v_debugger) f_debug_safe_point(lock);
-				internal->f_initialize();
-				internal->f_initialize(&p, &internal);
+				internal->f_initialize(p.v_fiber->f_as<t_fiber>().v_stack, &internal);
+				internal->f_initialize(&p);
 			}
 			t_global::v_instance = &v_module_global->f_as<t_module>().v_body->f_as<t_global>();
 			auto main = []
@@ -406,7 +404,7 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 			t_slot::t_decrements::f_push(thread);
 			internal->f_epoch_get();
 			std::unique_lock lock(v_thread__mutex);
-			internal->v_active->v_internal->v_thread = nullptr;
+			internal->v_active->v_thread = nullptr;
 			++internal->v_done;
 			v_thread__condition.notify_all();
 		}).detach();

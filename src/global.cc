@@ -4,21 +4,16 @@
 namespace xemmai
 {
 
-void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_fiber, t_object* a_type_thread, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields)
+void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 {
 	v_type_object.f_construct(a_type_object);
 	v_type_object->v_module = t_object::f_of(this);
 	v_type_class.f_construct(a_type_class);
 	v_type_class->v_module = t_object::f_of(this);
-	v_type_fiber.f_construct(a_type_fiber);
-	v_type_fiber->v_module = t_object::f_of(this);
-	v_type_thread.f_construct(a_type_thread);
-	v_type_thread->v_module = t_object::f_of(this);
 	v_type_module__body.f_construct(a_type_module__body);
 	v_type_module__body->v_module = t_object::f_of(this);
 	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(5, v_type_object, t_object::f_of(this)));
 	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(5, v_type_object, t_object::f_of(this)));
-	v_type_native->v_bindable = true;
 	v_symbol_construct = t_symbol::f_instantiate(L"__construct"sv);
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
@@ -61,11 +56,13 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 	v_type_module__body->v_builtin = true;
 	v_type_module.f_construct(v_type_object->f_derive<t_type_of<t_module>>(t_object::f_of(this), {}));
 	v_type_module->v_builtin = v_type_module->v_revive = true;
-	static_cast<t_type_of<t_fiber>*>(static_cast<t_type*>(v_type_fiber))->f_define();
-	static_cast<t_type_of<t_thread>*>(static_cast<t_type*>(v_type_thread))->f_define();
 	static_cast<t_type_of<t_symbol>*>(static_cast<t_type*>(v_type_symbol))->f_define();
 	t_define<t_native, t_object>{this}.f_derive(static_cast<t_slot&>(v_type_native));
-	v_type_native->v_builtin = true;
+	v_type_native->v_builtin = v_type_native->v_bindable = true;
+	t_type_of<t_fiber>::f_define();
+	v_type_fiber->v_builtin = true;
+	t_type_of<t_thread>::f_define();
+	v_type_thread->v_builtin = true;
 	v_type_scope.f_construct(v_type_object->f_derive<t_type_of<t_scope>>(t_object::f_of(this), {}));
 	v_type_scope->v_builtin = true;
 	t_define<t_code, t_object>(this).f_derive();
@@ -110,10 +107,10 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 		(L"Object"sv, t_object::f_of(v_type_object))
 		(L"Class"sv, t_object::f_of(v_type_class))
 		(L"Module"sv, t_object::f_of(v_type_module))
-		(L"Fiber"sv, t_object::f_of(v_type_fiber))
-		(L"Thread"sv, t_object::f_of(v_type_thread))
 		(L"Symbol"sv, t_object::f_of(v_type_symbol))
 		(L"Native"sv, t_object::f_of(v_type_native))
+		(L"Fiber"sv, t_object::f_of(v_type_fiber))
+		(L"Thread"sv, t_object::f_of(v_type_thread))
 		(L"Lambda"sv, t_object::f_of(v_type_lambda))
 		(L"Method"sv, t_object::f_of(v_type_method))
 		(L"Throwable"sv, t_object::f_of(v_type_throwable))
@@ -138,24 +135,24 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_builder);
 	a_scan(v_type_module__body);
 	a_scan(v_type_module);
+	a_scan(v_type_symbol);
+	a_scan(v_type_native);
 	a_scan(v_type_fiber);
 	a_scan(v_type_thread);
-	a_scan(v_type_tuple);
-	a_scan(v_type_symbol);
 	a_scan(v_type_scope);
-	a_scan(v_type_method);
 	a_scan(v_type_code);
 	a_scan(v_type_lambda);
 	a_scan(v_type_lambda_shared);
 	a_scan(v_type_advanced_lambda);
 	a_scan(v_type_advanced_lambda_shared);
-	a_scan(v_type_native);
+	a_scan(v_type_method);
 	a_scan(v_type_throwable);
 	a_scan(v_type_null);
 	a_scan(v_type_boolean);
 	a_scan(v_type_integer);
 	a_scan(v_type_float);
 	a_scan(v_type_string);
+	a_scan(v_type_tuple);
 	a_scan(v_type_array);
 	a_scan(v_type_dictionary__table);
 	a_scan(v_type_dictionary);

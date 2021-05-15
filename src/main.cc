@@ -143,7 +143,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	t_debug_context* f_context(t_thread* a_thread)
 	{
-		return a_thread->v_internal->v_active->v_context;
+		return a_thread->v_internal->v_active->v_fiber->v_context;
 	}
 	void f_print(t_context* a_context)
 	{

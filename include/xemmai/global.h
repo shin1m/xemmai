@@ -29,24 +29,24 @@ class t_global : public t_library
 	t_slot_of<t_type> v_type_builder;
 	t_slot_of<t_type> v_type_module__body;
 	t_slot_of<t_type> v_type_module;
+	t_slot_of<t_type> v_type_symbol;
+	t_slot_of<t_type> v_type_native;
 	t_slot_of<t_type> v_type_fiber;
 	t_slot_of<t_type> v_type_thread;
-	t_slot_of<t_type> v_type_tuple;
-	t_slot_of<t_type> v_type_symbol;
 	t_slot_of<t_type> v_type_scope;
-	t_slot_of<t_type> v_type_method;
 	t_slot_of<t_type> v_type_code;
 	t_slot_of<t_type> v_type_lambda;
 	t_slot_of<t_type> v_type_lambda_shared;
 	t_slot_of<t_type> v_type_advanced_lambda;
 	t_slot_of<t_type> v_type_advanced_lambda_shared;
-	t_slot_of<t_type> v_type_native;
+	t_slot_of<t_type> v_type_method;
 	t_slot_of<t_type> v_type_throwable;
 	t_slot_of<t_type> v_type_null;
 	t_slot_of<t_type> v_type_boolean;
 	t_slot_of<t_type> v_type_integer;
 	t_slot_of<t_type> v_type_float;
 	t_slot_of<t_type> v_type_string;
+	t_slot_of<t_type> v_type_tuple;
 	t_slot_of<t_type> v_type_array;
 	t_slot_of<t_type> v_type_dictionary__table;
 	t_slot_of<t_type> v_type_dictionary;
@@ -93,7 +93,7 @@ public:
 	{
 		v_instance = this;
 	}
-	void f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_fiber, t_object* a_type_thread, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields);
+	void f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan);
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot();
@@ -277,6 +277,18 @@ inline t_slot_of<t_type>& t_global::f_type_slot<t_module>()
 }
 
 template<>
+inline t_slot_of<t_type>& t_global::f_type_slot<t_symbol>()
+{
+	return v_type_symbol;
+}
+
+template<>
+inline t_slot_of<t_type>& t_global::f_type_slot<t_native>()
+{
+	return v_type_native;
+}
+
+template<>
 inline t_slot_of<t_type>& t_global::f_type_slot<t_fiber>()
 {
 	return v_type_fiber;
@@ -289,27 +301,9 @@ inline t_slot_of<t_type>& t_global::f_type_slot<t_thread>()
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_tuple>()
-{
-	return v_type_tuple;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_symbol>()
-{
-	return v_type_symbol;
-}
-
-template<>
 inline t_slot_of<t_type>& t_global::f_type_slot<t_scope>()
 {
 	return v_type_scope;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_method>()
-{
-	return v_type_method;
 }
 
 template<>
@@ -343,9 +337,9 @@ inline t_slot_of<t_type>& t_global::f_type_slot<t_advanced_lambda<t_lambda_share
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_native>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_method>()
 {
-	return v_type_native;
+	return v_type_method;
 }
 
 template<>
@@ -382,6 +376,12 @@ template<>
 inline t_slot_of<t_type>& t_global::f_type_slot<t_string>()
 {
 	return v_type_string;
+}
+
+template<>
+inline t_slot_of<t_type>& t_global::f_type_slot<t_tuple>()
+{
+	return v_type_tuple;
 }
 
 template<>
@@ -892,7 +892,7 @@ void t_builder::f_do(t_fields& a_fields, T a_do)
 template<typename T_context, typename T_main>
 intptr_t t_fiber::f_main(T_main a_main)
 {
-	auto& fiber = f_as<t_fiber&>(t_thread::v_current->v_thread->v_fiber);
+	auto& fiber = t_thread::v_current->v_thread->v_fiber->f_as<t_fiber>();
 	intptr_t n = -1;
 	T_context context;
 	try {
@@ -929,7 +929,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 		if (p == fiber.v_internal) break;
 		p->v_fiber->v_throw = true;
 		*p->v_fiber->v_return = f_engine()->v_fiber_exit;
-		t_thread::v_current->v_active = p->v_fiber;
+		t_thread::v_current->v_active = p->v_fiber->v_internal;
 #ifdef __unix__
 		f_stack__(p->v_estack_used);
 		swapcontext(&fiber.v_internal->v_context, &p->v_context);

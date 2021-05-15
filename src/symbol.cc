@@ -20,7 +20,7 @@ t_object* t_symbol::f_instantiate(std::wstring_view a_value)
 		return f_new<t_symbol>(f_global(), i);
 	} else {
 		f_engine()->v_object__reviving = true;
-		f_as<t_thread&>(t_thread::f_current()).v_internal->f_revive();
+		t_thread::v_current->f_revive();
 		f_engine()->v_object__reviving__mutex.unlock();
 		return i->second;
 	}

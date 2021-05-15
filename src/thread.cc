@@ -3,31 +3,32 @@
 namespace xemmai
 {
 
-void t_thread::t_internal::f_initialize()
+void t_thread::t_internal::f_initialize(size_t a_stack, void* a_bottom)
 {
+	v_current = this;
 	t_slot::t_increments::v_instance = &v_increments;
 	v_increments.v_head = v_increments.v_objects;
 	t_slot::t_increments::v_next = v_increments.v_objects + t_slot::t_increments::V_SIZE / 8;
 	t_slot::t_decrements::v_instance = &v_decrements;
 	v_decrements.v_head = v_decrements.v_objects;
 	t_slot::t_decrements::v_next = v_decrements.v_objects + t_slot::t_decrements::V_SIZE / 8;
-}
-
-void t_thread::t_internal::f_initialize(t_thread* a_thread, void* a_bottom)
-{
-	v_thread = a_thread;
-	v_current = v_thread->v_internal;
-	v_active = &f_as<t_fiber&>(v_thread->v_fiber);
-	v_active->v_internal = new t_fiber::t_internal(v_active, a_bottom);
+	v_active = new t_fiber::t_internal(a_stack, a_bottom);
 #ifdef __unix__
-	f_stack__(v_active->v_internal->v_estack_used);
+	f_stack__(v_active->v_estack_used);
 	v_handle = pthread_self();
 #endif
 #ifdef _WIN32
-	t_fiber::v_current = v_active->v_internal;
+	t_fiber::v_current = v_active;
 	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &v_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
 #endif
 	v_done = 0;
+}
+
+void t_thread::t_internal::f_initialize(t_thread* a_thread)
+{
+	v_thread = a_thread;
+	v_active->v_fiber = &v_thread->v_fiber->f_as<t_fiber>();
+	v_active->v_fiber->v_internal = v_active;
 }
 
 void t_thread::t_internal::f_epoch()
@@ -72,11 +73,10 @@ void t_thread::f_join()
 
 void t_type_of<t_thread>::f_define()
 {
-	v_builtin = true;
 	t_define<t_thread, t_object>{f_global()}
 		(L"current"sv, t_static<t_object*(*)(), t_thread::f_current>())
 		(L"join"sv, t_member<void(t_thread::*)(), &t_thread::f_join>())
-	.f_derive(t_object::f_of(this));
+	.f_derive();
 }
 
 void t_type_of<t_thread>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)

@@ -1,9 +1,9 @@
 #ifndef XEMMAI__LAMBDA_H
 #define XEMMAI__LAMBDA_H
 
-#include "tuple.h"
 #include "scope.h"
 #include "code.h"
+#include "tuple.h"
 
 namespace xemmai
 {

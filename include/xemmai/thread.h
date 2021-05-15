@@ -17,7 +17,7 @@ struct t_thread
 		t_thread* v_thread;
 		std::mutex v_mutex;
 		t_fiber::t_internal* v_fibers = nullptr;
-		t_fiber* v_active;
+		t_fiber::t_internal* v_active;
 #ifdef __unix__
 		pthread_t v_handle;
 #endif
@@ -32,11 +32,11 @@ struct t_thread
 			if (v_handle != NULL) CloseHandle(v_handle);
 		}
 #endif
-		void f_initialize();
-		void f_initialize(t_thread* a_thread, void* a_bottom);
+		void f_initialize(size_t a_stack, void* a_bottom);
+		void f_initialize(t_thread* a_thread);
 		void f_epoch_get()
 		{
-			v_active->v_internal->f_epoch_get();
+			v_active->f_epoch_get();
 			v_increments.v_epoch.store(v_increments.v_head, std::memory_order_release);
 			v_decrements.v_epoch.store(v_decrements.v_head, std::memory_order_release);
 		}
@@ -69,7 +69,7 @@ struct t_thread
 template<>
 struct t_type_of<t_thread> : t_holds<t_thread>
 {
-	void f_define();
+	static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
@@ -81,7 +81,7 @@ struct t_type_of<t_thread> : t_holds<t_thread>
 
 inline t_object* t_fiber::f_current()
 {
-	return t_object::f_of(t_thread::v_current->v_active);
+	return t_object::f_of(t_thread::v_current->v_active->v_fiber);
 }
 
 }

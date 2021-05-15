@@ -43,7 +43,7 @@ struct t_fiber
 #endif
 
 		t_internal* v_next;
-		t_thread* v_thread;
+		void* v_thread;
 		t_fiber* v_fiber;
 		std::unique_ptr<char[]> v_stack_buffer;
 		t_object** v_stack_last_top;
@@ -65,8 +65,8 @@ struct t_fiber
 		LPVOID v_handle;
 #endif
 
-		t_internal(t_fiber* a_fiber, size_t a_stack, size_t a_n);
-		t_internal(t_fiber* a_fiber, void* a_bottom);
+		t_internal(size_t a_stack, size_t a_n);
+		t_internal(size_t a_stack, void* a_bottom);
 		t_internal(t_fiber* a_fiber, void(*a_f)());
 #ifdef _WIN32
 		~t_internal()
@@ -117,7 +117,7 @@ struct t_fiber
 template<>
 struct t_type_of<t_fiber> : t_holds<t_fiber>
 {
-	void f_define();
+	static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

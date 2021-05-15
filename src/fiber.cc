@@ -26,10 +26,10 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 	std::putc('\n', a_out);
 }
 
-t_fiber::t_internal::t_internal(t_fiber* a_fiber, size_t a_stack, size_t a_n) : v_thread(t_thread::v_current->v_thread), v_fiber(a_fiber), v_estack(std::make_unique<t_pvalue[]>(a_stack)), v_estack_used(v_estack.get()), v_estack_buffer(std::make_unique<t_object*[]>(a_stack * 2)), v_estack_last_head(v_estack_buffer.get() + a_stack), v_estack_last_used(v_estack_last_head)
+t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_thread(t_thread::v_current), v_estack(std::make_unique<t_pvalue[]>(a_stack)), v_estack_used(v_estack.get()), v_estack_buffer(std::make_unique<t_object*[]>(a_stack * 2)), v_estack_last_head(v_estack_buffer.get() + a_stack), v_estack_last_used(v_estack_last_head)
 {
-	v_next = v_thread->v_internal->v_fibers;
-	v_thread->v_internal->v_fibers = this;
+	v_next = t_thread::v_current->v_fibers;
+	t_thread::v_current->v_fibers = this;
 	auto limit = f_limit();
 	v_stack_buffer = std::make_unique<char[]>(limit * a_n);
 	auto p = v_stack_buffer.get() + limit;
@@ -37,7 +37,7 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, size_t a_stack, size_t a_n) : 
 	v_stack_copy = reinterpret_cast<t_object**>(p + limit);
 }
 
-t_fiber::t_internal::t_internal(t_fiber* a_fiber, void* a_bottom) : t_internal(a_fiber, a_fiber->v_stack, 2)
+t_fiber::t_internal::t_internal(size_t a_stack, void* a_bottom) : t_internal(a_stack, 2)
 {
 	v_stack_bottom = reinterpret_cast<t_object**>(a_bottom);
 #ifdef _WIN32
@@ -46,8 +46,9 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void* a_bottom) : t_internal(a
 }
 
 #ifdef __unix__
-t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber, a_fiber->v_stack, 3)
+t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber->v_stack, 3)
 {
+	v_fiber = a_fiber;
 	auto n = v_stack_copy - v_stack_last_bottom;
 	v_stack_bottom = v_stack_copy + n;
 	getcontext(&v_context);
@@ -149,7 +150,7 @@ void t_fiber::f_run()
 	auto used = f_stack() - 1;
 	auto x = *used;
 	f_stack__(used);
-	auto q = t_thread::v_current->v_active;
+	auto q = t_thread::v_current->v_active->v_fiber;
 	auto b = false;
 	{
 		T_context context;
@@ -168,10 +169,10 @@ void t_fiber::f_run()
 	t_thread::v_current->v_mutex.lock();
 	q->v_internal->v_thread = nullptr;
 	q->v_internal = nullptr;
-	auto& p = f_as<t_fiber&>(t_thread::v_current->v_thread->v_fiber);
+	auto& p = t_thread::v_current->v_thread->v_fiber->f_as<t_fiber>();
 	p.v_throw = b;
 	*p.v_return = x;
-	t_thread::v_current->v_active = &p;
+	t_thread::v_current->v_active = p.v_internal;
 #ifdef __unix__
 	f_stack__(p.v_internal->v_estack_used);
 	setcontext(&p.v_internal->v_context);
@@ -189,10 +190,9 @@ void t_fiber::f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
 
 void t_type_of<t_fiber>::f_define()
 {
-	v_builtin = true;
 	t_define<t_fiber, t_object>{f_global()}
 		(L"current"sv, t_static<t_object*(*)(), t_fiber::f_current>())
-	.f_derive(t_object::f_of(this));
+	.f_derive();
 }
 
 void t_type_of<t_fiber>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
@@ -210,13 +210,13 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 {
 	if (a_n != 1) f_throw(L"must be called with an argument."sv);
 	t_thread::v_current->v_mutex.lock();
-	auto& p = f_as<t_fiber&>(a_this);
-	if (&p == t_thread::v_current->v_active) {
+	auto& p = a_this->f_as<t_fiber>();
+	if (&p == t_thread::v_current->v_active->v_fiber) {
 		t_thread::v_current->v_mutex.unlock();
 		f_throw(L"already active."sv);
 	}
 	if (p.v_internal) {
-		if (p.v_internal->v_thread != t_thread::v_current->v_thread) {
+		if (p.v_internal->v_thread != t_thread::v_current) {
 			t_thread::v_current->v_mutex.unlock();
 			f_throw(L"can not yield to other thread."sv);
 		}
@@ -226,10 +226,10 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 		p.v_internal->v_estack_used = p.v_internal->v_estack.get() + 1;
 		p.v_internal->v_estack[0] = a_stack[2];
 	}
-	auto q = t_thread::v_current->v_active;
+	auto q = t_thread::v_current->v_active->v_fiber;
 	q->v_internal->f_epoch_get();
 	q->v_return = a_stack;
-	t_thread::v_current->v_active = &p;
+	t_thread::v_current->v_active = p.v_internal;
 #ifdef __unix__
 	f_stack__(p.v_internal->v_estack_used);
 	swapcontext(&q->v_internal->v_context, &p.v_internal->v_context);

@@ -4,20 +4,20 @@ add_executable(xemmai
 	object.cc
 	class.cc
 	module.cc
+	symbol.cc
+	native.cc
 	fiber.cc
 	thread.cc
-	tuple.cc
-	symbol.cc
 	ast.cc
 	code.cc
 	lambda.cc
-	native.cc
 	throwable.cc
 	null.cc
 	boolean.cc
 	integer.cc
 	float.cc
 	string.cc
+	tuple.cc
 	array.cc
 	dictionary.cc
 	bytes.cc
