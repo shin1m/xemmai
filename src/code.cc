@@ -370,25 +370,18 @@ size_t t_code::f_loop(t_context* a_context)
 				pc += 6;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto& top = stack[0];
-				auto p = static_cast<t_object*>(top);
-				if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) {
-					auto type = p->f_type();
-					auto index = reinterpret_cast<size_t>(pc0[5]);
-					if (type == pc0[4]) {
-						top = p->f_fields()[index];
-					} else {
-						auto key = static_cast<t_object*>(pc0[2]);
-						if (index < type->v_instance_fields && type->f_fields()[index].first == key) {
-							top = p->f_fields()[index];
-						} else {
-							pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
-							top = p->f_get(key);
-						}
-					}
+				auto type = top.f_type();
+				auto index = reinterpret_cast<size_t>(pc0[5]);
+				if (type == pc0[4]) {
+					top = top->f_fields()[index];
 				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
-					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
-					top = top.f_get(key);
+					if (index < type->v_instance_fields && type->f_fields()[index].first == key) {
+						top = top->f_fields()[index];
+					} else {
+						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
+						top = (type->*type->v_get)(top, key);
+					}
 				}
 			}
 			XEMMAI__CODE__BREAK
@@ -399,34 +392,21 @@ size_t t_code::f_loop(t_context* a_context)
 				pc += 6;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto& top = stack[0];
-				auto p = static_cast<t_object*>(top);
-				if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) {
-					auto type = p->f_type();
-					auto index = reinterpret_cast<size_t>(pc0[5]) + type->v_instance_fields;
-					if (type == pc0[4]) {
-						auto& field = type->f_fields()[index].second;
-						if (f_is_bindable(field))
-							top = f_new<t_method>(f_global(), field, top);
-						else
-							top = field;
-					} else {
-						auto key = static_cast<t_object*>(pc0[2]);
-						if (index < type->v_fields && type->f_fields()[index].first == key) {
-							auto& field = type->f_fields()[index].second;
-							if (f_is_bindable(field))
-								top = f_new<t_method>(f_global(), field, top);
-							else
-								top = field;
-						} else {
-							pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
-							top = p->f_get(key);
-						}
-					}
-				} else {
+				auto type = top.f_type();
+				auto index = reinterpret_cast<size_t>(pc0[5]) + type->v_instance_fields;
+				if (type != pc0[4]) {
 					auto key = static_cast<t_object*>(pc0[2]);
-					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
-					top = top.f_get(key);
+					if (index >= type->v_fields || type->f_fields()[index].first != key) {
+						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
+						top = (type->*type->v_get)(top, key);
+						XEMMAI__CODE__BREAK
+					}
 				}
+				auto& field = type->f_fields()[index].second;
+				if (f_is_bindable(field))
+					top = f_new<t_method>(f_global(), field, top);
+				else
+					top = field;
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_GET_MEGAMORPHIC)
@@ -533,28 +513,20 @@ size_t t_code::f_loop(t_context* a_context)
 				pc += 6;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto top = stack[0];
-				auto p = static_cast<t_object*>(top);
-				if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) {
-					auto type = p->f_type();
-					auto index = reinterpret_cast<size_t>(pc0[5]);
-					if (type == pc0[4]) {
-						stack[0] = p->f_fields()[index];
-						stack[1] = nullptr;
-					} else {
-						auto key = static_cast<t_object*>(pc0[2]);
-						if (index < type->v_instance_fields && type->f_fields()[index].first == key) {
-							stack[0] = p->f_fields()[index];
-							stack[1] = nullptr;
-						} else {
-							pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
-							p->f_get(key, stack);
-						}
-					}
+				auto type = top.f_type();
+				auto index = reinterpret_cast<size_t>(pc0[5]);
+				if (type == pc0[4]) {
+					stack[0] = top->f_fields()[index];
 				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
-					pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
-					top.f_get(key, stack);
+					if (index < type->v_instance_fields && type->f_fields()[index].first == key) {
+						stack[0] = top->f_fields()[index];
+					} else {
+						pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
+						stack[0] = (type->*type->v_get)(top, key);
+					}
 				}
+				stack[1] = nullptr;
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET_MONOMORPHIC_CLASS)
@@ -564,41 +536,25 @@ size_t t_code::f_loop(t_context* a_context)
 				pc += 6;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto top = stack[0];
-				auto p = static_cast<t_object*>(top);
-				if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) {
-					auto type = p->f_type();
-					auto index = reinterpret_cast<size_t>(pc0[5]) + type->v_instance_fields;
-					if (type == pc0[4]) {
-						auto& field = type->f_fields()[index].second;
-						t_object* p = field;
-						if (f_is_bindable(p)) {
-							stack[0] = p;
-							stack[1] = top;
-						} else {
-							stack[0] = field;
-							stack[1] = nullptr;
-						}
-					} else {
-						auto key = static_cast<t_object*>(pc0[2]);
-						if (index < type->v_fields && type->f_fields()[index].first == key) {
-							auto& field = type->f_fields()[index].second;
-							t_object* p = field;
-							if (f_is_bindable(p)) {
-								stack[0] = p;
-								stack[1] = top;
-							} else {
-								stack[0] = field;
-								stack[1] = nullptr;
-							}
-						} else {
-							pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
-							p->f_get(key, stack);
-						}
-					}
-				} else {
+				auto type = top.f_type();
+				auto index = reinterpret_cast<size_t>(pc0[5]) + type->v_instance_fields;
+				if (type != pc0[4]) {
 					auto key = static_cast<t_object*>(pc0[2]);
-					pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
-					top.f_get(key, stack);
+					if (index >= type->v_fields || type->f_fields()[index].first != key) {
+						pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
+						stack[0] = (type->*type->v_get)(top, key);
+						stack[1] = nullptr;
+						XEMMAI__CODE__BREAK
+					}
+				}
+				auto& field = type->f_fields()[index].second;
+				t_object* p = field;
+				if (f_is_bindable(p)) {
+					stack[0] = p;
+					stack[1] = top;
+				} else {
+					stack[0] = field;
+					stack[1] = nullptr;
 				}
 			}
 			XEMMAI__CODE__BREAK

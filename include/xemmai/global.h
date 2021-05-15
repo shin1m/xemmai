@@ -441,7 +441,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 	case e_tag__FLOAT:
 		return f_global()->f_type<double>();
 	default:
-		return p->f_type();
+		[[likely]] return p->f_type();
 	}
 }
 
