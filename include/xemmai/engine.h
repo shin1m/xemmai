@@ -285,10 +285,7 @@ void t_slot::t_queue<A_SIZE>::f_next() noexcept
 inline void t_object::f_decrement_step()
 {
 	f_scan_fields(f_push_and_clear<&t_object::f_decrement_push>);
-	if (!v_type->v_primitive) {
-		v_type->f_scan(this, f_push_and_clear<&t_object::f_decrement_push>);
-		v_type->f_finalize(this);
-	}
+	if (v_type->f_finalize) v_type->f_finalize(this, f_push_and_clear<&t_object::f_decrement_push>);
 	t_object::f_of(v_type)->f_decrement_push();
 	v_type = nullptr;
 	v_color = e_color__BLACK;

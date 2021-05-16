@@ -215,8 +215,7 @@ class t_object
 	void f_cyclic_decrement()
 	{
 		f_scan_fields(f_push_and_clear<&t_object::f_cyclic_decrement_push>);
-		v_type->f_scan(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
-		v_type->f_finalize(this);
+		if (v_type->f_finalize) v_type->f_finalize(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
 		if (v_type->v_this) v_type->v_this->f_cyclic_decrement_push();
 		v_type = nullptr;
 	}
@@ -365,9 +364,10 @@ inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_supe
 }
 
 template<typename T_base>
-void t_finalizes<T_base>::f_do_finalize(t_object* a_this)
+void t_finalizes<T_base>::f_do_finalize(t_object* a_this, t_scan a_scan)
 {
 	using t = typename T_base::t_what;
+	t_type_of<t>::f_do_scan(a_this, a_scan);
 	a_this->f_as<t>().~t();
 }
 

@@ -185,7 +185,6 @@ struct t_type_of<t_object>
 	size_t v_instance_fields;
 	size_t v_fields;
 	bool v_builtin = false;
-	bool v_primitive = false;
 	bool v_revive = false;
 	bool v_bindable = false;
 
@@ -212,16 +211,6 @@ struct t_type_of<t_object>
 			a_scan(p[i].second);
 		}
 	}
-	template<typename T>
-	void f_do_destruct()
-	{
-		static_cast<T*>(this)->~T();
-	}
-	void (t_type::*v_destruct)() = &t_type::f_do_destruct<t_type>;
-	void f_destruct()
-	{
-		(this->*v_destruct)();
-	}
 	template<typename T, typename... T_an>
 	t_object* f_new(T_an&&... a_an);
 	template<typename T>
@@ -240,10 +229,7 @@ struct t_type_of<t_object>
 	{
 	}
 	void (*f_scan)(t_object*, t_scan) = f_do_scan;
-	static void f_do_finalize(t_object* a_this)
-	{
-	}
-	void (*f_finalize)(t_object*) = f_do_finalize;
+	void (*f_finalize)(t_object*, t_scan) = nullptr;
 	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 	t_pvalue (t_type::*v_construct)(t_pvalue*, size_t) = &t_type::f_do_construct;
 	t_pvalue f_construct(t_pvalue* a_stack, size_t a_n)
@@ -318,7 +304,6 @@ struct t_type_of<t_object>
 	void f_override()
 	{
 		if (T::f_do_scan != U::f_do_scan) f_scan = T::f_do_scan;
-		if (T::f_do_finalize != U::f_do_finalize) f_finalize = T::f_do_finalize;
 		if (&T::f_do_construct != &U::f_do_construct) v_construct = static_cast<t_pvalue(t_type::*)(t_pvalue*, size_t)>(&T::f_do_construct);
 		if (&T::f_do_instantiate != &U::f_do_instantiate) v_instantiate = static_cast<void(t_type::*)(t_pvalue*, size_t)>(&T::f_do_instantiate);
 		if (T::f_do_call != U::f_do_call) f_call = T::f_do_call;
@@ -427,8 +412,12 @@ struct t_finalizes : T_base
 {
 	using t_base = t_finalizes;
 
-	using T_base::T_base;
-	static void f_do_finalize(t_object* a_this);
+	template<typename... T_an>
+	t_finalizes(T_an&&... a_an) : T_base(std::forward<T_an>(a_an)...)
+	{
+		this->f_finalize = f_do_finalize;
+	}
+	static void f_do_finalize(t_object* a_this, t_scan a_scan);
 };
 
 template<typename T, typename T_base = t_type>

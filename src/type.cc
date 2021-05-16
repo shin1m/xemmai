@@ -17,7 +17,7 @@ t_object* t_type::f_string(const t_pvalue& a_self)
 
 void t_type::f_define()
 {
-	v_builtin = v_primitive = true;
+	v_builtin = true;
 	t_define<t_object, t_object>{f_global()}
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
@@ -75,9 +75,7 @@ std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>>
 t_object* t_type::f_do_derive(const t_fields& a_fields)
 {
 	auto p = f_derive<t_type>(v_module, a_fields);
-	auto& type = p->f_as<t_type>();
-	type.v_derive = &t_type::f_do_derive;
-	type.v_primitive = true;
+	p->f_as<t_type>().v_derive = &t_type::f_do_derive;
 	return p;
 }
 

@@ -35,9 +35,13 @@ struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 
 	static void f_define(t_callback_library* a_library);
 
-	using t_base::t_base;
+	template<typename... T_an>
+	t_type_of(T_an&&... a_an) : t_base(std::forward<T_an>(a_an)...)
+	{
+		f_finalize = f_do_finalize;
+	}
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
-	static void f_do_finalize(t_object* a_this);
+	static void f_do_finalize(t_object* a_this, t_scan a_scan);
 };
 
 template<>
@@ -155,7 +159,7 @@ t_pvalue t_type_of<t_client>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 	return t_construct_with<t_pvalue(*)(t_type*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(this, a_stack, a_n);
 }
 
-void t_type_of<t_client>::f_do_finalize(t_object* a_this)
+void t_type_of<t_client>::f_do_finalize(t_object* a_this, t_scan a_scan)
 {
 	delete dynamic_cast<t_client_wrapper*>(a_this->f_as<t_client*>());
 }

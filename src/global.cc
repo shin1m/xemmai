@@ -80,13 +80,13 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 	t_type_of<t_throwable>::f_define();
 	v_type_throwable->v_builtin = true;
 	t_type_of<std::nullptr_t>::f_define();
-	v_type_null->v_builtin = v_type_null->v_primitive = true;
+	v_type_null->v_builtin = true;
 	t_type_of<bool>::f_define();
-	v_type_boolean->v_builtin = v_type_boolean->v_primitive = true;
+	v_type_boolean->v_builtin = true;
 	t_type_of<intptr_t>::f_define();
-	v_type_integer->v_builtin = v_type_integer->v_primitive = true;
+	v_type_integer->v_builtin = true;
 	t_type_of<double>::f_define();
-	v_type_float->v_builtin = v_type_float->v_primitive = true;
+	v_type_float->v_builtin = true;
 	t_type_of<t_string>::f_define();
 	v_type_string->v_builtin = true;
 	v_string_empty = t_type_of<t_string>::f__construct(static_cast<t_type*>(v_type_string), L""sv);

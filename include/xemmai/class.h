@@ -12,6 +12,7 @@ struct t_type_of<t_type> : t_uninstantiatable<t_bears<t_type>>
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super) : t_base(a_ids, a_super, nullptr, sizeof(t_type), 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{})
 	{
+		f_finalize = f_do_scan;
 		v_get = static_cast<t_pvalue (t_type::*)(t_object*, t_object*)>(&t_type_of::f_do_get);
 		v_put = f_do_put;
 	}
