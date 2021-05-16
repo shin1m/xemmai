@@ -189,9 +189,8 @@ print(b
 assert_sequence(b, [2, 1
 
 Foo = Array + @
-	$__construct = @(*xs) Array.__construct[$](0, *xs
 	$__initialize = @(*xs) $push(4
 
 foo = Foo(1, 2, 3
 print(foo
-assert_sequence(foo, [0, 1, 2, 3, 4
+assert_sequence(foo, [1, 2, 3, 4

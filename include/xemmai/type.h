@@ -446,7 +446,6 @@ struct t_derived : T
 	template<typename... T_an>
 	t_derived(T_an&&... a_an) : T(std::forward<T_an>(a_an)...)
 	{
-		this->v_construct = static_cast<t_pvalue(t_type::*)(t_pvalue*, size_t)>(&t_derived::f_do_construct);
 		this->f_call = t_type::f_do_call;
 		this->f_hash = t_type::f_do_hash;
 		this->f_get_at = t_type::f_do_get_at;
@@ -472,10 +471,9 @@ struct t_derived : T
 		this->f_xor = t_type::f_do_xor;
 		this->f_or = t_type::f_do_or;
 	}
-	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
-template<typename T_base>
+template<typename T_base, typename T_derived = t_derived<t_type_of<typename T_base::t_what>>>
 struct t_derivable : T_base
 {
 	using t_base = t_derivable;
@@ -487,7 +485,22 @@ struct t_derivable : T_base
 	}
 	t_object* f_do_derive(const t_fields& a_fields)
 	{
-		return this->template f_derive<t_derived<t_type_of<typename T_base::t_what>>>(this->v_module, a_fields);
+		return this->template f_derive<T_derived>(this->v_module, a_fields);
+	}
+};
+
+template<typename T>
+struct t_derived_primitive : t_derived<t_type_of<T>>
+{
+	template<typename... T_an>
+	t_derived_primitive(T_an&&... a_an) : t_derived<t_type_of<T>>(std::forward<T_an>(a_an)...)
+	{
+		this->v_construct = static_cast<t_pvalue(t_type::*)(t_pvalue*, size_t)>(&t_derived_primitive::f_do_construct);
+	}
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n)
+	{
+		f_check<T>(a_stack[2], L"argument0");
+		return this->template f_new<T>(f_as<T>(a_stack[2]));
 	}
 };
 

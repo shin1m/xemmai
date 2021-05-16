@@ -102,10 +102,6 @@ t_object* t_reader::f_read_line(t_io* a_library)
 void t_type_of<io::t_reader>::f_define(t_io* a_library)
 {
 	t_define<io::t_reader, t_object>{a_library}
-		(
-			t_construct<const t_pvalue&, t_string&>(),
-			t_construct<const t_pvalue&, t_string&, size_t>()
-		)
 		(a_library->f_symbol_close(), t_member<void(io::t_reader::*)(t_io*), &io::t_reader::f_close>())
 		(a_library->f_symbol_read(), t_member<t_object*(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read>())
 		(a_library->f_symbol_read_line(), t_member<t_object*(io::t_reader::*)(t_io*), &io::t_reader::f_read_line>())

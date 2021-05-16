@@ -111,7 +111,6 @@ public:
 template<>
 struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 {
-	static void f__construct(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
 	static void f_own(t_array& a_self)
 	{
 		a_self.f_own();
@@ -120,19 +119,19 @@ struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
 	{
 		a_self.f_share();
 	}
-	static t_object* f_string(const t_pvalue& a_self);
-	static void f_clear(const t_pvalue& a_self);
-	static size_t f_size(const t_pvalue& a_self);
-	static t_pvalue f__get_at(const t_pvalue& a_self, intptr_t a_index);
-	static t_pvalue f__set_at(const t_pvalue& a_self, intptr_t a_index, const t_pvalue& a_value);
-	static void f_push(const t_pvalue& a_self, const t_pvalue& a_value);
-	static t_pvalue f_pop(const t_pvalue& a_self);
-	static void f_unshift(const t_pvalue& a_self, const t_pvalue& a_value);
-	static t_pvalue f_shift(const t_pvalue& a_self);
-	static void f_insert(const t_pvalue& a_self, intptr_t a_index, const t_pvalue& a_value);
-	static t_pvalue f_remove(const t_pvalue& a_self, intptr_t a_index);
-	static void f_each(const t_pvalue& a_self, const t_pvalue& a_callable);
-	static void f_sort(const t_pvalue& a_self, const t_pvalue& a_callable);
+	static t_object* f_string(t_array& a_self);
+	static void f_clear(t_array& a_self);
+	static size_t f_size(t_array& a_self);
+	static t_pvalue f__get_at(t_array& a_self, intptr_t a_index);
+	static t_pvalue f__set_at(t_array& a_self, intptr_t a_index, const t_pvalue& a_value);
+	static void f_push(t_array& a_self, const t_pvalue& a_value);
+	static t_pvalue f_pop(t_array& a_self);
+	static void f_unshift(t_array& a_self, const t_pvalue& a_value);
+	static t_pvalue f_shift(t_array& a_self);
+	static void f_insert(t_array& a_self, intptr_t a_index, const t_pvalue& a_value);
+	static t_pvalue f_remove(t_array& a_self, intptr_t a_index);
+	static void f_each(t_array& a_self, const t_pvalue& a_callable);
+	static void f_sort(t_array& a_self, const t_pvalue& a_callable);
 	static void f_define();
 
 	using t_base::t_base;

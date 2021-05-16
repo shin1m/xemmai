@@ -165,7 +165,6 @@ struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_finalizes<t_deriv
 template<>
 struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 {
-	static void f__construct(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
 	static void f_own(t_dictionary& a_self)
 	{
 		a_self.f_own();
@@ -174,14 +173,14 @@ struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
 	{
 		a_self.f_share();
 	}
-	static t_object* f_string(const t_pvalue& a_self);
-	static void f_clear(const t_pvalue& a_self);
-	static size_t f_size(const t_pvalue& a_self);
-	static t_pvalue f__get_at(const t_pvalue& a_self, const t_pvalue& a_key);
-	static t_pvalue f__set_at(const t_pvalue& a_self, const t_pvalue& a_key, const t_pvalue& a_value);
-	static bool f_has(const t_pvalue& a_self, const t_pvalue& a_key);
-	static t_pvalue f_remove(const t_pvalue& a_self, const t_pvalue& a_key);
-	static void f_each(const t_pvalue& a_self, const t_pvalue& a_callable);
+	static t_object* f_string(t_dictionary& a_self);
+	static void f_clear(t_dictionary& a_self);
+	static size_t f_size(t_dictionary& a_self);
+	static t_pvalue f__get_at(t_dictionary& a_self, const t_pvalue& a_key);
+	static t_pvalue f__set_at(t_dictionary& a_self, const t_pvalue& a_key, const t_pvalue& a_value);
+	static bool f_has(t_dictionary& a_self, const t_pvalue& a_key);
+	static t_pvalue f_remove(t_dictionary& a_self, const t_pvalue& a_key);
+	static void f_each(t_dictionary& a_self, const t_pvalue& a_callable);
 	static void f_define();
 
 	using t_base::t_base;

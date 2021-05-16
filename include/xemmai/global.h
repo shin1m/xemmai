@@ -53,7 +53,6 @@ class t_global : public t_library
 	t_slot_of<t_type> v_type_bytes;
 	t_slot_of<t_type> v_type_lexer__error;
 	t_slot_of<t_type> v_type_parser__error;
-	t_slot v_symbol_construct;
 	t_slot v_symbol_initialize;
 	t_slot v_symbol_string;
 	t_slot v_symbol_hash;
@@ -101,10 +100,6 @@ public:
 	t_type* f_type() const
 	{
 		return const_cast<t_global*>(this)->f_type_slot<T>();
-	}
-	t_object* f_symbol_construct() const
-	{
-		return v_symbol_construct;
 	}
 	t_object* f_symbol_initialize() const
 	{
@@ -862,17 +857,6 @@ inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, t_pvalue* 
 	} else {
 		(this->*v_get)(a_this, a_key).f_call(a_stack, a_n);
 	}
-}
-
-template<typename T>
-inline t_pvalue t_derived<T>::f_do_construct(t_pvalue* a_stack, size_t a_n)
-{
-	size_t n = a_n + 2;
-	t_scoped_stack stack(n);
-	stack[1] = t_object::f_of(this);
-	for (size_t i = 2; i < n; ++i) stack[i] = a_stack[i];
-	t_object::f_of(this)->f_call(f_global()->f_symbol_construct(), stack, a_n);
-	return stack[0];
 }
 
 template<typename T>

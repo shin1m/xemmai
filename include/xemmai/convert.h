@@ -108,21 +108,6 @@ struct t_call_construct;
 template<typename... T_an, t_pvalue(*A_function)(t_type*, T_an...)>
 struct t_call_construct<t_pvalue(*)(t_type*, T_an...), A_function>
 {
-	static t_pvalue f_function(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
-	{
-		return A_function(&f_as<t_type&>(a_self), std::forward<T_an>(a_n)...);
-	}
-	static void f_call(t_library* a_library, t_pvalue* a_stack, size_t a_n)
-	{
-		t_signature<T_an...>::f_check(a_n);
-		if (a_stack[1].f_type() != f_global()->f_type<t_type>()) f_throw(L"must be class."sv);
-		t_signature<T_an...>::f_check(a_stack);
-		t_signature<T_an...>::template f_call<f_function>(a_library, a_stack[1], a_stack);
-	}
-	static void f_call(t_library* a_library, t_pvalue* a_stack)
-	{
-		t_signature<T_an...>::template f_call<f_function>(a_library, a_stack[1], a_stack);
-	}
 	template<typename...>
 	static t_pvalue f__do(t_type* a_class, t_pvalue* a_stack, T_an&&... a_n)
 	{
@@ -144,13 +129,9 @@ struct t_call_construct<t_pvalue(*)(t_type*, T_an...), A_function>
 	{
 		return f__do<T_an...>(a_class, a_stack + 1);
 	}
-	static bool f__match(t_pvalue* a_stack, size_t a_n)
-	{
-		return t_signature<T_an...>::f_match(a_stack, a_n);
-	}
 	static bool f_match(t_pvalue* a_stack, size_t a_n)
 	{
-		return a_stack[1].f_type() == f_global()->f_type<t_type>() && f__match(a_stack, a_n);
+		return t_signature<T_an...>::f_match(a_stack, a_n);
 	}
 };
 
@@ -456,16 +437,9 @@ struct t_overload<T, T_next...>
 	{
 		using t_bound = typename T::template t_bind<T_self>;
 
-		static void f_call(t_library* a_library, t_pvalue* a_stack, size_t a_n)
-		{
-			if (t_bound::f_match(a_stack, a_n))
-				t_bound::f_call(a_library, a_stack);
-			else
-				t_overload<T_next...>::template t_bind<T_self>::f_call(a_library, a_stack, a_n);
-		}
 		static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, size_t a_n)
 		{
-			return t_bound::f__match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : t_overload<T_next...>::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
+			return t_bound::f_match(a_stack, a_n) ? t_bound::f_do(a_class, a_stack) : t_overload<T_next...>::template t_bind<T_self>::f_do(a_class, a_stack, a_n);
 		}
 	};
 };
@@ -544,30 +518,6 @@ public:
 		v_fields.emplace_back(a_name, f_function(a_function));
 		return *this;
 	}
-	template<typename... T_an>
-	t_define& operator()(const t_construct<T_an...>&)
-	{
-		v_fields.emplace_back(f_global()->f_symbol_construct(), f_function(t_construct<T_an...>::template t_bind<T>::f_call));
-		return *this;
-	}
-	template<typename... T_an, typename T_overload0, typename... T_overloadn>
-	t_define& operator()(const t_construct<T_an...>&, const T_overload0&, const T_overloadn&...)
-	{
-		v_fields.emplace_back(f_global()->f_symbol_construct(), f_function(t_overload<t_construct<T_an...>, T_overload0, T_overloadn...>::template t_bind<T>::f_call));
-		return *this;
-	}
-	template<typename T_function, T_function A_function>
-	t_define& operator()(const t_construct_with<T_function, A_function>&)
-	{
-		v_fields.emplace_back(f_global()->f_symbol_construct(), f_function(t_construct_with<T_function, A_function>::template t_bind<T>::f_call));
-		return *this;
-	}
-	template<typename T_function, T_function A_function, typename T_overload0, typename... T_overloadn>
-	t_define& operator()(const t_construct_with<T_function, A_function>&, const T_overload0&, const T_overloadn&...)
-	{
-		v_fields.emplace_back(f_global()->f_symbol_construct(), f_function(t_overload<t_construct_with<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T>::f_call));
-		return *this;
-	}
 	template<typename T_function, T_function A_function>
 	t_define& operator()(t_object* a_name, const t_member<T_function, A_function>&)
 	{
@@ -636,7 +586,7 @@ struct t_enum_of : t_derivable<t_bears<T, t_type_of<intptr_t>>>
 
 	static t_pvalue f_transfer(const T_library* a_library, T a_value)
 	{
-		return t_enum_of::f_construct_derived(a_library->template f_type<typename t_fundamental<T>::t_type>(), a_value);
+		return a_library->template f_type<typename t_fundamental<T>::t_type>()->template f_new<intptr_t>(a_value);
 	}
 
 	using t_derivable<t_bears<T, t_type_of<intptr_t>>>::t_derivable;

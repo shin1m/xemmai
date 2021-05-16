@@ -38,13 +38,11 @@ assert(d.size() == 1000
 for i = 0; i < 1000; i = i + 1: assert(d[i] == i
 
 Foo = Dictionary + @
-	$__construct = @(*xs) Dictionary.__construct[$]("zero", 0, *xs
 	$__initialize = @(*xs) $[3] = "three"
 
 foo = Foo(1, "one", "two", 2
 print(foo
-assert(foo.size() == 4
-assert(foo["zero"] == 0
+assert(foo.size() == 3
 assert(foo[1] == "one"
 assert(foo["two"] == 2
 assert(foo[3] == "three"

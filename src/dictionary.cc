@@ -111,28 +111,9 @@ t_pvalue t_dictionary::f_remove(const t_pvalue& a_key)
 	return value;
 }
 
-void t_type_of<t_dictionary>::f__construct(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
+t_object* t_type_of<t_dictionary>::f_string(t_dictionary& a_self)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_type>()) f_throw(L"must be class."sv);
-	auto object = f_as<t_type&>(a_stack[1]).f_new<t_dictionary>(f_global()->f_type<t_dictionary::t_table>());
-	auto& dictionary = f_as<t_dictionary&>(object);
-	a_n += 2;
-	for (size_t i = 2; i < a_n; ++i) {
-		auto x = a_stack[i];
-		if (++i >= a_n) {
-			dictionary.f_put(x, {});
-			break;
-		}
-		dictionary.f_put(x, a_stack[i]);
-	}
-	a_stack[0] = object;
-}
-
-t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
-{
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	t_dictionary::t_iterator i(dictionary);
+	t_dictionary::t_iterator i(a_self);
 	std::vector<wchar_t> cs{L'{'};
 	t_pvalue x;
 	t_pvalue y;
@@ -143,7 +124,7 @@ t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
 		y = i.f_entry()->v_value;
 		return true;
 	};
-	if (dictionary.f_owned_or_shared<t_scoped_lock_for_read>(get)) {
+	if (a_self.f_owned_or_shared<t_scoped_lock_for_read>(get)) {
 		auto push = [&](t_pvalue& x, const wchar_t* name)
 		{
 			x = x.f_invoke(f_global()->f_symbol_string());
@@ -157,7 +138,7 @@ t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
 			cs.push_back(L':');
 			cs.push_back(L' ');
 			push(y, L"value");
-			if (!dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
+			if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 			{
 				i.f_next();
 				return get();
@@ -170,75 +151,61 @@ t_object* t_type_of<t_dictionary>::f_string(const t_pvalue& a_self)
 	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
-void t_type_of<t_dictionary>::f_clear(const t_pvalue& a_self)
+void t_type_of<t_dictionary>::f_clear(t_dictionary& a_self)
 {
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		dictionary.f_clear();
+		a_self.f_clear();
 	});
 }
 
-size_t t_type_of<t_dictionary>::f_size(const t_pvalue& a_self)
+size_t t_type_of<t_dictionary>::f_size(t_dictionary& a_self)
 {
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	return dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return dictionary.f_size();
+		return a_self.f_size();
 	});
 }
 
-t_pvalue t_type_of<t_dictionary>::f__get_at(const t_pvalue& a_self, const t_pvalue& a_key)
+t_pvalue t_type_of<t_dictionary>::f__get_at(t_dictionary& a_self, const t_pvalue& a_key)
 {
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	return dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return t_pvalue(dictionary.f_get(a_key));
+		return t_pvalue(a_self.f_get(a_key));
 	});
 }
 
-t_pvalue t_type_of<t_dictionary>::f__set_at(const t_pvalue& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
+t_pvalue t_type_of<t_dictionary>::f__set_at(t_dictionary& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
 {
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	return dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return dictionary.f_put(a_key, a_value);
+		return a_self.f_put(a_key, a_value);
 	});
 }
 
-bool t_type_of<t_dictionary>::f_has(const t_pvalue& a_self, const t_pvalue& a_key)
+bool t_type_of<t_dictionary>::f_has(t_dictionary& a_self, const t_pvalue& a_key)
 {
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	return dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return dictionary.f_has(a_key);
+		return a_self.f_has(a_key);
 	});
 }
 
-t_pvalue t_type_of<t_dictionary>::f_remove(const t_pvalue& a_self, const t_pvalue& a_key)
+t_pvalue t_type_of<t_dictionary>::f_remove(t_dictionary& a_self, const t_pvalue& a_key)
 {
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	return dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return dictionary.f_remove(a_key);
+		return a_self.f_remove(a_key);
 	});
 }
 
-void t_type_of<t_dictionary>::f_each(const t_pvalue& a_self, const t_pvalue& a_callable)
+void t_type_of<t_dictionary>::f_each(t_dictionary& a_self, const t_pvalue& a_callable)
 {
-	f_check<t_dictionary>(a_self, L"this");
-	auto& dictionary = f_as<t_dictionary&>(a_self);
-	t_dictionary::t_iterator i(dictionary);
+	t_dictionary::t_iterator i(a_self);
 	while (true) {
 		t_pvalue key;
 		t_pvalue value;
-		if (!dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
+		if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 		{
 			if (!i.f_entry()) return false;
 			key = i.f_entry()->f_key();
@@ -254,17 +221,16 @@ void t_type_of<t_dictionary>::f_define()
 {
 	t_define<t_dictionary::t_table, t_object>{f_global()}.f_derive();
 	t_define<t_dictionary, t_object>{f_global()}
-		(f_global()->f_symbol_construct(), f__construct)
 		(L"own"sv, t_member<void(*)(t_dictionary&), f_own>())
 		(L"share"sv, t_member<void(*)(t_dictionary&), f_share>())
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
-		(L"clear"sv, t_member<void(*)(const t_pvalue&), f_clear>())
-		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_pvalue&), f_size>())
-		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(const t_pvalue&, const t_pvalue&), f__get_at>())
-		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(const t_pvalue&, const t_pvalue&, const t_pvalue&), f__set_at>())
-		(L"has"sv, t_member<bool(*)(const t_pvalue&, const t_pvalue&), f_has>())
-		(L"remove"sv, t_member<t_pvalue(*)(const t_pvalue&, const t_pvalue&), f_remove>())
-		(L"each"sv, t_member<void(*)(const t_pvalue&, const t_pvalue&), f_each>())
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_dictionary&), f_string>())
+		(L"clear"sv, t_member<void(*)(t_dictionary&), f_clear>())
+		(f_global()->f_symbol_size(), t_member<size_t(*)(t_dictionary&), f_size>())
+		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_dictionary&, const t_pvalue&), f__get_at>())
+		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(t_dictionary&, const t_pvalue&, const t_pvalue&), f__set_at>())
+		(L"has"sv, t_member<bool(*)(t_dictionary&, const t_pvalue&), f_has>())
+		(L"remove"sv, t_member<t_pvalue(*)(t_dictionary&, const t_pvalue&), f_remove>())
+		(L"each"sv, t_member<void(*)(t_dictionary&, const t_pvalue&), f_each>())
 	.f_derive();
 }
 

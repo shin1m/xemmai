@@ -102,10 +102,6 @@ void t_file::f_blocking__(bool a_value)
 void t_type_of<io::t_file>::f_define(t_io* a_library)
 {
 	t_define<io::t_file, t_object>{a_library}
-		(
-			t_construct<std::wstring_view, std::wstring_view>(),
-			t_construct<int, std::wstring_view>()
-		)
 		(L"reopen"sv, t_member<void(io::t_file::*)(std::wstring_view, std::wstring_view), &io::t_file::f_reopen>())
 		(a_library->f_symbol_close(), t_member<void(io::t_file::*)(), &io::t_file::f_close>())
 		(L"seek"sv, t_member<void(io::t_file::*)(intptr_t, int), &io::t_file::f_seek>())

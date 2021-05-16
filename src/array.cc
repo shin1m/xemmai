@@ -113,26 +113,14 @@ t_pvalue t_array::f_remove(intptr_t a_index)
 	return q;
 }
 
-void t_type_of<t_array>::f__construct(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
+t_object* t_type_of<t_array>::f_string(t_array& a_self)
 {
-	if (a_stack[1].f_type() != f_global()->f_type<t_type>()) f_throw(L"must be class."sv);
-	auto object = f_as<t_type&>(a_stack[1]).f_new<t_array>();
-	auto& array = f_as<t_array&>(object);
-	a_n += 2;
-	for (size_t i = 2; i < a_n; ++i) array.f_push(a_stack[i]);
-	a_stack[0] = object;
-}
-
-t_object* t_type_of<t_array>::f_string(const t_pvalue& a_self)
-{
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
 	std::vector<wchar_t> cs{L'['};
 	t_pvalue x;
-	if (array.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	if (a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		if (array.f_size() <= 0) return false;
-		x = array[0];
+		if (a_self.f_size() <= 0) return false;
+		x = a_self[0];
 		return true;
 	})) for (size_t i = 0;;) {
 		x = x.f_invoke(f_global()->f_symbol_string());
@@ -141,10 +129,10 @@ t_object* t_type_of<t_array>::f_string(const t_pvalue& a_self)
 		auto p = static_cast<const wchar_t*>(s);
 		cs.insert(cs.end(), p, p + s.f_size());
 		++i;
-		if (!array.f_owned_or_shared<t_scoped_lock_for_read>([&]
+		if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 		{
-			if (i >= array.f_size()) return false;
-			x = array[i];
+			if (i >= a_self.f_size()) return false;
+			x = a_self[i];
 			return true;
 		})) break;
 		cs.push_back(L',');
@@ -154,117 +142,95 @@ t_object* t_type_of<t_array>::f_string(const t_pvalue& a_self)
 	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
-void t_type_of<t_array>::f_clear(const t_pvalue& a_self)
+void t_type_of<t_array>::f_clear(t_array& a_self)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		array.f_clear();
+		a_self.f_clear();
 	});
 }
 
-size_t t_type_of<t_array>::f_size(const t_pvalue& a_self)
+size_t t_type_of<t_array>::f_size(t_array& a_self)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	return array.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return array.f_size();
+		return a_self.f_size();
 	});
 }
 
-t_pvalue t_type_of<t_array>::f__get_at(const t_pvalue& a_self, intptr_t a_index)
+t_pvalue t_type_of<t_array>::f__get_at(t_array& a_self, intptr_t a_index)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	return array.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		return t_pvalue(array[a_index]);
+		return t_pvalue(a_self[a_index]);
 	});
 }
 
-t_pvalue t_type_of<t_array>::f__set_at(const t_pvalue& a_self, intptr_t a_index, const t_pvalue& a_value)
+t_pvalue t_type_of<t_array>::f__set_at(t_array& a_self, intptr_t a_index, const t_pvalue& a_value)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	return array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return t_pvalue(array[a_index] = a_value);
+		return t_pvalue(a_self[a_index] = a_value);
 	});
 }
 
-void t_type_of<t_array>::f_push(const t_pvalue& a_self, const t_pvalue& a_value)
+void t_type_of<t_array>::f_push(t_array& a_self, const t_pvalue& a_value)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		array.f_push(std::move(a_value));
+		a_self.f_push(std::move(a_value));
 	});
 }
 
-t_pvalue t_type_of<t_array>::f_pop(const t_pvalue& a_self)
+t_pvalue t_type_of<t_array>::f_pop(t_array& a_self)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	return array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return array.f_pop();
+		return a_self.f_pop();
 	});
 }
 
-void t_type_of<t_array>::f_unshift(const t_pvalue& a_self, const t_pvalue& a_value)
+void t_type_of<t_array>::f_unshift(t_array& a_self, const t_pvalue& a_value)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		array.f_unshift(a_value);
+		a_self.f_unshift(a_value);
 	});
 }
 
-t_pvalue t_type_of<t_array>::f_shift(const t_pvalue& a_self)
+t_pvalue t_type_of<t_array>::f_shift(t_array& a_self)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	return array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return array.f_shift();
+		return a_self.f_shift();
 	});
 }
 
-void t_type_of<t_array>::f_insert(const t_pvalue& a_self, intptr_t a_index, const t_pvalue& a_value)
+void t_type_of<t_array>::f_insert(t_array& a_self, intptr_t a_index, const t_pvalue& a_value)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		array.f_insert(a_index, a_value);
+		a_self.f_insert(a_index, a_value);
 	});
 }
 
-t_pvalue t_type_of<t_array>::f_remove(const t_pvalue& a_self, intptr_t a_index)
+t_pvalue t_type_of<t_array>::f_remove(t_array& a_self, intptr_t a_index)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
-	return array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		return array.f_remove(a_index);
+		return a_self.f_remove(a_index);
 	});
 }
 
-void t_type_of<t_array>::f_each(const t_pvalue& a_self, const t_pvalue& a_callable)
+void t_type_of<t_array>::f_each(t_array& a_self, const t_pvalue& a_callable)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
 	size_t i = 0;
 	while (true) {
 		t_pvalue x;
-		if (!array.f_owned_or_shared<t_scoped_lock_for_read>([&]
+		if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 		{
-			if (i >= array.f_size()) return false;
-			x = array[i];
+			if (i >= a_self.f_size()) return false;
+			x = a_self[i];
 			return true;
 		})) break;
 		a_callable(x);
@@ -272,21 +238,19 @@ void t_type_of<t_array>::f_each(const t_pvalue& a_self, const t_pvalue& a_callab
 	}
 }
 
-void t_type_of<t_array>::f_sort(const t_pvalue& a_self, const t_pvalue& a_callable)
+void t_type_of<t_array>::f_sort(t_array& a_self, const t_pvalue& a_callable)
 {
-	f_check<t_array>(a_self, L"this");
-	auto& array = f_as<t_array&>(a_self);
 	t_object* object;
 	size_t head = 0;
 	size_t size = 0;
 	size_t mask = 0;
-	array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		object = array.v_tuple;
-		array.v_tuple = nullptr;
-		std::swap(array.v_head, head);
-		std::swap(array.v_size, size);
-		std::swap(array.v_mask, mask);
+		object = a_self.v_tuple;
+		a_self.v_tuple = nullptr;
+		std::swap(a_self.v_head, head);
+		std::swap(a_self.v_size, size);
+		std::swap(a_self.v_mask, mask);
 	});
 	if (!object) return;
 	std::vector<t_rvalue> a(size);
@@ -297,34 +261,33 @@ void t_type_of<t_array>::f_sort(const t_pvalue& a_self, const t_pvalue& a_callab
 		return f_as<bool>(a_callable(x, y));
 	});
 	for (size_t i = 0; i < size; ++i) tuple[i] = a[i];
-	array.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		array.v_tuple = object;
-		array.v_head = 0;
-		array.v_size = size;
-		array.v_mask = mask;
+		a_self.v_tuple = object;
+		a_self.v_head = 0;
+		a_self.v_size = size;
+		a_self.v_mask = mask;
 	});
 }
 
 void t_type_of<t_array>::f_define()
 {
 	t_define<t_array, t_object>{f_global()}
-		(f_global()->f_symbol_construct(), f__construct)
 		(L"own"sv, t_member<void(*)(t_array&), f_own>())
 		(L"share"sv, t_member<void(*)(t_array&), f_share>())
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
-		(L"clear"sv, t_member<void(*)(const t_pvalue&), f_clear>())
-		(f_global()->f_symbol_size(), t_member<size_t(*)(const t_pvalue&), f_size>())
-		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(const t_pvalue&, intptr_t), f__get_at>())
-		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(const t_pvalue&, intptr_t, const t_pvalue&), f__set_at>())
-		(L"push"sv, t_member<void(*)(const t_pvalue&, const t_pvalue&), f_push>())
-		(L"pop"sv, t_member<t_pvalue(*)(const t_pvalue&), f_pop>())
-		(L"unshift"sv, t_member<void(*)(const t_pvalue&, const t_pvalue&), f_unshift>())
-		(L"shift"sv, t_member<t_pvalue(*)(const t_pvalue&), f_shift>())
-		(L"insert"sv, t_member<void(*)(const t_pvalue&, intptr_t, const t_pvalue&), f_insert>())
-		(L"remove"sv, t_member<t_pvalue(*)(const t_pvalue&, intptr_t), f_remove>())
-		(L"each"sv, t_member<void(*)(const t_pvalue&, const t_pvalue&), f_each>())
-		(L"sort"sv, t_member<void(*)(const t_pvalue&, const t_pvalue&), f_sort>())
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_array&), f_string>())
+		(L"clear"sv, t_member<void(*)(t_array&), f_clear>())
+		(f_global()->f_symbol_size(), t_member<size_t(*)(t_array&), f_size>())
+		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_array&, intptr_t), f__get_at>())
+		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(t_array&, intptr_t, const t_pvalue&), f__set_at>())
+		(L"push"sv, t_member<void(*)(t_array&, const t_pvalue&), f_push>())
+		(L"pop"sv, t_member<t_pvalue(*)(t_array&), f_pop>())
+		(L"unshift"sv, t_member<void(*)(t_array&, const t_pvalue&), f_unshift>())
+		(L"shift"sv, t_member<t_pvalue(*)(t_array&), f_shift>())
+		(L"insert"sv, t_member<void(*)(t_array&, intptr_t, const t_pvalue&), f_insert>())
+		(L"remove"sv, t_member<t_pvalue(*)(t_array&, intptr_t), f_remove>())
+		(L"each"sv, t_member<void(*)(t_array&, const t_pvalue&), f_each>())
+		(L"sort"sv, t_member<void(*)(t_array&, const t_pvalue&), f_sort>())
 	.f_derive();
 }
 

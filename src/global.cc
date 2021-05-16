@@ -14,7 +14,6 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 	v_type_module__body->v_module = t_object::f_of(this);
 	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(5, v_type_object, t_object::f_of(this)));
 	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(5, v_type_object, t_object::f_of(this)));
-	v_symbol_construct = t_symbol::f_instantiate(L"__construct"sv);
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
 	v_symbol_hash = t_symbol::f_instantiate(L"__hash"sv);
@@ -159,7 +158,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_bytes);
 	a_scan(v_type_lexer__error);
 	a_scan(v_type_parser__error);
-	a_scan(v_symbol_construct);
 	a_scan(v_symbol_initialize);
 	a_scan(v_symbol_string);
 	a_scan(v_symbol_hash);

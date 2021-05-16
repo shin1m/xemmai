@@ -201,7 +201,6 @@ bool t_type_of<intptr_t>::f__not_equals(intptr_t a_self, const t_pvalue& a_value
 void t_type_of<intptr_t>::f_define()
 {
 	t_define<intptr_t, t_object>{f_global()}
-		(t_construct_with<t_pvalue(*)(t_type*, intptr_t), f_construct_derived>())
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(intptr_t), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(intptr_t), f__hash>())
 		(f_global()->f_symbol_plus(), t_member<intptr_t(*)(intptr_t), f__plus>())
