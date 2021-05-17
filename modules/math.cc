@@ -10,10 +10,10 @@ namespace xemmai
 struct t_math : t_library
 {
 	using t_library::t_library;
-	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan)
 	{
 	}
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
 	t_object* f_type() const
 	{
@@ -57,9 +57,9 @@ bool f_boolean(double a_value)
 
 }
 
-void t_math::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
+std::vector<std::pair<t_root, t_rvalue>> t_math::f_define()
 {
-	t_export(this, a_fields)
+	return t_export(this)
 		(L"acos"sv, t_static<double(*)(double), std::acos>())
 		(L"asin"sv, t_static<double(*)(double), std::asin>())
 		(L"atan"sv, t_static<double(*)(double), std::atan>())
@@ -94,9 +94,7 @@ void t_math::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle)
 {
-	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<xemmai::t_math>(a_handle);
-	p->f_as<xemmai::t_math>().f_define(a_fields);
-	return p;
+	return xemmai::f_new<xemmai::t_math>(a_handle);
 }

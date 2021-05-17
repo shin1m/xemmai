@@ -553,11 +553,15 @@ template<typename T_library>
 class t_export
 {
 	T_library* v_library;
-	std::vector<std::pair<t_root, t_rvalue>>& v_fields;
+	std::vector<std::pair<t_root, t_rvalue>> v_fields;
 
 public:
-	t_export(T_library* a_library, std::vector<std::pair<t_root, t_rvalue>>& a_fields) : v_library(a_library), v_fields(a_fields)
+	t_export(T_library* a_library) : v_library(a_library)
 	{
+	}
+	operator std::vector<std::pair<t_root, t_rvalue>>()
+	{
+		return std::move(v_fields);
 	}
 	template<typename T_value>
 	t_export& operator()(t_object* a_name, T_value a_value)

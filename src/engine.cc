@@ -237,10 +237,8 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	type_class->f_be(v_type_class);
 	{
 		auto type_module__body = f_new_type_on_boot<t_module::t_body>(5, type, nullptr);
-		auto global = type_module__body->f_as<t_type>().f_new<t_global>();
-		std::vector<std::pair<t_root, t_rvalue>> fields;
-		global->f_as<t_global>().f_define(type_object, type_class, type_module__body, fields);
-		v_module_global = t_module::f_new(L"__global"sv, global, fields);
+		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_class, type_module__body);
+		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}
 	v_fiber_exit = f_allocate(0);
 	v_fiber_exit->f_be(type);
@@ -287,9 +285,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	system.emplace_back(f_global()->f_symbol_path(), path);
 	{
 		auto io = f_global()->f_type<t_module::t_body>()->f_new<t_io>();
-		std::vector<std::pair<t_root, t_rvalue>> fields;
-		io->f_as<t_io>().f_define(fields);
-		v_module_io = t_module::f_new(L"io"sv, io, fields);
+		v_module_io = t_module::f_new(L"io"sv, io, io->f_as<t_io>().f_define());
 	}
 	{
 		auto file = io::t_file::f_instantiate(stdin);

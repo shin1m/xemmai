@@ -27,8 +27,8 @@ public:
 	t_io() : t_library(nullptr)
 	{
 	}
-	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan);
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
 	const T* f_library() const
 	{

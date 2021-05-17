@@ -33,24 +33,22 @@ t_pvalue t_type_of<t_queue>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 
 }
 
-void t_container::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
-{
-	v_type_pair.f_construct(t_type_of<t_pair>::f_define(this));
-	t_type_of<t_queue>::f_define(this);
-	t_export(this, a_fields)
-		(L"Queue"sv, t_object::f_of(v_type_queue))
-	;
-}
-
 void t_container::f_scan(t_scan a_scan)
 {
 	a_scan(v_type_pair);
 	a_scan(v_type_queue);
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
+std::vector<std::pair<t_root, t_rvalue>> t_container::f_define()
 {
-	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<t_container>(a_handle);
-	p->f_as<t_container>().f_define(a_fields);
-	return p;
+	v_type_pair.f_construct(t_type_of<t_pair>::f_define(this));
+	t_type_of<t_queue>::f_define(this);
+	return t_export(this)
+		(L"Queue"sv, t_object::f_of(v_type_queue))
+	;
+}
+
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle)
+{
+	return xemmai::f_new<t_container>(a_handle);
 }

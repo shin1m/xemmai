@@ -47,8 +47,8 @@ struct t_container : t_library
 	t_slot_of<t_type> v_type_queue;
 
 	using t_library::t_library;
-	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan);
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot()
 	{

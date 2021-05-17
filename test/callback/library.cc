@@ -68,21 +68,21 @@ struct t_callback_library : t_library
 	t_slot_of<t_type> v_type_server;
 
 	using t_library::t_library;
-	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
-	{
-		v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
-		t_type_of<t_client>::f_define(this);
-		t_type_of<t_server>::f_define(this);
-		t_export(this, a_fields)
-			(L"Client"sv, t_object::f_of(v_type_client))
-			(L"Server"sv, t_object::f_of(v_type_server))
-		;
-	}
 	virtual void f_scan(t_scan a_scan)
 	{
 		a_scan(v_symbol_on_message);
 		a_scan(v_type_client);
 		a_scan(v_type_server);
+	}
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define()
+	{
+		v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
+		t_type_of<t_client>::f_define(this);
+		t_type_of<t_server>::f_define(this);
+		return t_export(this)
+			(L"Client"sv, t_object::f_of(v_type_client))
+			(L"Server"sv, t_object::f_of(v_type_server))
+		;
 	}
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot()
@@ -185,9 +185,7 @@ t_pvalue t_callback_library::f_as(t_client* a_value) const
 	return p ? p->v_self : v_type_client->f_new<t_client*>(a_value);
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle)
 {
-	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<t_callback_library>(a_handle);
-	p->f_as<t_callback_library>().f_define(a_fields);
-	return p;
+	return xemmai::f_new<t_callback_library>(a_handle);
 }

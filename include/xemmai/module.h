@@ -26,10 +26,10 @@ struct t_module
 		virtual void f_scan(t_scan a_scan) = 0;
 	};
 
+	static t_object* f_load_script(std::wstring_view a_path);
+	static std::vector<std::pair<t_root, t_rvalue>> f_execute_script(t_object* a_code);
+	static t_object* f_load_library(std::wstring_view a_path);
 	static t_object* f_new(std::wstring_view a_name, t_object* a_body, const std::vector<std::pair<t_root, t_rvalue>>& a_fields);
-	static t_object* f_load_library(std::wstring_view a_path, std::vector<std::pair<t_root, t_rvalue>>& a_fields);
-	static void f_execute_script(t_object* a_code, t_fields& a_fields);
-	static t_object* f_load_and_execute_script(std::wstring_view a_path, t_fields& a_fields);
 	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_name);
 	static void f_main();
 
@@ -99,6 +99,7 @@ struct t_library : t_module::t_body
 	{
 	}
 	virtual ~t_library();
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define() = 0;
 };
 
 template<>

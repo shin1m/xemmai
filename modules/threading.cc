@@ -40,12 +40,12 @@ class t_threading : public t_library
 
 public:
 	using t_library::t_library;
-	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan)
 	{
 		a_scan(v_type_mutex);
 		a_scan(v_type_condition);
 	}
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot()
 	{
@@ -140,11 +140,11 @@ t_pvalue t_type_of<std::condition_variable>::f_do_construct(t_pvalue* a_stack, s
 	return t_construct<>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
 }
 
-void t_threading::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
+std::vector<std::pair<t_root, t_rvalue>> t_threading::f_define()
 {
 	t_type_of<std::mutex>::f_define(this);
 	t_type_of<std::condition_variable>::f_define(this);
-	t_export(this, a_fields)
+	return t_export(this)
 		(L"Mutex"sv, t_object::f_of(v_type_mutex))
 		(L"Condition"sv, t_object::f_of(v_type_condition))
 	;
@@ -152,9 +152,7 @@ void t_threading::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle)
 {
-	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<xemmai::t_threading>(a_handle);
-	p->f_as<xemmai::t_threading>().f_define(a_fields);
-	return p;
+	return xemmai::f_new<xemmai::t_threading>(a_handle);
 }

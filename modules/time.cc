@@ -21,10 +21,10 @@ struct t_time : t_library
 #endif
 
 	using t_library::t_library;
-	void f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan)
 	{
 	}
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
 	t_object* f_type() const
 	{
@@ -534,9 +534,9 @@ t_object* f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_pre
 
 }
 
-void t_time::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
+std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 {
-	t_export(this, a_fields)
+	return t_export(this)
 		(L"now"sv, t_static<double(*)(), f_now>())
 		(L"tick"sv, t_static<intptr_t(*)(t_time*), f_tick>())
 		(L"compose"sv, t_static<double(*)(const t_tuple&), f_compose>())
@@ -553,9 +553,7 @@ void t_time::f_define(std::vector<std::pair<t_root, t_rvalue>>& a_fields)
 
 }
 
-XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle, std::vector<std::pair<xemmai::t_root, xemmai::t_rvalue>>& a_fields)
+XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle)
 {
-	auto p = xemmai::f_global()->f_type<xemmai::t_module::t_body>()->f_new<xemmai::t_time>(a_handle);
-	p->f_as<xemmai::t_time>().f_define(a_fields);
-	return p;
+	return xemmai::f_new<xemmai::t_time>(a_handle);
 }

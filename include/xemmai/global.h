@@ -88,12 +88,15 @@ class t_global : public t_library
 	t_slot v_string_empty;
 
 public:
-	t_global() : t_library(nullptr)
+	t_global(t_object* a_type_object, t_object* a_type_class, t_object* a_type_module__body) : t_library(nullptr)
 	{
 		v_instance = this;
+		v_type_object.f_construct(a_type_object);
+		v_type_class.f_construct(a_type_class);
+		v_type_module__body.f_construct(a_type_module__body);
 	}
-	void f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	virtual void f_scan(t_scan a_scan);
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
 	t_slot_of<t_type>& f_type_slot();
 	template<typename T>
@@ -871,6 +874,12 @@ void t_builder::f_do(t_fields& a_fields, T a_do)
 		builder->f_as<t_builder>().v_fields = nullptr;
 		throw;
 	}
+}
+
+template<typename T_library>
+inline t_object* f_new(t_library::t_handle* a_handle)
+{
+	return f_global()->f_type<t_module::t_body>()->f_new<T_library>(a_handle);
 }
 
 template<typename T_context, typename T_main>

@@ -4,13 +4,76 @@
 namespace xemmai
 {
 
-void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_object* a_type_module__body, std::vector<std::pair<t_root, t_rvalue>>& a_fields)
+void t_global::f_scan(t_scan a_scan)
 {
-	v_type_object.f_construct(a_type_object);
+	a_scan(v_type_object);
+	a_scan(v_type_class);
+	a_scan(v_type_builder);
+	a_scan(v_type_module__body);
+	a_scan(v_type_module);
+	a_scan(v_type_symbol);
+	a_scan(v_type_native);
+	a_scan(v_type_fiber);
+	a_scan(v_type_thread);
+	a_scan(v_type_scope);
+	a_scan(v_type_code);
+	a_scan(v_type_lambda);
+	a_scan(v_type_lambda_shared);
+	a_scan(v_type_advanced_lambda);
+	a_scan(v_type_advanced_lambda_shared);
+	a_scan(v_type_method);
+	a_scan(v_type_throwable);
+	a_scan(v_type_null);
+	a_scan(v_type_boolean);
+	a_scan(v_type_integer);
+	a_scan(v_type_float);
+	a_scan(v_type_string);
+	a_scan(v_type_tuple);
+	a_scan(v_type_list);
+	a_scan(v_type_map__table);
+	a_scan(v_type_map);
+	a_scan(v_type_bytes);
+	a_scan(v_type_lexer__error);
+	a_scan(v_type_parser__error);
+	a_scan(v_symbol_initialize);
+	a_scan(v_symbol_string);
+	a_scan(v_symbol_hash);
+	a_scan(v_symbol_call);
+	a_scan(v_symbol_get_at);
+	a_scan(v_symbol_set_at);
+	a_scan(v_symbol_plus);
+	a_scan(v_symbol_minus);
+	a_scan(v_symbol_not);
+	a_scan(v_symbol_complement);
+	a_scan(v_symbol_multiply);
+	a_scan(v_symbol_divide);
+	a_scan(v_symbol_modulus);
+	a_scan(v_symbol_add);
+	a_scan(v_symbol_subtract);
+	a_scan(v_symbol_left_shift);
+	a_scan(v_symbol_right_shift);
+	a_scan(v_symbol_less);
+	a_scan(v_symbol_less_equal);
+	a_scan(v_symbol_greater);
+	a_scan(v_symbol_greater_equal);
+	a_scan(v_symbol_equals);
+	a_scan(v_symbol_not_equals);
+	a_scan(v_symbol_and);
+	a_scan(v_symbol_xor);
+	a_scan(v_symbol_or);
+	a_scan(v_symbol_path);
+	a_scan(v_symbol_executable);
+	a_scan(v_symbol_script);
+	a_scan(v_symbol_arguments);
+	a_scan(v_symbol_size);
+	a_scan(v_symbol_dump);
+	a_scan(v_string_empty);
+}
+
+std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
+{
 	v_type_object->v_module = t_object::f_of(this);
-	v_type_class.f_construct(a_type_class);
 	v_type_class->v_module = t_object::f_of(this);
-	v_type_module__body.f_construct(a_type_module__body);
 	v_type_module__body->v_module = t_object::f_of(this);
 	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(5, v_type_object, t_object::f_of(this)));
 	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(5, v_type_object, t_object::f_of(this)));
@@ -102,7 +165,7 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 	v_type_lexer__error->v_builtin = true;
 	t_define<t_parser::t_error, t_throwable>(this).f_derive();
 	v_type_parser__error->v_builtin = true;
-	t_export(this, a_fields)
+	return t_export(this)
 		(L"Object"sv, t_object::f_of(v_type_object))
 		(L"Class"sv, t_object::f_of(v_type_class))
 		(L"Module"sv, t_object::f_of(v_type_module))
@@ -125,72 +188,6 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 		(L"LexerError"sv, t_object::f_of(v_type_lexer__error))
 		(L"ParserError"sv, t_object::f_of(v_type_parser__error))
 	;
-}
-
-void t_global::f_scan(t_scan a_scan)
-{
-	a_scan(v_type_object);
-	a_scan(v_type_class);
-	a_scan(v_type_builder);
-	a_scan(v_type_module__body);
-	a_scan(v_type_module);
-	a_scan(v_type_symbol);
-	a_scan(v_type_native);
-	a_scan(v_type_fiber);
-	a_scan(v_type_thread);
-	a_scan(v_type_scope);
-	a_scan(v_type_code);
-	a_scan(v_type_lambda);
-	a_scan(v_type_lambda_shared);
-	a_scan(v_type_advanced_lambda);
-	a_scan(v_type_advanced_lambda_shared);
-	a_scan(v_type_method);
-	a_scan(v_type_throwable);
-	a_scan(v_type_null);
-	a_scan(v_type_boolean);
-	a_scan(v_type_integer);
-	a_scan(v_type_float);
-	a_scan(v_type_string);
-	a_scan(v_type_tuple);
-	a_scan(v_type_list);
-	a_scan(v_type_map__table);
-	a_scan(v_type_map);
-	a_scan(v_type_bytes);
-	a_scan(v_type_lexer__error);
-	a_scan(v_type_parser__error);
-	a_scan(v_symbol_initialize);
-	a_scan(v_symbol_string);
-	a_scan(v_symbol_hash);
-	a_scan(v_symbol_call);
-	a_scan(v_symbol_get_at);
-	a_scan(v_symbol_set_at);
-	a_scan(v_symbol_plus);
-	a_scan(v_symbol_minus);
-	a_scan(v_symbol_not);
-	a_scan(v_symbol_complement);
-	a_scan(v_symbol_multiply);
-	a_scan(v_symbol_divide);
-	a_scan(v_symbol_modulus);
-	a_scan(v_symbol_add);
-	a_scan(v_symbol_subtract);
-	a_scan(v_symbol_left_shift);
-	a_scan(v_symbol_right_shift);
-	a_scan(v_symbol_less);
-	a_scan(v_symbol_less_equal);
-	a_scan(v_symbol_greater);
-	a_scan(v_symbol_greater_equal);
-	a_scan(v_symbol_equals);
-	a_scan(v_symbol_not_equals);
-	a_scan(v_symbol_and);
-	a_scan(v_symbol_xor);
-	a_scan(v_symbol_or);
-	a_scan(v_symbol_path);
-	a_scan(v_symbol_executable);
-	a_scan(v_symbol_script);
-	a_scan(v_symbol_arguments);
-	a_scan(v_symbol_size);
-	a_scan(v_symbol_dump);
-	a_scan(v_string_empty);
 }
 
 #ifdef _WIN32
