@@ -11,14 +11,14 @@ constexpr std::integral_constant<size_t, A_capacity> R;
 
 }
 
-const t_dictionary::t_table::t_rank t_dictionary::t_table::v_ranks[] = {
+const t_map::t_table::t_rank t_map::t_table::v_ranks[] = {
 	{R<11>, 0}, R<23>, R<53>, R<97>, R<193>, R<389>, R<769>,
 	R<1543>, R<3079>, R<6151>, R<12289>, R<24593>, R<49157>, R<98317>,
 	R<196613>, R<393241>, R<786433>, R<1572869>, R<3145739>, R<6291469>, R<12582917>,
 	R<25165843>, R<50331653>, R<100663319>, R<201326611>, R<402653189>, R<805306457>, R<1610612741>
 };
 
-void t_dictionary::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_pvalue a_key, t_pvalue a_value)
+void t_map::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_pvalue a_key, t_pvalue a_value)
 {
 	while (a_p->v_gap) {
 		std::swap(a_p->v_gap, a_gap);
@@ -37,7 +37,7 @@ void t_dictionary::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_p
 	a_p->v_value = a_value;
 }
 
-void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
+void t_map::f_rehash(const t_table::t_rank& a_rank)
 {
 	auto object = t_table::f_instantiate(v_table->f_type(), a_rank);
 	auto& table0 = f_as<t_table&>(v_table);
@@ -54,12 +54,12 @@ void t_dictionary::f_rehash(const t_table::t_rank& a_rank)
 	v_table = std::move(object);
 }
 
-t_object* t_dictionary::f_instantiate()
+t_object* t_map::f_instantiate()
 {
-	return f_new<t_dictionary>(f_global(), f_global()->f_type<t_dictionary::t_table>());
+	return f_new<t_map>(f_global(), f_global()->f_type<t_map::t_table>());
 }
 
-t_pvalue t_dictionary::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
+t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 {
 	auto table = &f_as<t_table&>(v_table);
 	auto hash = f_as<size_t>(a_key.f_hash());
@@ -77,7 +77,7 @@ t_pvalue t_dictionary::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 	return p->v_value;
 }
 
-t_pvalue t_dictionary::f_remove(const t_pvalue& a_key)
+t_pvalue t_map::f_remove(const t_pvalue& a_key)
 {
 	auto& table = f_as<t_table&>(v_table);
 	auto p = table.f_find(a_key);
@@ -111,9 +111,9 @@ t_pvalue t_dictionary::f_remove(const t_pvalue& a_key)
 	return value;
 }
 
-t_object* t_type_of<t_dictionary>::f_string(t_dictionary& a_self)
+t_object* t_type_of<t_map>::f_string(t_map& a_self)
 {
-	t_dictionary::t_iterator i(a_self);
+	t_map::t_iterator i(a_self);
 	std::vector<wchar_t> cs{L'{'};
 	t_pvalue x;
 	t_pvalue y;
@@ -151,7 +151,7 @@ t_object* t_type_of<t_dictionary>::f_string(t_dictionary& a_self)
 	return t_string::f_instantiate(cs.data(), cs.size());
 }
 
-void t_type_of<t_dictionary>::f_clear(t_dictionary& a_self)
+void t_type_of<t_map>::f_clear(t_map& a_self)
 {
 	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
@@ -159,7 +159,7 @@ void t_type_of<t_dictionary>::f_clear(t_dictionary& a_self)
 	});
 }
 
-size_t t_type_of<t_dictionary>::f_size(t_dictionary& a_self)
+size_t t_type_of<t_map>::f_size(t_map& a_self)
 {
 	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
@@ -167,7 +167,7 @@ size_t t_type_of<t_dictionary>::f_size(t_dictionary& a_self)
 	});
 }
 
-t_pvalue t_type_of<t_dictionary>::f__get_at(t_dictionary& a_self, const t_pvalue& a_key)
+t_pvalue t_type_of<t_map>::f__get_at(t_map& a_self, const t_pvalue& a_key)
 {
 	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
@@ -175,7 +175,7 @@ t_pvalue t_type_of<t_dictionary>::f__get_at(t_dictionary& a_self, const t_pvalue
 	});
 }
 
-t_pvalue t_type_of<t_dictionary>::f__set_at(t_dictionary& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
+t_pvalue t_type_of<t_map>::f__set_at(t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
 {
 	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
@@ -183,7 +183,7 @@ t_pvalue t_type_of<t_dictionary>::f__set_at(t_dictionary& a_self, const t_pvalue
 	});
 }
 
-bool t_type_of<t_dictionary>::f_has(t_dictionary& a_self, const t_pvalue& a_key)
+bool t_type_of<t_map>::f_has(t_map& a_self, const t_pvalue& a_key)
 {
 	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
@@ -191,7 +191,7 @@ bool t_type_of<t_dictionary>::f_has(t_dictionary& a_self, const t_pvalue& a_key)
 	});
 }
 
-t_pvalue t_type_of<t_dictionary>::f_remove(t_dictionary& a_self, const t_pvalue& a_key)
+t_pvalue t_type_of<t_map>::f_remove(t_map& a_self, const t_pvalue& a_key)
 {
 	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
@@ -199,9 +199,9 @@ t_pvalue t_type_of<t_dictionary>::f_remove(t_dictionary& a_self, const t_pvalue&
 	});
 }
 
-void t_type_of<t_dictionary>::f_each(t_dictionary& a_self, const t_pvalue& a_callable)
+void t_type_of<t_map>::f_each(t_map& a_self, const t_pvalue& a_callable)
 {
-	t_dictionary::t_iterator i(a_self);
+	t_map::t_iterator i(a_self);
 	while (true) {
 		t_pvalue key;
 		t_pvalue value;
@@ -217,55 +217,55 @@ void t_type_of<t_dictionary>::f_each(t_dictionary& a_self, const t_pvalue& a_cal
 	}
 }
 
-void t_type_of<t_dictionary>::f_define()
+void t_type_of<t_map>::f_define()
 {
-	t_define<t_dictionary::t_table, t_object>{f_global()}.f_derive();
-	t_define<t_dictionary, t_object>{f_global()}
-		(L"own"sv, t_member<void(*)(t_dictionary&), f_own>())
-		(L"share"sv, t_member<void(*)(t_dictionary&), f_share>())
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_dictionary&), f_string>())
-		(L"clear"sv, t_member<void(*)(t_dictionary&), f_clear>())
-		(f_global()->f_symbol_size(), t_member<size_t(*)(t_dictionary&), f_size>())
-		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_dictionary&, const t_pvalue&), f__get_at>())
-		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(t_dictionary&, const t_pvalue&, const t_pvalue&), f__set_at>())
-		(L"has"sv, t_member<bool(*)(t_dictionary&, const t_pvalue&), f_has>())
-		(L"remove"sv, t_member<t_pvalue(*)(t_dictionary&, const t_pvalue&), f_remove>())
-		(L"each"sv, t_member<void(*)(t_dictionary&, const t_pvalue&), f_each>())
+	t_define<t_map::t_table, t_object>{f_global()}.f_derive();
+	t_define<t_map, t_object>{f_global()}
+		(L"own"sv, t_member<void(*)(t_map&), f_own>())
+		(L"share"sv, t_member<void(*)(t_map&), f_share>())
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_map&), f_string>())
+		(L"clear"sv, t_member<void(*)(t_map&), f_clear>())
+		(f_global()->f_symbol_size(), t_member<size_t(*)(t_map&), f_size>())
+		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), f__get_at>())
+		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), f__set_at>())
+		(L"has"sv, t_member<bool(*)(t_map&, const t_pvalue&), f_has>())
+		(L"remove"sv, t_member<t_pvalue(*)(t_map&, const t_pvalue&), f_remove>())
+		(L"each"sv, t_member<void(*)(t_map&, const t_pvalue&), f_each>())
 	.f_derive();
 }
 
-t_pvalue t_type_of<t_dictionary>::f_do_construct(t_pvalue* a_stack, size_t a_n)
+t_pvalue t_type_of<t_map>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	auto object = f_new<t_dictionary>(f_global()->f_type<t_dictionary::t_table>());
-	auto& dictionary = f_as<t_dictionary&>(object);
+	auto object = f_new<t_map>(f_global()->f_type<t_map::t_table>());
+	auto& map = f_as<t_map&>(object);
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
 		const auto& x = a_stack[i];
 		if (++i >= a_n) {
-			dictionary.f_put(x, {});
+			map.f_put(x, {});
 			break;
 		}
-		dictionary.f_put(x, a_stack[i]);
+		map.f_put(x, a_stack[i]);
 	}
 	return object;
 }
 
-size_t t_type_of<t_dictionary>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
+size_t t_type_of<t_map>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 {
-	auto& dictionary = f_as<t_dictionary&>(a_this);
-	dictionary.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	auto& map = f_as<t_map&>(a_this);
+	map.f_owned_or_shared<t_scoped_lock_for_read>([&]
 	{
-		a_stack[0] = dictionary.f_get(a_stack[2]);
+		a_stack[0] = map.f_get(a_stack[2]);
 	});
 	return -1;
 }
 
-size_t t_type_of<t_dictionary>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
+size_t t_type_of<t_map>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
 {
-	auto& dictionary = f_as<t_dictionary&>(a_this);
-	dictionary.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	auto& map = f_as<t_map&>(a_this);
+	map.f_owned_or_shared<t_scoped_lock_for_write>([&]
 	{
-		a_stack[0] = dictionary.f_put(a_stack[2], a_stack[3]);
+		a_stack[0] = map.f_put(a_stack[2], a_stack[3]);
 	});
 	return -1;
 }

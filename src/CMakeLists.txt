@@ -18,8 +18,8 @@ add_executable(xemmai
 	float.cc
 	string.cc
 	tuple.cc
-	array.cc
-	dictionary.cc
+	list.cc
+	map.cc
 	bytes.cc
 	lexer.cc
 	parser.cc

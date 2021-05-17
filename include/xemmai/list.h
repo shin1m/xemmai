@@ -1,16 +1,16 @@
-#ifndef XEMMAI__ARRAY_H
-#define XEMMAI__ARRAY_H
+#ifndef XEMMAI__LIST_H
+#define XEMMAI__LIST_H
 
 #include "tuple.h"
 
 namespace xemmai
 {
 
-class t_array : public t_sharable
+class t_list : public t_sharable
 {
-	friend struct t_finalizes<t_bears<t_array>>;
+	friend struct t_finalizes<t_bears<t_list>>;
 	friend struct t_type_of<t_object>;
-	friend struct t_type_of<t_array>;
+	friend struct t_type_of<t_list>;
 
 	static t_svalue* f_move_forward(t_svalue* a_p, t_svalue* a_q)
 	{
@@ -34,8 +34,8 @@ class t_array : public t_sharable
 	size_t v_size = 0;
 	size_t v_mask = 0;
 
-	t_array() = default;
-	~t_array() = default;
+	t_list() = default;
+	~t_list() = default;
 	void f_resize();
 	void f_grow();
 	void f_shrink();
@@ -79,7 +79,7 @@ public:
 	}
 	t_pvalue f_pop()
 	{
-		if (v_size <= 0) f_throw(L"empty array."sv);
+		if (v_size <= 0) f_throw(L"empty list."sv);
 		auto& x = f_as<t_tuple&>(v_tuple)[v_head + --v_size & v_mask];
 		t_pvalue p = x;
 		x = nullptr;
@@ -95,7 +95,7 @@ public:
 	}
 	t_pvalue f_shift()
 	{
-		if (v_size <= 0) f_throw(L"empty array."sv);
+		if (v_size <= 0) f_throw(L"empty list."sv);
 		auto& x = f_as<t_tuple&>(v_tuple)[v_head];
 		t_pvalue p = x;
 		x = nullptr;
@@ -109,35 +109,35 @@ public:
 };
 
 template<>
-struct t_type_of<t_array> : t_derivable<t_holds<t_array>>
+struct t_type_of<t_list> : t_derivable<t_holds<t_list>>
 {
-	static void f_own(t_array& a_self)
+	static void f_own(t_list& a_self)
 	{
 		a_self.f_own();
 	}
-	static void f_share(t_array& a_self)
+	static void f_share(t_list& a_self)
 	{
 		a_self.f_share();
 	}
-	static t_object* f_string(t_array& a_self);
-	static void f_clear(t_array& a_self);
-	static size_t f_size(t_array& a_self);
-	static t_pvalue f__get_at(t_array& a_self, intptr_t a_index);
-	static t_pvalue f__set_at(t_array& a_self, intptr_t a_index, const t_pvalue& a_value);
-	static void f_push(t_array& a_self, const t_pvalue& a_value);
-	static t_pvalue f_pop(t_array& a_self);
-	static void f_unshift(t_array& a_self, const t_pvalue& a_value);
-	static t_pvalue f_shift(t_array& a_self);
-	static void f_insert(t_array& a_self, intptr_t a_index, const t_pvalue& a_value);
-	static t_pvalue f_remove(t_array& a_self, intptr_t a_index);
-	static void f_each(t_array& a_self, const t_pvalue& a_callable);
-	static void f_sort(t_array& a_self, const t_pvalue& a_callable);
+	static t_object* f_string(t_list& a_self);
+	static void f_clear(t_list& a_self);
+	static size_t f_size(t_list& a_self);
+	static t_pvalue f__get_at(t_list& a_self, intptr_t a_index);
+	static t_pvalue f__set_at(t_list& a_self, intptr_t a_index, const t_pvalue& a_value);
+	static void f_push(t_list& a_self, const t_pvalue& a_value);
+	static t_pvalue f_pop(t_list& a_self);
+	static void f_unshift(t_list& a_self, const t_pvalue& a_value);
+	static t_pvalue f_shift(t_list& a_self);
+	static void f_insert(t_list& a_self, intptr_t a_index, const t_pvalue& a_value);
+	static t_pvalue f_remove(t_list& a_self, intptr_t a_index);
+	static void f_each(t_list& a_self, const t_pvalue& a_callable);
+	static void f_sort(t_list& a_self, const t_pvalue& a_callable);
 	static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
-		a_scan(a_this->f_as<t_array>().v_tuple);
+		a_scan(a_this->f_as<t_list>().v_tuple);
 	}
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);

@@ -1,10 +1,10 @@
 system = Module("system"
-list = Module("list"
+pair = Module("pair"
 print = system.out.write_line
 
-Tower = list.List + @
+Tower = pair.List + @
 	$__initialize = @(height)
-		list.List.__initialize[$](
+		pair.List.__initialize[$](
 		$build(height
 	$build = @(height)
 		if height > 0

@@ -37,7 +37,7 @@ for i = 0; i < 1000; i = i + 1: d[i] = i
 assert(d.size() == 1000
 for i = 0; i < 1000; i = i + 1: assert(d[i] == i
 
-Foo = Dictionary + @
+Foo = Map + @
 	$__initialize = @(*xs) $[3] = "three"
 
 foo = Foo(1, "one", "two", 2

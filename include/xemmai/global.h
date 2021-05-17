@@ -6,7 +6,7 @@
 #include "native.h"
 #include "null.h"
 #include "string.h"
-#include "dictionary.h"
+#include "map.h"
 #include "bytes.h"
 #include "parser.h"
 #include <algorithm>
@@ -14,11 +14,11 @@
 namespace xemmai
 {
 
-class t_array;
+class t_list;
 
 class t_global : public t_library
 {
-	friend struct t_type_of<t_dictionary>;
+	friend struct t_type_of<t_map>;
 	friend class t_engine;
 	friend XEMMAI__PORTABLE__EXPORT t_global* f_global();
 
@@ -47,9 +47,9 @@ class t_global : public t_library
 	t_slot_of<t_type> v_type_float;
 	t_slot_of<t_type> v_type_string;
 	t_slot_of<t_type> v_type_tuple;
-	t_slot_of<t_type> v_type_array;
-	t_slot_of<t_type> v_type_dictionary__table;
-	t_slot_of<t_type> v_type_dictionary;
+	t_slot_of<t_type> v_type_list;
+	t_slot_of<t_type> v_type_map__table;
+	t_slot_of<t_type> v_type_map;
 	t_slot_of<t_type> v_type_bytes;
 	t_slot_of<t_type> v_type_lexer__error;
 	t_slot_of<t_type> v_type_parser__error;
@@ -380,21 +380,21 @@ inline t_slot_of<t_type>& t_global::f_type_slot<t_tuple>()
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_array>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_list>()
 {
-	return v_type_array;
+	return v_type_list;
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_dictionary::t_table>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_map::t_table>()
 {
-	return v_type_dictionary__table;
+	return v_type_map__table;
 }
 
 template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_dictionary>()
+inline t_slot_of<t_type>& t_global::f_type_slot<t_map>()
 {
-	return v_type_dictionary;
+	return v_type_map;
 }
 
 template<>

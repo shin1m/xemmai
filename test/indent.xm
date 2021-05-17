@@ -62,12 +62,12 @@ assert(a[3] == "three"
 a = {
 	'key: 'value
 	"string key": "This is a string"
-	'array: [
+	'list: [
 		'one
 		"two"
 		3
-	'dictionary: {
+	'map: {
 		'one: "one"
 		'two: 2
 		'three: 3.0
-assert(a['array][1] == "two"
+assert(a['list][1] == "two"

@@ -1,6 +1,6 @@
 #include <xemmai/engine.h>
 #include <xemmai/portable/path.h>
-#include <xemmai/array.h>
+#include <xemmai/list.h>
 #include <xemmai/global.h>
 #include <xemmai/io/file.h>
 #include <clocale>
@@ -224,17 +224,17 @@ class t_debugger : public xemmai::t_debugger
 				std::fputs(" '(", v_out);
 				f_print_sequence<t_tuple>(a_value, a_depth);
 				std::fputc(')', v_out);
-			} else if (f_is<t_array>(a_value)) {
+			} else if (f_is<t_list>(a_value)) {
 				std::fputs(" [", v_out);
-				f_print_sequence<t_array>(a_value, a_depth);
+				f_print_sequence<t_list>(a_value, a_depth);
 				std::fputc(']', v_out);
-			} else if (f_is<t_dictionary>(a_value)) {
-				auto& dictionary = f_as<t_dictionary&>(a_value);
+			} else if (f_is<t_map>(a_value)) {
+				auto& map = f_as<t_map&>(a_value);
 				std::fputs(" {", v_out);
 				if (a_depth <= 0) {
 					std::fputs("...", v_out);
 				} else {
-					t_dictionary::t_iterator i(dictionary);
+					t_map::t_iterator i(map);
 					if (i.f_entry()) {
 						while (true) {
 							f_print_value(i.f_entry()->f_key(), a_depth);

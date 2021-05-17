@@ -1,4 +1,4 @@
-#include <xemmai/array.h>
+#include <xemmai/list.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
@@ -33,13 +33,13 @@ size_t f_expand(void**& a_pc, t_pvalue* a_stack, size_t a_n)
 		n = tuple.f_size();
 		f_allocate(a_stack, n);
 		for (size_t i = 0; i < n; ++i) a_stack[i] = tuple[i];
-	} else if (f_is<t_array>(x)) {
-		auto& array = f_as<t_array&>(x);
-		array.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	} else if (f_is<t_list>(x)) {
+		auto& list = f_as<t_list&>(x);
+		list.f_owned_or_shared<t_scoped_lock_for_read>([&]
 		{
-			n = array.f_size();
+			n = list.f_size();
 			f_allocate(a_stack, n);
-			for (size_t i = 0; i < n; ++i) a_stack[i] = array[i];
+			for (size_t i = 0; i < n; ++i) a_stack[i] = list[i];
 		});
 	} else {
 		auto size = x.f_invoke(f_global()->f_symbol_size());

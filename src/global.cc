@@ -1,4 +1,4 @@
-#include <xemmai/array.h>
+#include <xemmai/list.h>
 #include <xemmai/convert.h>
 
 namespace xemmai
@@ -91,11 +91,11 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 	v_string_empty = t_type_of<t_string>::f__construct(static_cast<t_type*>(v_type_string), L""sv);
 	t_type_of<t_tuple>::f_define();
 	v_type_tuple->v_builtin = true;
-	t_type_of<t_array>::f_define();
-	v_type_array->v_builtin = true;
-	t_type_of<t_dictionary>::f_define();
-	v_type_dictionary__table->v_builtin = true;
-	v_type_dictionary->v_builtin = true;
+	t_type_of<t_list>::f_define();
+	v_type_list->v_builtin = true;
+	t_type_of<t_map>::f_define();
+	v_type_map__table->v_builtin = true;
+	v_type_map->v_builtin = true;
 	t_type_of<t_bytes>::f_define();
 	v_type_bytes->v_builtin = true;
 	t_define<t_lexer::t_error, t_throwable>(this).f_derive();
@@ -119,8 +119,8 @@ void t_global::f_define(t_object* a_type_object, t_object* a_type_class, t_objec
 		(L"Float"sv, t_object::f_of(v_type_float))
 		(L"String"sv, t_object::f_of(v_type_string))
 		(L"Tuple"sv, t_object::f_of(v_type_tuple))
-		(L"Array"sv, t_object::f_of(v_type_array))
-		(L"Dictionary"sv, t_object::f_of(v_type_dictionary))
+		(L"List"sv, t_object::f_of(v_type_list))
+		(L"Map"sv, t_object::f_of(v_type_map))
 		(L"Bytes"sv, t_object::f_of(v_type_bytes))
 		(L"LexerError"sv, t_object::f_of(v_type_lexer__error))
 		(L"ParserError"sv, t_object::f_of(v_type_parser__error))
@@ -152,9 +152,9 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_float);
 	a_scan(v_type_string);
 	a_scan(v_type_tuple);
-	a_scan(v_type_array);
-	a_scan(v_type_dictionary__table);
-	a_scan(v_type_dictionary);
+	a_scan(v_type_list);
+	a_scan(v_type_map__table);
+	a_scan(v_type_map);
 	a_scan(v_type_bytes);
 	a_scan(v_type_lexer__error);
 	a_scan(v_type_parser__error);

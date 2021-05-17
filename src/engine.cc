@@ -1,5 +1,5 @@
 #include <xemmai/engine.h>
-#include <xemmai/array.h>
+#include <xemmai/list.h>
 #include <xemmai/io.h>
 #include <xemmai/convert.h>
 
@@ -246,8 +246,8 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	v_fiber_exit->f_be(type);
 	v_thread = f_new<t_thread>(f_global(), v_thread__internals, f_new<t_fiber>(f_global(), nullptr, v_options.v_stack_size));
 	v_thread__internals->f_initialize(&v_thread->f_as<t_thread>());
-	auto path = t_array::f_instantiate();
-	path->f_as<t_array>().v_owner = nullptr;
+	auto path = t_list::f_instantiate();
+	path->f_as<t_list>().v_owner = nullptr;
 	if (auto p = std::getenv("XEMMAI_MODULE_PATH")) {
 		std::wstring s = portable::f_convert(p);
 #ifdef _WIN32
@@ -263,23 +263,23 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 			size_t j = sv.find(L';', i);
 #endif
 			if (j == std::wstring_view::npos) break;
-			if (i < j) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i, j - i)));
+			if (i < j) f_as<t_list&>(path).f_push(f_global()->f_as(sv.substr(i, j - i)));
 			i = j + 1;
 		}
-		if (i < sv.size()) f_as<t_array&>(path).f_push(f_global()->f_as(sv.substr(i)));
+		if (i < sv.size()) f_as<t_list&>(path).f_push(f_global()->f_as(sv.substr(i)));
 	}
 	std::vector<std::pair<t_root, t_rvalue>> system;
 	if (a_count > 0) {
 		system.emplace_back(f_global()->f_symbol_executable(), f_global()->f_as(portable::f_convert(a_arguments[0])));
 #ifdef XEMMAI_MODULE_PATH
-		f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
+		f_as<t_list&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
 #endif
 		if (a_count > 1) {
 			portable::t_path script(portable::f_convert(a_arguments[1]));
 			system.emplace_back(f_global()->f_symbol_script(), f_global()->f_as(static_cast<const std::wstring&>(script)));
-			f_as<t_array&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L".."sv)));
-			auto arguments = t_array::f_instantiate();
-			auto& p = f_as<t_array&>(arguments);
+			f_as<t_list&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L".."sv)));
+			auto arguments = t_list::f_instantiate();
+			auto& p = f_as<t_list&>(arguments);
 			for (size_t i = 2; i < a_count; ++i) p.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
 			system.emplace_back(f_global()->f_symbol_arguments(), arguments);
 		}

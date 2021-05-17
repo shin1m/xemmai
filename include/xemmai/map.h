@@ -1,5 +1,5 @@
-#ifndef XEMMAI__DICTIONARY_H
-#define XEMMAI__DICTIONARY_H
+#ifndef XEMMAI__MAP_H
+#define XEMMAI__MAP_H
 
 #include "boolean.h"
 #include "integer.h"
@@ -7,17 +7,17 @@
 namespace xemmai
 {
 
-class t_dictionary : public t_sharable
+class t_map : public t_sharable
 {
 	friend struct t_type_of<t_object>;
-	friend struct t_type_of<t_dictionary>;
+	friend struct t_type_of<t_map>;
 	friend class t_global;
 
 public:
 	class t_iterator;
 	class t_entry
 	{
-		friend class t_dictionary;
+		friend class t_map;
 		friend class t_iterator;
 
 		size_t v_gap = 0;
@@ -114,7 +114,7 @@ private:
 
 	t_slot v_table;
 
-	t_dictionary(t_type* a_table) : v_table(t_table::f_instantiate(a_table, t_table::v_ranks[0]))
+	t_map(t_type* a_table) : v_table(t_table::f_instantiate(a_table, t_table::v_ranks[0]))
 	{
 	}
 	void f_rehash(const t_table::t_rank& a_rank);
@@ -127,7 +127,7 @@ public:
 		t_entry* v_end;
 
 	public:
-		t_iterator(const t_dictionary& a_dictionary);
+		t_iterator(const t_map& a_map);
 		t_entry* f_entry() const
 		{
 			return v_entry;
@@ -153,65 +153,65 @@ public:
 };
 
 template<>
-struct t_type_of<t_dictionary::t_table> : t_uninstantiatable<t_finalizes<t_derives<t_dictionary::t_table>>>
+struct t_type_of<t_map::t_table> : t_uninstantiatable<t_finalizes<t_derives<t_map::t_table>>>
 {
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
-		a_this->f_as<t_dictionary::t_table>().f_scan(a_scan);
+		a_this->f_as<t_map::t_table>().f_scan(a_scan);
 	}
 };
 
 template<>
-struct t_type_of<t_dictionary> : t_derivable<t_holds<t_dictionary>>
+struct t_type_of<t_map> : t_derivable<t_holds<t_map>>
 {
-	static void f_own(t_dictionary& a_self)
+	static void f_own(t_map& a_self)
 	{
 		a_self.f_own();
 	}
-	static void f_share(t_dictionary& a_self)
+	static void f_share(t_map& a_self)
 	{
 		a_self.f_share();
 	}
-	static t_object* f_string(t_dictionary& a_self);
-	static void f_clear(t_dictionary& a_self);
-	static size_t f_size(t_dictionary& a_self);
-	static t_pvalue f__get_at(t_dictionary& a_self, const t_pvalue& a_key);
-	static t_pvalue f__set_at(t_dictionary& a_self, const t_pvalue& a_key, const t_pvalue& a_value);
-	static bool f_has(t_dictionary& a_self, const t_pvalue& a_key);
-	static t_pvalue f_remove(t_dictionary& a_self, const t_pvalue& a_key);
-	static void f_each(t_dictionary& a_self, const t_pvalue& a_callable);
+	static t_object* f_string(t_map& a_self);
+	static void f_clear(t_map& a_self);
+	static size_t f_size(t_map& a_self);
+	static t_pvalue f__get_at(t_map& a_self, const t_pvalue& a_key);
+	static t_pvalue f__set_at(t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value);
+	static bool f_has(t_map& a_self, const t_pvalue& a_key);
+	static t_pvalue f_remove(t_map& a_self, const t_pvalue& a_key);
+	static void f_each(t_map& a_self, const t_pvalue& a_callable);
 	static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
-		a_scan(a_this->f_as<t_dictionary>().v_table);
+		a_scan(a_this->f_as<t_map>().v_table);
 	}
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
 	static size_t f_do_set_at(t_object* a_this, t_pvalue* a_stack);
 };
 
-inline t_dictionary::t_iterator::t_iterator(const t_dictionary& a_dictionary) : v_table(a_dictionary.v_table), v_entry(f_as<t_table&>(v_table).f_entries()), v_end(f_as<t_table&>(v_table).v_end)
+inline t_map::t_iterator::t_iterator(const t_map& a_map) : v_table(a_map.v_table), v_entry(f_as<t_table&>(v_table).f_entries()), v_end(f_as<t_table&>(v_table).v_end)
 {
 	do if (v_entry->v_gap) return; while (++v_entry < v_end);
 	v_entry = nullptr;
 }
 
-inline size_t t_dictionary::f_size() const
+inline size_t t_map::f_size() const
 {
 	return f_as<t_table&>(v_table).v_size;
 }
 
-inline const t_svalue& t_dictionary::f_get(const t_pvalue& a_key) const
+inline const t_svalue& t_map::f_get(const t_pvalue& a_key) const
 {
 	auto p = f_as<t_table&>(v_table).f_find(a_key);
 	if (!p) f_throw(L"key not found."sv);
 	return p->v_value;
 }
 
-inline bool t_dictionary::f_has(const t_pvalue& a_key) const
+inline bool t_map::f_has(const t_pvalue& a_key) const
 {
 	return f_as<t_table&>(v_table).f_find(a_key);
 }
