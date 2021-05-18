@@ -60,8 +60,8 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 {
 	static t_object* f_define(t_library* a_library)
 	{
-		t_define<t_number, intptr_t>{a_library}.f_derive();
-		return a_library->f_type<t_number>()->f_do_derive({{}, t_export(a_library)
+		t_define{a_library}.f_derive<t_number, intptr_t>();
+		return a_library->f_type<t_number>()->f_do_derive({{}, t_define(a_library)
 			(L"ZERO"sv, e_number__ZERO)
 			(L"ONE"sv, e_number__ONE)
 		});
@@ -74,7 +74,7 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 
 std::vector<std::pair<t_root, t_rvalue>> t_enum::f_define()
 {
-	return t_export(this)
+	return t_define(this)
 		(L"Number"sv, t_type_of<t_number>::f_define(this))
 	;
 }

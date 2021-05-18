@@ -61,7 +61,7 @@ t_object* f_pipe()
 
 std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()
 {
-	return t_export(this)
+	return t_define(this)
 		(L"system"sv, t_static<int(*)(const t_string&), f_system>())
 		(L"sleep"sv, t_static<void(*)(intptr_t), f_sleep>())
 #ifdef __unix__

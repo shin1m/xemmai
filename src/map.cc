@@ -219,8 +219,8 @@ void t_type_of<t_map>::f_each(t_map& a_self, const t_pvalue& a_callable)
 
 void t_type_of<t_map>::f_define()
 {
-	t_define<t_map::t_table, t_object>{f_global()}.f_derive();
-	t_define<t_map, t_object>{f_global()}
+	t_define{f_global()}.f_derive<t_map::t_table, t_object>();
+	t_define{f_global()}
 		(L"own"sv, t_member<void(*)(t_map&), f_own>())
 		(L"share"sv, t_member<void(*)(t_map&), f_share>())
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_map&), f_string>())
@@ -231,7 +231,7 @@ void t_type_of<t_map>::f_define()
 		(L"has"sv, t_member<bool(*)(t_map&, const t_pvalue&), f_has>())
 		(L"remove"sv, t_member<t_pvalue(*)(t_map&, const t_pvalue&), f_remove>())
 		(L"each"sv, t_member<void(*)(t_map&, const t_pvalue&), f_each>())
-	.f_derive();
+	.f_derive<t_map, t_object>();
 }
 
 t_pvalue t_type_of<t_map>::f_do_construct(t_pvalue* a_stack, size_t a_n)

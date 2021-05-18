@@ -18,13 +18,13 @@ t_object* t_type::f_string(const t_pvalue& a_self)
 void t_type::f_define()
 {
 	v_builtin = true;
-	t_define<t_object, t_object>{f_global()}
+	t_define{f_global()}
 		(f_global()->f_symbol_initialize(), f_initialize)
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_pvalue&), f__hash>())
 		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__not_equals>())
-	.f_derive(t_object::f_of(this));
+	.f_derive<t_object>(t_object::f_of(this));
 }
 
 size_t t_type::f_index(t_object* a_key)

@@ -73,10 +73,10 @@ void t_thread::f_join()
 
 void t_type_of<t_thread>::f_define()
 {
-	t_define<t_thread, t_object>{f_global()}
+	t_define{f_global()}
 		(L"current"sv, t_static<t_object*(*)(), t_thread::f_current>())
 		(L"join"sv, t_member<void(t_thread::*)(), &t_thread::f_join>())
-	.f_derive();
+	.f_derive<t_thread, t_object>();
 }
 
 void t_type_of<t_thread>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)

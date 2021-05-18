@@ -34,7 +34,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_io::f_define()
 	v_type_writer->v_builtin = true;
 	t_type_of<portable::t_path>::f_define(this);
 	v_type_path->v_builtin = true;
-	return t_export(this)
+	return t_define(this)
 		(L"File"sv, t_object::f_of(v_type_file))
 		(L"Reader"sv, t_object::f_of(v_type_reader))
 		(L"Writer"sv, t_object::f_of(v_type_writer))

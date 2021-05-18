@@ -107,7 +107,7 @@ void t_tuple::f_each(const t_pvalue& a_callable) const
 
 void t_type_of<t_tuple>::f_define()
 {
-	t_define<t_tuple, t_object>{f_global()}
+	t_define{f_global()}
 		(f_global()->f_symbol_string(), t_member<t_object*(t_tuple::*)() const, &t_tuple::f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(t_tuple::*)() const, &t_tuple::f_hash>())
 		(f_global()->f_symbol_get_at(), t_member<const t_svalue&(t_tuple::*)(size_t) const, &t_tuple::f_get_at>())
@@ -119,7 +119,7 @@ void t_type_of<t_tuple>::f_define()
 		(f_global()->f_symbol_not_equals(), t_member<bool(t_tuple::*)(const t_pvalue&) const, &t_tuple::f_not_equals>())
 		(f_global()->f_symbol_size(), t_member<size_t(t_tuple::*)() const, &t_tuple::f_size>())
 		(L"each"sv, t_member<void(t_tuple::*)(const t_pvalue&) const, &t_tuple::f_each>())
-	.f_derive();
+	.f_derive<t_tuple, t_object>();
 }
 
 t_pvalue t_type_of<t_tuple>::f_do_construct(t_pvalue* a_stack, size_t a_n)

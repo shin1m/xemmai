@@ -272,7 +272,7 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 
 void t_type_of<t_list>::f_define()
 {
-	t_define<t_list, t_object>{f_global()}
+	t_define{f_global()}
 		(L"own"sv, t_member<void(*)(t_list&), f_own>())
 		(L"share"sv, t_member<void(*)(t_list&), f_share>())
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_list&), f_string>())
@@ -288,7 +288,7 @@ void t_type_of<t_list>::f_define()
 		(L"remove"sv, t_member<t_pvalue(*)(t_list&, intptr_t), f_remove>())
 		(L"each"sv, t_member<void(*)(t_list&, const t_pvalue&), f_each>())
 		(L"sort"sv, t_member<void(*)(t_list&, const t_pvalue&), f_sort>())
-	.f_derive();
+	.f_derive<t_list, t_object>();
 }
 
 t_pvalue t_type_of<t_list>::f_do_construct(t_pvalue* a_stack, size_t a_n)

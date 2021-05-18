@@ -88,10 +88,10 @@ void t_type_of<std::mutex>::f_release(std::mutex& a_self)
 
 void t_type_of<std::mutex>::f_define(t_threading* a_library)
 {
-	t_define<std::mutex, t_object>{a_library}
+	t_define{a_library}
 		(L"acquire"sv, t_member<void(*)(std::mutex&), f_acquire>())
 		(L"release"sv, t_member<void(*)(std::mutex&), f_release>())
-	.f_derive();
+	.f_derive<std::mutex, t_object>();
 }
 
 t_pvalue t_type_of<std::mutex>::f_do_construct(t_pvalue* a_stack, size_t a_n)
@@ -125,14 +125,14 @@ void t_type_of<std::condition_variable>::f_broadcast(std::condition_variable& a_
 
 void t_type_of<std::condition_variable>::f_define(t_threading* a_library)
 {
-	t_define<std::condition_variable, t_object>{a_library}
+	t_define{a_library}
 		(L"wait"sv,
 			t_member<void(*)(std::condition_variable&, std::mutex&), f_wait>(),
 			t_member<void(*)(std::condition_variable&, std::mutex&, size_t), f_wait>()
 		)
 		(L"signal"sv, t_member<void(*)(std::condition_variable&), f_signal>())
 		(L"broadcast"sv, t_member<void(*)(std::condition_variable&), f_broadcast>())
-	.f_derive();
+	.f_derive<std::condition_variable, t_object>();
 }
 
 t_pvalue t_type_of<std::condition_variable>::f_do_construct(t_pvalue* a_stack, size_t a_n)
@@ -144,7 +144,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_threading::f_define()
 {
 	t_type_of<std::mutex>::f_define(this);
 	t_type_of<std::condition_variable>::f_define(this);
-	return t_export(this)
+	return t_define(this)
 		(L"Mutex"sv, t_object::f_of(v_type_mutex))
 		(L"Condition"sv, t_object::f_of(v_type_condition))
 	;

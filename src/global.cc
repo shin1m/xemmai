@@ -110,34 +110,34 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
 	v_symbol_dump = t_symbol::f_instantiate(L"dump"sv);
 	v_type_object->f_define();
-	t_define<t_type, t_object>{this}.f_derive(static_cast<t_slot&>(v_type_class));
+	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_class));
 	v_type_class->v_builtin = true;
-	v_type_builder.f_construct(v_type_object->f_derive<t_type_of<t_builder>>(t_object::f_of(this), {}));
+	t_define(this).f_derive<t_builder, t_object>();
 	v_type_builder->v_builtin = true;
-	t_define<t_module::t_body, t_object>{this}.f_derive(static_cast<t_slot&>(v_type_module__body));
+	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_module__body));
 	v_type_module__body->v_builtin = true;
-	v_type_module.f_construct(v_type_object->f_derive<t_type_of<t_module>>(t_object::f_of(this), {}));
+	t_define(this).f_derive<t_module, t_object>();
 	v_type_module->v_builtin = v_type_module->v_revive = true;
 	static_cast<t_type_of<t_symbol>*>(static_cast<t_type*>(v_type_symbol))->f_define();
-	t_define<t_native, t_object>{this}.f_derive(static_cast<t_slot&>(v_type_native));
+	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_native));
 	v_type_native->v_builtin = v_type_native->v_bindable = true;
 	t_type_of<t_fiber>::f_define();
 	v_type_fiber->v_builtin = true;
 	t_type_of<t_thread>::f_define();
 	v_type_thread->v_builtin = true;
-	v_type_scope.f_construct(v_type_object->f_derive<t_type_of<t_scope>>(t_object::f_of(this), {}));
+	t_define(this).f_derive<t_scope, t_object>();
 	v_type_scope->v_builtin = true;
-	t_define<t_code, t_object>(this).f_derive();
+	t_define(this).f_derive<t_code, t_object>();
 	v_type_code->v_builtin = true;
-	t_define<t_lambda, t_object>(this).f_derive();
+	t_define(this).f_derive<t_lambda, t_object>();
 	v_type_lambda->v_builtin = v_type_lambda->v_bindable = true;
-	v_type_lambda_shared.f_construct(v_type_lambda->f_derive<t_type_of<t_lambda_shared>>(t_object::f_of(this), {}));
+	t_define(this).f_derive<t_lambda_shared, t_lambda>();
 	v_type_lambda_shared->v_builtin = v_type_lambda_shared->v_bindable = true;
-	v_type_advanced_lambda.f_construct(v_type_lambda->f_derive<t_type_of<t_advanced_lambda<t_lambda>>>(t_object::f_of(this), {}));
+	t_define(this).f_derive<t_advanced_lambda<t_lambda>, t_lambda>();
 	v_type_advanced_lambda->v_builtin = v_type_advanced_lambda->v_bindable = true;
-	v_type_advanced_lambda_shared.f_construct(v_type_lambda_shared->f_derive<t_type_of<t_advanced_lambda<t_lambda_shared>>>(t_object::f_of(this), {}));
+	t_define(this).f_derive<t_advanced_lambda<t_lambda_shared>, t_lambda_shared>();
 	v_type_advanced_lambda_shared->v_builtin = v_type_advanced_lambda_shared->v_bindable = true;
-	v_type_method.f_construct(v_type_object->f_derive<t_type_of<t_method>>(t_object::f_of(this), {}));
+	t_define(this).f_derive<t_method, t_object>();
 	v_type_method->v_builtin = true;
 	t_type_of<t_throwable>::f_define();
 	v_type_throwable->v_builtin = true;
@@ -161,11 +161,11 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_type_map->v_builtin = true;
 	t_type_of<t_bytes>::f_define();
 	v_type_bytes->v_builtin = true;
-	t_define<t_lexer::t_error, t_throwable>(this).f_derive();
+	t_define(this).f_derive<t_lexer::t_error, t_throwable>();
 	v_type_lexer__error->v_builtin = true;
-	t_define<t_parser::t_error, t_throwable>(this).f_derive();
+	t_define(this).f_derive<t_parser::t_error, t_throwable>();
 	v_type_parser__error->v_builtin = true;
-	return t_export(this)
+	return t_define(this)
 		(L"Object"sv, t_object::f_of(v_type_object))
 		(L"Class"sv, t_object::f_of(v_type_class))
 		(L"Module"sv, t_object::f_of(v_type_module))

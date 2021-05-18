@@ -79,7 +79,7 @@ struct t_callback_library : t_library
 		v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
 		t_type_of<t_client>::f_define(this);
 		t_type_of<t_server>::f_define(this);
-		return t_export(this)
+		return t_define(this)
 			(L"Client"sv, t_object::f_of(v_type_client))
 			(L"Server"sv, t_object::f_of(v_type_server))
 		;
@@ -147,10 +147,10 @@ namespace xemmai
 
 void t_type_of<t_client>::f_define(t_callback_library* a_library)
 {
-	t_define<t_client, t_object>{a_library}
+	t_define{a_library}
 		(a_library->v_symbol_on_message, t_member<void(*)(t_client*, std::wstring_view), t_client_wrapper::f_super__on_message>())
 		(L"remove"sv, t_member<void(t_client::*)(), &t_client::f_remove>())
-	.f_derive();
+	.f_derive<t_client, t_object>();
 }
 
 t_pvalue t_type_of<t_client>::f_do_construct(t_pvalue* a_stack, size_t a_n)
@@ -165,11 +165,11 @@ void t_type_of<t_client>::f_do_finalize(t_object* a_this, t_scan a_scan)
 
 void t_type_of<t_server>::f_define(t_callback_library* a_library)
 {
-	t_define<t_server, t_object>{a_library}
+	t_define{a_library}
 		(L"add"sv, t_member<void(t_server::*)(t_client&), &t_server::f_add>())
 		(L"post"sv, t_member<void(*)(t_server&, std::wstring_view), f_post>())
 		(L"run"sv, t_member<void(t_server::*)(), &t_server::f_run>())
-	.f_derive();
+	.f_derive<t_server, t_object>();
 }
 
 t_pvalue t_type_of<t_server>::f_do_construct(t_pvalue* a_stack, size_t a_n)

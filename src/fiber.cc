@@ -190,9 +190,9 @@ void t_fiber::f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
 
 void t_type_of<t_fiber>::f_define()
 {
-	t_define<t_fiber, t_object>{f_global()}
+	t_define{f_global()}
 		(L"current"sv, t_static<t_object*(*)(), t_fiber::f_current>())
-	.f_derive();
+	.f_derive<t_fiber, t_object>();
 }
 
 void t_type_of<t_fiber>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)

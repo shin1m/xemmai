@@ -101,11 +101,11 @@ t_object* t_reader::f_read_line(t_io* a_library)
 
 void t_type_of<io::t_reader>::f_define(t_io* a_library)
 {
-	t_define<io::t_reader, t_object>{a_library}
+	t_define{a_library}
 		(a_library->f_symbol_close(), t_member<void(io::t_reader::*)(t_io*), &io::t_reader::f_close>())
 		(a_library->f_symbol_read(), t_member<t_object*(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read>())
 		(a_library->f_symbol_read_line(), t_member<t_object*(io::t_reader::*)(t_io*), &io::t_reader::f_read_line>())
-	.f_derive();
+	.f_derive<io::t_reader, t_object>();
 }
 
 t_pvalue t_type_of<io::t_reader>::f_do_construct(t_pvalue* a_stack, size_t a_n)

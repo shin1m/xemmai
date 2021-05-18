@@ -59,7 +59,7 @@ bool f_boolean(double a_value)
 
 std::vector<std::pair<t_root, t_rvalue>> t_math::f_define()
 {
-	return t_export(this)
+	return t_define(this)
 		(L"acos"sv, t_static<double(*)(double), std::acos>())
 		(L"asin"sv, t_static<double(*)(double), std::asin>())
 		(L"atan"sv, t_static<double(*)(double), std::atan>())

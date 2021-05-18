@@ -200,7 +200,7 @@ bool t_type_of<intptr_t>::f__not_equals(intptr_t a_self, const t_pvalue& a_value
 
 void t_type_of<intptr_t>::f_define()
 {
-	t_define<intptr_t, t_object>{f_global()}
+	t_define{f_global()}
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(intptr_t), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(intptr_t), f__hash>())
 		(f_global()->f_symbol_plus(), t_member<intptr_t(*)(intptr_t), f__plus>())
@@ -222,7 +222,7 @@ void t_type_of<intptr_t>::f_define()
 		(f_global()->f_symbol_and(), t_member<intptr_t(*)(intptr_t, intptr_t), f__and>())
 		(f_global()->f_symbol_xor(), t_member<intptr_t(*)(intptr_t, intptr_t), f__xor>())
 		(f_global()->f_symbol_or(), t_member<intptr_t(*)(intptr_t, intptr_t), f__or>())
-	.f_derive();
+	.f_derive<intptr_t, t_object>();
 }
 
 t_pvalue t_type_of<intptr_t>::f_do_construct(t_pvalue* a_stack, size_t a_n)

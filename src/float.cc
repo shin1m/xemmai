@@ -22,7 +22,7 @@ bool t_type_of<double>::f__not_equals(double a_self, const t_pvalue& a_value)
 
 void t_type_of<double>::f_define()
 {
-	t_define<double, t_object>{f_global()}
+	t_define{f_global()}
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(double), f_string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(double), f__hash>())
 		(f_global()->f_symbol_plus(), t_member<double(*)(double), f__plus>())
@@ -37,7 +37,7 @@ void t_type_of<double>::f_define()
 		(f_global()->f_symbol_greater_equal(), t_member<bool(*)(double, double), f__greater_equal>())
 		(f_global()->f_symbol_equals(), t_member<bool(*)(double, const t_pvalue&), f__equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(*)(double, const t_pvalue&), f__not_equals>())
-	.f_derive();
+	.f_derive<double, t_object>();
 }
 
 t_pvalue t_type_of<double>::f_do_construct(t_pvalue* a_stack, size_t a_n)

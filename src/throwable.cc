@@ -47,10 +47,10 @@ void t_throwable::f_dump() const
 
 void t_type_of<t_throwable>::f_define()
 {
-	t_define<t_throwable, t_object>{f_global()}
+	t_define{f_global()}
 		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_throwable::*)() const, &t_throwable::f_string>())
 		(f_global()->f_symbol_dump(), t_member<void(t_throwable::*)() const, &t_throwable::f_dump>())
-	.f_derive();
+	.f_derive<t_throwable, t_object>();
 }
 
 t_pvalue t_type_of<t_throwable>::f_do_construct(t_pvalue* a_stack, size_t a_n)

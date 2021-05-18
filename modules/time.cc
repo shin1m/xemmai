@@ -536,7 +536,7 @@ t_object* f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_pre
 
 std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 {
-	return t_export(this)
+	return t_define(this)
 		(L"now"sv, t_static<double(*)(), f_now>())
 		(L"tick"sv, t_static<intptr_t(*)(t_time*), f_tick>())
 		(L"compose"sv, t_static<double(*)(const t_tuple&), f_compose>())
