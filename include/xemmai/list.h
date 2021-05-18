@@ -1,6 +1,7 @@
 #ifndef XEMMAI__LIST_H
 #define XEMMAI__LIST_H
 
+#include "sharable.h"
 #include "tuple.h"
 
 namespace xemmai
@@ -8,7 +9,7 @@ namespace xemmai
 
 class t_list : public t_sharable
 {
-	friend struct t_finalizes<t_bears<t_list>>;
+	friend struct t_finalizes<t_bears<t_list, t_type_of<t_sharable>>>;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_list>;
 
@@ -109,16 +110,8 @@ public:
 };
 
 template<>
-struct t_type_of<t_list> : t_derivable<t_holds<t_list>>
+struct t_type_of<t_list> : t_derivable<t_holds<t_list, t_type_of<t_sharable>>>
 {
-	static void f_own(t_list& a_self)
-	{
-		a_self.f_own();
-	}
-	static void f_share(t_list& a_self)
-	{
-		a_self.f_share();
-	}
 	static t_object* f_string(t_list& a_self);
 	static void f_clear(t_list& a_self);
 	static size_t f_size(t_list& a_self);

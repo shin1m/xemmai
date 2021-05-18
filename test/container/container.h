@@ -66,16 +66,7 @@ struct t_container : t_library
 	}
 };
 
-template<>
-inline t_slot_of<t_type>& t_container::f_type_slot<t_pair>()
-{
-	return v_type_pair;
-}
-
-template<>
-inline t_slot_of<t_type>& t_container::f_type_slot<t_queue>()
-{
-	return v_type_queue;
-}
+XEMMAI__LIBRARY__TYPE(t_container, pair)
+XEMMAI__LIBRARY__TYPE(t_container, queue)
 
 #endif

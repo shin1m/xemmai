@@ -1,7 +1,7 @@
 add_executable(xemmai
 	portable.cc
 	type.cc
-	object.cc
+	sharable.cc
 	class.cc
 	module.cc
 	symbol.cc

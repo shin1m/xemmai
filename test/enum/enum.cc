@@ -46,11 +46,7 @@ inline const t_enum* t_enum::f_library<t_enum>() const
 	return this;
 }
 
-template<>
-inline t_slot_of<t_type>& t_enum::f_type_slot<t_number>()
-{
-	return v_type_number;
-}
+XEMMAI__LIBRARY__TYPE(t_enum, number)
 
 namespace xemmai
 {

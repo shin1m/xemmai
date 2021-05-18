@@ -1,6 +1,5 @@
-#include <algorithm>
-
 #include "callback.h"
+#include <algorithm>
 
 t_client::~t_client()
 {

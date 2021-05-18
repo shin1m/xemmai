@@ -82,29 +82,10 @@ inline const t_io* t_io::f_library<t_io>() const
 	return this;
 }
 
-template<>
-inline t_slot_of<t_type>& t_io::f_type_slot<io::t_file>()
-{
-	return v_type_file;
-}
-
-template<>
-inline t_slot_of<t_type>& t_io::f_type_slot<io::t_reader>()
-{
-	return v_type_reader;
-}
-
-template<>
-inline t_slot_of<t_type>& t_io::f_type_slot<io::t_writer>()
-{
-	return v_type_writer;
-}
-
-template<>
-inline t_slot_of<t_type>& t_io::f_type_slot<portable::t_path>()
-{
-	return v_type_path;
-}
+XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_file, file)
+XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_reader, reader)
+XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_writer, writer)
+XEMMAI__LIBRARY__TYPE_AS(t_io, portable::t_path, path)
 
 template<typename... T_an>
 inline t_object* io::t_file::f_instantiate(T_an&&... a_an)

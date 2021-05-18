@@ -4,6 +4,7 @@
 #include "portable/library.h"
 #include "symbol.h"
 #include "code.h"
+#include <memory>
 
 namespace xemmai
 {

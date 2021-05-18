@@ -7,7 +7,8 @@ namespace xemmai
 void t_global::f_scan(t_scan a_scan)
 {
 	a_scan(v_type_object);
-	a_scan(v_type_class);
+	a_scan(v_type_sharable);
+	a_scan(v_type_type);
 	a_scan(v_type_builder);
 	a_scan(v_type_module__body);
 	a_scan(v_type_module);
@@ -73,7 +74,7 @@ void t_global::f_scan(t_scan a_scan)
 std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 {
 	v_type_object->v_module = t_object::f_of(this);
-	v_type_class->v_module = t_object::f_of(this);
+	v_type_type->v_module = t_object::f_of(this);
 	v_type_module__body->v_module = t_object::f_of(this);
 	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(5, v_type_object, t_object::f_of(this)));
 	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(5, v_type_object, t_object::f_of(this)));
@@ -110,8 +111,9 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
 	v_symbol_dump = t_symbol::f_instantiate(L"dump"sv);
 	v_type_object->f_define();
-	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_class));
-	v_type_class->v_builtin = true;
+	t_type_of<t_sharable>::f_define();
+	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_type));
+	v_type_type->v_builtin = true;
 	t_define(this).f_derive<t_builder, t_object>();
 	v_type_builder->v_builtin = true;
 	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_module__body));
@@ -167,7 +169,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_type_parser__error->v_builtin = true;
 	return t_define(this)
 		(L"Object"sv, t_object::f_of(v_type_object))
-		(L"Class"sv, t_object::f_of(v_type_class))
+		(L"Class"sv, t_object::f_of(v_type_type))
 		(L"Module"sv, t_object::f_of(v_type_module))
 		(L"Symbol"sv, t_object::f_of(v_type_symbol))
 		(L"Native"sv, t_object::f_of(v_type_native))

@@ -63,17 +63,8 @@ public:
 	}
 };
 
-template<>
-inline t_slot_of<t_type>& t_threading::f_type_slot<std::mutex>()
-{
-	return v_type_mutex;
-}
-
-template<>
-inline t_slot_of<t_type>& t_threading::f_type_slot<std::condition_variable>()
-{
-	return v_type_condition;
-}
+XEMMAI__LIBRARY__TYPE_AS(t_threading, std::mutex, mutex)
+XEMMAI__LIBRARY__TYPE_AS(t_threading, std::condition_variable, condition)
 
 void t_type_of<std::mutex>::f_acquire(std::mutex& a_self)
 {

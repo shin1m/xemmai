@@ -77,7 +77,7 @@ private:
 	t_thread::t_internal* v_thread__internals = new t_thread::t_internal{nullptr};
 	std::mutex v_thread__mutex;
 	std::condition_variable v_thread__condition;
-	t_type* v_type_class;
+	t_type* v_type_type;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
 	std::mutex v_module__mutex;
 	std::condition_variable v_module__condition;
@@ -168,7 +168,7 @@ public:
 	{
 		auto p = f_allocate_for_type<t_type_of<T>>(a_fields);
 		std::uninitialized_default_construct_n((new(p->f_data()) t_type_of<T>(t_type_of<T>::V_ids, a_super, a_module, t_type_of<T>::V_native, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{}))->f_fields(), a_fields);
-		p->f_be(v_type_class);
+		p->f_be(v_type_type);
 		return p;
 	}
 #ifdef _WIN32

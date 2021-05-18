@@ -2,8 +2,8 @@
 #define XEMMAI__GLOBAL_H
 
 #include "engine.h"
-#include "method.h"
 #include "native.h"
+#include "method.h"
 #include "null.h"
 #include "string.h"
 #include "map.h"
@@ -25,7 +25,8 @@ class t_global : public t_library
 	static inline XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
 	t_slot_of<t_type> v_type_object;
-	t_slot_of<t_type> v_type_class;
+	t_slot_of<t_type> v_type_sharable;
+	t_slot_of<t_type> v_type_type;
 	t_slot_of<t_type> v_type_builder;
 	t_slot_of<t_type> v_type_module__body;
 	t_slot_of<t_type> v_type_module;
@@ -88,11 +89,11 @@ class t_global : public t_library
 	t_slot v_string_empty;
 
 public:
-	t_global(t_object* a_type_object, t_object* a_type_class, t_object* a_type_module__body) : t_library(nullptr)
+	t_global(t_object* a_type_object, t_object* a_type_type, t_object* a_type_module__body) : t_library(nullptr)
 	{
 		v_instance = this;
 		v_type_object.f_construct(a_type_object);
-		v_type_class.f_construct(a_type_class);
+		v_type_type.f_construct(a_type_type);
 		v_type_module__body.f_construct(a_type_module__body);
 	}
 	virtual void f_scan(t_scan a_scan);
@@ -244,179 +245,49 @@ public:
 	}
 };
 
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_object>()
-{
-	return v_type_object;
+#define XEMMAI__LIBRARY__TYPE(a_library, a_name)\
+template<>\
+inline t_slot_of<t_type>& a_library::f_type_slot<t_##a_name>()\
+{\
+	return v_type_##a_name;\
+}
+#define XEMMAI__LIBRARY__TYPE_AS(a_library, a_type, a_name)\
+template<>\
+inline t_slot_of<t_type>& a_library::f_type_slot<a_type>()\
+{\
+	return v_type_##a_name;\
 }
 
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_type>()
-{
-	return v_type_class;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_builder>()
-{
-	return v_type_builder;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_module::t_body>()
-{
-	return v_type_module__body;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_module>()
-{
-	return v_type_module;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_symbol>()
-{
-	return v_type_symbol;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_native>()
-{
-	return v_type_native;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_fiber>()
-{
-	return v_type_fiber;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_thread>()
-{
-	return v_type_thread;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_scope>()
-{
-	return v_type_scope;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_code>()
-{
-	return v_type_code;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_lambda>()
-{
-	return v_type_lambda;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_lambda_shared>()
-{
-	return v_type_lambda_shared;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_advanced_lambda<t_lambda>>()
-{
-	return v_type_advanced_lambda;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_advanced_lambda<t_lambda_shared>>()
-{
-	return v_type_advanced_lambda_shared;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_method>()
-{
-	return v_type_method;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_throwable>()
-{
-	return v_type_throwable;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<std::nullptr_t>()
-{
-	return v_type_null;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<bool>()
-{
-	return v_type_boolean;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<intptr_t>()
-{
-	return v_type_integer;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<double>()
-{
-	return v_type_float;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_string>()
-{
-	return v_type_string;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_tuple>()
-{
-	return v_type_tuple;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_list>()
-{
-	return v_type_list;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_map::t_table>()
-{
-	return v_type_map__table;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_map>()
-{
-	return v_type_map;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_bytes>()
-{
-	return v_type_bytes;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_lexer::t_error>()
-{
-	return v_type_lexer__error;
-}
-
-template<>
-inline t_slot_of<t_type>& t_global::f_type_slot<t_parser::t_error>()
-{
-	return v_type_parser__error;
-}
+XEMMAI__LIBRARY__TYPE(t_global, object)
+XEMMAI__LIBRARY__TYPE(t_global, sharable)
+XEMMAI__LIBRARY__TYPE(t_global, type)
+XEMMAI__LIBRARY__TYPE(t_global, builder)
+XEMMAI__LIBRARY__TYPE_AS(t_global, t_module::t_body, module__body)
+XEMMAI__LIBRARY__TYPE(t_global, module)
+XEMMAI__LIBRARY__TYPE(t_global, symbol)
+XEMMAI__LIBRARY__TYPE(t_global, native)
+XEMMAI__LIBRARY__TYPE(t_global, fiber)
+XEMMAI__LIBRARY__TYPE(t_global, thread)
+XEMMAI__LIBRARY__TYPE(t_global, scope)
+XEMMAI__LIBRARY__TYPE(t_global, code)
+XEMMAI__LIBRARY__TYPE(t_global, lambda)
+XEMMAI__LIBRARY__TYPE(t_global, lambda_shared)
+XEMMAI__LIBRARY__TYPE_AS(t_global, t_advanced_lambda<t_lambda>, advanced_lambda)
+XEMMAI__LIBRARY__TYPE_AS(t_global, t_advanced_lambda<t_lambda_shared>, advanced_lambda_shared)
+XEMMAI__LIBRARY__TYPE(t_global, method)
+XEMMAI__LIBRARY__TYPE(t_global, throwable)
+XEMMAI__LIBRARY__TYPE_AS(t_global, std::nullptr_t, null)
+XEMMAI__LIBRARY__TYPE_AS(t_global, bool, boolean)
+XEMMAI__LIBRARY__TYPE_AS(t_global, intptr_t, integer)
+XEMMAI__LIBRARY__TYPE_AS(t_global, double, float)
+XEMMAI__LIBRARY__TYPE(t_global, string)
+XEMMAI__LIBRARY__TYPE(t_global, tuple)
+XEMMAI__LIBRARY__TYPE(t_global, list)
+XEMMAI__LIBRARY__TYPE_AS(t_global, t_map::t_table, map__table)
+XEMMAI__LIBRARY__TYPE(t_global, map)
+XEMMAI__LIBRARY__TYPE(t_global, bytes)
+XEMMAI__LIBRARY__TYPE_AS(t_global, t_lexer::t_error, lexer__error)
+XEMMAI__LIBRARY__TYPE_AS(t_global, t_parser::t_error, parser__error)
 
 #ifndef _WIN32
 inline t_global* f_global()

@@ -102,17 +102,8 @@ struct t_callback_library : t_library
 	t_pvalue f_as(t_client* a_value) const;
 };
 
-template<>
-inline t_slot_of<t_type>& t_callback_library::f_type_slot<t_client>()
-{
-	return v_type_client;
-}
-
-template<>
-inline t_slot_of<t_type>& t_callback_library::f_type_slot<t_server>()
-{
-	return v_type_server;
-}
+XEMMAI__LIBRARY__TYPE(t_callback_library, client)
+XEMMAI__LIBRARY__TYPE(t_callback_library, server)
 
 class t_client_wrapper : public t_client
 {

@@ -3,8 +3,9 @@
 
 #include "value.h"
 #include <array>
-#include <typeinfo>
+#include <map>
 #include <typeindex>
+#include <typeinfo>
 #include <vector>
 
 namespace xemmai

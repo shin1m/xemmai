@@ -90,7 +90,7 @@ void t_engine::f_collector()
 				do p->f_cyclic_decrement(); while ((p = p->v_next) != cycle);
 				do {
 					auto q = p->v_next;
-					if (p->v_type == v_type_class) p->f_as<t_type>().~t_type();
+					if (p->v_type == v_type_type) p->f_as<t_type>().~t_type();
 					f_free_as_collect(p);
 					p = q;
 				} while (p != cycle);
@@ -230,14 +230,14 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	auto type = new(type_object->f_data()) t_type();
 	type->v_derive = &t_type::f_do_derive;
 	std::uninitialized_default_construct_n(type->f_fields(), 5);
-	auto type_class = f_allocate_for_type<t_class>(5);
-	v_type_class = new(type_class->f_data()) t_class(t_class::V_ids, type);
-	std::uninitialized_default_construct_n(v_type_class->f_fields(), 5);
-	type_object->f_be(v_type_class);
-	type_class->f_be(v_type_class);
+	auto type_type = f_allocate_for_type<t_class>(5);
+	v_type_type = new(type_type->f_data()) t_class(t_class::V_ids, type);
+	std::uninitialized_default_construct_n(v_type_type->f_fields(), 5);
+	type_object->f_be(v_type_type);
+	type_type->f_be(v_type_type);
 	{
 		auto type_module__body = f_new_type_on_boot<t_module::t_body>(5, type, nullptr);
-		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_class, type_module__body);
+		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_type, type_module__body);
 		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}
 	v_fiber_exit = f_allocate(0);

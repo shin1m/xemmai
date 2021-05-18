@@ -1,6 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include <xemmai/atomic.h>
 #include <xemmai/string.h>
 
 using namespace xemmai;
