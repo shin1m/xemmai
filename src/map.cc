@@ -111,7 +111,7 @@ t_pvalue t_map::f_remove(const t_pvalue& a_key)
 	return value;
 }
 
-t_object* t_type_of<t_map>::f_string(t_map& a_self)
+t_object* t_type_of<t_map>::f__string(t_map& a_self)
 {
 	t_map::t_iterator i(a_self);
 	std::vector<wchar_t> cs{L'{'};
@@ -127,7 +127,7 @@ t_object* t_type_of<t_map>::f_string(t_map& a_self)
 	if (a_self.f_owned_or_shared<t_scoped_lock_for_read>(get)) {
 		auto push = [&](t_pvalue& x, const wchar_t* name)
 		{
-			x = x.f_invoke(f_global()->f_symbol_string());
+			x = x.f_string();
 			f_check<t_string>(x, name);
 			auto& s = f_as<const t_string&>(x);
 			auto p = static_cast<const wchar_t*>(s);
@@ -221,7 +221,7 @@ void t_type_of<t_map>::f_define()
 {
 	t_define{f_global()}.f_derive<t_map::t_table, t_object>();
 	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_map&), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_map&), f__string>())
 		(L"clear"sv, t_member<void(*)(t_map&), f_clear>())
 		(f_global()->f_symbol_size(), t_member<size_t(*)(t_map&), f_size>())
 		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), f__get_at>())

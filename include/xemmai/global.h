@@ -55,9 +55,9 @@ class t_global : public t_library
 	t_slot_of<t_type> v_type_lexer__error;
 	t_slot_of<t_type> v_type_parser__error;
 	t_slot v_symbol_initialize;
+	t_slot v_symbol_call;
 	t_slot v_symbol_string;
 	t_slot v_symbol_hash;
-	t_slot v_symbol_call;
 	t_slot v_symbol_get_at;
 	t_slot v_symbol_set_at;
 	t_slot v_symbol_plus;
@@ -80,12 +80,7 @@ class t_global : public t_library
 	t_slot v_symbol_and;
 	t_slot v_symbol_xor;
 	t_slot v_symbol_or;
-	t_slot v_symbol_path;
-	t_slot v_symbol_executable;
-	t_slot v_symbol_script;
-	t_slot v_symbol_arguments;
 	t_slot v_symbol_size;
-	t_slot v_symbol_dump;
 	t_slot v_string_empty;
 
 public:
@@ -109,6 +104,10 @@ public:
 	{
 		return v_symbol_initialize;
 	}
+	t_object* f_symbol_call() const
+	{
+		return v_symbol_call;
+	}
 	t_object* f_symbol_string() const
 	{
 		return v_symbol_string;
@@ -116,10 +115,6 @@ public:
 	t_object* f_symbol_hash() const
 	{
 		return v_symbol_hash;
-	}
-	t_object* f_symbol_call() const
-	{
-		return v_symbol_call;
 	}
 	t_object* f_symbol_get_at() const
 	{
@@ -209,29 +204,9 @@ public:
 	{
 		return v_symbol_or;
 	}
-	t_object* f_symbol_path() const
-	{
-		return v_symbol_path;
-	}
-	t_object* f_symbol_executable() const
-	{
-		return v_symbol_executable;
-	}
-	t_object* f_symbol_script() const
-	{
-		return v_symbol_script;
-	}
-	t_object* f_symbol_arguments() const
-	{
-		return v_symbol_arguments;
-	}
 	t_object* f_symbol_size() const
 	{
 		return v_symbol_size;
-	}
-	t_object* f_symbol_dump() const
-	{
-		return v_symbol_dump;
 	}
 	t_object* f_string_empty() const
 	{
@@ -315,44 +290,48 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 }
 
 template<typename T_tag>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline t_pvalue t_value<T_tag>::f_get(t_object* a_key) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline t_pvalue t_value<T_tag>::f_get(t_object* a_key, size_t& a_index) const
 {
-	return f_type()->f_get(*this, a_key);
+	return f_type()->f_get(*this, a_key, a_index);
 }
 
 template<typename T_tag>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_get(t_object* a_key, t_pvalue* a_stack) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_bind(t_object* a_key, size_t& a_index, t_pvalue* a_stack) const
 {
-	f_type()->f_get(*this, a_key, a_stack);
+	f_type()->f_bind(*this, a_key, a_index, a_stack);
 }
 
 template<typename T_tag>
-XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_call(t_object* a_key, t_pvalue* a_stack, size_t a_n) const
+XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_call(t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n) const
 {
-	f_type()->f_invoke(*this, a_key, a_stack, a_n);
+	f_type()->f_invoke(*this, a_key, a_index, a_stack, a_n);
 }
 
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_hash() const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-		return t_type_of<std::nullptr_t>::f__hash(*this);
-	case e_tag__BOOLEAN:
-		return t_type_of<bool>::f__hash(v_boolean);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__hash(v_integer);
-	case e_tag__FLOAT:
-		return t_type_of<double>::f__hash(v_float);
-	default:
-		{
-			t_scoped_stack stack(2);
-			p->f_type()->f_hash(p, stack);
-			return stack[0];
-		}
-	}
+#define XEMMAI__VALUE__NULLARY(a_method)\
+template<typename T_tag>\
+inline t_pvalue t_value<T_tag>::f_##a_method() const\
+{\
+	auto p = static_cast<t_object*>(*this);\
+	switch (reinterpret_cast<uintptr_t>(p)) {\
+	case e_tag__NULL:\
+		return t_type_of<std::nullptr_t>::f__##a_method(*this);\
+	case e_tag__BOOLEAN:\
+		return t_type_of<bool>::f__##a_method(v_boolean);\
+	case e_tag__INTEGER:\
+		return t_type_of<intptr_t>::f__##a_method(v_integer);\
+	case e_tag__FLOAT:\
+		return t_type_of<double>::f__##a_method(v_float);\
+	default:\
+		{\
+			t_scoped_stack stack(2);\
+			p->f_type()->f_##a_method(p, stack);\
+			return stack[0];\
+		}\
+	}\
 }
+
+XEMMAI__VALUE__NULLARY(string)
+XEMMAI__VALUE__NULLARY(hash)
 
 #define XEMMAI__VALUE__BINARY(a_method)\
 		{\
@@ -671,65 +650,76 @@ inline bool f_is_bindable(t_object* a_p)
 	return reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT && a_p->f_type()->v_bindable;
 }
 
-inline t_pvalue t_type::f_get(const t_pvalue& a_this, t_object* a_key)
+inline t_pvalue t_type::f_get(const t_pvalue& a_this, t_object* a_key, size_t& a_index)
 {
-	auto index = f_index(a_key);
-	if (index < v_instance_fields) return a_this->f_fields()[index];
-	if (index < v_fields) {
-		auto& field = f_fields()[index].second;
+	auto i = a_index;
+	if (i < v_instance_fields && f_fields()[i].first == a_key) return a_this->f_fields()[i];
+	i += v_instance_fields;
+	if (i < v_fields && f_fields()[i].first == a_key) {
+		auto& field = f_fields()[i].second;
 		return f_is_bindable(field) ? t_pvalue(xemmai::f_new<t_method>(f_global(), field, a_this)) : t_pvalue(field);
 	}
-	return (this->*v_get)(a_this, a_key);
+	return f__get(a_this, a_key, a_index);
 }
 
-inline void t_type::f_get(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_stack)
+template<typename T>
+inline void t_type::f_bind_class(T&& a_this, size_t a_index, t_pvalue* a_stack)
 {
-	auto index = f_index(a_key);
-	if (index < v_instance_fields) {
-		a_stack[0] = a_this->f_fields()[index];
-		a_stack[1] = nullptr;
-	} else if (index < v_fields) {
-		auto& field = f_fields()[index].second;
-		t_object* p = field;
-		if (f_is_bindable(p)) {
-			a_stack[0] = p;
-			a_stack[1] = a_this;
-		} else {
-			a_stack[0] = field;
-			a_stack[1] = nullptr;
-		}
+	auto& field = f_fields()[a_index].second;
+	t_object* p = field;
+	if (f_is_bindable(p)) {
+		a_stack[0] = p;
+		a_stack[1] = std::forward<T>(a_this);
 	} else {
-		a_stack[0] = (this->*v_get)(a_this, a_key);
+		a_stack[0] = field;
 		a_stack[1] = nullptr;
 	}
 }
 
-inline void t_type::f_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
+inline void t_type::f_bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack)
 {
-	auto index = f_index(a_key);
-	if (index < v_instance_fields)
-		a_this->f_fields()[index] = a_value;
-	else
-		v_put(a_this, a_key, a_value);
+	auto i = a_index;
+	if (i < v_instance_fields && f_fields()[i].first == a_key) {
+		a_stack[0] = a_this->f_fields()[i];
+		a_stack[1] = nullptr;
+	} else {
+		i += v_instance_fields;
+		if (i < v_fields && f_fields()[i].first == a_key)
+			f_bind_class(a_this, i, a_stack);
+		else
+			f__bind(a_this, a_key, a_index, a_stack);
+	}
 }
 
-inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n)
+inline void t_type::f_put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value)
 {
-	auto index = f_index(a_key);
-	if (index < v_instance_fields) {
-		a_this->f_fields()[index].f_call(a_stack, a_n);
-	} else if (index < v_fields) {
-		auto& field = f_fields()[index].second;
-		t_object* p = field;
-		if (f_is_bindable(p)) {
-			a_stack[1] = a_this;
-			size_t n = p->f_call_without_loop(a_stack, a_n);
-			if (n != size_t(-1)) f_loop(a_stack, n);
-		} else {
-			field.f_call(a_stack, a_n);
-		}
+	auto i = a_index;
+	if (i < v_instance_fields && f_fields()[i].first == a_key)
+		a_this->f_fields()[i] = a_value;
+	else
+		f__put(a_this, a_key, a_index, a_value);
+}
+
+template<typename T>
+inline void t_type::f_invoke_class(T&& a_this, size_t a_index, t_pvalue* a_stack, size_t a_n)
+{
+	auto p = f_fields()[a_index].second.f_object_or_throw();
+	if (p->f_type()->v_bindable) a_stack[1] = std::forward<T>(a_this);
+	size_t n = p->f_call_without_loop(a_stack, a_n);
+	if (n != size_t(-1)) f_loop(a_stack, n);
+}
+
+inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n)
+{
+	auto i = a_index;
+	if (i < v_instance_fields && f_fields()[i].first == a_key) {
+		a_this->f_fields()[i].f_call(a_stack, a_n);
 	} else {
-		(this->*v_get)(a_this, a_key).f_call(a_stack, a_n);
+		i += v_instance_fields;
+		if (i < v_fields && f_fields()[i].first == a_key)
+			f_invoke_class(a_this, i, a_stack, a_n);
+		else
+			f__invoke(a_this, a_key, a_index, a_stack, a_n);
 	}
 }
 
@@ -767,7 +757,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 			fiber.f_caught(thrown, nullptr);
 			do {
 				try {
-					auto p = thrown.f_invoke(f_global()->f_symbol_string());
+					auto p = thrown.f_string();
 					if (f_is<t_string>(p)) {
 						auto& s = f_as<const t_string&>(p);
 						std::fprintf(stderr, "caught: %.*ls\n", static_cast<int>(s.f_size()), static_cast<const wchar_t*>(s));
@@ -777,7 +767,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 				}
 				std::fprintf(stderr, "caught: <unprintable>\n");
 			} while (false);
-			if (f_is<t_throwable>(thrown)) thrown.f_invoke(f_global()->f_symbol_dump());
+			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/26);
 		}
 	} catch (...) {
 		std::fprintf(stderr, "caught: <unexpected>\n");
@@ -883,7 +873,7 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_object* t_type_of<t_string>::f__add(t_o
 		return s1.f_size() <= 0 ? a_self : f__construct(a_self->f_type(), s0, s1);
 	};
 	if (f_is<t_string>(a_value)) return add(a_value);
-	auto x = a_value.f_invoke(f_global()->f_symbol_string());
+	auto x = a_value.f_string();
 	f_check<t_string>(x, L"argument0");
 	return add(x);
 }

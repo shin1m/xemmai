@@ -24,7 +24,7 @@ enum t_instruction
 	e_instruction__OBJECT_GET_MEGAMORPHIC,
 	e_instruction__OBJECT_GET_INDIRECT,
 	e_instruction__OBJECT_PUT,
-	e_instruction__OBJECT_PUT_MONOMORPHIC_SET,
+	e_instruction__OBJECT_PUT_MONOMORPHIC,
 	e_instruction__OBJECT_PUT_MEGAMORPHIC,
 	e_instruction__OBJECT_PUT_INDIRECT,
 	e_instruction__OBJECT_HAS,

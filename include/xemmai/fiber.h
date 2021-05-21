@@ -255,11 +255,11 @@ inline t_pvalue t_value<T_tag>::operator()(T&&... a_arguments) const
 
 template<typename T_tag>
 template<typename... T>
-inline t_pvalue t_value<T_tag>::f_invoke(t_object* a_key, T&&... a_arguments) const
+inline t_pvalue t_value<T_tag>::f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments) const
 {
 	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
 	stack[1] = nullptr;
-	f_call(a_key, stack, sizeof...(a_arguments));
+	f_call(a_key, a_index, stack, sizeof...(a_arguments));
 	return stack[0];
 }
 
@@ -361,11 +361,20 @@ inline t_pvalue t_value<T_tag>::f_complement() const
 }
 
 template<typename... T>
-inline t_pvalue t_object::f_invoke(t_object* a_key, T&&... a_arguments)
+inline t_pvalue t_object::f_invoke_class(size_t a_index, T&&... a_arguments)
 {
 	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
 	stack[1] = nullptr;
-	f_call(a_key, stack, sizeof...(a_arguments));
+	v_type->f_invoke_class(this, a_index, stack, sizeof...(a_arguments));
+	return stack[0];
+}
+
+template<typename... T>
+inline t_pvalue t_object::f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments)
+{
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	stack[1] = nullptr;
+	f_call(a_key, a_index, stack, sizeof...(a_arguments));
 	return stack[0];
 }
 

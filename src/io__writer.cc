@@ -11,7 +11,8 @@ void t_writer::f_write(t_io* a_library)
 {
 	auto& buffer = f_as<t_bytes&>(v_buffer);
 	auto p = reinterpret_cast<char*>(&buffer[0]);
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_write(), t_pvalue(v_buffer), f_global()->f_as(0), f_global()->f_as(v_p - p));
+	static size_t index;
+	t_pvalue(v_stream).f_invoke(a_library->f_symbol_write(), index, t_pvalue(v_buffer), f_global()->f_as(0), f_global()->f_as(v_p - p));
 	v_p = p;
 	v_n = buffer.f_size();
 }
@@ -69,7 +70,8 @@ void t_writer::f_close(t_io* a_library)
 	t_scoped_lock_for_write lock(v_lock);
 	if (!v_stream) f_throw(L"already closed."sv);
 	f_unshift(a_library);
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_close());
+	static size_t index;
+	t_pvalue(v_stream).f_invoke(a_library->f_symbol_close(), index);
 	v_stream = nullptr;
 }
 
@@ -80,7 +82,7 @@ void t_writer::f_write(t_io* a_library, const t_pvalue& a_value)
 	if (f_is<t_string>(a_value)) {
 		f_write(a_library, f_as<const t_string&>(a_value));
 	} else {
-		auto x = a_value.f_invoke(f_global()->f_symbol_string());
+		auto x = a_value.f_string();
 		f_check<t_string>(x, L"value");
 		f_write(a_library, f_as<const t_string&>(x));
 	}
@@ -92,7 +94,8 @@ void t_writer::f_write_line(t_io* a_library)
 	if (!v_stream) f_throw(L"already closed."sv);
 	f_write(a_library, L"\n", 1);
 	f_unshift(a_library);
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush());
+	static size_t index;
+	t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush(), index);
 }
 
 void t_writer::f_write_line(t_io* a_library, const t_pvalue& a_value)
@@ -102,13 +105,14 @@ void t_writer::f_write_line(t_io* a_library, const t_pvalue& a_value)
 	if (f_is<t_string>(a_value)) {
 		f_write(a_library, f_as<const t_string&>(a_value));
 	} else {
-		auto x = a_value.f_invoke(f_global()->f_symbol_string());
+		auto x = a_value.f_string();
 		f_check<t_string>(x, L"value");
 		f_write(a_library, f_as<const t_string&>(x));
 	}
 	f_write(a_library, L"\n", 1);
 	f_unshift(a_library);
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush());
+	static size_t index;
+	t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush(), index);
 }
 
 void t_writer::f_flush(t_io* a_library)
@@ -116,7 +120,8 @@ void t_writer::f_flush(t_io* a_library)
 	t_scoped_lock_for_write lock(v_lock);
 	if (!v_stream) f_throw(L"already closed."sv);
 	f_unshift(a_library);
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush());
+	static size_t index;
+	t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush(), index);
 }
 
 }

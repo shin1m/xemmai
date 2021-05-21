@@ -113,7 +113,7 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 	return q;
 }
 
-t_object* t_type_of<t_list>::f_string(t_list& a_self)
+t_object* t_type_of<t_list>::f__string(t_list& a_self)
 {
 	std::vector<wchar_t> cs{L'['};
 	t_pvalue x;
@@ -123,7 +123,7 @@ t_object* t_type_of<t_list>::f_string(t_list& a_self)
 		x = a_self[0];
 		return true;
 	})) for (size_t i = 0;;) {
-		x = x.f_invoke(f_global()->f_symbol_string());
+		x = x.f_string();
 		f_check<t_string>(x, L"value");
 		auto& s = f_as<const t_string&>(x);
 		auto p = static_cast<const wchar_t*>(s);
@@ -273,7 +273,7 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 void t_type_of<t_list>::f_define()
 {
 	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_list&), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_list&), f__string>())
 		(L"clear"sv, t_member<void(*)(t_list&), f_clear>())
 		(f_global()->f_symbol_size(), t_member<size_t(*)(t_list&), f_size>())
 		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), f__get_at>())

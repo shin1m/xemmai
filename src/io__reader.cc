@@ -13,7 +13,8 @@ size_t t_reader::f_read(t_io* a_library)
 	auto p = reinterpret_cast<char*>(&buffer[0]);
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;
-	auto n = t_pvalue(v_stream).f_invoke(a_library->f_symbol_read(), t_pvalue(v_buffer), f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
+	static size_t index;
+	auto n = t_pvalue(v_stream).f_invoke(a_library->f_symbol_read(), index, t_pvalue(v_buffer), f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
 	f_check<size_t>(n, L"result of read");
 	v_n += f_as<size_t>(n);
 	return f_as<size_t>(n);
@@ -63,7 +64,8 @@ void t_reader::f_close(t_io* a_library)
 {
 	t_scoped_lock_for_write lock(v_lock);
 	if (!v_stream) f_throw(L"already closed."sv);
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_close());
+	static size_t index;
+	t_pvalue(v_stream).f_invoke(a_library->f_symbol_close(), index);
 	v_stream = nullptr;
 }
 

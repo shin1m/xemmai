@@ -226,17 +226,17 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 		std::thread(&t_engine::f_collector, this).detach();
 		do v_collector__done.wait(lock); while (v_collector__running);
 	}
-	auto type_object = f_allocate_for_type<t_type>(5);
+	auto type_object = f_allocate_for_type<t_type>(26);
 	auto type = new(type_object->f_data()) t_type();
 	type->v_derive = &t_type::f_do_derive;
-	std::uninitialized_default_construct_n(type->f_fields(), 5);
-	auto type_type = f_allocate_for_type<t_class>(5);
+	std::uninitialized_default_construct_n(type->f_fields(), 26);
+	auto type_type = f_allocate_for_type<t_class>(26);
 	v_type_type = new(type_type->f_data()) t_class(t_class::V_ids, type);
-	std::uninitialized_default_construct_n(v_type_type->f_fields(), 5);
+	std::uninitialized_default_construct_n(v_type_type->f_fields(), 26);
 	type_object->f_be(v_type_type);
 	type_type->f_be(v_type_type);
 	{
-		auto type_module__body = f_new_type_on_boot<t_module::t_body>(5, type, nullptr);
+		auto type_module__body = f_new_type_on_boot<t_module::t_body>(26, type, nullptr);
 		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_type, type_module__body);
 		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}
@@ -266,45 +266,45 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 		}
 		if (i < sv.size()) f_as<t_list&>(path).f_push(f_global()->f_as(sv.substr(i)));
 	}
-	std::vector<std::pair<t_root, t_rvalue>> system;
+	std::wstring executable;
+	portable::t_path script({});
+	auto arguments = t_list::f_instantiate();
 	if (a_count > 0) {
-		system.emplace_back(f_global()->f_symbol_executable(), f_global()->f_as(portable::f_convert(a_arguments[0])));
+		executable = portable::f_convert(a_arguments[0]);
 #ifdef XEMMAI_MODULE_PATH
 		f_as<t_list&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
 #endif
 		if (a_count > 1) {
-			portable::t_path script(portable::f_convert(a_arguments[1]));
-			system.emplace_back(f_global()->f_symbol_script(), f_global()->f_as(static_cast<const std::wstring&>(script)));
+			script = {portable::f_convert(a_arguments[1])};
 			f_as<t_list&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L".."sv)));
-			auto arguments = t_list::f_instantiate();
-			auto& p = f_as<t_list&>(arguments);
-			for (size_t i = 2; i < a_count; ++i) p.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
-			system.emplace_back(f_global()->f_symbol_arguments(), arguments);
+			auto& as = f_as<t_list&>(arguments);
+			for (size_t i = 2; i < a_count; ++i) as.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
 		}
 	}
-	system.emplace_back(f_global()->f_symbol_path(), path);
+	t_define system(f_global());
+	system(L"path"sv, path);
+	system(L"executable"sv, executable);
+	system(L"script"sv, static_cast<const std::wstring&>(script));
+	system(L"arguments"sv, arguments);
 	{
 		auto io = f_global()->f_type<t_module::t_body>()->f_new<t_io>();
 		v_module_io = t_module::f_new(L"io"sv, io, io->f_as<t_io>().f_define());
 	}
 	{
 		auto file = io::t_file::f_instantiate(stdin);
-		system.emplace_back(t_symbol::f_instantiate(L"raw_in"sv), file);
-		bool tty = f_as<io::t_file&>(file).f_tty();
-		auto reader = io::t_reader::f_instantiate(file, L""sv, tty ? 1 : 1024);
-		system.emplace_back(t_symbol::f_instantiate(L"in"sv), reader);
+		system(L"raw_in"sv, file);
+		auto tty = file->f_as<io::t_file>().f_tty();
+		system(L"in"sv, io::t_reader::f_instantiate(file, L""sv, tty ? 1 : 1024));
 	}
 	{
 		auto file = io::t_file::f_instantiate(stdout);
-		system.emplace_back(t_symbol::f_instantiate(L"raw_out"sv), file);
-		auto writer = io::t_writer::f_instantiate(file, L""sv);
-		system.emplace_back(t_symbol::f_instantiate(L"out"sv), writer);
+		system(L"raw_out"sv, file);
+		system(L"out"sv, io::t_writer::f_instantiate(file, L""sv));
 	}
 	{
 		auto file = io::t_file::f_instantiate(stderr);
-		system.emplace_back(t_symbol::f_instantiate(L"raw_error"sv), file);
-		auto writer = io::t_writer::f_instantiate(file, L""sv);
-		system.emplace_back(t_symbol::f_instantiate(L"error"sv), writer);
+		system(L"raw_error"sv, file);
+		system(L"error"sv, io::t_writer::f_instantiate(file, L""sv));
 	}
 	v_module_system = t_module::f_new(L"system"sv, nullptr, system);
 }

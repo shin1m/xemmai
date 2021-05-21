@@ -37,9 +37,9 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_type_lexer__error);
 	a_scan(v_type_parser__error);
 	a_scan(v_symbol_initialize);
+	a_scan(v_symbol_call);
 	a_scan(v_symbol_string);
 	a_scan(v_symbol_hash);
-	a_scan(v_symbol_call);
 	a_scan(v_symbol_get_at);
 	a_scan(v_symbol_set_at);
 	a_scan(v_symbol_plus);
@@ -62,12 +62,7 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_and);
 	a_scan(v_symbol_xor);
 	a_scan(v_symbol_or);
-	a_scan(v_symbol_path);
-	a_scan(v_symbol_executable);
-	a_scan(v_symbol_script);
-	a_scan(v_symbol_arguments);
 	a_scan(v_symbol_size);
-	a_scan(v_symbol_dump);
 	a_scan(v_string_empty);
 }
 
@@ -76,12 +71,12 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_type_object->v_module = t_object::f_of(this);
 	v_type_type->v_module = t_object::f_of(this);
 	v_type_module__body->v_module = t_object::f_of(this);
-	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(5, v_type_object, t_object::f_of(this)));
-	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(5, v_type_object, t_object::f_of(this)));
+	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(26, v_type_object, t_object::f_of(this)));
+	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(26, v_type_object, t_object::f_of(this)));
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
+	v_symbol_call = t_symbol::f_instantiate(L"__call"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
 	v_symbol_hash = t_symbol::f_instantiate(L"__hash"sv);
-	v_symbol_call = t_symbol::f_instantiate(L"__call"sv);
 	v_symbol_get_at = t_symbol::f_instantiate(L"__get_at"sv);
 	v_symbol_set_at = t_symbol::f_instantiate(L"__set_at"sv);
 	v_symbol_plus = t_symbol::f_instantiate(L"__plus"sv);
@@ -104,12 +99,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_symbol_and = t_symbol::f_instantiate(L"__and"sv);
 	v_symbol_xor = t_symbol::f_instantiate(L"__xor"sv);
 	v_symbol_or = t_symbol::f_instantiate(L"__or"sv);
-	v_symbol_path = t_symbol::f_instantiate(L"path"sv);
-	v_symbol_executable = t_symbol::f_instantiate(L"executable"sv);
-	v_symbol_script = t_symbol::f_instantiate(L"script"sv);
-	v_symbol_arguments = t_symbol::f_instantiate(L"arguments"sv);
 	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
-	v_symbol_dump = t_symbol::f_instantiate(L"dump"sv);
 	v_type_object->f_define();
 	t_type_of<t_sharable>::f_define();
 	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_type));

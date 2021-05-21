@@ -3,7 +3,7 @@
 namespace xemmai
 {
 
-t_object* t_type_of<double>::f_string(double a_self)
+t_object* t_type_of<double>::f__string(double a_self)
 {
 	wchar_t cs[32];
 	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%g", a_self);
@@ -23,7 +23,7 @@ bool t_type_of<double>::f__not_equals(double a_self, const t_pvalue& a_value)
 void t_type_of<double>::f_define()
 {
 	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(double), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(double), f__string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(double), f__hash>())
 		(f_global()->f_symbol_plus(), t_member<double(*)(double), f__plus>())
 		(f_global()->f_symbol_minus(), t_member<double(*)(double), f__minus>())

@@ -1,4 +1,5 @@
 #include <xemmai/portable/path.h>
+#include <xemmai/list.h>
 #include <xemmai/convert.h>
 #include <xemmai/io/file.h>
 
@@ -108,8 +109,9 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 	}
 	f_engine()->v_module__mutex.unlock();
 	f_engine()->v_object__reviving__mutex.unlock();
-	auto paths = f_engine()->f_module_system()->f_get(f_global()->f_symbol_path());
-	auto n = paths.f_invoke(f_global()->f_symbol_size());
+	auto& paths = f_engine()->f_module_system()->f_fields()[/*path*/0];
+	static size_t index;
+	auto n = paths.f_invoke(f_global()->f_symbol_size(), index);
 	f_check<size_t>(n, L"size");
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
 		auto x = paths.f_get_at(f_global()->f_as(i));
@@ -119,12 +121,11 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 		if (auto body = f_load_library(path)) return f_new(a_name, body, body->f_as<t_library>().f_define());
 	}
 	f_throw(L"module \"" + std::wstring(a_name) + L"\" not found.");
-	return nullptr;
 }
 
 void t_module::f_main()
 {
-	auto path = f_as<std::wstring_view>(f_engine()->f_module_system()->f_get(f_global()->f_symbol_script()));
+	auto path = f_as<std::wstring_view>(f_engine()->f_module_system()->f_fields()[/*script*/2]);
 	if (path.empty()) f_throw(L"script path is empty."sv);
 	auto code = f_load_script(path);
 	if (!code) f_throw(L"file \"" + std::wstring(path) + L"\" not found.");

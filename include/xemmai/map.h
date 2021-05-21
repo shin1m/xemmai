@@ -166,7 +166,7 @@ struct t_type_of<t_map::t_table> : t_uninstantiatable<t_finalizes<t_derives<t_ma
 template<>
 struct t_type_of<t_map> : t_derivable<t_holds<t_map, t_type_of<t_sharable>>>
 {
-	static t_object* f_string(t_map& a_self);
+	static t_object* f__string(t_map& a_self);
 	static void f_clear(t_map& a_self);
 	static size_t f_size(t_map& a_self);
 	static t_pvalue f__get_at(t_map& a_self, const t_pvalue& a_key);

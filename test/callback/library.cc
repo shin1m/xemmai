@@ -129,7 +129,8 @@ public:
 	virtual void f_on_message(std::wstring_view a_message)
 	{
 		auto& library = v_self->f_type()->v_module->f_as<t_callback_library>();
-		v_self->f_invoke(library.v_symbol_on_message, library.f_as(a_message));
+		static size_t index;
+		v_self->f_invoke(library.v_symbol_on_message, index, library.f_as(a_message));
 	}
 };
 

@@ -5,7 +5,7 @@ namespace xemmai
 
 size_t t_type_of<t_native>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)
 {
-	auto& p = f_as<t_native&>(a_this);
+	auto& p = a_this->f_as<t_native>();
 	p.v_function(&p.v_library->f_as<t_library>(), a_stack, a_n);
 	return -1;
 }

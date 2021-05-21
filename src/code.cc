@@ -42,7 +42,8 @@ size_t f_expand(void**& a_pc, t_pvalue* a_stack, size_t a_n)
 			for (size_t i = 0; i < n; ++i) a_stack[i] = list[i];
 		});
 	} else {
-		auto size = x.f_invoke(f_global()->f_symbol_size());
+		static size_t index;
+		auto size = x.f_invoke(f_global()->f_symbol_size(), index);
 		f_check<size_t>(size, L"size");
 		n = f_as<size_t>(size);
 		f_allocate(a_stack, n);
@@ -56,7 +57,7 @@ size_t f_expand(void**& a_pc, t_pvalue* a_stack, size_t a_n)
 void t_code::f_object_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void* a_class, void* a_megamorphic)
 {
 	void** pc0 = a_pc;
-	a_pc += 6;
+	a_pc += 7;
 	auto stack = a_base + reinterpret_cast<size_t>(pc0[1]);
 	auto key = static_cast<t_object*>(pc0[2]);
 	auto& top = stack[0];
@@ -66,14 +67,12 @@ void t_code::f_object_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void
 		*static_cast<t_slot*>(pc0[4]) = t_object::f_of(type);
 		pc0[4] = type;
 		auto index = type->f_index(key);
+		*reinterpret_cast<size_t*>(pc0 + 5) = index;
+		std::atomic_thread_fence(std::memory_order_release);
 		if (index < type->v_instance_fields) {
-			*reinterpret_cast<size_t*>(pc0 + 5) = index;
-			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_instance;
 			top = top->f_fields()[index];
 		} else if (index < type->v_fields) {
-			*reinterpret_cast<size_t*>(pc0 + 5) = index - type->v_instance_fields;
-			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_class;
 			auto& field = type->f_fields()[index].second;
 			if (f_is_bindable(field))
@@ -82,17 +81,17 @@ void t_code::f_object_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void
 				top = field;
 		} else {
 			pc0[0] = a_megamorphic;
-			top = (type->*type->v_get)(top, key);
+			top = (type->*type->v_get)(top, key, reinterpret_cast<size_t&>(pc0[6]));
 		}
 	} else {
-		top = top.f_get(key);
+		top = top.f_get(key, reinterpret_cast<size_t&>(pc0[6]));
 	}
 }
 
 void t_code::f_object_put(t_pvalue* a_base, void**& a_pc, void* a_set, void* a_megamorphic)
 {
 	void** pc0 = a_pc;
-	a_pc += 6;
+	a_pc += 7;
 	auto stack = a_base + reinterpret_cast<size_t>(pc0[1]);
 	auto key = static_cast<t_object*>(pc0[2]);
 	auto& top = stack[0];
@@ -113,7 +112,7 @@ void t_code::f_object_put(t_pvalue* a_base, void**& a_pc, void* a_set, void* a_m
 			type->v_put(top, key, value);
 		}
 	} else {
-		top.f_put(key, value);
+		top.f_put(key, reinterpret_cast<size_t&>(pc0[6]), value);
 	}
 	top = value;
 }
@@ -121,7 +120,7 @@ void t_code::f_object_put(t_pvalue* a_base, void**& a_pc, void* a_set, void* a_m
 void t_code::f_method_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void* a_class, void* a_megamorphic)
 {
 	void** pc0 = a_pc;
-	a_pc += 6;
+	a_pc += 7;
 	auto stack = a_base + reinterpret_cast<size_t>(pc0[1]);
 	auto key = static_cast<t_object*>(pc0[2]);
 	auto top = stack[0];
@@ -131,32 +130,22 @@ void t_code::f_method_get(t_pvalue* a_base, void**& a_pc, void* a_instance, void
 		*static_cast<t_slot*>(pc0[4]) = t_object::f_of(type);
 		pc0[4] = type;
 		auto index = type->f_index(key);
+		*reinterpret_cast<size_t*>(pc0 + 5) = index;
+		std::atomic_thread_fence(std::memory_order_release);
 		if (index < type->v_instance_fields) {
-			*reinterpret_cast<size_t*>(pc0 + 5) = index;
-			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_instance;
 			stack[0] = top->f_fields()[index];
 			stack[1] = nullptr;
 		} else if (index < type->v_fields) {
-			*reinterpret_cast<size_t*>(pc0 + 5) = index - type->v_instance_fields;
-			std::atomic_thread_fence(std::memory_order_release);
 			pc0[0] = a_class;
-			auto& field = type->f_fields()[index].second;
-			t_object* p = field;
-			if (f_is_bindable(p)) {
-				stack[0] = p;
-				stack[1] = top;
-			} else {
-				stack[0] = field;
-				stack[1] = nullptr;
-			}
+			type->f_bind_class(top, index, stack);
 		} else {
 			pc0[0] = a_megamorphic;
-			stack[0] = (type->*type->v_get)(top, key);
+			stack[0] = (type->*type->v_get)(top, key, reinterpret_cast<size_t&>(pc0[6]));
 			stack[1] = nullptr;
 		}
 	} else {
-		top.f_get(key, stack);
+		top.f_bind(key, reinterpret_cast<size_t&>(pc0[6]), stack);
 	}
 }
 
@@ -178,7 +167,7 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__OBJECT_GET_MEGAMORPHIC,
 			&&label__OBJECT_GET_INDIRECT,
 			&&label__OBJECT_PUT,
-			&&label__OBJECT_PUT_MONOMORPHIC_SET,
+			&&label__OBJECT_PUT_MONOMORPHIC,
 			&&label__OBJECT_PUT_MEGAMORPHIC,
 			&&label__OBJECT_PUT_INDIRECT,
 			&&label__OBJECT_HAS,
@@ -367,21 +356,16 @@ size_t t_code::f_loop(t_context* a_context)
 			{
 				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto& top = stack[0];
 				auto type = top.f_type();
-				auto index = reinterpret_cast<size_t>(pc0[5]);
 				if (type == pc0[4]) {
-					top = top->f_fields()[index];
+					top = top->f_fields()[reinterpret_cast<size_t>(pc0[5])];
 				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
-					if (index < type->v_instance_fields && type->f_fields()[index].first == key) {
-						top = top->f_fields()[index];
-					} else {
-						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
-						top = (type->*type->v_get)(top, key);
-					}
+					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
+					top = type->f_get(top, key, reinterpret_cast<size_t&>(pc0[6]));
 				}
 			}
 			XEMMAI__CODE__BREAK
@@ -389,75 +373,61 @@ size_t t_code::f_loop(t_context* a_context)
 			{
 				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto& top = stack[0];
 				auto type = top.f_type();
-				auto index = reinterpret_cast<size_t>(pc0[5]) + type->v_instance_fields;
-				if (type != pc0[4]) {
+				if (type == pc0[4]) {
+					auto& field = type->f_fields()[reinterpret_cast<size_t>(pc0[5])].second;
+					if (f_is_bindable(field))
+						top = f_new<t_method>(f_global(), field, top);
+					else
+						top = field;
+				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
-					if (index >= type->v_fields || type->f_fields()[index].first != key) {
-						pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
-						top = (type->*type->v_get)(top, key);
-						XEMMAI__CODE__BREAK
-					}
+					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_GET_MEGAMORPHIC);
+					top = type->f_get(top, key, reinterpret_cast<size_t&>(pc0[6]));
 				}
-				auto& field = type->f_fields()[index].second;
-				if (f_is_bindable(field))
-					top = f_new<t_method>(f_global(), field, top);
-				else
-					top = field;
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_GET_MEGAMORPHIC)
 			{
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto key = static_cast<t_object*>(pc0[2]);
 				auto& top = stack[0];
-				top = top.f_get(key);
+				top = top.f_get(key, reinterpret_cast<size_t&>(pc0[6]));
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_GET_INDIRECT)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
+				auto& index = reinterpret_cast<size_t&>(*++pc);
 				++pc;
 				auto& top = stack[0];
 				auto key = static_cast<t_object*>(stack[1]);
-				top = top.f_get(key);
+				top = top.f_get(key, index);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT)
-			f_object_put(base, pc, XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MONOMORPHIC_SET), XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC));
+			f_object_put(base, pc, XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MONOMORPHIC), XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC));
 			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(OBJECT_PUT_MONOMORPHIC_SET)
+		XEMMAI__CODE__CASE(OBJECT_PUT_MONOMORPHIC)
 			{
 				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto& top = stack[0];
 				auto& value = stack[1];
-				auto p = static_cast<t_object*>(top);
-				if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) {
-					auto type = p->f_type();
-					auto index = reinterpret_cast<size_t>(pc0[5]);
-					if (type == pc0[4]) {
-						p->f_fields()[index] = value;
-					} else {
-						auto key = static_cast<t_object*>(pc0[2]);
-						if (index < type->v_instance_fields && type->f_fields()[index].first == key) {
-							p->f_fields()[index] = value;
-						} else {
-							pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC);
-							p->f_put(key, value);
-						}
-					}
+				auto type = top.f_type();
+				if (type == pc0[4]) {
+					top->f_fields()[reinterpret_cast<size_t>(pc0[5])] = value;
 				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
 					pc0[0] = XEMMAI__CODE__INSTRUCTION(OBJECT_PUT_MEGAMORPHIC);
-					top.f_put(key, value);
+					type->f_put(top, key, reinterpret_cast<size_t&>(pc0[6]), value);
 				}
 				top = value;
 			}
@@ -465,23 +435,24 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(OBJECT_PUT_MEGAMORPHIC)
 			{
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto key = static_cast<t_object*>(pc0[2]);
 				auto& top = stack[0];
 				auto& value = stack[1];
-				top.f_put(key, value);
+				top.f_put(key, reinterpret_cast<size_t&>(pc0[6]), value);
 				top = value;
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_INDIRECT)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
+				auto& index = reinterpret_cast<size_t&>(*++pc);
 				++pc;
 				auto& top = stack[0];
 				auto key = static_cast<t_object*>(stack[1]);
 				auto& value = stack[2];
-				top.f_put(key, value);
+				top.f_put(key, index, value);
 				top = value;
 			}
 			XEMMAI__CODE__BREAK
@@ -489,18 +460,20 @@ size_t t_code::f_loop(t_context* a_context)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				auto key = static_cast<t_object*>(*++pc);
+				auto& index = reinterpret_cast<size_t&>(*++pc);
 				++pc;
 				auto& top = stack[0];
-				top = top.f_has(key);
+				top = top.f_has(key, index);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_HAS_INDIRECT)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
+				auto& index = reinterpret_cast<size_t&>(*++pc);
 				++pc;
 				auto& top = stack[0];
 				auto key = static_cast<t_object*>(stack[1]);
-				top = top.f_has(key);
+				top = top.f_has(key, index);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET)
@@ -510,62 +483,45 @@ size_t t_code::f_loop(t_context* a_context)
 			{
 				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto top = stack[0];
 				auto type = top.f_type();
-				auto index = reinterpret_cast<size_t>(pc0[5]);
 				if (type == pc0[4]) {
-					stack[0] = top->f_fields()[index];
+					stack[0] = top->f_fields()[reinterpret_cast<size_t>(pc0[5])];
+					stack[1] = nullptr;
 				} else {
 					auto key = static_cast<t_object*>(pc0[2]);
-					if (index < type->v_instance_fields && type->f_fields()[index].first == key) {
-						stack[0] = top->f_fields()[index];
-					} else {
-						pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
-						stack[0] = (type->*type->v_get)(top, key);
-					}
+					pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
+					type->f_bind(top, key, reinterpret_cast<size_t&>(pc0[6]), stack);
 				}
-				stack[1] = nullptr;
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET_MONOMORPHIC_CLASS)
 			{
 				std::atomic_thread_fence(std::memory_order_acquire);
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto top = stack[0];
 				auto type = top.f_type();
-				auto index = reinterpret_cast<size_t>(pc0[5]) + type->v_instance_fields;
-				if (type != pc0[4]) {
-					auto key = static_cast<t_object*>(pc0[2]);
-					if (index >= type->v_fields || type->f_fields()[index].first != key) {
-						pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
-						stack[0] = (type->*type->v_get)(top, key);
-						stack[1] = nullptr;
-						XEMMAI__CODE__BREAK
-					}
-				}
-				auto& field = type->f_fields()[index].second;
-				t_object* p = field;
-				if (f_is_bindable(p)) {
-					stack[0] = p;
-					stack[1] = top;
+				if (type == pc0[4]) {
+					type->f_bind_class(top, reinterpret_cast<size_t>(pc0[5]), stack);
 				} else {
-					stack[0] = field;
-					stack[1] = nullptr;
+					auto key = static_cast<t_object*>(pc0[2]);
+					pc0[0] = XEMMAI__CODE__INSTRUCTION(METHOD_GET_MEGAMORPHIC);
+					type->f_bind(top, key, reinterpret_cast<size_t&>(pc0[6]), stack);
 				}
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET_MEGAMORPHIC)
 			{
 				void** pc0 = pc;
-				pc += 6;
+				pc += 7;
 				auto stack = base + reinterpret_cast<size_t>(pc0[1]);
 				auto key = static_cast<t_object*>(pc0[2]);
 				auto top = stack[0];
-				top.f_get(key, stack);
+				top.f_bind(key, reinterpret_cast<size_t&>(pc0[6]), stack);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_BIND)
@@ -584,8 +540,9 @@ size_t t_code::f_loop(t_context* a_context)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				auto key = static_cast<t_object*>(*++pc);
+				auto& index = reinterpret_cast<size_t&>(*++pc);
 				++pc;
-				stack[0] = f_engine()->f_module_global()->f_get(key);
+				stack[0] = f_engine()->f_module_global()->f_get(key, index);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(STACK_GET)

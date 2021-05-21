@@ -264,32 +264,34 @@ public:
 	{
 		return reinterpret_cast<t_svalue*>(reinterpret_cast<char*>(this) + v_type->v_fields_offset);
 	}
-	t_pvalue f_get(t_object* a_key)
+	t_pvalue f_get(t_object* a_key, size_t& a_index)
 	{
-		return v_type->f_get(this, a_key);
+		return v_type->f_get(this, a_key, a_index);
 	}
-	void f_get(t_object* a_key, t_pvalue* a_stack)
+	void f_bind(t_object* a_key, size_t& a_index, t_pvalue* a_stack)
 	{
-		v_type->f_get(this, a_key, a_stack);
+		v_type->f_bind(this, a_key, a_index, a_stack);
 	}
-	void f_put(t_object* a_key, const t_pvalue& a_value)
+	void f_put(t_object* a_key, size_t& a_index, const t_pvalue& a_value)
 	{
-		v_type->f_put(this, a_key, a_value);
+		v_type->f_put(this, a_key, a_index, a_value);
 	}
-	bool f_has(t_object* a_key)
+	bool f_has(t_object* a_key, size_t& a_index)
 	{
-		return v_type->f_has(this, a_key);
+		return v_type->f_has(this, a_key, a_index);
 	}
+	template<typename... T>
+	t_pvalue f_invoke_class(size_t a_index, T&&... a_arguments);
 	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_pvalue* a_stack, size_t a_n)
 	{
 		return v_type->f_call(this, a_stack, a_n);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_object* a_key, t_pvalue* a_stack, size_t a_n)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_call(t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n)
 	{
-		v_type->f_invoke(this, a_key, a_stack, a_n);
+		v_type->f_invoke(this, a_key, a_index, a_stack, a_n);
 	}
 	template<typename... T>
-	t_pvalue f_invoke(t_object* a_key, T&&... a_arguments);
+	t_pvalue f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments);
 };
 
 template<typename T_tag>
@@ -307,10 +309,10 @@ inline double t_value<T_tag>::f_float() const
 }
 
 template<typename T_tag>
-inline bool t_value<T_tag>::f_has(t_object* a_key) const
+inline bool t_value<T_tag>::f_has(t_object* a_key, size_t& a_index) const
 {
 	auto p = static_cast<t_object*>(*this);
-	return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_has(a_key);
+	return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_has(a_key, a_index);
 }
 
 inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(V_ids.size() - 1), v_ids(V_ids.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)

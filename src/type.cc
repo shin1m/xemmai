@@ -8,7 +8,12 @@ void t_type::f_initialize(xemmai::t_library* a_library, t_pvalue* a_stack, size_
 	a_stack[0] = nullptr;
 }
 
-t_object* t_type::f_string(const t_pvalue& a_self)
+void t_type::f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
+{
+	f_throw(L"not supported."sv);
+}
+
+t_object* t_type::f__string(const t_pvalue& a_self)
 {
 	wchar_t cs[13 + sizeof(t_object*) * 2];
 	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
@@ -20,10 +25,31 @@ void t_type::f_define()
 	v_builtin = true;
 	t_define{f_global()}
 		(f_global()->f_symbol_initialize(), f_initialize)
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
+		(f_global()->f_symbol_call(), f_not_supported)
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f__string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(const t_pvalue&), f__hash>())
+		(f_global()->f_symbol_get_at(), f_not_supported)
+		(f_global()->f_symbol_set_at(), f_not_supported)
+		(f_global()->f_symbol_plus(), f_not_supported)
+		(f_global()->f_symbol_minus(), f_not_supported)
+		(f_global()->f_symbol_not(), f_not_supported)
+		(f_global()->f_symbol_complement(), f_not_supported)
+		(f_global()->f_symbol_multiply(), f_not_supported)
+		(f_global()->f_symbol_divide(), f_not_supported)
+		(f_global()->f_symbol_modulus(), f_not_supported)
+		(f_global()->f_symbol_add(), f_not_supported)
+		(f_global()->f_symbol_subtract(), f_not_supported)
+		(f_global()->f_symbol_left_shift(), f_not_supported)
+		(f_global()->f_symbol_right_shift(), f_not_supported)
+		(f_global()->f_symbol_less(), f_not_supported)
+		(f_global()->f_symbol_less_equal(), f_not_supported)
+		(f_global()->f_symbol_greater(), f_not_supported)
+		(f_global()->f_symbol_greater_equal(), f_not_supported)
 		(f_global()->f_symbol_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__equals>())
 		(f_global()->f_symbol_not_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__not_equals>())
+		(f_global()->f_symbol_and(), f_not_supported)
+		(f_global()->f_symbol_xor(), f_not_supported)
+		(f_global()->f_symbol_or(), f_not_supported)
 	.f_derive<t_object>(t_object::f_of(this));
 }
 
@@ -100,13 +126,44 @@ t_pvalue t_type::f_do_construct(t_pvalue* a_stack, size_t a_n)
 void t_type::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 {
 	auto value = f_construct(a_stack, a_n);
-	value.f_call(f_global()->f_symbol_initialize(), a_stack, a_n);
+	f_invoke_class(value, v_instance_fields, a_stack, a_n);
 	a_stack[0] = value;
 }
 
-t_pvalue t_type::f_do_get(t_object* a_this, t_object* a_key)
+t_pvalue t_type::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 {
 	f_throw(f_as<t_symbol&>(a_key).f_string());
+}
+
+t_pvalue t_type::f__get(const t_pvalue& a_this, t_object* a_key, size_t& a_index)
+{
+	auto i = f_index(a_key);
+	if (i < v_instance_fields) {
+		a_index = i;
+		return a_this->f_fields()[i];
+	}
+	if (i < v_fields) {
+		a_index = i - v_instance_fields;
+		auto& field = f_fields()[i].second;
+		return f_is_bindable(field) ? t_pvalue(xemmai::f_new<t_method>(f_global(), field, a_this)) : t_pvalue(field);
+	}
+	return (this->*v_get)(a_this, a_key, a_index);
+}
+
+void t_type::f__bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack)
+{
+	auto i = f_index(a_key);
+	if (i < v_instance_fields) {
+		a_index = i;
+		a_stack[0] = a_this->f_fields()[i];
+		a_stack[1] = nullptr;
+	} else if (i < v_fields) {
+		a_index = i - v_instance_fields;
+		f_bind_class(a_this, i, a_stack);
+	} else {
+		a_stack[0] = (this->*v_get)(a_this, a_key, a_index);
+		a_stack[1] = nullptr;
+	}
 }
 
 void t_type::f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
@@ -114,58 +171,95 @@ void t_type::f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value
 	f_throw(f_as<t_symbol&>(a_key).f_string());
 }
 
+void t_type::f__put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value)
+{
+	auto i = f_index(a_key);
+	if (i < v_instance_fields) {
+		a_index = i;
+		a_this->f_fields()[i] = a_value;
+	} else {
+		v_put(a_this, a_key, a_value);
+	}
+}
+
 bool t_type::f_do_has(t_object* a_this, t_object* a_key)
 {
-	try {
-		f_get(a_this, a_key);
-		return true;
-	} catch (const t_rvalue&) {
-		f_as<t_fiber&>(t_fiber::f_current()).f_caught({}, nullptr);
-		return false;
+	return false;
+}
+
+bool t_type::f_has(t_object* a_this, t_object* a_key, size_t& a_index)
+{
+	auto i = a_index;
+	if (i < v_fields && f_fields()[i].first == a_key) return true;
+	i = f_index(a_key);
+	if (i >= v_fields) return (this->*v_has)(a_this, a_key);
+	a_index = i;
+	return true;
+}
+
+void t_type::f__invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n)
+{
+	auto i = f_index(a_key);
+	if (i < v_instance_fields) {
+		a_index = i;
+		a_this->f_fields()[i].f_call(a_stack, a_n);
+	} else if (i < v_fields) {
+		a_index = i - v_instance_fields;
+		f_invoke_class(a_this, i, a_stack, a_n);
+	} else {
+		(this->*v_get)(a_this, a_key, a_index).f_call(a_stack, a_n);
 	}
 }
 
 size_t t_type::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)
 {
-	a_this->f_get(f_global()->f_symbol_call(), a_stack);
-	return a_stack[0].f_call_without_loop(a_stack, a_n);
+	auto type = a_this->f_type();
+	type->f_bind_class(a_this, type->v_instance_fields + 1, a_stack);
+	return a_n;
+}
+
+void t_type::f_do_string(t_object* a_this, t_pvalue* a_stack)
+{
+	auto type = a_this->f_type();
+	type->f_invoke_class(a_this, type->v_instance_fields + 2, a_stack, 0);
 }
 
 void t_type::f_do_hash(t_object* a_this, t_pvalue* a_stack)
 {
-	a_this->f_get(f_global()->f_symbol_hash(), a_stack);
-	a_stack[0].f_call(a_stack, 0);
+	auto type = a_this->f_type();
+	type->f_invoke_class(a_this, type->v_instance_fields + 3, a_stack, 0);
 }
 
-#define XEMMAI__TYPE__METHOD(a_method, a_n)\
+#define XEMMAI__TYPE__METHOD(a_method, a_index, a_n)\
 size_t t_type::f_do_##a_method(t_object* a_this, t_pvalue* a_stack)\
 {\
-	a_this->f_get(f_global()->f_symbol_##a_method(), a_stack);\
+	auto type = a_this->f_type();\
+	type->f_bind_class(a_this, type->v_instance_fields + a_index, a_stack);\
 	return a_n;\
 }
 
-XEMMAI__TYPE__METHOD(get_at, 1)
-XEMMAI__TYPE__METHOD(set_at, 2)
-XEMMAI__TYPE__METHOD(plus, 0)
-XEMMAI__TYPE__METHOD(minus, 0)
-XEMMAI__TYPE__METHOD(not, 0)
-XEMMAI__TYPE__METHOD(complement, 0)
-XEMMAI__TYPE__METHOD(multiply, 1)
-XEMMAI__TYPE__METHOD(divide, 1)
-XEMMAI__TYPE__METHOD(modulus, 1)
-XEMMAI__TYPE__METHOD(add, 1)
-XEMMAI__TYPE__METHOD(subtract, 1)
-XEMMAI__TYPE__METHOD(left_shift, 1)
-XEMMAI__TYPE__METHOD(right_shift, 1)
-XEMMAI__TYPE__METHOD(less, 1)
-XEMMAI__TYPE__METHOD(less_equal, 1)
-XEMMAI__TYPE__METHOD(greater, 1)
-XEMMAI__TYPE__METHOD(greater_equal, 1)
-XEMMAI__TYPE__METHOD(equals, 1)
-XEMMAI__TYPE__METHOD(not_equals, 1)
-XEMMAI__TYPE__METHOD(and, 1)
-XEMMAI__TYPE__METHOD(xor, 1)
-XEMMAI__TYPE__METHOD(or, 1)
+XEMMAI__TYPE__METHOD(get_at, 4, 1)
+XEMMAI__TYPE__METHOD(set_at, 5, 2)
+XEMMAI__TYPE__METHOD(plus, 6, 0)
+XEMMAI__TYPE__METHOD(minus, 7, 0)
+XEMMAI__TYPE__METHOD(not, 8, 0)
+XEMMAI__TYPE__METHOD(complement, 9, 0)
+XEMMAI__TYPE__METHOD(multiply, 10, 1)
+XEMMAI__TYPE__METHOD(divide, 11, 1)
+XEMMAI__TYPE__METHOD(modulus, 12, 1)
+XEMMAI__TYPE__METHOD(add, 13, 1)
+XEMMAI__TYPE__METHOD(subtract, 14, 1)
+XEMMAI__TYPE__METHOD(left_shift, 15, 1)
+XEMMAI__TYPE__METHOD(right_shift, 16, 1)
+XEMMAI__TYPE__METHOD(less, 17, 1)
+XEMMAI__TYPE__METHOD(less_equal, 18, 1)
+XEMMAI__TYPE__METHOD(greater, 19, 1)
+XEMMAI__TYPE__METHOD(greater_equal, 20, 1)
+XEMMAI__TYPE__METHOD(equals, 21, 1)
+XEMMAI__TYPE__METHOD(not_equals, 22, 1)
+XEMMAI__TYPE__METHOD(and, 23, 1)
+XEMMAI__TYPE__METHOD(xor, 24, 1)
+XEMMAI__TYPE__METHOD(or, 25, 1)
 
 void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name)
 {

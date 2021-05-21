@@ -112,7 +112,7 @@ public:
 template<>
 struct t_type_of<t_list> : t_derivable<t_holds<t_list, t_type_of<t_sharable>>>
 {
-	static t_object* f_string(t_list& a_self);
+	static t_object* f__string(t_list& a_self);
 	static void f_clear(t_list& a_self);
 	static size_t f_size(t_list& a_self);
 	static t_pvalue f__get_at(t_list& a_self, intptr_t a_index);

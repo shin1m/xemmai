@@ -76,7 +76,7 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 	{
 		return std::wcstod(a_value, NULL);
 	}
-	static t_object* f_string(double a_self);
+	static t_object* f__string(double a_self);
 	static intptr_t f__hash(double a_self)
 	{
 		return std::hash<double>{}(a_self);

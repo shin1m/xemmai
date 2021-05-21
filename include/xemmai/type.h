@@ -162,7 +162,8 @@ struct t_type_of<t_object>
 		return std::forward<T>(a_value);
 	}
 	static void f_initialize(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
-	static t_object* f_string(const t_pvalue& a_self);
+	static void f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
+	static t_object* f__string(const t_pvalue& a_self);
 	static intptr_t f__hash(const t_pvalue& a_self)
 	{
 		return a_self.f_tag();
@@ -239,22 +240,29 @@ struct t_type_of<t_object>
 	}
 	XEMMAI__PORTABLE__EXPORT void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 	void (t_type::*v_instantiate)(t_pvalue*, size_t) = &t_type::f_do_instantiate;
-	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_get(t_object* a_this, t_object* a_key);
-	t_pvalue (t_type::*v_get)(t_object*, t_object*) = &t_type::f_do_get;
-	t_pvalue f_get(const t_pvalue& a_this, t_object* a_key);
-	void f_get(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_stack);
+	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_get(t_object* a_this, t_object* a_key, size_t& a_index);
+	t_pvalue (t_type::*v_get)(t_object*, t_object*, size_t&) = &t_type::f_do_get;
+	t_pvalue f__get(const t_pvalue& a_this, t_object* a_key, size_t& a_index);
+	t_pvalue f_get(const t_pvalue& a_this, t_object* a_key, size_t& a_index);
+	template<typename T>
+	void f_bind_class(T&& a_this, size_t a_index, t_pvalue* a_stack);
+	void f__bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack);
+	void f_bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack);
 	XEMMAI__PORTABLE__EXPORT static void f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value);
 	void (*v_put)(t_object*, t_object*, const t_pvalue&) = f_do_put;
-	void f_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value);
+	void f__put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value);
+	void f_put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value);
 	XEMMAI__PORTABLE__EXPORT bool f_do_has(t_object* a_this, t_object* a_key);
 	bool (t_type::*v_has)(t_object*, t_object*) = &t_type::f_do_has;
-	bool f_has(t_object* a_this, t_object* a_key)
-	{
-		return (this->*v_has)(a_this, a_key);
-	}
+	bool f_has(t_object* a_this, t_object* a_key, size_t& a_index);
 	XEMMAI__PORTABLE__EXPORT static size_t f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n);
 	size_t (*f_call)(t_object*, t_pvalue*, size_t) = f_do_call;
-	void f_invoke(const t_pvalue& a_this, t_object* a_key, t_pvalue* a_stack, size_t a_n);
+	template<typename T>
+	void f_invoke_class(T&& a_this, size_t a_index, t_pvalue* a_stack, size_t a_n);
+	void f__invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
+	void f_invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT static void f_do_string(t_object* a_this, t_pvalue* a_stack);
+	void (*f_string)(t_object*, t_pvalue*) = f_do_string;
 	XEMMAI__PORTABLE__EXPORT static void f_do_hash(t_object* a_this, t_pvalue* a_stack);
 	void (*f_hash)(t_object*, t_pvalue*) = f_do_hash;
 	XEMMAI__PORTABLE__EXPORT static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
@@ -308,6 +316,7 @@ struct t_type_of<t_object>
 		if (&T::f_do_construct != &U::f_do_construct) v_construct = static_cast<t_pvalue(t_type::*)(t_pvalue*, size_t)>(&T::f_do_construct);
 		if (&T::f_do_instantiate != &U::f_do_instantiate) v_instantiate = static_cast<void(t_type::*)(t_pvalue*, size_t)>(&T::f_do_instantiate);
 		if (T::f_do_call != U::f_do_call) f_call = T::f_do_call;
+		if (T::f_do_string != U::f_do_string) f_string = T::f_do_string;
 		if (T::f_do_hash != U::f_do_hash) f_hash = T::f_do_hash;
 		if (T::f_do_get_at != U::f_do_get_at) f_get_at = T::f_do_get_at;
 		if (T::f_do_set_at != U::f_do_set_at) f_set_at = T::f_do_set_at;
@@ -448,6 +457,7 @@ struct t_derived : T
 	t_derived(T_an&&... a_an) : T(std::forward<T_an>(a_an)...)
 	{
 		this->f_call = t_type::f_do_call;
+		this->f_string = t_type::f_do_string;
 		this->f_hash = t_type::f_do_hash;
 		this->f_get_at = t_type::f_do_get_at;
 		this->f_set_at = t_type::f_do_set_at;

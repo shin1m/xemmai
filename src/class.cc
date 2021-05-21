@@ -9,12 +9,16 @@ void t_class::f_do_scan(t_object* a_this, t_scan a_scan)
 	if (!p.v_builtin || !f_engine()->f_module_global()) p.f_scan_type(a_scan);
 }
 
-t_pvalue t_class::f_do_get(t_object* a_this, t_object* a_key)
+t_pvalue t_class::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 {
 	auto& type = a_this->f_as<t_type>();
-	auto index = type.f_index(a_key);
-	if (index < type.v_instance_fields || index >= type.v_fields) f_throw(f_as<t_symbol&>(a_key).f_string());
-	return type.f_fields()[index].second;
+	auto i = a_index;
+	if (i < type.v_instance_fields || i >= type.v_fields || type.f_fields()[i].first != a_key) {
+		i = type.f_index(a_key);
+		if (i < type.v_instance_fields || i >= type.v_fields) f_throw(f_as<t_symbol&>(a_key).f_string());
+		a_index = i;
+	}
+	return type.f_fields()[i].second;
 }
 
 size_t t_class::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)
@@ -38,7 +42,7 @@ size_t t_class::f_do_add(t_object* a_this, t_pvalue* a_stack)
 	return -1;
 }
 
-t_pvalue t_type_of<t_builder>::f_do_get(t_object* a_this, t_object* a_key)
+t_pvalue t_type_of<t_builder>::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 {
 	auto& builder = a_this->f_as<t_builder>();
 	builder.f_owned_or_throw([&]

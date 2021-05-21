@@ -495,7 +495,7 @@ t_operand t_object_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0;
+	a_emit << e_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0 << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -506,7 +506,7 @@ void t_object_get::f_method(t_emit& a_emit)
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit.f_pop();
-	a_emit << e_instruction__METHOD_GET << a_emit.v_stack << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0;
+	a_emit << e_instruction__METHOD_GET << a_emit.v_stack << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0 << 0;
 	a_emit.f_push().f_push();
 	a_emit.f_at(this);
 }
@@ -522,7 +522,7 @@ t_operand t_object_get_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_target->f_emit(a_emit, false, false);
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_GET_INDIRECT << a_emit.v_stack - 2;
+	a_emit << e_instruction__OBJECT_GET_INDIRECT << a_emit.v_stack - 2 << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -540,7 +540,7 @@ t_operand t_object_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	v_target->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_PUT << a_emit.v_stack - 2 << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0;
+	a_emit << e_instruction__OBJECT_PUT << a_emit.v_stack - 2 << v_key << 0 << a_emit.v_module->f_as<t_script>().f_slot({}) << 0 << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -560,7 +560,7 @@ t_operand t_object_put_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_key->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_PUT_INDIRECT << a_emit.v_stack - 3;
+	a_emit << e_instruction__OBJECT_PUT_INDIRECT << a_emit.v_stack - 3 << 0;
 	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -576,7 +576,7 @@ t_operand t_object_has::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_HAS << a_emit.v_stack - 1 << v_key;
+	a_emit << e_instruction__OBJECT_HAS << a_emit.v_stack - 1 << v_key << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -593,7 +593,7 @@ t_operand t_object_has_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_target->f_emit(a_emit, false, false);
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_HAS_INDIRECT << a_emit.v_stack - 2;
+	a_emit << e_instruction__OBJECT_HAS_INDIRECT << a_emit.v_stack - 2 << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -619,7 +619,7 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	f_resolve();
 	if (!v_variable) {
 		if (a_tail) a_emit.f_emit_safe_point(this);
-		a_emit << e_instruction__GLOBAL_GET << a_emit.v_stack << v_symbol;
+		a_emit << e_instruction__GLOBAL_GET << a_emit.v_stack << v_symbol << 0;
 		a_emit.f_push();
 		a_emit.f_at(this);
 		if (a_clear) a_emit.f_pop();

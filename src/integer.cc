@@ -3,7 +3,7 @@
 namespace xemmai
 {
 
-t_object* t_type_of<intptr_t>::f_string(intptr_t a_self)
+t_object* t_type_of<intptr_t>::f__string(intptr_t a_self)
 {
 	wchar_t cs[32];
 	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%" PRIdPTR), a_self);
@@ -201,7 +201,7 @@ bool t_type_of<intptr_t>::f__not_equals(intptr_t a_self, const t_pvalue& a_value
 void t_type_of<intptr_t>::f_define()
 {
 	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(intptr_t), f_string>())
+		(f_global()->f_symbol_string(), t_member<t_object*(*)(intptr_t), f__string>())
 		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(intptr_t), f__hash>())
 		(f_global()->f_symbol_plus(), t_member<intptr_t(*)(intptr_t), f__plus>())
 		(f_global()->f_symbol_minus(), t_member<intptr_t(*)(intptr_t), f__minus>())

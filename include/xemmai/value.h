@@ -328,31 +328,32 @@ public:
 	{
 		return f_type()->f_derives(a_class);
 	}
-	t_value<t_pointer> f_get(t_object* a_key) const;
-	void f_get(t_object* a_key, t_value<t_pointer>* a_stack) const;
+	t_value<t_pointer> f_get(t_object* a_key, size_t& a_index) const;
+	void f_bind(t_object* a_key, size_t& a_index, t_value<t_pointer>* a_stack) const;
 	t_object* f_object_or_throw() const
 	{
 		auto p = static_cast<t_object*>(*this);
 		if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) f_throw(L"not supported."sv);
 		return p;
 	}
-	void f_put(t_object* a_key, const t_value<t_pointer>& a_value) const
+	void f_put(t_object* a_key, size_t& a_index, const t_value<t_pointer>& a_value) const
 	{
 		auto p = f_object_or_throw();
-		p->f_type()->f_put(p, a_key, a_value);
+		p->f_type()->f_put(p, a_key, a_index, a_value);
 	}
-	bool f_has(t_object* a_key) const;
+	bool f_has(t_object* a_key, size_t& a_index) const;
 	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_value<t_pointer>* a_stack, size_t a_n) const
 	{
 		return f_object_or_throw()->f_call_without_loop(a_stack, a_n);
 	}
 	void f_call(t_value<t_pointer>* a_stack, size_t a_n) const;
-	void f_call(t_object* a_key, t_value<t_pointer>* a_stack, size_t a_n) const;
-	t_value<t_pointer> f_hash() const;
+	void f_call(t_object* a_key, size_t& a_index, t_value<t_pointer>* a_stack, size_t a_n) const;
 	template<typename... T>
 	t_value<t_pointer> operator()(T&&... a_arguments) const;
 	template<typename... T>
-	t_value<t_pointer> f_invoke(t_object* a_key, T&&... a_arguments) const;
+	t_value<t_pointer> f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments) const;
+	t_value<t_pointer> f_string() const;
+	t_value<t_pointer> f_hash() const;
 	t_value<t_pointer> f_get_at(const t_value<t_pointer>& a_index) const;
 	t_value<t_pointer> f_set_at(const t_value<t_pointer>& a_index, const t_value<t_pointer>& a_value) const;
 	t_value<t_pointer> f_plus() const;

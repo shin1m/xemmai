@@ -13,7 +13,7 @@ namespace xemmai::portable
 #ifdef __unix__
 t_path::t_path(std::wstring_view a_path)
 {
-	if (a_path[0] == v_directory_separator) {
+	if (!a_path.empty() && a_path[0] == v_directory_separator) {
 		v_path = L'/';
 	} else {
 		const char* mbs = getcwd(NULL, 0);

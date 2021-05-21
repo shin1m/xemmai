@@ -7,7 +7,7 @@ t_object* t_tuple::f_string() const
 {
 	std::vector<wchar_t> cs{L'\'', L'('};
 	if (v_size > 0) for (size_t i = 0;;) {
-		auto x = (*this)[i].f_invoke(f_global()->f_symbol_string());
+		auto x = (*this)[i].f_string();
 		f_check<t_string>(x, L"value");
 		auto& s = f_as<const t_string&>(x);
 		auto p = static_cast<const wchar_t*>(s);

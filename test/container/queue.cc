@@ -8,7 +8,7 @@ t_object* t_queue::f_string() const
 	if (v_head) {
 		t_object* pair = f_as<t_pair&>(v_head).v_next;
 		while (true) {
-			auto p = f_as<t_pair&>(pair).v_value.f_invoke(f_global()->f_symbol_string());
+			auto p = f_as<t_pair&>(pair).v_value.f_string();
 			if (f_is<t_string>(p)) {
 				auto& s = f_as<const t_string&>(p);
 				cs.insert(cs.end(), static_cast<const wchar_t*>(s), s + s.f_size());
