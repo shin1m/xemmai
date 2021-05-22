@@ -118,8 +118,6 @@ class t_heap
 	t_of<2, 1024 * 4> v_of2;
 	t_of<3, 1024> v_of3;
 	t_of<4, 1024 / 4> v_of4;
-	t_of<5, 1024 / 16> v_of5;
-	t_of<6, 1024 / 64> v_of6;
 	size_t v_allocated = 0;
 	size_t v_freed = 0;
 
@@ -146,7 +144,7 @@ public:
 	}
 	size_t f_live() const
 	{
-		return v_of0.f_live() + v_of1.f_live() + v_of2.f_live() + v_of3.f_live() + v_of4.f_live() + v_of5.f_live() + v_of6.f_live() + v_allocated - v_freed;
+		return v_of0.f_live() + v_of1.f_live() + v_of2.f_live() + v_of3.f_live() + v_of4.f_live() + v_allocated - v_freed;
 	}
 	template<typename T_each>
 	void f_statistics(T_each a_each) const
@@ -156,8 +154,6 @@ public:
 		a_each(size_t(2), v_of2.v_grown.load(std::memory_order_relaxed), v_of2.v_allocated.load(std::memory_order_relaxed), v_of2.v_returned);
 		a_each(size_t(3), v_of3.v_grown.load(std::memory_order_relaxed), v_of3.v_allocated.load(std::memory_order_relaxed), v_of3.v_returned);
 		a_each(size_t(4), v_of4.v_grown.load(std::memory_order_relaxed), v_of4.v_allocated.load(std::memory_order_relaxed), v_of4.v_returned);
-		a_each(size_t(5), v_of5.v_grown.load(std::memory_order_relaxed), v_of5.v_allocated.load(std::memory_order_relaxed), v_of5.v_returned);
-		a_each(size_t(6), v_of6.v_grown.load(std::memory_order_relaxed), v_of6.v_allocated.load(std::memory_order_relaxed), v_of6.v_returned);
 		a_each(size_t(57), size_t(0), v_allocated, v_freed);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE constexpr T* f_allocate(size_t a_size)
@@ -172,8 +168,6 @@ public:
 		v_of2.f_return();
 		v_of3.f_return();
 		v_of4.f_return();
-		v_of5.f_return();
-		v_of6.f_return();
 	}
 	void f_flush()
 	{
@@ -182,8 +176,6 @@ public:
 		if (v_of2.v_freed > 0) v_of2.f_flush();
 		if (v_of3.v_freed > 0) v_of3.f_flush();
 		if (v_of4.v_freed > 0) v_of4.f_flush();
-		if (v_of5.v_freed > 0) v_of5.f_flush();
-		if (v_of6.v_freed > 0) v_of6.f_flush();
 	}
 	void f_free(T* a_p)
 	{
@@ -202,12 +194,6 @@ public:
 			break;
 		case 4:
 			v_of4.f_free(a_p);
-			break;
-		case 5:
-			v_of5.f_free(a_p);
-			break;
-		case 6:
-			v_of6.f_free(a_p);
 			break;
 		default:
 			v_mutex.lock();
@@ -268,8 +254,6 @@ constexpr T* t_heap<T>::f_allocate_medium(size_t a_size)
 	if (a_size <= 1 << 9) return f_allocate(v_of2);
 	if (a_size <= 1 << 10) return f_allocate(v_of3);
 	if (a_size <= 1 << 11) return f_allocate(v_of4);
-	if (a_size <= 1 << 12) return f_allocate(v_of5);
-	if (a_size <= 1 << 13) return f_allocate(v_of6);
 	return f_allocate_large(a_size);
 }
 
