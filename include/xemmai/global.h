@@ -678,16 +678,17 @@ inline void t_type::f_bind_class(T&& a_this, size_t a_index, t_pvalue* a_stack)
 
 inline void t_type::f_bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack)
 {
-	auto i = a_index;
-	if (i < v_instance_fields && f_fields()[i].first == a_key) {
-		a_stack[0] = a_this->f_fields()[i];
-		a_stack[1] = nullptr;
+	auto i = a_index + v_instance_fields;
+	if (i < v_fields && f_fields()[i].first == a_key) {
+		f_bind_class(a_this, i, a_stack);
 	} else {
-		i += v_instance_fields;
-		if (i < v_fields && f_fields()[i].first == a_key)
-			f_bind_class(a_this, i, a_stack);
-		else
+		i = a_index;
+		if (i < v_instance_fields && f_fields()[i].first == a_key) {
+			a_stack[0] = a_this->f_fields()[i];
+			a_stack[1] = nullptr;
+		} else {
 			f__bind(a_this, a_key, a_index, a_stack);
+		}
 	}
 }
 
@@ -711,13 +712,13 @@ inline void t_type::f_invoke_class(T&& a_this, size_t a_index, t_pvalue* a_stack
 
 inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n)
 {
-	auto i = a_index;
-	if (i < v_instance_fields && f_fields()[i].first == a_key) {
-		a_this->f_fields()[i].f_call(a_stack, a_n);
+	auto i = a_index + v_instance_fields;
+	if (i < v_fields && f_fields()[i].first == a_key) {
+		f_invoke_class(a_this, i, a_stack, a_n);
 	} else {
-		i += v_instance_fields;
-		if (i < v_fields && f_fields()[i].first == a_key)
-			f_invoke_class(a_this, i, a_stack, a_n);
+		i = a_index;
+		if (i < v_instance_fields && f_fields()[i].first == a_key)
+			a_this->f_fields()[i].f_call(a_stack, a_n);
 		else
 			f__invoke(a_this, a_key, a_index, a_stack, a_n);
 	}
