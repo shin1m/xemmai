@@ -19,20 +19,12 @@ enum t_instruction
 	e_instruction__YRT,
 	e_instruction__THROW,
 	e_instruction__OBJECT_GET,
-	e_instruction__OBJECT_GET_MONOMORPHIC_INSTANCE,
-	e_instruction__OBJECT_GET_MONOMORPHIC_CLASS,
-	e_instruction__OBJECT_GET_MEGAMORPHIC,
 	e_instruction__OBJECT_GET_INDIRECT,
 	e_instruction__OBJECT_PUT,
-	e_instruction__OBJECT_PUT_MONOMORPHIC,
-	e_instruction__OBJECT_PUT_MEGAMORPHIC,
 	e_instruction__OBJECT_PUT_INDIRECT,
 	e_instruction__OBJECT_HAS,
 	e_instruction__OBJECT_HAS_INDIRECT,
 	e_instruction__METHOD_GET,
-	e_instruction__METHOD_GET_MONOMORPHIC_INSTANCE,
-	e_instruction__METHOD_GET_MONOMORPHIC_CLASS,
-	e_instruction__METHOD_GET_MEGAMORPHIC,
 	e_instruction__METHOD_BIND,
 	e_instruction__GLOBAL_GET,
 	e_instruction__STACK_GET,
@@ -188,10 +180,6 @@ struct t_code
 		e_try__RETURN,
 		e_try__THROW
 	};
-
-	static void f_object_get(t_pvalue* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
-	static void f_object_put(t_pvalue* a_base, void**& a_pc, void* a_set, void* a_megamorphic);
-	static void f_method_get(t_pvalue* a_base, void**& a_pc, void* a_class, void* a_instance, void* a_megamorphic);
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	static size_t f_loop(t_context* a_context, const void*** a_labels = nullptr);
