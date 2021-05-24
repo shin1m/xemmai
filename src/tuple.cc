@@ -122,9 +122,9 @@ void t_type_of<t_tuple>::f_define()
 	.f_derive<t_tuple, t_object>();
 }
 
-t_pvalue t_type_of<t_tuple>::f_do_construct(t_pvalue* a_stack, size_t a_n)
+void t_type_of<t_tuple>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 {
-	return t_tuple::f_instantiate(a_n, [&](auto& tuple)
+	a_stack[0] = t_tuple::f_instantiate(a_n, [&](auto& tuple)
 	{
 		std::uninitialized_copy_n(a_stack + 2, a_n, tuple.f_entries());
 	});

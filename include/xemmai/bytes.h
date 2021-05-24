@@ -81,7 +81,7 @@ struct t_type_of<t_bytes> : t_holds<t_bytes>
 	static void f_define();
 
 	using t_base::t_base;
-	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
 	static size_t f_do_set_at(t_object* a_this, t_pvalue* a_stack);
 };

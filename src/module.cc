@@ -1,5 +1,4 @@
 #include <xemmai/portable/path.h>
-#include <xemmai/list.h>
 #include <xemmai/convert.h>
 #include <xemmai/io/file.h>
 

@@ -6,6 +6,7 @@
 #include "method.h"
 #include "null.h"
 #include "string.h"
+#include "list.h"
 #include "map.h"
 #include "bytes.h"
 #include "parser.h"

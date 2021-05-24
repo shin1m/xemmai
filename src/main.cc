@@ -1,6 +1,5 @@
 #include <xemmai/engine.h>
 #include <xemmai/portable/path.h>
-#include <xemmai/list.h>
 #include <xemmai/global.h>
 #include <xemmai/io/file.h>
 #include <clocale>

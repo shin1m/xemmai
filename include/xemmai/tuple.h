@@ -72,7 +72,7 @@ struct t_type_of<t_tuple> : t_holds<t_tuple>
 	{
 		a_this->f_as<t_tuple>().f_scan(a_scan);
 	}
-	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 	static void f_do_hash(t_object* a_this, t_pvalue* a_stack);
 	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
 	static size_t f_do_less(t_object* a_this, t_pvalue* a_stack);
