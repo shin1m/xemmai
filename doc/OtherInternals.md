@@ -33,46 +33,6 @@ Using fat values reduces redundant increment/decrement operations.
 
 This is desirable because increment/decrement operations are relatively expensive.
 
-## Transferable Values (Obsoleted)
-
-`t_transfer` is a derived class of `t_value`, and it also is a tricky stuff.
-
-This implements move semantics for transferring object references without C++11 features.
-
-Whenever an argument of `const t_transfer&` is explicitly/implicitly passed, the content of the argument is transferred and the argument is clearred as null.
-
-Using move semantics reduces redundant increment/decrement operations.
-
-This is desirable because increment/decrement operations are relatively expensive.
-
-## Moving Values
-
-As xemmai is migrating to C++11, the tricky `t_transfer` has been obsoleted.
-
-Now, xemmai utilizes C++11 move semantics for `t_value` as much as possible.
-
-Using move semantics reduces redundant increment/decrement operations.
-
-This is desirable because increment/decrement operations are relatively expensive.
-
-## Minimal Locks for Objects
-
-Objects in the shared thread model are protected from simultaneous accesses from threads using locks they contain.
-
-xemmai only provides a minimal lock mechanism which is a kind of spin locks without system calls.
-
-Note that this is not a general purpose synchronization mechanism but just only for avoiding an engine crash.
-
-Use standard synchronization mechanisms such as mutexes and condition variables to implement application logics.
-
-## Hidden Structures
-
-Almost every object in xemmai except for several immutable objects can have arbitrary fields as key/value pairs.
-
-The so-called hidden structures or hidden classes is used to represent this dictionary structure.
-
-Some of field accesses are optimized a little by utilizing this.
-
 ## Computed Goto
 
 If available, the computed goto is used to optimize bytecode execution.
@@ -97,30 +57,10 @@ Operand based instructions tend to copy less object references than stack based 
 
 This is desirable because increment/decrement operations are relatively expensive.
 
-## Thread Local Field Cache
+## Inline Field Index Cache
 
-Because threads in xemmai are preemptive, each thread has its own field cache in order to avoid expensive synchronizations.
+Since all the fields are settled on class definition and classes are immutable, structures of instances never change throughout their life time.
 
-Instead, acquire/release operations for the field cache are required in order to make changes to object visible to other threads.
+With that in mind, the index of the last accessed field is cached at each site of field accesses.
 
-This is modeled from native memory barriers for SMP.
-
-As long as standard synchronization mechanisms such as mutexes and condition variables are used, these operations are called implicitly as appropriate.
-
-## Inline Field Cache
-
-In conjunction with the hidden structure, getting/putting object field are optimized using the inline field cache.
-
-Getting object field has 3 states: initial, monomorphic, and megamorphic.
-
-Putting object field has 4 states: initial, monomorphic add, monomorphic set, and megamorphic.
-
-The first time a code is executed, it is in the initial state.
-
-The second time the code is executed, the code is rewritten to move into the monomorphic state if the object is owned by a thread, otherwise the megamorphic state.
-
-When the code is in the monomorphic state, if the object is owned by a thread and has the same hidden structure as previous, the field access is optimized as accessing an array element by the index.
-
-Otherwise, the code is rewritten to move into the megamorphic.
-
-When the code is in the megamorphic state, the field access is done in a normal way.
+The cached index is used to shortcut searching the field at the same site.

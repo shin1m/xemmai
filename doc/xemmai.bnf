@@ -41,7 +41,7 @@ qualifier: symbol | '(' expression ')' ;
 
 subscription: '[' expression ']' ;
 
-action: '.' (':' | '^' | ('?' | '~')? qualifier)
+action: '.' (':' | '^' | '?'? qualifier)
 	| subscription
 	| '(' expressions? ')'
 	;
@@ -70,9 +70,7 @@ term10: term9 ('&&' term9)* ;
 
 term11: term10 ('||' term10)* ;
 
-term12: term11 ('::' term11)* ;
-
-term: term12 ('?' term ':' term)? ;
+term: term11 ('?' term ':' term)? ;
 
 assignment: (variable | self symbol | term0 ('.' qualifier | subscription)) '=' expression ;
 

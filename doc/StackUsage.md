@@ -61,12 +61,6 @@
     OBJECT_HAS_INDIRECT
         |xx
         |B
-    OBJECT_REMOVE
-        ?x
-        |x
-    OBJECT_REMOVE_INDIRECT
-        ?xx
-        |x
     METHOD_GET
         |x
         ?
@@ -201,11 +195,6 @@
         --
         ?( xx)
         |x
-    SEND
-        ! Px
-        --
-        ?( xx)
-        |x
     CALL_TAIL
         |xxX
         |
@@ -266,11 +255,6 @@
     ##a_name##_TAIL_TT
         ? xx
         |
-        --
-        ?( xx)
-        |
-    SEND_TAIL
-        ! Px
         --
         ?( xx)
         |

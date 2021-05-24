@@ -157,17 +157,11 @@ Any object can be thrown.
 
 ### Simple Case
 
-Using an instance as a record:
-
-    Foo = Class()
-    foo = Foo()
-    foo.x = 3.0
-    foo.y = 4.0
-    foo.x * foo.x + foo.y * foo.y # => 25.0
-
-More object oriented way:
-
-    Foo = Class() :: @
+    Foo = Object + @
+        # instance fields
+        $x
+        $y
+        # class fields
         $__initialize = @(x, y)
             $x = x
             $y = y
@@ -175,22 +169,28 @@ More object oriented way:
     foo = Foo(3.0, 4.0)
     foo.l2() # => 25.0
 
-Now, `Foo` has a couple of methods.
-`__initialize` is a special method which is called when a new instance is created.
+`Foo` is a new class derived from `Object` with a couple of new instance fields and a couple of new class fields.
+Functions defined as class fields are methods.
 
 `$` is a special variable.
-In a class definition, `$` denotes "this class".
+In a class definition, `$` denotes "the class builder".
 In a method definition, `$` denotes "this instance".
+
+A class definition is also a function.
+Getting a field of `$` defines a new instance field.
+Setting a value to a field of `$` defines a new class field or overrides an existing class field.
+
+`__initialize` is a special method which is called when a new instance is created.
 
 "." between `$` and a symbol can be omitted.
 So `$x` means `$.x`.
 
-A class definition is also a function.
-
 More verbose definition of `Foo`:
 
-    Foo = Class() :: @()
-        # $ is this class in this scope.
+    Foo = Object + @()
+        # $ is the class builder in this scope.
+        $.x
+        $.y
         $.__initialize = @(x, y)
             # $ is this instance in this scope.
             $.x = x
@@ -203,18 +203,17 @@ More verbose definition of `Foo`:
 
 xemmai supports a single inheritance.
 
-    Bar = Class(Foo) :: @
-        # $ is Bar.
-        # $^ is Foo.
+    Bar = Foo + @
+        $z
         $__initialize = @(x, y, z)
-            # :$ is Bar.
-            # :$^ is Foo.
-            :$^__initialize[$](x, y)
+            Foo.__initialize[$](x, y)
             $z = z
-        $l2 = @ :$^l2[$]() + $z * $z
+        $l2 = @ Foo.l2[$]() + $z * $z
 
-`^` denotes a super class.
-So `:$^` in an instance method refers to the super class of its defining class.
+Each instance field must have a unique name within the scope of instance fields and class fields including its ancestors.
+
+Each class field must have a name that does not conflict with instance fields including its ancestors.
+Defining a new class field with the same name as any class field of its ancestors overrides the existing class field.
 
 `[]` operator of method binds this instance to a method.
 
@@ -237,7 +236,7 @@ Tuple literals can be written using block form:
         2
     )
 
-### Arrays
+### Lists
 
     a = [0, 1]
     a.push(2)
@@ -245,7 +244,7 @@ Tuple literals can be written using block form:
     a[0] = 3
     a[0] + a[1] + a[2] #=> 6
 
-Array literals can be written using block form:
+List literals can be written using block form:
 
     # Same as [0, 1, 2].
     [
@@ -254,19 +253,19 @@ Array literals can be written using block form:
         2
     ]
 
-### Dictionaries
+### Maps
 
-    d = {"one": 1, 2: "two"}
-    d["three"] = 3.0
-    d[4.0] = "four"
-    d["one"] # => 1
-    d[2] # => "two"
-    d["three"] # => 3.0
-    d[4.0] # => "four"
-    d.remove("one")
-    d.remove(2)
+    a = {"one": 1, 2: "two"}
+    a["three"] = 3.0
+    a[4.0] = "four"
+    a["one"] # => 1
+    a[2] # => "two"
+    a["three"] # => 3.0
+    a[4.0] # => "four"
+    a.remove("one")
+    a.remove(2)
 
-Dictionary literals can be written using block form:
+Map literals can be written using block form:
 
     # Same as {"one": 1, 2: "two"}.
     {
@@ -334,7 +333,7 @@ In the subsequent examples, closing parentheses, brackets, and braces are omitte
             'b: 0x61
         4.0: "four"
 
-    dictionaries = [
+    maps = [
         {
             'id: 1
             'name: "one"
@@ -347,8 +346,8 @@ In the subsequent examples, closing parentheses, brackets, and braces are omitte
 
 ## Modules
 
-`$` in a module scope denotes this module.
-So objects can be exported by assigning to a field of a module.
+`$` in a module scope denotes the module builder.
+Setting a value to a field of `$` exports it.
 
     # foo.xm
     $add = @(x, y) x + y

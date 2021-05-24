@@ -13,7 +13,6 @@ This page explains primary expressions.
         | throw
         | getter
         | tester
-        | remover
         | subscription
         | call
         ;
@@ -61,10 +60,6 @@ See [Literals](Literals.md).
 ## Tester Expressions
 
     tester: primary '.' '?' (symbol | '(' expression ')') ;
-
-## Remover Expressions
-
-    remover: primary '.' '~' (symbol | '(' expression ')') ;
 
 ## Subscription Expressions
 

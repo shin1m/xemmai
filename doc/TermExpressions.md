@@ -50,10 +50,6 @@ See [PrimaryExpressions](PrimaryExpressions.md).
 
     or_else: and_also ('||' and_also)* ;
 
-## Extension Expressions
-
-    extension: or_else ('::' or_else)* ;
-
 ## Conditional Expressions
 
-    conditional: extension ('?' conditional ':' conditional)? ;
+    conditional: or_else ('?' conditional ':' conditional)? ;
