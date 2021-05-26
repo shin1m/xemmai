@@ -172,8 +172,7 @@ struct t_context
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(size_t a_index)
 	{
-		v_base[-2] = v_base[a_index];
-		f_stack__(v_previous);
+		f_return(v_base[a_index]);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_tail(size_t a_n)
 	{
