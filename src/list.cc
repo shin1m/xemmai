@@ -116,7 +116,7 @@ t_object* t_type_of<t_list>::f__string(t_list& a_self)
 {
 	std::vector<wchar_t> cs{L'['};
 	t_pvalue x;
-	if (a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	if (a_self.f_owned_or_shared<std::shared_lock>([&]
 	{
 		if (a_self.f_size() <= 0) return false;
 		x = a_self[0];
@@ -128,7 +128,7 @@ t_object* t_type_of<t_list>::f__string(t_list& a_self)
 		auto p = static_cast<const wchar_t*>(s);
 		cs.insert(cs.end(), p, p + s.f_size());
 		++i;
-		if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+		if (!a_self.f_owned_or_shared<std::shared_lock>([&]
 		{
 			if (i >= a_self.f_size()) return false;
 			x = a_self[i];
@@ -143,7 +143,7 @@ t_object* t_type_of<t_list>::f__string(t_list& a_self)
 
 void t_type_of<t_list>::f_clear(t_list& a_self)
 {
-	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.f_clear();
 	});
@@ -151,7 +151,7 @@ void t_type_of<t_list>::f_clear(t_list& a_self)
 
 size_t t_type_of<t_list>::f_size(t_list& a_self)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<std::shared_lock>([&]
 	{
 		return a_self.f_size();
 	});
@@ -159,7 +159,7 @@ size_t t_type_of<t_list>::f_size(t_list& a_self)
 
 t_pvalue t_type_of<t_list>::f__get_at(t_list& a_self, intptr_t a_index)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<std::shared_lock>([&]
 	{
 		return t_pvalue(a_self[a_index]);
 	});
@@ -167,7 +167,7 @@ t_pvalue t_type_of<t_list>::f__get_at(t_list& a_self, intptr_t a_index)
 
 t_pvalue t_type_of<t_list>::f__set_at(t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		return t_pvalue(a_self[a_index] = a_value);
 	});
@@ -175,7 +175,7 @@ t_pvalue t_type_of<t_list>::f__set_at(t_list& a_self, intptr_t a_index, const t_
 
 void t_type_of<t_list>::f_push(t_list& a_self, const t_pvalue& a_value)
 {
-	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.f_push(std::move(a_value));
 	});
@@ -183,7 +183,7 @@ void t_type_of<t_list>::f_push(t_list& a_self, const t_pvalue& a_value)
 
 t_pvalue t_type_of<t_list>::f_pop(t_list& a_self)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		return a_self.f_pop();
 	});
@@ -191,7 +191,7 @@ t_pvalue t_type_of<t_list>::f_pop(t_list& a_self)
 
 void t_type_of<t_list>::f_unshift(t_list& a_self, const t_pvalue& a_value)
 {
-	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.f_unshift(a_value);
 	});
@@ -199,7 +199,7 @@ void t_type_of<t_list>::f_unshift(t_list& a_self, const t_pvalue& a_value)
 
 t_pvalue t_type_of<t_list>::f_shift(t_list& a_self)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		return a_self.f_shift();
 	});
@@ -207,7 +207,7 @@ t_pvalue t_type_of<t_list>::f_shift(t_list& a_self)
 
 void t_type_of<t_list>::f_insert(t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
 {
-	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.f_insert(a_index, a_value);
 	});
@@ -215,7 +215,7 @@ void t_type_of<t_list>::f_insert(t_list& a_self, intptr_t a_index, const t_pvalu
 
 t_pvalue t_type_of<t_list>::f_remove(t_list& a_self, intptr_t a_index)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		return a_self.f_remove(a_index);
 	});
@@ -226,7 +226,7 @@ void t_type_of<t_list>::f_each(t_list& a_self, const t_pvalue& a_callable)
 	size_t i = 0;
 	while (true) {
 		t_pvalue x;
-		if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+		if (!a_self.f_owned_or_shared<std::shared_lock>([&]
 		{
 			if (i >= a_self.f_size()) return false;
 			x = a_self[i];
@@ -243,7 +243,7 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 	size_t head = 0;
 	size_t size = 0;
 	size_t mask = 0;
-	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		object = a_self.v_tuple;
 		a_self.v_tuple = nullptr;
@@ -260,7 +260,7 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 		return f_as<bool>(a_callable(x, y));
 	});
 	for (size_t i = 0; i < size; ++i) tuple[i] = a[i];
-	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.v_tuple = object;
 		a_self.v_head = 0;
@@ -301,7 +301,7 @@ size_t t_type_of<t_list>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<intptr_t>(a_stack[2], L"index");
 	auto& list = f_as<t_list&>(a_this);
-	list.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	list.f_owned_or_shared<std::shared_lock>([&]
 	{
 		a_stack[0] = list[f_as<intptr_t>(a_stack[2])];
 	});
@@ -312,7 +312,7 @@ size_t t_type_of<t_list>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<intptr_t>(a_stack[2], L"index");
 	auto& list = f_as<t_list&>(a_this);
-	list.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	list.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_stack[0] = list[f_as<intptr_t>(a_stack[2])] = a_stack[3];
 	});

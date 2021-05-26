@@ -5,9 +5,9 @@ namespace xemmai
 
 void t_backtrace::f_push(t_object* a_throwable, t_object* a_lambda, void** a_pc)
 {
-	auto& p = f_as<t_throwable&>(a_throwable);
-	t_scoped_lock_for_write lock(p.v_lock);
-	p.v_backtrace = new t_backtrace(p.v_backtrace, a_lambda, a_pc);
+	auto& head = f_as<t_throwable&>(a_throwable).v_backtrace;
+	auto p = new t_backtrace(head.load(std::memory_order_relaxed), a_lambda, a_pc);
+	while (!head.compare_exchange_weak(p->v_next, p, std::memory_order_release, std::memory_order_relaxed));
 }
 
 void t_backtrace::f_dump() const
@@ -28,10 +28,10 @@ void f_throw(std::wstring_view a_message)
 
 t_throwable::~t_throwable()
 {
-	while (v_backtrace) {
-		auto p = v_backtrace;
-		v_backtrace = p->v_next;
-		delete p;
+	for (auto p = v_backtrace.load(std::memory_order_acquire); p;) {
+		auto q = p;
+		p = q->v_next;
+		delete q;
 	}
 }
 
@@ -42,7 +42,7 @@ t_object* t_throwable::f_instantiate(std::wstring_view a_message)
 
 void t_throwable::f_dump() const
 {
-	if (v_backtrace) v_backtrace->f_dump();
+	if (auto p = v_backtrace.load(std::memory_order_acquire)) p->f_dump();
 }
 
 void t_type_of<t_throwable>::f_define()

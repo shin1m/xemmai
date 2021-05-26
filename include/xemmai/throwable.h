@@ -27,8 +27,7 @@ class t_throwable
 	friend struct t_finalizes<t_bears<t_throwable>>;
 	friend struct t_type_of<t_throwable>;
 
-	t_lock v_lock;
-	t_backtrace* v_backtrace = nullptr;
+	std::atomic<t_backtrace*> v_backtrace = nullptr;
 	std::wstring v_message;
 
 protected:
@@ -55,7 +54,7 @@ struct t_type_of<t_throwable> : t_derivable<t_holds<t_throwable>>
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
-		for (auto p = a_this->f_as<t_throwable>().v_backtrace; p; p = p->v_next) a_scan(p->v_lambda);
+		for (auto p = a_this->f_as<t_throwable>().v_backtrace.load(std::memory_order_acquire); p; p = p->v_next) a_scan(p->v_lambda);
 	}
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };

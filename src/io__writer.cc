@@ -67,7 +67,7 @@ t_writer::t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding) : v_c
 
 void t_writer::f_close(t_io* a_library)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	f_unshift(a_library);
 	static size_t index;
@@ -77,7 +77,7 @@ void t_writer::f_close(t_io* a_library)
 
 void t_writer::f_write(t_io* a_library, const t_pvalue& a_value)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	if (f_is<t_string>(a_value)) {
 		f_write(a_library, f_as<const t_string&>(a_value));
@@ -90,7 +90,7 @@ void t_writer::f_write(t_io* a_library, const t_pvalue& a_value)
 
 void t_writer::f_write_line(t_io* a_library)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	f_write(a_library, L"\n", 1);
 	f_unshift(a_library);
@@ -100,7 +100,7 @@ void t_writer::f_write_line(t_io* a_library)
 
 void t_writer::f_write_line(t_io* a_library, const t_pvalue& a_value)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	if (f_is<t_string>(a_value)) {
 		f_write(a_library, f_as<const t_string&>(a_value));
@@ -117,7 +117,7 @@ void t_writer::f_write_line(t_io* a_library, const t_pvalue& a_value)
 
 void t_writer::f_flush(t_io* a_library)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	f_unshift(a_library);
 	static size_t index;

@@ -2,7 +2,7 @@
 #define XEMMAI__SHARABLE_H
 
 #include "object.h"
-#include "atomic.h"
+#include <shared_mutex>
 
 namespace xemmai
 {
@@ -25,7 +25,7 @@ struct t_owned
 
 struct t_sharable : t_owned
 {
-	t_lock v_lock;
+	std::shared_mutex v_mutex;
 
 	bool f_shared() const
 	{
@@ -33,12 +33,12 @@ struct t_sharable : t_owned
 	}
 	void f_own();
 	void f_share();
-	template<typename T_lock, typename T>
+	template<template<typename> typename T_lock, typename T>
 	auto f_owned_or_shared(T a_do) -> decltype(a_do())
 	{
 		if (f_owned()) return a_do();
 		if (!f_shared()) f_throw(L"owned by another thread."sv);
-		T_lock lock(v_lock);
+		T_lock lock(v_mutex);
 		return a_do();
 	}
 };

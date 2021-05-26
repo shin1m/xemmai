@@ -36,7 +36,7 @@ t_file::t_file(int a_fd, std::wstring_view a_mode) : t_file(a_fd, portable::f_co
 
 void t_file::f_reopen(std::wstring_view a_path, std::wstring_view a_mode)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
 	if (v_stream == NULL) f_throw(L"failed to open."sv);
 	std::setbuf(v_stream, NULL);
@@ -44,7 +44,7 @@ void t_file::f_reopen(std::wstring_view a_path, std::wstring_view a_mode)
 
 size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::shared_lock lock(v_mutex);
 	t_safe_region region;
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
@@ -55,7 +55,7 @@ size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 
 void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::shared_lock lock(v_mutex);
 	t_safe_region region;
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
@@ -71,7 +71,7 @@ void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 
 bool t_file::f_tty()
 {
-	t_scoped_lock_for_read lock(v_lock);
+	std::shared_lock lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	return isatty(fileno(v_stream)) == 1;
 }
@@ -79,14 +79,14 @@ bool t_file::f_tty()
 #ifdef __unix__
 bool t_file::f_blocking()
 {
-	t_scoped_lock_for_read lock(v_lock);
+	std::shared_lock lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	return (fcntl(fileno(v_stream), F_GETFL) & O_NONBLOCK) == 0;
 }
 
 void t_file::f_blocking__(bool a_value)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::shared_lock lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	int flags = fcntl(fileno(v_stream), F_GETFL);
 	if (a_value)

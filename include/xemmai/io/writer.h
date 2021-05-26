@@ -16,7 +16,7 @@ class t_writer
 {
 	friend struct t_type_of<t_writer>;
 
-	t_lock v_lock;
+	std::mutex v_mutex;
 	iconv_t v_cd;
 	t_slot v_stream;
 	t_slot v_buffer;

@@ -34,7 +34,7 @@ size_t f_expand(void**& a_pc, t_pvalue* a_stack, size_t a_n)
 		for (size_t i = 0; i < n; ++i) a_stack[i] = tuple[i];
 	} else if (f_is<t_list>(x)) {
 		auto& list = f_as<t_list&>(x);
-		list.f_owned_or_shared<t_scoped_lock_for_read>([&]
+		list.f_owned_or_shared<std::shared_lock>([&]
 		{
 			n = list.f_size();
 			f_allocate(a_stack, n);

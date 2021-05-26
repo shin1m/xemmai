@@ -1,7 +1,7 @@
-#include <xemmai/engine.h>
 #include <xemmai/portable/path.h>
 #include <xemmai/global.h>
 #include <xemmai/io/file.h>
+#include <thread>
 #include <clocale>
 #include <cstring>
 #ifdef __unix__

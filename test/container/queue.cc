@@ -3,7 +3,7 @@
 t_object* t_queue::f_string() const
 {
 	using namespace std::literals;
-	t_scoped_lock_for_read lock(v_lock);
+	std::shared_lock lock(v_mutex);
 	std::vector<wchar_t> cs;
 	if (v_head) {
 		t_object* pair = f_as<t_pair&>(v_head).v_next;
@@ -26,13 +26,13 @@ t_object* t_queue::f_string() const
 
 bool t_queue::f_empty() const
 {
-	t_scoped_lock_for_read lock(v_lock);
+	std::shared_lock lock(v_mutex);
 	return !v_head;
 }
 
 void t_queue::f_push(t_container* a_library, const t_pvalue& a_value)
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	auto pair = t_type_of<t_pair>::f_instantiate(a_library, a_value);
 	if (v_head) {
 		f_as<t_pair&>(pair).v_next = f_as<t_pair&>(v_head).v_next;
@@ -45,7 +45,7 @@ void t_queue::f_push(t_container* a_library, const t_pvalue& a_value)
 
 t_pvalue t_queue::f_pop()
 {
-	t_scoped_lock_for_write lock(v_lock);
+	std::lock_guard lock(v_mutex);
 	if (!v_head) f_throw(L"empty queue."sv);
 	auto& pair = f_as<t_pair&>(v_head).v_next;
 	if (pair == v_head)

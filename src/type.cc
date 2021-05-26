@@ -261,7 +261,7 @@ XEMMAI__TYPE__METHOD(and, 23, 1)
 XEMMAI__TYPE__METHOD(xor, 24, 1)
 XEMMAI__TYPE__METHOD(or, 25, 1)
 
-void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name)
+void f_throw_type_error [[noreturn]] (const std::type_info& a_type, const wchar_t* a_name)
 {
 	f_throw(std::wstring(a_name) + L" must be " + portable::f_convert(a_type.name()) + L'.');
 }

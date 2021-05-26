@@ -1,7 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include <xemmai/atomic.h>
+#include <shared_mutex>
 #include <xemmai/string.h>
 
 using namespace xemmai;
@@ -25,7 +25,7 @@ struct t_pair
 
 class t_queue
 {
-	mutable t_lock v_lock;
+	mutable std::shared_mutex v_mutex;
 	t_slot v_head;
 
 public:

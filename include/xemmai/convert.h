@@ -51,7 +51,7 @@ struct t_signature
 	}
 	static void f_check(size_t a_n)
 	{
-		if (a_n != sizeof...(T_an)) f_throw(f_error());
+		if (a_n != sizeof...(T_an)) [[unlikely]] f_throw(f_error());
 	}
 	template<size_t A_i>
 	static void f_check__(t_pvalue* a_stack)
@@ -118,7 +118,7 @@ struct t_call_construct<t_pvalue(*)(t_type*, T_an...), A_function>
 	}
 	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, size_t a_n)
 	{
-		if (a_n != sizeof...(T_an)) f_throw(t_signature<T_an...>::f_error());
+		if (a_n != sizeof...(T_an)) [[unlikely]] f_throw(t_signature<T_an...>::f_error());
 		t_signature<T_an...>::f_check(a_stack);
 		return f__do<T_an...>(a_class, a_stack + 1);
 	}

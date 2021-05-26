@@ -124,7 +124,7 @@ t_object* t_type_of<t_map>::f__string(t_map& a_self)
 		y = i.f_entry()->v_value;
 		return true;
 	};
-	if (a_self.f_owned_or_shared<t_scoped_lock_for_read>(get)) {
+	if (a_self.f_owned_or_shared<std::shared_lock>(get)) {
 		auto push = [&](t_pvalue& x, const wchar_t* name)
 		{
 			x = x.f_string();
@@ -138,7 +138,7 @@ t_object* t_type_of<t_map>::f__string(t_map& a_self)
 			cs.push_back(L':');
 			cs.push_back(L' ');
 			push(y, L"value");
-			if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+			if (!a_self.f_owned_or_shared<std::shared_lock>([&]
 			{
 				i.f_next();
 				return get();
@@ -153,7 +153,7 @@ t_object* t_type_of<t_map>::f__string(t_map& a_self)
 
 void t_type_of<t_map>::f_clear(t_map& a_self)
 {
-	a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.f_clear();
 	});
@@ -161,7 +161,7 @@ void t_type_of<t_map>::f_clear(t_map& a_self)
 
 size_t t_type_of<t_map>::f_size(t_map& a_self)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<std::shared_lock>([&]
 	{
 		return a_self.f_size();
 	});
@@ -169,7 +169,7 @@ size_t t_type_of<t_map>::f_size(t_map& a_self)
 
 t_pvalue t_type_of<t_map>::f__get_at(t_map& a_self, const t_pvalue& a_key)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<std::shared_lock>([&]
 	{
 		return t_pvalue(a_self.f_get(a_key));
 	});
@@ -177,7 +177,7 @@ t_pvalue t_type_of<t_map>::f__get_at(t_map& a_self, const t_pvalue& a_key)
 
 t_pvalue t_type_of<t_map>::f__set_at(t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		return a_self.f_put(a_key, a_value);
 	});
@@ -185,7 +185,7 @@ t_pvalue t_type_of<t_map>::f__set_at(t_map& a_self, const t_pvalue& a_key, const
 
 bool t_type_of<t_map>::f_has(t_map& a_self, const t_pvalue& a_key)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	return a_self.f_owned_or_shared<std::shared_lock>([&]
 	{
 		return a_self.f_has(a_key);
 	});
@@ -193,7 +193,7 @@ bool t_type_of<t_map>::f_has(t_map& a_self, const t_pvalue& a_key)
 
 t_pvalue t_type_of<t_map>::f_remove(t_map& a_self, const t_pvalue& a_key)
 {
-	return a_self.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	return a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		return a_self.f_remove(a_key);
 	});
@@ -205,7 +205,7 @@ void t_type_of<t_map>::f_each(t_map& a_self, const t_pvalue& a_callable)
 	while (true) {
 		t_pvalue key;
 		t_pvalue value;
-		if (!a_self.f_owned_or_shared<t_scoped_lock_for_read>([&]
+		if (!a_self.f_owned_or_shared<std::shared_lock>([&]
 		{
 			if (!i.f_entry()) return false;
 			key = i.f_entry()->f_key();
@@ -251,7 +251,7 @@ t_pvalue t_type_of<t_map>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 size_t t_type_of<t_map>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 {
 	auto& map = f_as<t_map&>(a_this);
-	map.f_owned_or_shared<t_scoped_lock_for_read>([&]
+	map.f_owned_or_shared<std::shared_lock>([&]
 	{
 		a_stack[0] = map.f_get(a_stack[2]);
 	});
@@ -261,7 +261,7 @@ size_t t_type_of<t_map>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 size_t t_type_of<t_map>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
 {
 	auto& map = f_as<t_map&>(a_this);
-	map.f_owned_or_shared<t_scoped_lock_for_write>([&]
+	map.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_stack[0] = map.f_put(a_stack[2], a_stack[3]);
 	});

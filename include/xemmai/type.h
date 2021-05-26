@@ -371,10 +371,10 @@ inline bool f_is(T1&& a_object)
 	return t_type_of<typename t_fundamental<T0>::t_type>::template t_is<T0>::f_call(std::forward<T1>(a_object));
 }
 
-XEMMAI__PORTABLE__EXPORT void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name);
+XEMMAI__PORTABLE__EXPORT void f_throw_type_error [[noreturn]] (const std::type_info& a_type, const wchar_t* a_name);
 
 template<typename T>
-void f_throw_type_error(const wchar_t* a_name)
+void f_throw_type_error [[noreturn]] (const wchar_t* a_name)
 {
 	f_throw_type_error(typeid(typename t_fundamental<T>::t_type), a_name);
 }
@@ -382,7 +382,7 @@ void f_throw_type_error(const wchar_t* a_name)
 template<typename T, typename T_tag>
 inline void f_check(const t_value<T_tag>& a_object, const wchar_t* a_name)
 {
-	if (!f_is<T>(a_object)) f_throw_type_error<T>(a_name);
+	if (!f_is<T>(a_object)) [[unlikely]] f_throw_type_error<T>(a_name);
 }
 
 template<typename T>
