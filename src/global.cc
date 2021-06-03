@@ -101,7 +101,6 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
 	v_type_object->f_define();
 	t_type_of<t_sharable>::f_define();
-	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_type));
 	v_type_type->v_builtin = true;
 	t_define(this).f_derive<t_builder, t_object>();
 	v_type_builder->v_builtin = true;

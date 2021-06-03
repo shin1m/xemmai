@@ -739,10 +739,10 @@ void t_builder::f_do(t_fields& a_fields, T a_do)
 	}
 }
 
-template<typename T_library>
-inline t_object* f_new(t_library::t_handle* a_handle)
+template<typename T_library, typename... T_an>
+inline t_object* f_new(t_library::t_handle* a_handle, T_an&&... a_an)
 {
-	return f_global()->f_type<t_module::t_body>()->f_new<T_library>(a_handle);
+	return f_global()->f_type<t_module::t_body>()->f_new<T_library>(a_handle, std::forward<T_an>(a_an)...);
 }
 
 template<typename T_context, typename T_main>

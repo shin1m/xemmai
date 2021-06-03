@@ -15,11 +15,9 @@ struct t_owned
 	{
 		return v_owner == t_slot::t_increments::v_instance;
 	}
-	template<typename T>
-	auto f_owned_or_throw(T a_do) -> decltype(a_do())
+	void f_owned_or_throw()
 	{
 		if (!f_owned()) f_throw(L"not owned."sv);
-		return a_do();
 	}
 };
 
@@ -39,6 +37,7 @@ struct t_sharable : t_owned
 		if (f_owned()) return a_do();
 		if (!f_shared()) f_throw(L"owned by another thread."sv);
 		T_lock lock(v_mutex);
+		if (!f_shared()) f_throw(L"owned by another thread."sv);
 		return a_do();
 	}
 };

@@ -359,7 +359,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					f_throw(L"expecting '(' or symbol."sv);
 				}
 			default:
-				f_throw(L"expecting '(' or '?' or '@' or '^' or '~' or symbol."sv);
+				f_throw(L"expecting '(' or '?' or '@' or '^' or symbol."sv);
 			}
 		}
 	case t_lexer::e_token__LEFT_BRACKET:

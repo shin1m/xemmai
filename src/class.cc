@@ -42,25 +42,31 @@ size_t t_class::f_do_add(t_object* a_this, t_pvalue* a_stack)
 	return -1;
 }
 
+void t_class::f_not_supported0(t_object* a_this, t_pvalue* a_stack)
+{
+	f_throw(L"not supported."sv);
+}
+
+size_t t_class::f_not_supported1(t_object* a_this, t_pvalue* a_stack)
+{
+	f_throw(L"not supported."sv);
+}
+
 t_pvalue t_type_of<t_builder>::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 {
 	auto& builder = a_this->f_as<t_builder>();
-	builder.f_owned_or_throw([&]
-	{
-		if (!builder.v_fields) f_throw(L"already disposed."sv);
-		builder.v_fields->v_instance.push_back(a_key);
-	});
+	builder.f_owned_or_throw();
+	if (!builder.v_fields) f_throw(L"already disposed."sv);
+	builder.v_fields->v_instance.push_back(a_key);
 	return {};
 }
 
 void t_type_of<t_builder>::f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
 {
 	auto& builder = a_this->f_as<t_builder>();
-	builder.f_owned_or_throw([&]
-	{
-		if (!builder.v_fields) f_throw(L"already disposed."sv);
-		builder.v_fields->v_class.emplace_back(a_key, a_value);
-	});
+	builder.f_owned_or_throw();
+	if (!builder.v_fields) f_throw(L"already disposed."sv);
+	builder.v_fields->v_class.emplace_back(a_key, a_value);
 }
 
 }

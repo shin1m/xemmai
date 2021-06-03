@@ -229,9 +229,8 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	auto type = new(type_object->f_data()) t_type();
 	type->v_derive = &t_type::f_do_derive;
 	std::uninitialized_default_construct_n(type->f_fields(), 26);
-	auto type_type = f_allocate_for_type<t_class>(26);
+	auto type_type = f_allocate_for_type<t_class>(0);
 	v_type_type = new(type_type->f_data()) t_class(t_class::V_ids, type);
-	std::uninitialized_default_construct_n(v_type_type->f_fields(), 26);
 	type_object->f_be(v_type_type);
 	type_type->f_be(v_type_type);
 	{
