@@ -481,12 +481,7 @@ template<typename T_library>
 class t_define
 {
 	T_library* v_library;
-	std::vector<std::pair<t_root, t_rvalue>> v_fields;
-
-	t_object* f_function(t_library::t_function a_function)
-	{
-		return f_new<t_native>(f_global(), a_function, t_object::f_of(v_library));
-	}
+	t_fields v_fields;
 
 public:
 	t_define(T_library* a_library) : v_library(a_library)
@@ -495,55 +490,57 @@ public:
 	template<typename T, typename T_super>
 	void f_derive()
 	{
-		v_library->template f_type_slot<T>().f_construct(v_library->template f_type<T_super>()->template f_derive<t_type_of<T>>(t_object::f_of(v_library), {{}, std::move(v_fields)}));
+		v_library->template f_type_slot<T>().f_construct(v_library->template f_type<T_super>()->template f_derive<t_type_of<T>>(t_object::f_of(v_library), v_fields));
 	}
 	template<typename T_super>
 	void f_derive(t_object* a_type)
 	{
-		auto [fields, key2index] = v_library->template f_type<T_super>()->f_merge({{}, std::move(v_fields)});
+		auto [fields, key2index] = v_library->template f_type<T_super>()->f_merge(v_fields);
 		auto& type = a_type->f_as<t_type>();
+		type.v_instance_fields = v_fields.v_instance.size();
 		type.v_fields = fields.size();
 		std::copy(fields.begin(), fields.end(), type.f_fields());
 		std::copy(key2index.begin(), key2index.end(), type.f_key2index());
 	}
 	operator std::vector<std::pair<t_root, t_rvalue>>()
 	{
-		return std::move(v_fields);
+		return std::move(v_fields.v_class);
+	}
+	t_define& operator()(t_object* a_name)
+	{
+		v_fields.v_instance.push_back(a_name);
+		return *this;
 	}
 	template<typename T_value>
 	t_define& operator()(t_object* a_name, T_value a_value)
 	{
-		v_fields.emplace_back(a_name, v_library->f_as(a_value));
+		v_fields.v_class.emplace_back(a_name, v_library->f_as(a_value));
 		return *this;
 	}
 	t_define& operator()(t_object* a_name, t_library::t_function a_function)
 	{
-		v_fields.emplace_back(a_name, f_function(a_function));
+		v_fields.v_class.emplace_back(a_name, f_new<t_native>(f_global(), a_function, t_object::f_of(v_library)));
 		return *this;
 	}
 	template<typename T_function, T_function A_function>
 	t_define& operator()(t_object* a_name, const t_member<T_function, A_function>&)
 	{
-		v_fields.emplace_back(a_name, f_function(t_member<T_function, A_function>::template t_bind<T_library>::f_call));
-		return *this;
+		return (*this)(a_name, t_member<T_function, A_function>::template t_bind<T_library>::f_call);
 	}
 	template<typename T_function, T_function A_function, typename T_overload0, typename... T_overloadn>
 	t_define& operator()(t_object* a_name, const t_member<T_function, A_function>&, const T_overload0&, const T_overloadn&...)
 	{
-		v_fields.emplace_back(a_name, f_function(t_overload<t_member<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T_library>::f_call));
-		return *this;
+		return (*this)(a_name, t_overload<t_member<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T_library>::f_call);
 	}
 	template<typename T_function, T_function A_function>
 	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&)
 	{
-		v_fields.emplace_back(a_name, f_function(t_static<T_function, A_function>::template t_bind<T_library>::f_call));
-		return *this;
+		return (*this)(a_name, t_static<T_function, A_function>::template t_bind<T_library>::f_call);
 	}
 	template<typename T_function, T_function A_function, typename T_overload0, typename... T_overloadn>
 	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&, const T_overload0&, const T_overloadn&...)
 	{
-		v_fields.emplace_back(a_name, f_function(t_overload<t_static<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T_library>::f_call));
-		return *this;
+		return (*this)(a_name, t_overload<t_static<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T_library>::f_call);
 	}
 	template<typename... T_an>
 	t_define& operator()(std::wstring_view a_name, T_an&&... a_n)
