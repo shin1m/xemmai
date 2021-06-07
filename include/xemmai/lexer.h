@@ -9,9 +9,8 @@
 namespace xemmai
 {
 
-class t_lexer
+struct t_lexer
 {
-public:
 	enum t_token
 	{
 		e_token__EOF,

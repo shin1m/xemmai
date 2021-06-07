@@ -11,7 +11,6 @@
 namespace xemmai
 {
 
-struct t_thread;
 struct t_debug_context;
 void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column);
 

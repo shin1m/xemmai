@@ -7,7 +7,7 @@ namespace xemmai
 
 void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column)
 {
-	io::t_file file(a_path, "r");
+	io::t_FILE file(std::fopen(portable::f_convert(a_path).c_str(), "r"));
 	std::fseek(file, a_position, SEEK_SET);
 	std::putc('\t', a_out);
 	while (true) {

@@ -28,7 +28,7 @@ t_module::t_scoped_lock::~t_scoped_lock()
 
 t_object* t_module::f_load_script(std::wstring_view a_path)
 {
-	io::t_file stream(a_path, "r");
+	io::t_FILE stream(std::fopen(portable::f_convert(a_path).c_str(), "r"));
 	if (!stream) return nullptr;
 	ast::t_scope scope(nullptr);
 	if (f_engine()->v_debugger) {

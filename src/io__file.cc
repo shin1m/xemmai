@@ -14,29 +14,21 @@ namespace xemmai
 namespace io
 {
 
-t_file::t_file(std::wstring_view a_path, const char* a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), a_mode)), v_own(true)
-{
-}
-
-t_file::t_file(std::wstring_view a_path, std::wstring_view a_mode) : v_stream(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str())), v_own(true)
+t_file::t_file(std::wstring_view a_path, std::wstring_view a_mode) : t_FILE(std::fopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str())), v_own(true)
 {
 	if (v_stream == NULL) f_throw(L"failed to open."sv);
 	std::setbuf(v_stream, NULL);
 }
 
-t_file::t_file(int a_fd, const char* a_mode) : v_stream(fdopen(a_fd, a_mode)), v_own(true)
+t_file::t_file(int a_fd, std::wstring_view a_mode) : t_FILE(fdopen(a_fd, portable::f_convert(a_mode).c_str())), v_own(true)
 {
 	if (v_stream == NULL) f_throw(L"failed to open."sv);
 	std::setbuf(v_stream, NULL);
-}
-
-t_file::t_file(int a_fd, std::wstring_view a_mode) : t_file(a_fd, portable::f_convert(a_mode).c_str())
-{
 }
 
 void t_file::f_reopen(std::wstring_view a_path, std::wstring_view a_mode)
 {
-	std::lock_guard lock(v_mutex);
+	t_lock_with_safe_region lock(v_mutex);
 	v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
 	if (v_stream == NULL) f_throw(L"failed to open."sv);
 	std::setbuf(v_stream, NULL);
@@ -44,8 +36,7 @@ void t_file::f_reopen(std::wstring_view a_path, std::wstring_view a_mode)
 
 size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	std::shared_lock lock(v_mutex);
-	t_safe_region region;
+	t_shared_lock_with_safe_region lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
 	size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
@@ -55,8 +46,7 @@ size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 
 void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	std::shared_lock lock(v_mutex);
-	t_safe_region region;
+	t_shared_lock_with_safe_region lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
 	unsigned char* p = &a_bytes[0] + a_offset;
@@ -71,7 +61,7 @@ void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 
 bool t_file::f_tty()
 {
-	std::shared_lock lock(v_mutex);
+	t_shared_lock_with_safe_region lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	return isatty(fileno(v_stream)) == 1;
 }
@@ -79,14 +69,14 @@ bool t_file::f_tty()
 #ifdef __unix__
 bool t_file::f_blocking()
 {
-	std::shared_lock lock(v_mutex);
+	t_shared_lock_with_safe_region lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	return (fcntl(fileno(v_stream), F_GETFL) & O_NONBLOCK) == 0;
 }
 
 void t_file::f_blocking__(bool a_value)
 {
-	std::shared_lock lock(v_mutex);
+	t_shared_lock_with_safe_region lock(v_mutex);
 	if (v_stream == NULL) f_throw(L"already closed."sv);
 	int flags = fcntl(fileno(v_stream), F_GETFL);
 	if (a_value)

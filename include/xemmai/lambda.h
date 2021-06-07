@@ -8,8 +8,6 @@
 namespace xemmai
 {
 
-struct t_fiber;
-
 class t_lambda
 {
 	friend struct t_context;

@@ -62,7 +62,7 @@ t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_
 
 void t_reader::f_close(t_io* a_library)
 {
-	std::lock_guard lock(v_mutex);
+	t_lock_with_safe_region lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	static size_t index;
 	t_pvalue(v_stream).f_invoke(a_library->f_symbol_close(), index);
@@ -71,7 +71,7 @@ void t_reader::f_close(t_io* a_library)
 
 t_object* t_reader::f_read(t_io* a_library, size_t a_size)
 {
-	std::lock_guard lock(v_mutex);
+	t_lock_with_safe_region lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	std::vector<wchar_t> cs(a_size);
 	for (size_t i = 0; i < a_size; ++i) {
@@ -87,7 +87,7 @@ t_object* t_reader::f_read(t_io* a_library, size_t a_size)
 
 t_object* t_reader::f_read_line(t_io* a_library)
 {
-	std::lock_guard lock(v_mutex);
+	t_lock_with_safe_region lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	std::vector<wchar_t> cs;
 	while (true) {

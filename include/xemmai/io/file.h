@@ -13,37 +13,47 @@ class t_io;
 namespace io
 {
 
-class t_file
+class t_FILE
+{
+protected:
+	std::FILE* v_stream;
+
+public:
+	t_FILE(std::FILE* a_stream) : v_stream(a_stream)
+	{
+	}
+	~t_FILE()
+	{
+		if (v_stream != NULL) std::fclose(v_stream);
+	}
+	operator std::FILE*() const
+	{
+		return v_stream;
+	}
+};
+
+class t_file : public t_FILE
 {
 	friend struct t_type_of<t_file>;
 
 	std::shared_mutex v_mutex;
-	std::FILE* v_stream;
 	bool v_own = false;
 
 public:
 	template<typename... T_an>
 	static t_object* f_instantiate(T_an&&... a_an);
 
-	t_file(std::FILE* a_stream) : v_stream(a_stream)
-	{
-	}
-	t_file(std::wstring_view a_path, const char* a_mode);
+	using t_FILE::t_FILE;
 	t_file(std::wstring_view a_path, std::wstring_view a_mode);
-	t_file(int a_fd, const char* a_mode);
 	t_file(int a_fd, std::wstring_view a_mode);
 	~t_file()
 	{
-		if (v_stream != NULL && v_own) std::fclose(v_stream);
-	}
-	operator std::FILE*() const
-	{
-		return v_stream;
+		if (!v_own) v_stream = NULL;
 	}
 	void f_reopen(std::wstring_view a_path, std::wstring_view a_mode);
 	void f_close()
 	{
-		std::lock_guard lock(v_mutex);
+		t_lock_with_safe_region lock(v_mutex);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		if (!v_own) f_throw(L"can not close unown."sv);
 		std::fclose(v_stream);
@@ -51,13 +61,13 @@ public:
 	}
 	void f_seek(intptr_t a_offset, int a_whence)
 	{
-		std::shared_lock lock(v_mutex);
+		t_shared_lock_with_safe_region lock(v_mutex);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		if (std::fseek(v_stream, a_offset, a_whence) == -1) f_throw(L"failed to seek."sv);
 	}
 	intptr_t f_tell()
 	{
-		std::shared_lock lock(v_mutex);
+		t_shared_lock_with_safe_region lock(v_mutex);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		intptr_t n = std::ftell(v_stream);
 		if (n == -1) f_throw(L"failed to tell."sv);
@@ -67,7 +77,7 @@ public:
 	XEMMAI__PORTABLE__EXPORT void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	void f_flush()
 	{
-		std::shared_lock lock(v_mutex);
+		t_shared_lock_with_safe_region lock(v_mutex);
 		if (v_stream == NULL) f_throw(L"already closed."sv);
 		std::fflush(v_stream);
 	}

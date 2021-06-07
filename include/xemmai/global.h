@@ -15,8 +15,6 @@
 namespace xemmai
 {
 
-class t_list;
-
 class t_global : public t_library
 {
 	friend struct t_type_of<t_map>;

@@ -9,8 +9,6 @@
 namespace xemmai
 {
 
-struct t_library;
-
 struct t_module
 {
 	class t_scoped_lock

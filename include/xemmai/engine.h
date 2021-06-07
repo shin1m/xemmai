@@ -4,6 +4,7 @@
 #include "module.h"
 #include "thread.h"
 #include <condition_variable>
+#include <shared_mutex>
 #include <csignal>
 #ifdef __unix__
 #include <unistd.h>
@@ -12,10 +13,6 @@
 
 namespace xemmai
 {
-
-class t_symbol;
-class t_global;
-struct t_safe_region;
 
 struct t_debugger
 {
@@ -263,6 +260,31 @@ struct t_safe_region
 	~t_safe_region()
 	{
 		if (f_engine()->v_debugger) f_engine()->f_debug_safe_region_leave();
+	}
+};
+
+template<typename T>
+struct t_lock_with_safe_region : std::lock_guard<T>
+{
+	static T& f_lock(T& a_mutex)
+	{
+		t_safe_region region;
+		a_mutex.lock();
+		return a_mutex;
+	}
+
+	t_lock_with_safe_region(T& a_mutex) : std::lock_guard<T>(f_lock(a_mutex), std::adopt_lock)
+	{
+	}
+};
+
+template<typename T>
+struct t_shared_lock_with_safe_region : std::shared_lock<T>
+{
+	t_shared_lock_with_safe_region(T& a_mutex) : std::shared_lock<T>(a_mutex, std::defer_lock)
+	{
+		t_safe_region region;
+		this->lock();
 	}
 };
 

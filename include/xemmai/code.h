@@ -7,7 +7,6 @@ namespace xemmai
 {
 
 struct t_context;
-class t_lambda;
 
 enum t_instruction
 {
