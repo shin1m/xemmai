@@ -549,6 +549,28 @@ public:
 	}
 };
 
+template<typename T, typename T_library>
+struct t_enum_of : t_derivable<t_bears<T, t_type_of<intptr_t>>>
+{
+	using t_library = T_library;
+	using t_base = t_enum_of;
+
+	static t_pvalue f_transfer(const T_library* a_library, T a_value)
+	{
+		return a_library->template f_type<typename t_fundamental<T>::t_type>()->template f_new<intptr_t>(a_value);
+	}
+	template<typename T_fields>
+	static t_object* f_define(t_library* a_library, T_fields a_fields)
+	{
+		t_define{a_library}.template f_derive<T, intptr_t>();
+		t_define fields(a_library);
+		a_fields(std::ref(fields));
+		return static_cast<t_type_of<T>*>(a_library->template f_type<T>())->f_do_derive({{}, fields});
+	}
+
+	using t_derivable<t_bears<T, t_type_of<intptr_t>>>::t_derivable;
+};
+
 }
 
 #endif
