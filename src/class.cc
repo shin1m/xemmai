@@ -15,7 +15,7 @@ t_pvalue t_class::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 	auto i = a_index;
 	if (i < type.v_instance_fields || i >= type.v_fields || type.f_fields()[i].first != a_key) {
 		i = type.f_index(a_key);
-		if (i < type.v_instance_fields || i >= type.v_fields) f_throw(f_as<t_symbol&>(a_key).f_string());
+		if (i < type.v_instance_fields || i >= type.v_fields) f_throw(a_key->f_as<t_symbol>().f_string());
 		a_index = i;
 	}
 	return type.f_fields()[i].second;
@@ -23,14 +23,14 @@ t_pvalue t_class::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 
 size_t t_class::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)
 {
-	auto& p = f_as<t_type&>(a_this);
+	auto& p = a_this->f_as<t_type>();
 	(p.*p.v_instantiate)(a_stack, a_n);
 	return -1;
 }
 
 size_t t_class::f_do_add(t_object* a_this, t_pvalue* a_stack)
 {
-	auto& p = f_as<t_type&>(a_this);
+	auto& p = a_this->f_as<t_type>();
 	if (!p.v_derive) f_throw(L"underivable."sv);
 	t_fields fields;
 	t_builder::f_do(fields, [&](auto builder)

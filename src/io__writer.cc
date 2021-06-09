@@ -9,7 +9,7 @@ namespace io
 
 void t_writer::f_write(t_io* a_library)
 {
-	auto& buffer = f_as<t_bytes&>(v_buffer);
+	auto& buffer = v_buffer->f_as<t_bytes>();
 	auto p = reinterpret_cast<char*>(&buffer[0]);
 	static size_t index;
 	t_pvalue(v_stream).f_invoke(a_library->f_symbol_write(), index, t_pvalue(v_buffer), f_global()->f_as(0), f_global()->f_as(v_p - p));
@@ -60,7 +60,7 @@ t_writer::t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding) : v_c
 	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open."sv);
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(1024);
-	auto& buffer = f_as<t_bytes&>(v_buffer);
+	auto& buffer = v_buffer->f_as<t_bytes>();
 	v_p = reinterpret_cast<char*>(&buffer[0]);
 	v_n = buffer.f_size();
 }
@@ -80,11 +80,11 @@ void t_writer::f_write(t_io* a_library, const t_pvalue& a_value)
 	t_lock_with_safe_region lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	if (f_is<t_string>(a_value)) {
-		f_write(a_library, f_as<const t_string&>(a_value));
+		f_write(a_library, a_value->f_as<t_string>());
 	} else {
 		auto x = a_value.f_string();
 		f_check<t_string>(x, L"value");
-		f_write(a_library, f_as<const t_string&>(x));
+		f_write(a_library, x->f_as<t_string>());
 	}
 }
 
@@ -103,11 +103,11 @@ void t_writer::f_write_line(t_io* a_library, const t_pvalue& a_value)
 	t_lock_with_safe_region lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
 	if (f_is<t_string>(a_value)) {
-		f_write(a_library, f_as<const t_string&>(a_value));
+		f_write(a_library, a_value->f_as<t_string>());
 	} else {
 		auto x = a_value.f_string();
 		f_check<t_string>(x, L"value");
-		f_write(a_library, f_as<const t_string&>(x));
+		f_write(a_library, x->f_as<t_string>());
 	}
 	f_write(a_library, L"\n", 1);
 	f_unshift(a_library);

@@ -65,23 +65,23 @@ public:
 	const t_svalue& operator[](intptr_t a_index) const
 	{
 		f_validate(a_index);
-		return f_as<t_tuple&>(v_tuple)[v_head + a_index & v_mask];
+		return v_tuple->f_as<t_tuple>()[v_head + a_index & v_mask];
 	}
 	t_svalue& operator[](intptr_t a_index)
 	{
 		f_validate(a_index);
-		return f_as<t_tuple&>(v_tuple)[v_head + a_index & v_mask];
+		return v_tuple->f_as<t_tuple>()[v_head + a_index & v_mask];
 	}
 	void f_push(const t_pvalue& a_value)
 	{
 		f_grow();
-		new(&f_as<t_tuple&>(v_tuple)[v_head + v_size & v_mask]) t_svalue(a_value);
+		new(&v_tuple->f_as<t_tuple>()[v_head + v_size & v_mask]) t_svalue(a_value);
 		++v_size;
 	}
 	t_pvalue f_pop()
 	{
 		if (v_size <= 0) f_throw(L"empty list."sv);
-		auto& x = f_as<t_tuple&>(v_tuple)[v_head + --v_size & v_mask];
+		auto& x = v_tuple->f_as<t_tuple>()[v_head + --v_size & v_mask];
 		t_pvalue p = x;
 		x = nullptr;
 		f_shrink();
@@ -91,13 +91,13 @@ public:
 	{
 		f_grow();
 		v_head = v_head - 1 & v_mask;
-		new(&f_as<t_tuple&>(v_tuple)[v_head]) t_svalue(a_value);
+		new(&v_tuple->f_as<t_tuple>()[v_head]) t_svalue(a_value);
 		++v_size;
 	}
 	t_pvalue f_shift()
 	{
 		if (v_size <= 0) f_throw(L"empty list."sv);
-		auto& x = f_as<t_tuple&>(v_tuple)[v_head];
+		auto& x = v_tuple->f_as<t_tuple>()[v_head];
 		t_pvalue p = x;
 		x = nullptr;
 		v_head = v_head + 1 & v_mask;

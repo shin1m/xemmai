@@ -43,7 +43,7 @@ void t_type_of<t_bytes>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 size_t t_type_of<t_bytes>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<intptr_t>(a_stack[2], L"index");
-	a_stack[0] = f_as<const t_bytes&>(a_this).f_get_at(f_as<intptr_t>(a_stack[2]));
+	a_stack[0] = a_this->f_as<t_bytes>().f_get_at(f_as<intptr_t>(a_stack[2]));
 	return -1;
 }
 
@@ -51,7 +51,7 @@ size_t t_type_of<t_bytes>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<intptr_t>(a_stack[2], L"index");
 	f_check<intptr_t>(a_stack[3], L"value");
-	a_stack[0] = f_as<t_bytes&>(a_this).f_set_at(f_as<intptr_t>(a_stack[2]), f_as<intptr_t>(a_stack[3]));
+	a_stack[0] = a_this->f_as<t_bytes>().f_set_at(f_as<intptr_t>(a_stack[2]), f_as<intptr_t>(a_stack[3]));
 	return -1;
 }
 

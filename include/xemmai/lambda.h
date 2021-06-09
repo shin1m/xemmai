@@ -27,7 +27,7 @@ protected:
 
 	t_lambda(t_svalue* a_scope, t_object* a_code) : v_scope_entries(a_scope), v_scope(t_scope::f_this(a_scope)), v_code(a_code)
 	{
-		auto& code = f_as<t_code&>(v_code);
+		auto& code = v_code->f_as<t_code>();
 		v_size = code.v_size;
 		v_arguments = code.v_arguments;
 		v_privates = code.v_privates;
@@ -64,7 +64,7 @@ struct t_type_of<t_lambda> : t_uninstantiatable<t_holds<t_lambda>>
 	template<typename T, typename T_context>
 	static size_t f__do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)
 	{
-		auto& p = f_as<T&>(a_this);
+		auto& p = a_this->f_as<T>();
 		if (a_n != p.v_arguments) f_throw(L"invalid number of arguments."sv);
 		return p.template f_call<T_context>(a_stack);
 	}
@@ -80,7 +80,7 @@ class t_lambda_shared : public t_lambda
 	size_t v_shareds;
 
 protected:
-	t_lambda_shared(t_svalue* a_scope, t_object* a_code) : t_lambda(a_scope, a_code), v_shareds(f_as<t_code&>(v_code).v_shareds)
+	t_lambda_shared(t_svalue* a_scope, t_object* a_code) : t_lambda(a_scope, a_code), v_shareds(v_code->f_as<t_code>().v_shareds)
 	{
 	}
 	~t_lambda_shared() = default;
@@ -107,7 +107,7 @@ class t_advanced_lambda : public T_base
 
 	t_advanced_lambda(t_svalue* a_scope, t_object* a_code, t_object* a_defaults) : T_base(a_scope, a_code), v_defaults(a_defaults)
 	{
-		auto& code = f_as<t_code&>(this->v_code);
+		auto& code = this->v_code->template f_as<t_code>();
 		v_variadic = code.v_variadic;
 		v_minimum = code.v_minimum;
 	}
@@ -126,7 +126,7 @@ struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>,
 	template<typename T_context>
 	static size_t f__do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n)
 	{
-		auto& p = f_as<t_advanced_lambda<T_base>&>(a_this);
+		auto& p = a_this->f_as<t_advanced_lambda<T_base>>();
 		if (a_n < p.v_minimum) f_throw(L"too few arguments."sv);
 		size_t arguments = p.v_arguments;
 		if (p.v_variadic)
@@ -134,7 +134,7 @@ struct t_type_of<t_advanced_lambda<T_base>> : t_holds<t_advanced_lambda<T_base>,
 		else if (a_n > arguments)
 			f_throw(L"too many arguments."sv);
 		if (a_n < arguments) {
-			auto& t0 = f_as<const t_tuple&>(p.v_defaults);
+			auto& t0 = p.v_defaults->template f_as<t_tuple>();
 			auto t1 = a_stack + p.v_minimum + 2;
 			for (size_t i = a_n - p.v_minimum; i < t0.f_size(); ++i) t1[i] = t0[i];
 			if (p.v_variadic) a_stack[p.v_arguments + 1] = t_tuple::f_instantiate(0, [](auto&)

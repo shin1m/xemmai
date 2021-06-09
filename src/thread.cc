@@ -65,7 +65,7 @@ t_object* t_thread::f_instantiate(const t_pvalue& a_callable, size_t a_stack)
 void t_thread::f_join()
 {
 	if (v_internal == v_current) f_throw(L"current thread can not be joined."sv);
-	if (this == &f_as<t_thread&>(f_engine()->v_thread)) f_throw(L"engine thread can not be joined."sv);
+	if (this == &f_engine()->v_thread->f_as<t_thread>()) f_throw(L"engine thread can not be joined."sv);
 	t_safe_region region;
 	std::unique_lock lock(f_engine()->v_thread__mutex);
 	while (v_internal) f_engine()->v_thread__condition.wait(lock);

@@ -385,13 +385,6 @@ inline void f_check(const t_value<T_tag>& a_object, const wchar_t* a_name)
 	if (!f_is<T>(a_object)) [[unlikely]] f_throw_type_error<T>(a_name);
 }
 
-template<typename T>
-inline void t_slot_of<T>::f_construct(t_object* a_value)
-{
-	v_p = &f_as<T&>(a_value);
-	v_slot = a_value;
-}
-
 template<typename T, typename T_base = t_type>
 struct t_derives : T_base
 {

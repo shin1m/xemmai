@@ -5,7 +5,7 @@ namespace xemmai
 
 void t_list::f_resize()
 {
-	auto& tuple0 = f_as<t_tuple&>(v_tuple);
+	auto& tuple0 = v_tuple->f_as<t_tuple>();
 	v_tuple = t_tuple::f_instantiate(v_size * 2, [&](auto& tuple1)
 	{
 		for (size_t i = 0; i < v_size; ++i) new(&tuple1[i]) t_svalue(tuple0[v_head + i & v_mask]);
@@ -23,14 +23,14 @@ void t_list::f_grow()
 			std::uninitialized_default_construct_n(&tuple[0], 4);
 		});
 		v_mask = 3;
-	} else if (v_size >= f_as<t_tuple&>(v_tuple).f_size()) {
+	} else if (v_size >= v_tuple->f_as<t_tuple>().f_size()) {
 		f_resize();
 	}
 }
 
 void t_list::f_shrink()
 {
-	if (v_size * 4 > f_as<t_tuple&>(v_tuple).f_size()) return;
+	if (v_size * 4 > v_tuple->f_as<t_tuple>().f_size()) return;
 	if (v_size > 1) {
 		f_resize();
 	} else if (v_size <= 0) {
@@ -50,7 +50,7 @@ void t_list::f_insert(intptr_t a_index, const t_pvalue& a_value)
 	f_grow();
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;
-	auto& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = v_tuple->f_as<t_tuple>();
 	size_t n = tuple.f_size();
 	auto p = &tuple[0];
 	if (a_index < static_cast<intptr_t>(v_size / 2)) {
@@ -84,7 +84,7 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 	f_validate(a_index);
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;
-	auto& tuple = f_as<t_tuple&>(v_tuple);
+	auto& tuple = v_tuple->f_as<t_tuple>();
 	size_t n = tuple.f_size();
 	auto p = &tuple[0];
 	t_pvalue q = p[i & v_mask];
@@ -124,7 +124,7 @@ t_object* t_type_of<t_list>::f__string(t_list& a_self)
 	})) for (size_t i = 0;;) {
 		x = x.f_string();
 		f_check<t_string>(x, L"value");
-		auto& s = f_as<const t_string&>(x);
+		auto& s = x->f_as<t_string>();
 		auto p = static_cast<const wchar_t*>(s);
 		cs.insert(cs.end(), p, p + s.f_size());
 		++i;
@@ -253,7 +253,7 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 	});
 	if (!object) return;
 	std::vector<t_rvalue> a(size);
-	auto& tuple = f_as<t_tuple&>(object);
+	auto& tuple = object->f_as<t_tuple>();
 	for (size_t i = 0; i < size; ++i) a[i] = tuple[head + i & mask];
 	std::sort(a.begin(), a.end(), [&](const auto& x, const auto& y)
 	{
@@ -291,7 +291,7 @@ void t_type_of<t_list>::f_define()
 t_pvalue t_type_of<t_list>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	auto object = f_new<t_list>();
-	auto& list = f_as<t_list&>(object);
+	auto& list = object->f_as<t_list>();
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) list.f_push(a_stack[i]);
 	return object;
@@ -300,7 +300,7 @@ t_pvalue t_type_of<t_list>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 size_t t_type_of<t_list>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<intptr_t>(a_stack[2], L"index");
-	auto& list = f_as<t_list&>(a_this);
+	auto& list = a_this->f_as<t_list>();
 	list.f_owned_or_shared<std::shared_lock>([&]
 	{
 		a_stack[0] = list[f_as<intptr_t>(a_stack[2])];
@@ -311,7 +311,7 @@ size_t t_type_of<t_list>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 size_t t_type_of<t_list>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<intptr_t>(a_stack[2], L"index");
-	auto& list = f_as<t_list&>(a_this);
+	auto& list = a_this->f_as<t_list>();
 	list.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_stack[0] = list[f_as<intptr_t>(a_stack[2])] = a_stack[3];

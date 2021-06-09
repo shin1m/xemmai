@@ -115,7 +115,7 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
 		auto x = paths.f_get_at(f_global()->f_as(i));
 		f_check<t_string>(x, L"path");
-		std::wstring path = portable::t_path(f_as<const t_string&>(x)) / a_name;
+		std::wstring path = portable::t_path(x->f_as<t_string>()) / a_name;
 		if (auto code = f_load_script(path + L".xm")) return f_new(a_name, code->f_as<t_code>().v_module, f_execute_script(code));
 		if (auto body = f_load_library(path)) return f_new(a_name, body, body->f_as<t_library>().f_define());
 	}
@@ -160,7 +160,7 @@ std::pair<size_t, size_t> t_debug_script::f_replace_break_point(size_t a_line, s
 			if (++i == v_safe_points.end()) return {0, 0};
 		}
 	}
-	auto& code = f_as<t_code&>(v_code);
+	auto& code = v_code->f_as<t_code>();
 	if (*i->first.second == code.f_p(a_old)) *i->first.second = code.f_p(a_new);
 	return {i->first.first, i->second};
 }
@@ -181,7 +181,7 @@ void t_type_of<t_module>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 {
 	if (a_n != 1) f_throw(L"must be called with an argument."sv);
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = t_module::f_instantiate(f_as<const t_string&>(a_stack[2]));
+	a_stack[0] = t_module::f_instantiate(a_stack[2]->f_as<t_string>());
 }
 
 }

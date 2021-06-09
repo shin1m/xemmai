@@ -247,7 +247,7 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 void t_context::f_backtrace(const t_pvalue& a_value)
 {
 	if (f_is<t_throwable>(a_value)) {
-		auto& p = f_as<t_fiber&>(t_fiber::f_current());
+		auto& p = t_fiber::f_current()->f_as<t_fiber>();
 		t_backtrace::f_push(a_value, v_lambda, p.v_caught == nullptr ? v_pc : p.v_caught);
 		p.v_caught = nullptr;
 	}
@@ -256,8 +256,8 @@ void t_context::f_backtrace(const t_pvalue& a_value)
 
 const t_pvalue* t_context::f_variable(std::wstring_view a_name) const
 {
-	auto& lambda = f_as<t_lambda&>(v_lambda);
-	auto& code = f_as<t_code&>(lambda.v_code);
+	auto& lambda = v_lambda->f_as<t_lambda>();
+	auto& code = lambda.v_code->f_as<t_code>();
 	auto i = code.v_variables.find(a_name);
 	if (i == code.v_variables.end()) return nullptr;
 	size_t outer = 0;

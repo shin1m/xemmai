@@ -174,7 +174,7 @@ class t_debugger : public xemmai::t_debugger
 	template<typename T>
 	void f_print_sequence(t_object* a_value, size_t a_depth)
 	{
-		auto& sequence = f_as<const T&>(a_value);
+		auto& sequence = a_value->f_as<T>();
 		if (a_depth <= 0) {
 			std::fputs("...", v_out);
 		} else if (sequence.f_size() > 0) {
@@ -209,7 +209,7 @@ class t_debugger : public xemmai::t_debugger
 				if (n > 0) {
 					size_t i = 0;
 					while (true) {
-						std::fprintf(v_out, "%ls: ", f_as<t_symbol&>(type->f_fields()[i].first).f_string().c_str());
+						std::fprintf(v_out, "%ls: ", type->f_fields()[i].first->f_as<t_symbol>().f_string().c_str());
 						f_print_value(a_value->f_fields()[i], a_depth);
 						if (++i >= n) break;
 						std::fputs(", ", v_out);
@@ -218,7 +218,7 @@ class t_debugger : public xemmai::t_debugger
 				std::fputc(')', v_out);
 			}
 			if (f_is<t_string>(a_value)) {
-				std::fprintf(v_out, " \"%ls\"", static_cast<const wchar_t*>(f_as<const t_string&>(a_value)));
+				std::fprintf(v_out, " \"%ls\"", static_cast<const wchar_t*>(a_value->f_as<t_string>()));
 			} else if (f_is<t_tuple>(a_value)) {
 				std::fputs(" '(", v_out);
 				f_print_sequence<t_tuple>(a_value, a_depth);
@@ -228,7 +228,7 @@ class t_debugger : public xemmai::t_debugger
 				f_print_sequence<t_list>(a_value, a_depth);
 				std::fputc(']', v_out);
 			} else if (f_is<t_map>(a_value)) {
-				auto& map = f_as<t_map&>(a_value);
+				auto& map = a_value->f_as<t_map>();
 				std::fputs(" {", v_out);
 				if (a_depth <= 0) {
 					std::fputs("...", v_out);
@@ -258,7 +258,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print_variables(t_context* a_context)
 	{
-		auto& code = f_as<t_code&>(f_as<t_lambda&>(a_context->v_lambda).f_code());
+		auto& code = a_context->v_lambda->f_as<t_lambda>().f_code()->f_as<t_code>();
 		for (auto& pair : code.v_variables) std::fprintf(v_out, "%ls\n", pair.first.c_str());
 	}
 	void f_prompt(t_thread* a_thread)

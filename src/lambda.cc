@@ -5,7 +5,7 @@ namespace xemmai
 
 t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code)
 {
-	if (f_as<t_code&>(a_code).v_shared)
+	if (a_code->f_as<t_code>().v_shared)
 		return f_new<t_lambda_shared>(f_global(), a_scope, a_code);
 	else
 		return f_new<t_lambda>(f_global(), a_scope, a_code);
@@ -13,7 +13,7 @@ t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code)
 
 t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code, t_pvalue* a_stack)
 {
-	auto& code = f_as<t_code&>(a_code);
+	auto& code = a_code->f_as<t_code>();
 	t_object* defaults = nullptr;
 	size_t n = code.v_arguments - code.v_minimum;
 	if (code.v_variadic) --n;

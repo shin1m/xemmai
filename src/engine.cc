@@ -259,10 +259,10 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 			size_t j = sv.find(L';', i);
 #endif
 			if (j == std::wstring_view::npos) break;
-			if (i < j) f_as<t_list&>(path).f_push(f_global()->f_as(sv.substr(i, j - i)));
+			if (i < j) path->f_as<t_list>().f_push(f_global()->f_as(sv.substr(i, j - i)));
 			i = j + 1;
 		}
-		if (i < sv.size()) f_as<t_list&>(path).f_push(f_global()->f_as(sv.substr(i)));
+		if (i < sv.size()) path->f_as<t_list>().f_push(f_global()->f_as(sv.substr(i)));
 	}
 	std::wstring executable;
 	portable::t_path script({});
@@ -270,12 +270,12 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	if (a_count > 0) {
 		executable = portable::f_convert(a_arguments[0]);
 #ifdef XEMMAI_MODULE_PATH
-		f_as<t_list&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
+		path->f_as<t_list>().f_push(f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
 #endif
 		if (a_count > 1) {
 			script = {portable::f_convert(a_arguments[1])};
-			f_as<t_list&>(path).f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L".."sv)));
-			auto& as = f_as<t_list&>(arguments);
+			path->f_as<t_list>().f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L".."sv)));
+			auto& as = arguments->f_as<t_list>();
 			for (size_t i = 2; i < a_count; ++i) as.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
 		}
 	}
@@ -369,7 +369,7 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 		std::thread([this, thread]
 		{
 			v_instance = this;
-			auto& p = f_as<t_thread&>(thread);
+			auto& p = thread->f_as<t_thread>();
 			auto internal = p.v_internal;
 			{
 				std::unique_lock lock(v_thread__mutex);
@@ -380,7 +380,7 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 			t_global::v_instance = &v_module_global->f_as<t_module>().v_body->f_as<t_global>();
 			auto main = []
 			{
-				f_as<t_fiber&>(t_fiber::f_current()).v_callable();
+				t_fiber::f_current()->f_as<t_fiber>().v_callable();
 			};
 			if (v_debugger)
 				t_fiber::f_main<t_debug_context>(main);
@@ -435,13 +435,13 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		v_debugger = a_debugger;
 		v_debug__stopping = true;
 		++v_debug__safe;
-		v_debugger->f_stopped(&f_as<t_thread&>(v_thread));
+		v_debugger->f_stopped(&v_thread->f_as<t_thread>());
 		f_debug_wait_and_leave(lock);
 	} else {
 		f_initialize_calls<t_context>();
 	}
 	intptr_t n = v_debugger ? t_fiber::f_main<t_debug_context>(t_module::f_main) : t_fiber::f_main<t_context>(t_module::f_main);
-	auto& thread = f_as<t_thread&>(v_thread);
+	auto& thread = v_thread->f_as<t_thread>();
 	{
 		std::unique_lock lock(v_thread__mutex);
 		if (v_debugger) {
@@ -517,7 +517,7 @@ void t_engine::f_debug_stop()
 	if (!v_debugger) f_throw(L"not in debug mode"sv);
 	if (v_debug__stopping) return;
 	f_debug_stop_and_wait(lock);
-	v_debugger->f_stopped(&f_as<t_thread&>(v_thread));
+	v_debugger->f_stopped(&v_thread->f_as<t_thread>());
 }
 
 void t_engine::f_debug_continue(t_thread* a_stepping)

@@ -40,8 +40,8 @@ void t_map::t_table::f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_pvalue a
 void t_map::f_rehash(const t_table::t_rank& a_rank)
 {
 	auto object = t_table::f_instantiate(v_table->f_type(), a_rank);
-	auto& table0 = f_as<t_table&>(v_table);
-	auto& table1 = f_as<t_table&>(object);
+	auto& table0 = v_table->f_as<t_table>();
+	auto& table1 = object->f_as<t_table>();
 	table1.v_size = table0.v_size;
 	auto entries = table1.f_entries();
 	for (auto p = table0.f_entries(); p != table0.v_end; ++p) {
@@ -61,7 +61,7 @@ t_object* t_map::f_instantiate()
 
 t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 {
-	auto table = &f_as<t_table&>(v_table);
+	auto table = &v_table->f_as<t_table>();
 	auto hash = f_as<size_t>(a_key.f_hash());
 	auto [p, gap] = table->f_find(hash, a_key);
 	if (p->v_gap == gap) return p->v_value = a_value;
@@ -69,7 +69,7 @@ t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 		auto rank = &table->v_rank + 1;
 		if (rank >= t_table::v_ranks + sizeof(t_table::v_ranks) / sizeof(t_table::t_rank)) f_throw(L"cannot grow."sv);
 		f_rehash(*rank);
-		table = &f_as<t_table&>(v_table);
+		table = &v_table->f_as<t_table>();
 		std::tie(p, gap) = table->f_find(hash, a_key);
 	}
 	table->f_put(p, gap, hash, a_key, a_value);
@@ -79,7 +79,7 @@ t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 
 t_pvalue t_map::f_remove(const t_pvalue& a_key)
 {
-	auto& table = f_as<t_table&>(v_table);
+	auto& table = v_table->f_as<t_table>();
 	auto p = table.f_find(a_key);
 	if (!p) f_throw(L"key not found."sv);
 	p->v_gap = 0;
@@ -129,7 +129,7 @@ t_object* t_type_of<t_map>::f__string(t_map& a_self)
 		{
 			x = x.f_string();
 			f_check<t_string>(x, name);
-			auto& s = f_as<const t_string&>(x);
+			auto& s = x->f_as<t_string>();
 			auto p = static_cast<const wchar_t*>(s);
 			cs.insert(cs.end(), p, p + s.f_size());
 		};
@@ -235,7 +235,7 @@ void t_type_of<t_map>::f_define()
 t_pvalue t_type_of<t_map>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	auto object = f_new<t_map>(f_global()->f_type<t_map::t_table>());
-	auto& map = f_as<t_map&>(object);
+	auto& map = object->f_as<t_map>();
 	a_n += 2;
 	for (size_t i = 2; i < a_n; ++i) {
 		const auto& x = a_stack[i];
@@ -250,7 +250,7 @@ t_pvalue t_type_of<t_map>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 
 size_t t_type_of<t_map>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 {
-	auto& map = f_as<t_map&>(a_this);
+	auto& map = a_this->f_as<t_map>();
 	map.f_owned_or_shared<std::shared_lock>([&]
 	{
 		a_stack[0] = map.f_get(a_stack[2]);
@@ -260,7 +260,7 @@ size_t t_type_of<t_map>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 
 size_t t_type_of<t_map>::f_do_set_at(t_object* a_this, t_pvalue* a_stack)
 {
-	auto& map = f_as<t_map&>(a_this);
+	auto& map = a_this->f_as<t_map>();
 	map.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_stack[0] = map.f_put(a_stack[2], a_stack[3]);

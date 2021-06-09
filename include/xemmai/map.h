@@ -186,7 +186,7 @@ struct t_type_of<t_map> : t_derivable<t_holds<t_map, t_type_of<t_sharable>>>
 	static size_t f_do_set_at(t_object* a_this, t_pvalue* a_stack);
 };
 
-inline t_map::t_iterator::t_iterator(const t_map& a_map) : v_table(a_map.v_table), v_entry(f_as<t_table&>(v_table).f_entries()), v_end(f_as<t_table&>(v_table).v_end)
+inline t_map::t_iterator::t_iterator(const t_map& a_map) : v_table(a_map.v_table), v_entry(v_table->f_as<t_table>().f_entries()), v_end(v_table->f_as<t_table>().v_end)
 {
 	do if (v_entry->v_gap) return; while (++v_entry < v_end);
 	v_entry = nullptr;
@@ -194,19 +194,19 @@ inline t_map::t_iterator::t_iterator(const t_map& a_map) : v_table(a_map.v_table
 
 inline size_t t_map::f_size() const
 {
-	return f_as<t_table&>(v_table).v_size;
+	return v_table->f_as<t_table>().v_size;
 }
 
 inline const t_svalue& t_map::f_get(const t_pvalue& a_key) const
 {
-	auto p = f_as<t_table&>(v_table).f_find(a_key);
+	auto p = v_table->f_as<t_table>().f_find(a_key);
 	if (!p) f_throw(L"key not found."sv);
 	return p->v_value;
 }
 
 inline bool t_map::f_has(const t_pvalue& a_key) const
 {
-	return f_as<t_table&>(v_table).f_find(a_key);
+	return v_table->f_as<t_table>().f_find(a_key);
 }
 
 }

@@ -315,6 +315,13 @@ inline bool t_value<T_tag>::f_has(t_object* a_key, size_t& a_index) const
 	return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_has(a_key, a_index);
 }
 
+template<typename T>
+inline void t_slot_of<T>::f_construct(t_object* a_value)
+{
+	v_p = &a_value->template f_as<T>();
+	v_slot = a_value;
+}
+
 inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(V_ids.size() - 1), v_ids(V_ids.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
 {
 }

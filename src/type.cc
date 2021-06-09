@@ -75,7 +75,7 @@ std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>>
 	std::vector<std::pair<t_root, t_rvalue>> fields{f_fields(), f_fields() + v_instance_fields};
 	std::map<t_object*, size_t> key2index{f_key2index(), f_key2index() + v_fields};
 	for (auto& x : a_fields.v_instance) {
-		if (key2index.find(x) != key2index.end()) f_throw(f_as<t_symbol&>(x).f_string());
+		if (key2index.find(x) != key2index.end()) f_throw(x->f_as<t_symbol>().f_string());
 		key2index.emplace(x, fields.size());
 		fields.emplace_back(x, nullptr);
 	}
@@ -91,7 +91,7 @@ std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>>
 			key2index.emplace_hint(i, x.first, fields.size());
 			fields.push_back(x);
 		} else {
-			if (i->second < instance_fields) f_throw(f_as<t_symbol&>(x.first).f_string());
+			if (i->second < instance_fields) f_throw(x.first->f_as<t_symbol>().f_string());
 			fields[i->second].second = x.second;
 		}
 	}
@@ -132,7 +132,7 @@ void t_type::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 
 t_pvalue t_type::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 {
-	f_throw(f_as<t_symbol&>(a_key).f_string());
+	f_throw(a_key->f_as<t_symbol>().f_string());
 }
 
 t_pvalue t_type::f__get(const t_pvalue& a_this, t_object* a_key, size_t& a_index)
@@ -168,7 +168,7 @@ void t_type::f__bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t
 
 void t_type::f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
 {
-	f_throw(f_as<t_symbol&>(a_key).f_string());
+	f_throw(a_key->f_as<t_symbol>().f_string());
 }
 
 void t_type::f__put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value)

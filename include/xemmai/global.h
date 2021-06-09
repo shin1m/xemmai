@@ -759,7 +759,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 				try {
 					auto p = thrown.f_string();
 					if (f_is<t_string>(p)) {
-						auto& s = f_as<const t_string&>(p);
+						auto& s = p->f_as<t_string>();
 						std::fprintf(stderr, "caught: %.*ls\n", static_cast<int>(s.f_size()), static_cast<const wchar_t*>(s));
 						break;
 					}
@@ -867,9 +867,9 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_object* t_type_of<t_string>::f__add(t_o
 {
 	auto add = [&](t_object* x)
 	{
-		auto& s0 = f_as<const t_string&>(a_self);
+		auto& s0 = a_self->f_as<t_string>();
 		if (s0.f_size() <= 0) return x;
-		auto& s1 = f_as<const t_string&>(x);
+		auto& s1 = x->f_as<t_string>();
 		return s1.f_size() <= 0 ? a_self : f__construct(a_self->f_type(), s0, s1);
 	};
 	if (f_is<t_string>(a_value)) return add(a_value);
@@ -880,12 +880,12 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_object* t_type_of<t_string>::f__add(t_o
 
 inline bool t_type_of<t_string>::f__equals(const t_string& a_self, const t_pvalue& a_value)
 {
-	return f_is<t_string>(a_value) && a_self == f_as<const t_string&>(a_value);
+	return f_is<t_string>(a_value) && a_self == a_value->f_as<t_string>();
 }
 
 inline bool t_type_of<t_string>::f__not_equals(const t_string& a_self, const t_pvalue& a_value)
 {
-	return !f_is<t_string>(a_value) || a_self != f_as<const t_string&>(a_value);
+	return !f_is<t_string>(a_value) || a_self != a_value->f_as<t_string>();
 }
 
 inline t_object* t_type_of<t_string>::f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)

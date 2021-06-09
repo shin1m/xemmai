@@ -37,7 +37,7 @@ void t_type_of<t_string>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 
 void t_type_of<t_string>::f_do_hash(t_object* a_this, t_pvalue* a_stack)
 {
-	a_stack[0] = f_as<const t_string&>(a_this).f_hash();
+	a_stack[0] = a_this->f_as<t_string>().f_hash();
 }
 
 size_t t_type_of<t_string>::f_do_add(t_object* a_this, t_pvalue* a_stack)
@@ -49,40 +49,40 @@ size_t t_type_of<t_string>::f_do_add(t_object* a_this, t_pvalue* a_stack)
 size_t t_type_of<t_string>::f_do_less(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = f_as<const t_string&>(a_this) < f_as<const t_string&>(a_stack[2]);
+	a_stack[0] = a_this->f_as<t_string>() < a_stack[2]->f_as<t_string>();
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_less_equal(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = f_as<const t_string&>(a_this) <= f_as<const t_string&>(a_stack[2]);
+	a_stack[0] = a_this->f_as<t_string>() <= a_stack[2]->f_as<t_string>();
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_greater(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = f_as<const t_string&>(a_this) > f_as<const t_string&>(a_stack[2]);
+	a_stack[0] = a_this->f_as<t_string>() > a_stack[2]->f_as<t_string>();
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_greater_equal(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = f_as<t_string&>(a_this) >= f_as<const t_string&>(a_stack[2]);
+	a_stack[0] = a_this->f_as<t_string>() >= a_stack[2]->f_as<t_string>();
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_equals(t_object* a_this, t_pvalue* a_stack)
 {
-	a_stack[0] = f__equals(f_as<const t_string&>(a_this), a_stack[2]);
+	a_stack[0] = f__equals(a_this->f_as<t_string>(), a_stack[2]);
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_not_equals(t_object* a_this, t_pvalue* a_stack)
 {
-	a_stack[0] = f__not_equals(f_as<const t_string&>(a_this), a_stack[2]);
+	a_stack[0] = f__not_equals(a_this->f_as<t_string>(), a_stack[2]);
 	return -1;
 }
 

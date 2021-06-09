@@ -154,10 +154,10 @@ struct t_context
 	t_context() : v_base(f_stack()), v_pc(nullptr), v_lambda(nullptr)
 	{
 	}
-	t_context(t_object* a_lambda, t_pvalue* a_stack) : v_pc(f_as<t_lambda&>(a_lambda).v_instructions), v_base(a_stack + 2), v_lambda(a_lambda)
+	t_context(t_object* a_lambda, t_pvalue* a_stack) : v_pc(a_lambda->f_as<t_lambda>().v_instructions), v_base(a_stack + 2), v_lambda(a_lambda)
 	{
 		v_previous = f_stack();
-		f_stack__(v_base + f_as<t_lambda&>(v_lambda).v_size);
+		f_stack__(v_base + v_lambda->f_as<t_lambda>().v_size);
 	}
 	template<typename T>
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(T&& a_value)
@@ -167,7 +167,7 @@ struct t_context
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return()
 	{
-		f_return(v_base[f_as<t_lambda&>(v_lambda).v_privates]);
+		f_return(v_base[v_lambda->f_as<t_lambda>().v_privates]);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(size_t a_index)
 	{
@@ -175,7 +175,7 @@ struct t_context
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_tail(size_t a_n)
 	{
-		auto p = reinterpret_cast<char*>(v_base + f_as<t_lambda&>(v_lambda).v_privates);
+		auto p = reinterpret_cast<char*>(v_base + v_lambda->f_as<t_lambda>().v_privates);
 		std::copy(p, p + (a_n + 2) * sizeof(t_pvalue), reinterpret_cast<char*>(v_base - 2));
 		f_stack__(std::max(v_previous, v_base + a_n));
 	}
@@ -188,7 +188,7 @@ struct t_context
 template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
 size_t t_context::f_tail(t_object* a_this)
 {
-	size_t n = (a_this->f_type()->*A_function)(a_this, v_base + f_as<t_lambda&>(v_lambda).v_privates);
+	size_t n = (a_this->f_type()->*A_function)(a_this, v_base + v_lambda->f_as<t_lambda>().v_privates);
 	if (n == size_t(-1))
 		f_return();
 	else
@@ -202,17 +202,17 @@ struct t_debug_context : t_context
 
 	t_debug_context() : v_next(nullptr)
 	{
-		f_as<t_fiber&>(t_fiber::f_current()).v_context = this;
+		t_fiber::f_current()->f_as<t_fiber>().v_context = this;
 	}
 	t_debug_context(t_object* a_lambda, t_pvalue* a_stack) : t_context(a_lambda, a_stack)
 	{
-		auto& fiber = f_as<t_fiber&>(t_fiber::f_current());
+		auto& fiber = t_fiber::f_current()->f_as<t_fiber>();
 		v_next = fiber.v_context;
 		fiber.v_context = this;
 	}
 	~t_debug_context()
 	{
-		f_as<t_fiber&>(t_fiber::f_current()).v_context = v_next;
+		t_fiber::f_current()->f_as<t_fiber>().v_context = v_next;
 	}
 };
 
