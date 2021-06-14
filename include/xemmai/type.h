@@ -119,6 +119,15 @@ struct t_type_of<t_object>
 			return p ? &p->template f_as<T0>() : nullptr;
 		}
 	};
+	template<typename T_tag>
+	struct t_as<const t_value<T_tag>&>
+	{
+		template<typename T>
+		static const t_value<T_tag>& f_call(T&& a_object)
+		{
+			return a_object;
+		}
+	};
 	template<typename T0>
 	struct t_is
 	{
@@ -340,16 +349,6 @@ struct t_type_of<t_object>
 		if (T::f_do_and != U::f_do_and) f_and = T::f_do_and;
 		if (T::f_do_xor != U::f_do_xor) f_xor = T::f_do_xor;
 		if (T::f_do_or != U::f_do_or) f_or = T::f_do_or;
-	}
-};
-
-template<typename T_tag>
-struct t_type_of<t_object>::t_as<const t_value<T_tag>&>
-{
-	template<typename T>
-	static const t_value<T_tag>& f_call(T&& a_object)
-	{
-		return a_object;
 	}
 };
 
