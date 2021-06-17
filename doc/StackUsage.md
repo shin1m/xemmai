@@ -77,9 +77,6 @@
     GLOBAL_GET
         ?
         |x
-    STACK_LET
-        |x
-        |x
     STACK_GET
         |
         |x

@@ -100,7 +100,7 @@ void t_lambda::f_flow(t_flow& a_flow)
 	t_flow flow{v_arguments, &targets, &v_block_block, &v_block_block};
 	for (auto& p : v_block) p->f_flow(flow);
 	flow.v_current->v_nexts.push_back(&v_junction);
-	v_block_block.f_merge(std::vector<bool>(v_privates.size() - v_arguments, false));
+	v_block_block.f_merge(std::vector<bool>(v_privates.size() - v_arguments));
 	flow(&v_block_block);
 	for (auto& p : v_defaults) p->f_flow(a_flow);
 }
@@ -116,7 +116,7 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	auto arguments0 = a_emit.v_arguments;
 	a_emit.v_arguments = v_arguments;
 	auto privates0 = a_emit.v_privates;
-	std::vector<bool> privates1(v_privates.size() - v_arguments, false);
+	std::vector<bool> privates1(v_privates.size() - v_arguments);
 	a_emit.v_privates = &privates1;
 	auto stack0 = a_emit.v_stack;
 	a_emit.v_stack = v_privates.size();
@@ -628,20 +628,18 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 		if (a_tail) a_emit.f_emit_safe_point(this);
 		a_emit << static_cast<t_instruction>(instruction) << a_emit.v_stack;
 		if (v_resolved >= 3) a_emit << v_resolved;
-		a_emit.f_push();
 	} else {
 		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
 			a_emit.f_emit_safe_point(this);
 			a_emit.f_join(*a_emit.v_targets->v_return_junction);
 			a_emit << e_instruction__RETURN_V;
-			a_emit.f_push();
 		} else {
 			a_emit << e_instruction__STACK_GET << a_emit.v_stack;
-			a_emit.f_push();
 		}
 	}
 	a_emit << v_variable->v_index;
+	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -658,40 +656,38 @@ void t_scope_put::f_flow(t_flow& a_flow)
 t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_clear && !v_variable.v_shared) {
+		auto operand = v_value->f_emit(a_emit, false, true);
+		a_emit.f_emit_safe_point(this);
 		int i = v_variable.v_index - a_emit.v_arguments;
-		if (i >= 0 && !(*a_emit.v_privates)[i]) {
-			auto operand = v_value->f_emit(a_emit, false, true);
-			a_emit.f_emit_safe_point(this);
-			(*a_emit.v_privates)[i] = true;
-			switch (operand.v_tag) {
-			case t_operand::e_tag__INTEGER:
-				a_emit << e_instruction__INTEGER << v_variable.v_index << operand.v_integer;
+		if (i >= 0) (*a_emit.v_privates)[i] = true;
+		switch (operand.v_tag) {
+		case t_operand::e_tag__INTEGER:
+			a_emit << e_instruction__INTEGER << v_variable.v_index << operand.v_integer;
+			break;
+		case t_operand::e_tag__FLOAT:
+			a_emit << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
+			break;
+		case t_operand::e_tag__LITERAL:
+			switch (operand.v_value->f_tag()) {
+			case e_tag__NULL:
+				a_emit << e_instruction__NUL << v_variable.v_index;
 				break;
-			case t_operand::e_tag__FLOAT:
-				a_emit << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
-				break;
-			case t_operand::e_tag__LITERAL:
-				switch (operand.v_value->f_tag()) {
-				case e_tag__NULL:
-					a_emit << e_instruction__NUL << v_variable.v_index;
-					break;
-				case e_tag__BOOLEAN:
-					a_emit << e_instruction__BOOLEAN << v_variable.v_index << operand.v_value->f_boolean();
-					break;
-				default:
-					a_emit << e_instruction__INSTANCE << v_variable.v_index << *operand.v_value;
-				}
-				break;
-			case t_operand::e_tag__VARIABLE:
-				a_emit << e_instruction__STACK_PUT << operand.v_index << v_variable.v_index;
+			case e_tag__BOOLEAN:
+				a_emit << e_instruction__BOOLEAN << v_variable.v_index << operand.v_value->f_boolean();
 				break;
 			default:
-				a_emit << e_instruction__STACK_PUT << a_emit.v_stack - 1 << v_variable.v_index;
-				a_emit.f_pop();
+				a_emit << e_instruction__INSTANCE << v_variable.v_index << *operand.v_value;
 			}
-			a_emit.f_at(this);
-			return t_operand();
+			break;
+		case t_operand::e_tag__VARIABLE:
+			a_emit << e_instruction__STACK_PUT << operand.v_index << v_variable.v_index;
+			break;
+		default:
+			a_emit << e_instruction__STACK_PUT << a_emit.v_stack - 1 << v_variable.v_index;
+			a_emit.f_pop();
 		}
+		a_emit.f_at(this);
+		return t_operand();
 	}
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
@@ -1107,7 +1103,7 @@ t_operand t_get_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
 	a_emit.f_emit_safe_point(this);
 	a_emit << (a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT) << a_emit.v_stack - 3;
-	a_emit.f_pop().f_pop().f_pop().f_push();
+	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1119,7 +1115,6 @@ void t_get_at::f_bind(t_emit& a_emit)
 	v_index->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << e_instruction__METHOD_BIND << a_emit.v_stack - 2;
-	a_emit.f_push().f_pop().f_pop().f_pop().f_push().f_push();
 	a_emit.f_at(this);
 }
 
@@ -1139,7 +1134,7 @@ t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	if (a_tail) a_emit.f_join(*a_emit.v_targets->v_return_junction);
 	a_emit.f_emit_safe_point(this);
 	a_emit << (a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT) << a_emit.v_stack - 4;
-	a_emit.f_pop().f_pop().f_pop().f_pop().f_push();
+	a_emit.f_pop().f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return t_operand();
@@ -1154,12 +1149,12 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 		ast::t_flow flow{0, &targets, &a_scope.v_block_block, &a_scope.v_block_block};
 		for (auto& p : a_scope.v_block) p->f_flow(flow);
 		flow.v_current->v_nexts.push_back(&a_scope.v_junction);
-		a_scope.v_block_block.f_merge(std::vector<bool>(a_scope.v_privates.size(), false));
+		a_scope.v_block_block.f_merge(std::vector<bool>(a_scope.v_privates.size()));
 		flow(&a_scope.v_block_block);
 	}
 	v_scope = &a_scope;
 	v_arguments = 0;
-	std::vector<bool> privates(a_scope.v_privates.size(), false);
+	std::vector<bool> privates(a_scope.v_privates.size());
 	v_privates = &privates;
 	v_stack = privates.size();
 	auto code = t_code::f_instantiate(v_module, true, false, privates.size(), a_scope.v_shareds, 0, 0);
@@ -1174,7 +1169,7 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 		<< e_instruction__STACK_GET << v_stack << 0
 		<< e_instruction__SCOPE_PUT0 << v_stack << 0;
 	ast::f_emit_block_without_value(*this, a_scope.v_block);
-	*this << e_instruction__END;
+	*this << e_instruction__RETURN_N;
 	f_resolve();
 	if (v_safe_points) {
 		t_code::t_variable self;

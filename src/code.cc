@@ -189,7 +189,6 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			XEMMAI__CODE__LABEL_BINARY(AND_TAIL)
 			XEMMAI__CODE__LABEL_BINARY(XOR_TAIL)
 			XEMMAI__CODE__LABEL_BINARY(OR_TAIL)
-			&&label__END,
 			&&label__SAFE_POINT,
 			&&label__BREAK_POINT
 		};
@@ -577,49 +576,43 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 #define XEMMAI__CODE__CASE_NAME(a_name)\
 		XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name, XEMMAI__CODE__OPERANDS))
-#define XEMMAI__CODE__FETCH()
-#define XEMMAI__CODE__PREPARE()\
-						auto x = stack[1];
+#define XEMMAI__CODE__FETCH()\
+				auto& a0 = stack[1];
+#define XEMMAI__CODE__PREPARE()
 #define XEMMAI__CODE__FETCH_L()\
 				auto& a0 = *static_cast<const t_pvalue*>(*++pc);
-#define XEMMAI__CODE__PREPARE_L()\
-						auto& x = a0;
+#define XEMMAI__CODE__PREPARE_L()
 #define XEMMAI__CODE__FETCH_V()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PREPARE_V() XEMMAI__CODE__PREPARE_L()
-#define XEMMAI__CODE__FETCH_T()\
-				auto& a0 = stack[1];
-#define XEMMAI__CODE__PREPARE_T() XEMMAI__CODE__PREPARE()
-#define XEMMAI__CODE__PREPARE_LL()\
-						auto& x = a0;\
-						stack[2] = a1;
-#define XEMMAI__CODE__PREPARE_TL()\
-						auto x = stack[1];\
+#define XEMMAI__CODE__PREPARE_V()
+#define XEMMAI__CODE__FETCH_T() XEMMAI__CODE__FETCH()
+#define XEMMAI__CODE__PREPARE_T()
+#define XEMMAI__CODE__PREPARE_A1()\
 						stack[2] = a1;
 #define XEMMAI__CODE__FETCH_LI()\
 				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
 				auto a1 = reinterpret_cast<intptr_t>(*++pc);
-#define XEMMAI__CODE__PREPARE_LI() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__PREPARE_LI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VI()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 				auto a1 = reinterpret_cast<intptr_t>(*++pc);
-#define XEMMAI__CODE__PREPARE_VI() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__PREPARE_VI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TI()\
 				auto& a0 = stack[1];\
 				auto a1 = reinterpret_cast<intptr_t>(*++pc);
-#define XEMMAI__CODE__PREPARE_TI() XEMMAI__CODE__PREPARE_TL()
+#define XEMMAI__CODE__PREPARE_TI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_LF()\
 				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
 				XEMMAI__CODE__FLOAT(a1, v1)
-#define XEMMAI__CODE__PREPARE_LF() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__PREPARE_LF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VF()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 				XEMMAI__CODE__FLOAT(a1, v1)
-#define XEMMAI__CODE__PREPARE_VF() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__PREPARE_VF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TF()\
 				auto& a0 = stack[1];\
 				XEMMAI__CODE__FLOAT(a1, v1)
-#define XEMMAI__CODE__PREPARE_TF() XEMMAI__CODE__PREPARE_TL()
+#define XEMMAI__CODE__PREPARE_TF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IL()\
 				auto a0 = reinterpret_cast<intptr_t>(*++pc);\
 				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
@@ -629,13 +622,15 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__FETCH_LL()\
 				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
 				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
+#define XEMMAI__CODE__PREPARE_LL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VL()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
-#define XEMMAI__CODE__PREPARE_VL() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__PREPARE_VL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TL()\
 				auto& a0 = stack[1];\
 				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
+#define XEMMAI__CODE__PREPARE_TL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IV()\
 				auto a0 = reinterpret_cast<intptr_t>(*++pc);\
 				auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
@@ -645,15 +640,15 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__FETCH_LV()\
 				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
 				auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PREPARE_LV() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__PREPARE_LV() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VV()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 				auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PREPARE_VV() XEMMAI__CODE__PREPARE_LL()
+#define XEMMAI__CODE__PREPARE_VV() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TV()\
 				auto& a0 = stack[1];\
 				auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
-#define XEMMAI__CODE__PREPARE_TV() XEMMAI__CODE__PREPARE_TL()
+#define XEMMAI__CODE__PREPARE_TV() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IT()\
 				auto a0 = reinterpret_cast<intptr_t>(*++pc);\
 				auto& a1 = stack[1];
@@ -663,29 +658,27 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__FETCH_LT()\
 				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
 				auto& a1 = stack[1];
-#define XEMMAI__CODE__PREPARE_LT()\
-						auto& x = a0;\
-						stack[2] = stack[1];
+#define XEMMAI__CODE__PREPARE_LT() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VT()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
 				auto& a1 = stack[1];
-#define XEMMAI__CODE__PREPARE_VT() XEMMAI__CODE__PREPARE_LT()
+#define XEMMAI__CODE__PREPARE_VT() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TT()\
 				auto& a0 = stack[1];\
 				auto& a1 = stack[2];
-#define XEMMAI__CODE__PREPARE_TT() XEMMAI__CODE__PREPARE()
+#define XEMMAI__CODE__PREPARE_TT()
 #define XEMMAI__CODE__CASE_BEGIN(a_name)\
 		XEMMAI__CODE__CASE_NAME(a_name)\
 			{\
 				auto stack = base + reinterpret_cast<size_t>(*++pc);\
 				XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__FETCH, XEMMAI__CODE__OPERANDS)()\
 				++pc;
-#define XEMMAI__CODE__PRIMITIVE_CALL(a_p, a_x)\
+#define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
 						stack[0] = a_x;
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
 				{\
 					XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
-					auto n = x->f_type()->a_method(x, stack);\
+					auto n = a0->f_type()->a_method(a0, stack);\
 					if (n != size_t(-1)) xemmai::f_loop(stack, n);\
 				}
 #define XEMMAI__CODE__CASE_END\
@@ -858,39 +851,12 @@ size_t t_code::f_loop(t_context* a_context)
 			}
 #define XEMMAI__CODE__CASE_NAME(a_name)\
 		XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name##_TAIL, XEMMAI__CODE__OPERANDS))
-#undef XEMMAI__CODE__PREPARE_V
-#define XEMMAI__CODE__PREPARE_V()\
-						auto x = a0;
-#undef XEMMAI__CODE__PREPARE_VL
-#define XEMMAI__CODE__PREPARE_VL()\
-						stack[2] = a1;\
-						auto x = a0;
-#undef XEMMAI__CODE__PREPARE_VI
-#define XEMMAI__CODE__PREPARE_VI() XEMMAI__CODE__PREPARE_VL()
-#undef XEMMAI__CODE__PREPARE_VF
-#define XEMMAI__CODE__PREPARE_VF() XEMMAI__CODE__PREPARE_VL()
-#undef XEMMAI__CODE__PREPARE_LV
-#define XEMMAI__CODE__PREPARE_LV()\
-						auto& x = a0;\
-						stack[2] = a1;
-#undef XEMMAI__CODE__PREPARE_VV
-#define XEMMAI__CODE__PREPARE_VV() XEMMAI__CODE__PREPARE_VL()
-#undef XEMMAI__CODE__PREPARE_TV
-#define XEMMAI__CODE__PREPARE_TV()\
-						auto x = stack[1];\
-						stack[2] = a1;
-#undef XEMMAI__CODE__PREPARE_VT
-#define XEMMAI__CODE__PREPARE_VT()\
-						auto x = a0;\
-						stack[2] = stack[1];
-#define XEMMAI__CODE__PRIMITIVE_CALL(a_p, a_x)\
+#define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
 				a_context->f_return(a_x);\
 				return -1;
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
-				{\
-					XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
-					return a_context->f_tail<&t_type::a_method>(x, stack);\
-				}
+				XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
+				return a_context->f_tail<&t_type::a_method>(a0, stack);
 #define XEMMAI__CODE__CASE_END\
 			}
 #define XEMMAI__CODE__OTHERS
@@ -1000,9 +966,6 @@ size_t t_code::f_loop(t_context* a_context)
 #undef XEMMAI__CODE__PRIMITIVE_CALL
 #undef XEMMAI__CODE__OBJECT_CALL
 #undef XEMMAI__CODE__CASE_END
-		XEMMAI__CODE__CASE(END)
-			a_context->f_return(nullptr);
-			return -1;
 		XEMMAI__CODE__CASE(SAFE_POINT)
 			++pc;
 			f_engine()->f_debug_safe_point();
@@ -1048,7 +1011,6 @@ void t_code::f_try(t_context* a_context)
 			f_rethrow();
 		}
 	} catch (const t_rvalue& thrown) {
-		stack[0] = nullptr;
 		auto& p = t_fiber::f_current()->f_as<t_fiber>();
 		void** caught = p.v_caught == nullptr ? pc : p.v_caught;
 		p.v_caught = nullptr;
@@ -1060,6 +1022,7 @@ void t_code::f_try(t_context* a_context)
 					if (try0 != e_try__CATCH) break;
 					++pc;
 					auto type = stack[0];
+					f_check<t_type>(type, L"type");
 					if (thrown != f_engine()->v_fiber_exit && thrown.f_is(&type->f_as<t_type>())) {
 						auto index = reinterpret_cast<size_t>(*++pc);
 						++pc;
@@ -1075,7 +1038,6 @@ void t_code::f_try(t_context* a_context)
 					f_rethrow();
 				}
 			} catch (const t_rvalue& thrown) {
-				stack[0] = nullptr;
 				caught = p.v_caught == nullptr ? pc : p.v_caught;
 				p.v_caught = nullptr;
 				pc = finally0;

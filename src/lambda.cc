@@ -14,13 +14,12 @@ t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code)
 t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code, t_pvalue* a_stack)
 {
 	auto& code = a_code->f_as<t_code>();
-	t_object* defaults = nullptr;
-	size_t n = code.v_arguments - code.v_minimum;
+	auto n = code.v_arguments - code.v_minimum;
 	if (code.v_variadic) --n;
-	if (n > 0) defaults = t_tuple::f_instantiate(n, [&](auto& tuple)
+	auto defaults = n > 0 ? t_tuple::f_instantiate(n, [&](auto& tuple)
 	{
 		std::uninitialized_copy_n(a_stack, n, &tuple[0]);
-	});
+	}) : nullptr;
 	if (code.v_shared)
 		return f_new<t_advanced_lambda<t_lambda_shared>>(f_global(), a_scope, a_code, defaults);
 	else

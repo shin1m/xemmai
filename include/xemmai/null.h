@@ -9,7 +9,7 @@ namespace xemmai
 template<>
 struct t_type_of<std::nullptr_t> : t_uninstantiatable<t_bears<std::nullptr_t>>
 {
-	static t_object* f_string(const t_pvalue&)
+	static t_object* f__string(const t_pvalue&)
 	{
 		return t_string::f_instantiate(L"null"sv);
 	}
