@@ -640,7 +640,6 @@ t_operand t_literal<T>::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	if (a_clear) return t_operand();
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
-		a_emit.f_join(*a_emit.v_targets->v_return_junction);
 		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + e_instruction__RETURN_B - e_instruction__BOOLEAN) << v_value;
 	} else {
 		a_emit << t_emit::f_instruction_of<T>() << a_emit.v_stack << v_value;
