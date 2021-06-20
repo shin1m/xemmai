@@ -14,12 +14,11 @@ class t_scope
 
 	size_t v_size;
 	t_slot v_outer;
-	t_svalue* v_outer_entries;
 
 	t_scope() : v_size(0)
 	{
 	}
-	t_scope(size_t a_size, t_svalue* a_outer) : v_size(a_size), v_outer(f_this(a_outer)), v_outer_entries(a_outer)
+	t_scope(size_t a_size, t_object* a_outer) : v_size(a_size), v_outer(a_outer)
 	{
 		std::uninitialized_default_construct_n(f_entries(), v_size);
 	}
@@ -32,15 +31,10 @@ class t_scope
 	}
 
 public:
-	static t_svalue* f_outer(t_svalue* a_entries)
+	t_object* f_outer() const
 	{
-		return reinterpret_cast<t_scope*>(a_entries)[-1].v_outer_entries;
+		return v_outer;
 	}
-	static t_object* f_this(t_svalue* a_entries)
-	{
-		return t_object::f_of(reinterpret_cast<t_scope*>(a_entries) - 1);
-	}
-
 	t_svalue* f_entries()
 	{
 		return reinterpret_cast<t_svalue*>(this + 1);

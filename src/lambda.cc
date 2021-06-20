@@ -3,7 +3,7 @@
 namespace xemmai
 {
 
-t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code)
+t_object* t_lambda::f_instantiate(t_object* a_scope, t_object* a_code)
 {
 	if (a_code->f_as<t_code>().v_shared)
 		return f_new<t_lambda_shared>(f_global(), a_scope, a_code);
@@ -11,7 +11,7 @@ t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code)
 		return f_new<t_lambda>(f_global(), a_scope, a_code);
 }
 
-t_object* t_lambda::f_instantiate(t_svalue* a_scope, t_object* a_code, t_pvalue* a_stack)
+t_object* t_lambda::f_instantiate(t_object* a_scope, t_object* a_code, t_pvalue* a_stack)
 {
 	auto& code = a_code->f_as<t_code>();
 	auto n = code.v_arguments - code.v_minimum;

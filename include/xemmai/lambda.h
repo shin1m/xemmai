@@ -17,7 +17,6 @@ class t_lambda
 	friend struct t_type_of<t_lambda>;
 
 protected:
-	t_svalue* v_scope_entries;
 	t_slot v_scope;
 	t_slot v_code;
 	size_t v_arguments;
@@ -25,7 +24,7 @@ protected:
 	size_t v_size;
 	size_t v_privates;
 
-	t_lambda(t_svalue* a_scope, t_object* a_code) : v_scope_entries(a_scope), v_scope(t_scope::f_this(a_scope)), v_code(a_code)
+	t_lambda(t_object* a_scope, t_object* a_code) : v_scope(a_scope), v_code(a_code)
 	{
 		auto& code = v_code->f_as<t_code>();
 		v_size = code.v_size;
@@ -42,8 +41,8 @@ protected:
 	}
 
 public:
-	static t_object* f_instantiate(t_svalue* a_scope, t_object* a_code);
-	static t_object* f_instantiate(t_svalue* a_scope, t_object* a_code, t_pvalue* a_stack);
+	static t_object* f_instantiate(t_object* a_scope, t_object* a_code);
+	static t_object* f_instantiate(t_object* a_scope, t_object* a_code, t_pvalue* a_stack);
 
 	const t_slot& f_code() const
 	{
@@ -80,7 +79,7 @@ class t_lambda_shared : public t_lambda
 	size_t v_shareds;
 
 protected:
-	t_lambda_shared(t_svalue* a_scope, t_object* a_code) : t_lambda(a_scope, a_code), v_shareds(v_code->f_as<t_code>().v_shareds)
+	t_lambda_shared(t_object* a_scope, t_object* a_code) : t_lambda(a_scope, a_code), v_shareds(v_code->f_as<t_code>().v_shareds)
 	{
 	}
 	~t_lambda_shared() = default;
@@ -105,7 +104,7 @@ class t_advanced_lambda : public T_base
 	bool v_variadic;
 	size_t v_minimum;
 
-	t_advanced_lambda(t_svalue* a_scope, t_object* a_code, t_object* a_defaults) : T_base(a_scope, a_code), v_defaults(a_defaults)
+	t_advanced_lambda(t_object* a_scope, t_object* a_code, t_object* a_defaults) : T_base(a_scope, a_code), v_defaults(a_defaults)
 	{
 		auto& code = this->v_code->template f_as<t_code>();
 		v_variadic = code.v_variadic;

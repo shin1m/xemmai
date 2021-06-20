@@ -263,10 +263,10 @@ const t_pvalue* t_context::f_variable(std::wstring_view a_name) const
 	size_t outer = 0;
 	for (auto i = a_name.begin(); i != a_name.end() && *i == L':'; ++i) ++outer;
 	size_t index = i->second.v_index;
-	if (outer <= 0) return (i->second.v_shared ? reinterpret_cast<const t_pvalue*>(v_scope) : v_base) + index;
-	auto scope = lambda.v_scope_entries;
-	for (size_t i = 1; i < outer; ++i) scope = t_scope::f_outer(scope);
-	return reinterpret_cast<const t_pvalue*>(scope) + index;
+	if (outer <= 0) return (i->second.v_shared ? reinterpret_cast<const t_pvalue*>(v_scope->f_as<t_scope>().f_entries()) : v_base) + index;
+	t_object* scope = lambda.v_scope;
+	for (size_t i = 1; i < outer; ++i) scope = scope->f_as<t_scope>().f_outer();
+	return reinterpret_cast<const t_pvalue*>(scope->f_as<t_scope>().f_entries()) + index;
 }
 
 #ifdef _WIN32

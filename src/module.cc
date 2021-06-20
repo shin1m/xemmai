@@ -47,8 +47,7 @@ t_object* t_module::f_load_script(std::wstring_view a_path)
 
 std::vector<std::pair<t_root, t_rvalue>> t_module::f_execute_script(t_object* a_code)
 {
-	auto scope = xemmai::f_new<t_scope>(f_global());
-	auto lambda = t_lambda::f_instantiate(scope->f_as<t_scope>().f_entries(), a_code);
+	auto lambda = t_lambda::f_instantiate(xemmai::f_new<t_scope>(f_global()), a_code);
 	t_fields fields;
 	t_builder::f_do(fields, [&](auto builder)
 	{

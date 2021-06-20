@@ -827,10 +827,10 @@ inline size_t t_code::f_loop(t_context& a_context)
 template<typename T_context>
 inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 {
-	auto scope = f_engine()->f_allocate(sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
 	T_context context(t_object::f_of(this), a_stack);
-	context.v_scope = (new(scope->f_data()) t_scope(v_shareds, v_scope_entries))->f_entries();
-	scope->f_be(f_global()->f_type<t_scope>());
+	context.v_scope = f_engine()->f_allocate(sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
+	new(context.v_scope->f_data()) t_scope(v_shareds, v_scope);
+	context.v_scope->f_be(f_global()->f_type<t_scope>());
 	return t_code::f_loop(context);
 }
 

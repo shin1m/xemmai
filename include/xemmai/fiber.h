@@ -149,7 +149,7 @@ struct t_context
 	t_pvalue* v_base;
 	t_object* v_lambda;
 	t_pvalue* v_previous;
-	t_svalue* v_scope;
+	t_object* v_scope;
 
 	t_context() : v_base(f_stack()), v_pc(nullptr), v_lambda(nullptr)
 	{
