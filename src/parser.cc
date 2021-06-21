@@ -258,7 +258,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 	case t_lexer::e_token__BREAK:
 		{
 			t_at at = v_lexer.f_at();
-			if (!v_can_jump) f_throw(L"expecting within loop."sv, at);
+			if (!v_can_jump) f_throw(L"expecting inside loop."sv, at);
 			v_lexer.f_next();
 			std::unique_ptr<ast::t_node> node(new ast::t_break(at, f_end_of_expression() ? nullptr : f_expression()));
 			return node;
@@ -266,7 +266,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 	case t_lexer::e_token__CONTINUE:
 		{
 			t_at at = v_lexer.f_at();
-			if (!v_can_jump) f_throw(L"expecting within loop."sv, at);
+			if (!v_can_jump) f_throw(L"expecting inside loop."sv, at);
 			v_lexer.f_next();
 			std::unique_ptr<ast::t_node> node(new ast::t_continue(at));
 			return node;
@@ -669,10 +669,10 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			t_at at = v_lexer.f_at();
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			bool can_jump = v_can_jump;
-			v_can_jump = true;
 			size_t varies = v_scope->v_privates.size();
 			std::unique_ptr<ast::t_while> node(new ast::t_while(at, f_expression()));
+			bool can_jump = v_can_jump;
+			v_can_jump = true;
 			f_block_or_expression(indent, node->v_block);
 			v_can_jump = can_jump;
 			while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
@@ -687,13 +687,13 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_expressions(node->v_initialization);
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'."sv);
 			v_lexer.f_next();
-			bool can_jump = v_can_jump;
-			v_can_jump = true;
 			size_t varies = v_scope->v_privates.size();
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) node->v_condition = f_expression();
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'."sv);
 			v_lexer.f_next();
 			if (!v_lexer.f_newline() && !(v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1)) f_expressions(node->v_next);
+			bool can_jump = v_can_jump;
+			v_can_jump = true;
 			f_block_or_expression(indent, node->v_block);
 			v_can_jump = can_jump;
 			while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
