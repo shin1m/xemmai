@@ -20,6 +20,26 @@ while true
 		print(i
 assert(i == 3
 
+f = @ "hello"
+x = while true
+	f() + break "world"
+print(x
+assert(x == "world"
+x = while true
+	f() + (try
+		f() + break "world"
+	finally
+	)
+print(x
+assert(x == "world"
+g = @ f() + (try
+	f() + return "world"
+finally
+)
+x = g(
+print(x
+assert(x == "world"
+
 (@
 	try
 		throw null

@@ -491,12 +491,14 @@ struct t_emit
 	{
 		t_label* v_break;
 		ast::t_block* v_break_junction;
+		size_t v_break_stack;
 		bool v_break_is_tail;
 		bool v_break_must_clear;
 		t_label* v_continue;
 		ast::t_block* v_continue_junction;
 		t_label* v_return;
 		ast::t_block* v_return_junction;
+		size_t v_return_stack;
 		bool v_return_is_tail;
 	};
 

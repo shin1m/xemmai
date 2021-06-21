@@ -125,7 +125,7 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.v_labels = &labels1;
 	auto targets0 = a_emit.v_targets;
 	auto& return0 = a_emit.f_label();
-	t_emit::t_targets targets1{nullptr, nullptr, false, false, nullptr, nullptr, &return0, &v_junction, true};
+	t_emit::t_targets targets1{nullptr, nullptr, a_emit.v_stack, false, false, nullptr, nullptr, &return0, &v_junction, a_emit.v_stack, true};
 	a_emit.v_targets = &targets1;
 	auto safe_positions0 = a_emit.v_safe_positions;
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions1;
@@ -233,7 +233,7 @@ t_operand t_while::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
-	t_emit::t_targets targets1{&break0, &v_junction_exit, a_tail, a_clear, &loop, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_is_tail};
+	t_emit::t_targets targets1{&break0, &v_junction_exit, a_emit.v_stack, a_tail, a_clear, &loop, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack, targets0->v_return_is_tail};
 	a_emit.v_targets = &targets1;
 	f_emit_block_without_value(a_emit, v_block);
 	a_emit.v_targets = targets0;
@@ -286,7 +286,7 @@ t_operand t_for::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	}
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
-	t_emit::t_targets targets1{&break0, &v_junction_exit, a_tail, a_clear, &continue0, &v_junction_next, targets0->v_return, targets0->v_return_junction, targets0->v_return_is_tail};
+	t_emit::t_targets targets1{&break0, &v_junction_exit, a_emit.v_stack, a_tail, a_clear, &continue0, &v_junction_next, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack, targets0->v_return_is_tail};
 	a_emit.v_targets = &targets1;
 	f_emit_block_without_value(a_emit, v_block);
 	a_emit.v_targets = targets0;
@@ -311,11 +311,13 @@ void t_break::f_flow(t_flow& a_flow)
 
 t_operand t_break::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
+	auto stack = a_emit.v_stack;
+	a_emit.v_stack = a_emit.v_targets->v_break_stack;
 	if (v_expression)
 		v_expression->f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, a_emit.v_targets->v_break_must_clear);
 	else if (!a_emit.v_targets->v_break_must_clear)
 		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_break_is_tail, false, false);
-	if (!a_emit.v_targets->v_break_must_clear) a_emit.f_pop();
+	a_emit.v_stack = stack;
 	if (!a_clear) a_emit.f_push();
 	a_emit.f_join(*a_emit.v_targets->v_break_junction);
 	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_break;
@@ -342,6 +344,8 @@ void t_return::f_flow(t_flow& a_flow)
 
 t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
+	auto stack = a_emit.v_stack;
+	a_emit.v_stack = a_emit.v_targets->v_return_stack;
 	if (v_expression)
 		v_expression->f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false);
 	else
@@ -352,7 +356,8 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		a_emit.f_join(*a_emit.v_targets->v_return_junction);
 		a_emit << e_instruction__JUMP << *a_emit.v_targets->v_return;
 	}
-	if (a_clear) a_emit.f_pop();
+	a_emit.v_stack = stack;
+	if (!a_clear) a_emit.f_push();
 	return t_operand();
 }
 
@@ -396,15 +401,16 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 {
 	a_emit.f_join(v_junction_try);
 	a_emit.f_merge(v_junction_try);
+	auto stack = a_emit.v_stack;
 	auto& catch0 = a_emit.f_label();
 	auto& finally0 = a_emit.f_label();
-	a_emit << e_instruction__TRY << a_emit.v_stack << catch0 << finally0;
+	a_emit << e_instruction__TRY << stack << catch0 << finally0;
 	auto targets0 = a_emit.v_targets;
 	{
 		auto& break0 = a_emit.f_label();
 		auto& continue0 = a_emit.f_label();
 		auto& return0 = a_emit.f_label();
-		t_emit::t_targets targets1{targets0->v_break ? &break0 : nullptr, &v_junction_finally, false, targets0->v_break_must_clear, targets0->v_continue ? &continue0 : nullptr, &v_junction_finally, targets0->v_return ? &return0 : nullptr, &v_junction_finally, false};
+		t_emit::t_targets targets1{targets0->v_break ? &break0 : nullptr, &v_junction_finally, stack, false, targets0->v_break_must_clear, targets0->v_continue ? &continue0 : nullptr, &v_junction_finally, targets0->v_return ? &return0 : nullptr, &v_junction_finally, stack, false};
 		a_emit.v_targets = &targets1;
 		f_emit_block(a_emit, v_block, false, a_clear);
 		a_emit << e_instruction__FINALLY << t_code::e_try__STEP;
@@ -428,41 +434,45 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	}
 	a_emit.f_target(finally0);
 	{
-		t_emit::t_targets targets2{nullptr, nullptr, false, false, nullptr, nullptr, nullptr, nullptr, false};
+		t_emit::t_targets targets2{nullptr, nullptr, 0, false, false, nullptr, nullptr, nullptr, nullptr, 0, false};
 		a_emit.v_targets = &targets2;
 		f_emit_block_without_value(a_emit, v_finally);
 	}
 	a_emit << e_instruction__YRT;
-	auto operand = [&](t_emit::t_label* a_label, t_block* a_junction) -> t_emit::t_label*
+	auto operand = [&](t_emit::t_label* a_label, t_block* a_junction, size_t a_stack) -> t_emit::t_label*
 	{
 		if (!a_label) {
 			a_emit << size_t(0);
 			return nullptr;
 		}
-		for (size_t i = 0; i < a_junction->v_uses.size(); ++i) {
-			if ((*a_emit.v_privates)[i] || !a_junction->v_uses[i]) continue;
+		auto jump = [&]
+		{
 			auto label = &a_emit.f_label();
 			a_emit << *label;
 			return label;
-		}
+		};
+		if (stack > a_stack) return jump();
+		for (size_t i = 0; i < a_junction->v_uses.size(); ++i) if (!(*a_emit.v_privates)[i] && a_junction->v_uses[i]) return jump();
 		a_emit << *a_label;
 		return nullptr;
 	};
-	auto break0 = operand(targets0->v_break, targets0->v_break_junction);
-	auto continue0 = operand(targets0->v_continue, targets0->v_continue_junction);
-	auto return0 = operand(targets0->v_return, targets0->v_return_junction);
+	auto break_stack = targets0->v_break_must_clear ? stack : targets0->v_break_stack;
+	auto break0 = operand(targets0->v_break, targets0->v_break_junction, break_stack);
+	auto continue0 = operand(targets0->v_continue, targets0->v_continue_junction, stack);
+	auto return0 = operand(targets0->v_return, targets0->v_return_junction, targets0->v_return_stack);
 	auto step = break0 || continue0 || return0 ? &a_emit.f_label() : nullptr;
 	if (step) a_emit << e_instruction__JUMP << *step;
-	auto join = [&](t_emit::t_label* a_label0, t_emit::t_label* a_label1, t_block* a_junction)
+	auto join = [&](t_emit::t_label* a_label0, t_emit::t_label* a_label1, t_block* a_junction, size_t a_stack)
 	{
 		if (!a_label0) return;
 		a_emit.f_target(*a_label0);
+		if (stack > a_stack) a_emit << e_instruction__STACK_GET << a_stack << stack;
 		a_emit.f_join(*a_junction);
 		a_emit << e_instruction__JUMP << *a_label1;
 	};
-	join(break0, targets0->v_break, targets0->v_break_junction);
-	join(continue0, targets0->v_continue, targets0->v_continue_junction);
-	join(return0, targets0->v_return, targets0->v_return_junction);
+	join(break0, targets0->v_break, targets0->v_break_junction, break_stack);
+	join(continue0, targets0->v_continue, targets0->v_continue_junction, stack);
+	join(return0, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack);
 	if (step) a_emit.f_target(*step);
 	a_emit.v_targets = targets0;
 	return t_operand();
@@ -1153,7 +1163,7 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 	v_code = &code->f_as<t_code>();
 	std::list<t_label> labels;
 	v_labels = &labels;
-	t_targets targets{nullptr, nullptr, false, false, nullptr, nullptr, nullptr, nullptr, false};
+	t_targets targets{nullptr, nullptr, v_stack, false, false, nullptr, nullptr, nullptr, nullptr, v_stack, false};
 	v_targets = &targets;
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions;
 	v_safe_positions = &safe_positions;
