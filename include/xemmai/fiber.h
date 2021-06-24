@@ -171,19 +171,20 @@ struct t_context
 		f_stack__(std::max(v_previous, v_base + a_n));
 	}
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-	size_t f_tail(t_object* a_this, t_pvalue* a_stack);
+	size_t f_tail(t_object* a_this);
 	void f_backtrace(const t_pvalue& a_value);
 	const t_pvalue* f_variable(std::wstring_view a_name) const;
 };
 
 template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-size_t t_context::f_tail(t_object* a_this, t_pvalue* a_stack)
+size_t t_context::f_tail(t_object* a_this)
 {
-	size_t n = (a_this->f_type()->*A_function)(a_this, a_stack);
+	auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
+	size_t n = (a_this->f_type()->*A_function)(a_this, stack);
 	if (n == size_t(-1))
-		f_return(a_stack[0]);
+		f_return(stack[0]);
 	else
-		f_tail(a_stack, n);
+		f_tail(stack, n);
 	return n;
 }
 
