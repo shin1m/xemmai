@@ -11,7 +11,7 @@
 namespace xemmai
 {
 
-class t_library;
+struct t_library;
 class t_global;
 
 template<typename T, typename = void>
@@ -230,7 +230,7 @@ struct t_type_of<t_object>
 		size_t i = t_type_of<T>::V_ids.size() - 1;
 		return i <= v_depth && v_ids[i] == f_type_id<T>();
 	}
-	std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> f_merge(const t_fields& a_fields);
+	XEMMAI__PORTABLE__EXPORT std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> f_merge(const t_fields& a_fields);
 	template<typename T>
 	t_object* f_derive(t_object* a_module, const t_fields& a_fields);
 	XEMMAI__PORTABLE__EXPORT t_object* f_do_derive(const t_fields& a_fields);
@@ -268,7 +268,7 @@ struct t_type_of<t_object>
 	size_t (*f_call)(t_object*, t_pvalue*, size_t) = f_do_call;
 	template<typename T>
 	void f_invoke_class(T&& a_this, size_t a_index, t_pvalue* a_stack, size_t a_n);
-	void f__invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PORTABLE__EXPORT void f__invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
 	void f_invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
 	XEMMAI__PORTABLE__EXPORT static void f_do_string(t_object* a_this, t_pvalue* a_stack);
 	void (*f_string)(t_object*, t_pvalue*) = f_do_string;

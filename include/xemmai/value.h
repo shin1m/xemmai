@@ -30,8 +30,8 @@ enum t_tag
 class t_slot
 {
 	friend class t_object;
-	friend class t_owned;
-	friend class t_sharable;
+	friend struct t_owned;
+	friend struct t_sharable;
 	friend struct t_thread;
 	friend class t_engine;
 

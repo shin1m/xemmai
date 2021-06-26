@@ -31,12 +31,13 @@ t_path::t_path(std::wstring_view a_path)
 #ifdef _WIN32
 t_path::t_path(std::wstring_view a_path)
 {
+	if (a_path.empty()) return;
 	std::wstring path(a_path);
 	DWORD n = GetFullPathNameW(path.c_str(), 0, NULL, NULL);
 	std::vector<wchar_t> cs(n);
 	wchar_t* p;
 	GetFullPathNameW(path.c_str(), n, &cs[0], &p);
-	v_path = &cs[0];
+	v_path = cs.data();
 }
 #endif
 

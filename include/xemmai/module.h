@@ -97,7 +97,7 @@ struct t_library : t_module::t_body
 	t_library(t_handle* a_handle) : v_handle(a_handle)
 	{
 	}
-	virtual ~t_library();
+	XEMMAI__PORTABLE__EXPORT virtual ~t_library();
 	virtual std::vector<std::pair<t_root, t_rvalue>> f_define() = 0;
 };
 

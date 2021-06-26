@@ -72,7 +72,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 		std::swscanf(a_value, XEMMAI__MACRO__L("%" SCNiPTR), &value);
 		return value;
 	}
-	static t_object* f__string(intptr_t a_self);
+	XEMMAI__PORTABLE__EXPORT static t_object* f__string(intptr_t a_self);
 	static intptr_t f__hash(intptr_t a_self)
 	{
 		return a_self;

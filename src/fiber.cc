@@ -59,8 +59,9 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 }
 #endif
 #ifdef _WIN32
-t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber, a_fiber->v_stack, 2)
+t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber->v_stack, 2)
 {
+	v_fiber = a_fiber;
 	v_handle = CreateFiber(0, f_start, a_f);
 }
 #endif
