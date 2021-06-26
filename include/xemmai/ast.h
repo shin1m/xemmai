@@ -116,7 +116,6 @@ struct t_scope
 	std::vector<t_code::t_variable*> v_privates;
 	size_t v_shareds = 0;
 	t_block v_block_block;
-	t_block v_junction;
 
 	t_scope(t_scope* a_outer) : v_outer(a_outer)
 	{
@@ -499,7 +498,6 @@ struct t_emit
 		t_label* v_return;
 		ast::t_block* v_return_junction;
 		size_t v_return_stack;
-		bool v_return_is_tail;
 	};
 
 	template<typename T>
