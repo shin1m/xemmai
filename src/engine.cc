@@ -49,16 +49,17 @@ void t_engine::f_collector()
 				}
 			}
 		}
+		t_object* garbage = nullptr;
 		while (v_cycles) {
 			std::lock_guard lock(v_object__reviving__mutex);
 			auto cycle = v_cycles;
 			v_cycles = cycle->v_next_cycle;
-			auto mutated = false;
+			auto failed = false;
 			auto p = cycle;
 			while (true) {
 				auto q = p->v_next;
 				if (q->v_type) {
-					if (q->v_color != e_color__ORANGE || q->v_cyclic > 0 || v_object__reviving && q->v_type->v_revive) mutated = true;
+					if (q->v_color != e_color__ORANGE || q->v_cyclic > 0 || v_object__reviving && q->v_type->v_revive) failed = true;
 					p = q;
 					if (p == cycle) break;
 				} else {
@@ -71,12 +72,15 @@ void t_engine::f_collector()
 				}
 			}
 			if (!cycle) continue;
-			if (mutated) {
+			if (failed) {
 				p = cycle;
 				if (p->v_color == e_color__ORANGE) p->v_color = e_color__PURPLE;
 				do {
 					auto q = p->v_next;
-					if (p->v_color == e_color__PURPLE) {
+					if (p->v_count <= 0) {
+						p->v_next = garbage;
+						garbage = p;
+					} else if (p->v_color == e_color__PURPLE) {
 						t_object::f_append(p);
 					} else {
 						p->v_color = e_color__BLACK;
@@ -94,6 +98,12 @@ void t_engine::f_collector()
 					p = q;
 				} while (p != cycle);
 			}
+		}
+		while (garbage) {
+			auto p = garbage;
+			garbage = p->v_next;
+			p->v_next = nullptr;
+			p->f_loop<&t_object::f_decrement_step>();
 		}
 		for (auto& p = v_library__handle__finalizing; p;) {
 			auto q = p;
@@ -125,10 +135,7 @@ void t_engine::f_collector()
 				if (roots->v_next != roots) {
 					{
 						auto p = roots->v_next;
-						do {
-							p->f_scan_gray();
-							p = p->v_next;
-						} while (p != roots);
+						do p->f_scan_gray(); while ((p = p->v_next) != roots);
 					}
 					do {
 						auto p = roots->v_next;
