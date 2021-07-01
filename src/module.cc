@@ -74,7 +74,6 @@ t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std:
 	t_fields fields;
 	for (auto& x : a_fields) fields.v_instance.push_back(x.first);
 	auto type = f_global()->f_type<t_module>()->f_derive<t_type_of<t_module>>(t_object::f_of(f_global()), fields);
-	type->f_as<t_type>().v_builtin = true;
 	decltype(f_engine()->v_module__instances)::iterator i;
 	{
 		std::lock_guard lock(f_engine()->v_module__mutex);
@@ -133,7 +132,7 @@ void t_module::f_main()
 t_module::~t_module()
 {
 	std::lock_guard lock(f_engine()->v_module__mutex);
-	f_engine()->v_module__instances.erase(v_iterator);
+	f_engine()->v_module__instances.erase(v_entry);
 }
 
 void t_script::f_scan(t_scan a_scan)

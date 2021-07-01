@@ -32,17 +32,17 @@ struct t_module
 	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_name);
 	static void f_main();
 
-	std::map<std::wstring, t_slot, std::less<>>::iterator v_iterator;
+	std::map<std::wstring, t_slot, std::less<>>::iterator v_entry;
 	t_slot v_body;
 
-	t_module(std::map<std::wstring, t_slot, std::less<>>::iterator a_iterator, t_object* a_body) : v_iterator(a_iterator), v_body(a_body)
+	t_module(std::map<std::wstring, t_slot, std::less<>>::iterator a_entry, t_object* a_body) : v_entry(a_entry), v_body(a_body)
 	{
-		v_iterator->second = t_object::f_of(this);
+		v_entry->second = t_object::f_of(this);
 	}
 	~t_module();
 	void f_scan(t_scan a_scan)
 	{
-		a_scan(v_iterator->second);
+		a_scan(v_entry->second);
 		a_scan(v_body);
 	}
 };
