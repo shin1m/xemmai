@@ -28,45 +28,76 @@ void f_emit_block_without_value(t_emit& a_emit, const std::vector<std::unique_pt
 
 }
 
-bool t_block::f_merge(const std::vector<bool>& a_uses)
+bool t_block::f_forward(const std::vector<t_private>& a_privates)
 {
 	bool b = false;
-	if (v_uses.size() < a_uses.size()) {
-		v_uses.resize(a_uses.size());
-		for (size_t i : v_defines) v_uses[i] = true;
-		b = true;
+	if (!v_forward) {
+		v_forward = b = true;
+		v_privates.resize(a_privates.size());
 	}
-	for (size_t i = 0; i < a_uses.size(); ++i) if (a_uses[i] && !v_uses[i]) v_uses[i] = b = true;
+	for (size_t i = 0; i < a_privates.size(); ++i) {
+		if (!a_privates[i].v_out) continue;
+		auto& x = v_privates[i];
+		if (!x.v_in) x.v_in = x.v_out = b = true;
+	}
 	return b;
 }
 
-void t_flow::f_queue(t_block* a_block)
+bool t_block::f_backward(const std::vector<t_private>& a_privates)
 {
-	if (v_queue) {
-		a_block->v_queue = v_queue->v_queue;
-		v_queue->v_queue = a_block;
-	} else {
-		a_block->v_queue = a_block;
+	bool b = !v_backward;
+	v_backward = true;
+	for (size_t i = 0; i < a_privates.size(); ++i) {
+		if (!a_privates[i].v_use) continue;
+		auto& x = v_privates[i];
+		if (!x.v_define && !x.v_use) x.v_use = b = true;
 	}
-	v_queue = a_block;
-}
-
-void t_flow::operator()(t_block* a_block)
-{
-	f_queue(a_block);
-	do {
-		auto p = v_queue->v_queue;
-		if (p == v_queue)
-			v_queue = nullptr;
-		else
-			v_queue->v_queue = p->v_queue;
-		p->v_queue = nullptr;
-		for (auto next : p->v_nexts) if (next->f_merge(p->v_uses) && !next->v_queue) f_queue(next);
-	} while (v_queue);
+	return b;
 }
 
 void t_node::f_flow(t_flow& a_flow)
 {
+}
+
+void t_scope::f_analyze(size_t a_arguments)
+{
+	t_flow::t_targets targets{nullptr, nullptr, &v_junction};
+	t_flow flow{a_arguments, &targets, &v_block_block};
+	for (auto& p : v_block) p->f_flow(flow);
+	flow.v_current->f_next(&v_junction);
+	t_block* queue = nullptr;
+	auto push = [&](t_block* a_block)
+	{
+		if (queue) {
+			a_block->v_queue = queue->v_queue;
+			queue->v_queue = a_block;
+		} else {
+			a_block->v_queue = a_block;
+		}
+		queue = a_block;
+	};
+	auto loop = [&](auto a_do, t_block* a_block)
+	{
+		while (true) {
+			a_do(a_block);
+			if (!queue) break;
+			a_block = queue->v_queue;
+			if (a_block == queue)
+				queue = nullptr;
+			else
+				queue->v_queue = a_block->v_queue;
+			a_block->v_queue = nullptr;
+		}
+	};
+	v_block_block.f_forward(std::vector<t_block::t_private>(v_privates.size() - a_arguments));
+	loop([&](auto p)
+	{
+		for (auto q : p->v_nexts) if (q->f_forward(p->v_privates) && !q->v_queue) push(q);
+	}, &v_block_block);
+	loop([&](auto p)
+	{
+		for (auto q : p->v_previouses) if (q->f_backward(p->v_privates) && !q->v_queue) push(q);
+	}, &v_junction);
 }
 
 t_object* t_lambda::f_code(t_object* a_module)
@@ -96,11 +127,7 @@ void t_lambda::f_safe_points(t_code& a_code, std::map<std::pair<size_t, void**>,
 
 void t_lambda::f_flow(t_flow& a_flow)
 {
-	t_flow::t_targets targets{nullptr, nullptr, nullptr};
-	t_flow flow{v_arguments, &targets, &v_block_block, &v_block_block};
-	for (auto& p : v_block) p->f_flow(flow);
-	v_block_block.f_merge(std::vector<bool>(v_privates.size() - v_arguments));
-	flow(&v_block_block);
+	f_analyze(v_arguments);
 	for (auto& p : v_defaults) p->f_flow(a_flow);
 }
 
@@ -124,7 +151,7 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.v_labels = &labels1;
 	auto targets0 = a_emit.v_targets;
 	auto& return0 = a_emit.f_label();
-	t_emit::t_targets targets1{nullptr, nullptr, a_emit.v_stack, false, false, nullptr, nullptr, &return0, nullptr, a_emit.v_stack};
+	t_emit::t_targets targets1{nullptr, nullptr, a_emit.v_stack, false, false, nullptr, nullptr, &return0, &v_junction, a_emit.v_stack, true};
 	a_emit.v_targets = &targets1;
 	auto safe_positions0 = a_emit.v_safe_positions;
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions1;
@@ -167,15 +194,15 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 void t_if::f_flow(t_flow& a_flow)
 {
 	v_condition->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_block_true);
-	a_flow.v_current->v_nexts.push_back(&v_block_false);
+	a_flow.v_current->f_next(&v_block_true);
+	a_flow.v_current->f_next(&v_block_false);
 	a_flow.v_current = &v_block_true;
 	for (auto& p : v_true) p->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_junction);
+	a_flow.v_current->f_next(&v_junction);
 	a_flow.v_current = &v_block_false;
 	for (auto& p : v_false) p->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_junction);
-	v_junction.v_nexts.push_back(&v_block_exit);
+	a_flow.v_current->f_next(&v_junction);
+	v_junction.f_next(&v_block_exit);
 	a_flow.v_current = &v_block_exit;
 }
 
@@ -203,20 +230,20 @@ t_operand t_if::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear
 
 void t_while::f_flow(t_flow& a_flow)
 {
-	a_flow.v_current->v_nexts.push_back(&v_junction_condition);
-	v_junction_condition.v_nexts.push_back(&v_block_condition);
+	a_flow.v_current->f_next(&v_junction_condition);
+	v_junction_condition.f_next(&v_block_condition);
 	a_flow.v_current = &v_block_condition;
 	v_condition->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_block_block);
-	a_flow.v_current->v_nexts.push_back(&v_junction_exit);
+	a_flow.v_current->f_next(&v_block_block);
+	a_flow.v_current->f_next(&v_junction_exit);
 	auto targets0 = a_flow.v_targets;
 	t_flow::t_targets targets1{&v_junction_exit, &v_junction_condition, targets0->v_return};
 	a_flow.v_targets = &targets1;
 	a_flow.v_current = &v_block_block;
 	for (auto& p : v_block) p->f_flow(a_flow);
 	a_flow.v_targets = targets0;
-	a_flow.v_current->v_nexts.push_back(&v_junction_condition);
-	v_junction_exit.v_nexts.push_back(&v_block_exit);
+	a_flow.v_current->f_next(&v_junction_condition);
+	v_junction_exit.f_next(&v_block_exit);
 	a_flow.v_current = &v_block_exit;
 }
 
@@ -232,7 +259,7 @@ t_operand t_while::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
-	t_emit::t_targets targets1{&break0, &v_junction_exit, a_emit.v_stack, a_tail, a_clear, &loop, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack};
+	t_emit::t_targets targets1{&break0, &v_junction_exit, a_emit.v_stack, a_tail, a_clear, &loop, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack, targets0->v_return_is_tail};
 	a_emit.v_targets = &targets1;
 	f_emit_block_without_value(a_emit, v_block);
 	a_emit.v_targets = targets0;
@@ -248,24 +275,24 @@ t_operand t_while::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 void t_for::f_flow(t_flow& a_flow)
 {
 	for (auto& p : v_initialization) p->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_junction_condition);
-	v_junction_condition.v_nexts.push_back(&v_block_condition);
+	a_flow.v_current->f_next(&v_junction_condition);
+	v_junction_condition.f_next(&v_block_condition);
 	a_flow.v_current = &v_block_condition;
 	if (v_condition) v_condition->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_block_block);
-	a_flow.v_current->v_nexts.push_back(&v_junction_exit);
+	a_flow.v_current->f_next(&v_block_block);
+	a_flow.v_current->f_next(&v_junction_exit);
 	auto targets0 = a_flow.v_targets;
 	t_flow::t_targets targets1{&v_junction_exit, &v_junction_next, targets0->v_return};
 	a_flow.v_targets = &targets1;
 	a_flow.v_current = &v_block_block;
 	for (auto& p : v_block) p->f_flow(a_flow);
 	a_flow.v_targets = targets0;
-	a_flow.v_current->v_nexts.push_back(&v_junction_next);
-	v_junction_next.v_nexts.push_back(&v_block_next);
+	a_flow.v_current->f_next(&v_junction_next);
+	v_junction_next.f_next(&v_block_next);
 	a_flow.v_current = &v_block_next;
 	for (auto& p : v_next) p->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_junction_condition);
-	v_junction_exit.v_nexts.push_back(&v_block_exit);
+	a_flow.v_current->f_next(&v_junction_condition);
+	v_junction_exit.f_next(&v_block_exit);
 	a_flow.v_current = &v_block_exit;
 }
 
@@ -285,7 +312,7 @@ t_operand t_for::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	}
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
-	t_emit::t_targets targets1{&break0, &v_junction_exit, a_emit.v_stack, a_tail, a_clear, &continue0, &v_junction_next, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack};
+	t_emit::t_targets targets1{&break0, &v_junction_exit, a_emit.v_stack, a_tail, a_clear, &continue0, &v_junction_next, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack, targets0->v_return_is_tail};
 	a_emit.v_targets = &targets1;
 	f_emit_block_without_value(a_emit, v_block);
 	a_emit.v_targets = targets0;
@@ -305,7 +332,7 @@ t_operand t_for::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 void t_break::f_flow(t_flow& a_flow)
 {
 	if (v_expression) v_expression->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(a_flow.v_targets->v_break);
+	a_flow.v_current->f_next(a_flow.v_targets->v_break);
 }
 
 t_operand t_break::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
@@ -325,7 +352,7 @@ t_operand t_break::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 
 void t_continue::f_flow(t_flow& a_flow)
 {
-	a_flow.v_current->v_nexts.push_back(a_flow.v_targets->v_continue);
+	a_flow.v_current->f_next(a_flow.v_targets->v_continue);
 }
 
 t_operand t_continue::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
@@ -338,7 +365,7 @@ t_operand t_continue::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a
 void t_return::f_flow(t_flow& a_flow)
 {
 	if (v_expression) v_expression->f_flow(a_flow);
-	if (a_flow.v_targets->v_return) a_flow.v_current->v_nexts.push_back(a_flow.v_targets->v_return);
+	a_flow.v_current->f_next(a_flow.v_targets->v_return);
 }
 
 t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
@@ -346,15 +373,15 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	auto stack = a_emit.v_stack;
 	a_emit.v_stack = a_emit.v_targets->v_return_stack;
 	if (v_expression)
-		v_expression->f_emit(a_emit, !a_emit.v_targets->v_return_junction, false);
+		v_expression->f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false);
 	else
-		t_null(v_at).f_emit(a_emit, !a_emit.v_targets->v_return_junction, false, false);
-	if (a_emit.v_targets->v_return_junction) {
-		a_emit.f_join(*a_emit.v_targets->v_return_junction);
-		a_emit << e_instruction__JUMP << *a_emit.v_targets->v_return;
-	} else {
+		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false, false);
+	if (a_emit.v_targets->v_return_is_tail) {
 		assert(a_emit.v_stack == a_emit.v_scope->v_privates.size() + 1);
 		a_emit << e_instruction__RETURN_T;
+	} else {
+		a_emit.f_join(*a_emit.v_targets->v_return_junction);
+		a_emit << e_instruction__JUMP << *a_emit.v_targets->v_return;
 	}
 	a_emit.v_stack = stack;
 	if (!a_clear) a_emit.f_push();
@@ -363,37 +390,37 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 
 void t_try::f_flow(t_flow& a_flow)
 {
-	a_flow.v_current->v_nexts.push_back(&v_junction_try);
-	v_junction_try.v_nexts.push_back(&v_block_try);
+	a_flow.v_current->f_next(&v_junction_try);
+	v_junction_try.f_next(&v_block_try);
 	auto targets0 = a_flow.v_targets;
 	t_flow::t_targets targets1{&v_junction_finally, &v_junction_finally, &v_junction_finally};
 	a_flow.v_targets = &targets1;
 	a_flow.v_current = &v_block_try;
 	for (auto& p : v_block) p->f_flow(a_flow);
-	a_flow.v_current->v_nexts.push_back(&v_junction_finally);
+	a_flow.v_current->f_next(&v_junction_finally);
 	for (auto& p : v_catches) {
-		a_flow.v_current->v_nexts.push_back(&p->v_block_expression);
+		a_flow.v_current->f_next(&p->v_block_expression);
 		a_flow.v_current = &p->v_block_expression;
 		p->v_expression->f_flow(a_flow);
 		auto block = a_flow.v_current;
-		block->v_nexts.push_back(&p->v_block_block);
+		block->f_next(&p->v_block_block);
 		a_flow.v_current = &p->v_block_block;
-		if (!p->v_variable.v_shared) a_flow.v_current->v_defines.push_back(p->v_variable.v_index - a_flow.v_arguments);
+		if (!p->v_variable.v_shared) a_flow.v_current->f_use(p->v_variable.v_index - a_flow.v_arguments, true);
 		for (auto& p : p->v_block) p->f_flow(a_flow);
-		a_flow.v_current->v_nexts.push_back(&v_junction_finally);
+		a_flow.v_current->f_next(&v_junction_finally);
 		a_flow.v_current = block;
 	}
-	v_junction_finally.v_nexts.push_back(&v_junction_try);
-	v_junction_finally.v_nexts.push_back(&v_block_finally);
+	v_junction_finally.f_next(&v_junction_try);
+	v_junction_finally.f_next(&v_block_finally);
 	t_flow::t_targets targets2{nullptr, nullptr, nullptr};
 	a_flow.v_targets = &targets2;
 	a_flow.v_current = &v_block_finally;
 	for (auto& p : v_finally) p->f_flow(a_flow);
 	a_flow.v_targets = targets0;
-	a_flow.v_current->v_nexts.push_back(&v_block_exit);
-	if (targets0->v_break) a_flow.v_current->v_nexts.push_back(targets0->v_break);
-	if (targets0->v_continue) a_flow.v_current->v_nexts.push_back(targets0->v_continue);
-	if (targets0->v_return) a_flow.v_current->v_nexts.push_back(targets0->v_return);
+	a_flow.v_current->f_next(&v_block_exit);
+	if (targets0->v_break) a_flow.v_current->f_next(targets0->v_break);
+	if (targets0->v_continue) a_flow.v_current->f_next(targets0->v_continue);
+	if (targets0->v_return) a_flow.v_current->f_next(targets0->v_return);
 	a_flow.v_current = &v_block_exit;
 }
 
@@ -410,7 +437,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		auto& break0 = a_emit.f_label();
 		auto& continue0 = a_emit.f_label();
 		auto& return0 = a_emit.f_label();
-		t_emit::t_targets targets1{targets0->v_break ? &break0 : nullptr, &v_junction_finally, stack, false, targets0->v_break_must_clear, targets0->v_continue ? &continue0 : nullptr, &v_junction_finally, targets0->v_return ? &return0 : nullptr, &v_junction_finally, stack};
+		t_emit::t_targets targets1{targets0->v_break ? &break0 : nullptr, &v_junction_finally, stack, false, targets0->v_break_must_clear, targets0->v_continue ? &continue0 : nullptr, &v_junction_finally, targets0->v_return ? &return0 : nullptr, &v_junction_finally, stack, false};
 		a_emit.v_targets = &targets1;
 		f_emit_block(a_emit, v_block, false, a_clear);
 		a_emit << e_instruction__FINALLY << t_code::e_try__STEP;
@@ -434,7 +461,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	}
 	a_emit.f_target(finally0);
 	{
-		t_emit::t_targets targets2{nullptr, nullptr, 0, false, false, nullptr, nullptr, nullptr, nullptr, 0};
+		t_emit::t_targets targets2{nullptr, nullptr, 0, false, false, nullptr, nullptr, nullptr, nullptr, 0, false};
 		a_emit.v_targets = &targets2;
 		f_emit_block_without_value(a_emit, v_finally);
 	}
@@ -452,7 +479,11 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 			return label;
 		};
 		if (stack > a_stack) return jump();
-		if (a_junction) for (size_t i = 0; i < a_junction->v_uses.size(); ++i) if (!(*a_emit.v_privates)[i] && a_junction->v_uses[i]) return jump();
+		for (size_t i = 0; i < a_junction->v_privates.size(); ++i) {
+			if ((*a_emit.v_privates)[i]) continue;
+			auto& x = a_junction->v_privates[i];
+			if (x.v_use && x.v_in) return jump();
+		}
 		a_emit << *a_label;
 		return nullptr;
 	};
@@ -467,7 +498,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		if (!a_label0) return;
 		a_emit.f_target(*a_label0);
 		if (stack > a_stack) a_emit << e_instruction__STACK_GET << a_stack << stack;
-		if (a_junction) a_emit.f_join(*a_junction);
+		a_emit.f_join(*a_junction);
 		a_emit << e_instruction__JUMP << *a_label1;
 	};
 	join(break0, targets0->v_break, targets0->v_break_junction, break_stack);
@@ -608,9 +639,8 @@ t_operand t_object_has_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	return t_operand();
 }
 
-void t_symbol_get::f_resolve()
+void t_symbol_get::f_flow(t_flow& a_flow)
 {
-	if (v_resolved != size_t(-1)) return;
 	v_resolved = v_outer;
 	for (auto scope = v_scope; scope; scope = scope->v_outer) {
 		auto i = scope->v_variables.find(v_symbol);
@@ -620,11 +650,13 @@ void t_symbol_get::f_resolve()
 		}
 		++v_resolved;
 	}
+	if (!v_variable || v_variable->v_shared) return;
+	int i = v_variable->v_index - a_flow.v_arguments;
+	if (i >= 0) a_flow.v_current->f_use(i, false);
 }
 
 t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	f_resolve();
 	if (!v_variable) {
 		if (a_tail) a_emit.f_emit_safe_point(this);
 		a_emit << e_instruction__GLOBAL_GET << a_emit.v_stack << v_symbol << 0;
@@ -664,7 +696,7 @@ void t_scope_put::f_flow(t_flow& a_flow)
 	v_value->f_flow(a_flow);
 	if (v_variable.v_shared) return;
 	int i = v_variable.v_index - a_flow.v_arguments;
-	if (i >= 0) a_flow.v_current->v_defines.push_back(i);
+	if (i >= 0) a_flow.v_current->f_use(i, true);
 }
 
 t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
@@ -1068,9 +1100,9 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 {
 	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
 	t_symbol_get* get = nullptr;
-	if (auto p = v_expand ? nullptr : dynamic_cast<t_symbol_get*>(v_target.get())) {
-		p->f_resolve();
-		if (p->v_variable && (!p->v_variable->v_shared || p->v_resolved < 3 && !p->v_variable->v_varies)) get = p;
+	if (!v_expand) {
+		auto p = dynamic_cast<t_symbol_get*>(v_target.get());
+		if (p && p->v_variable && (!p->v_variable->v_shared || p->v_resolved < 3 && !p->v_variable->v_varies)) get = p;
 	}
 	if (get) {
 		instruction = get->v_variable->v_shared ? e_instruction__SCOPE_CALL0 + get->v_resolved : e_instruction__STACK_CALL;
@@ -1156,13 +1188,7 @@ t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 
 t_object* t_emit::operator()(ast::t_scope& a_scope)
 {
-	{
-		ast::t_flow::t_targets targets{nullptr, nullptr, nullptr};
-		ast::t_flow flow{0, &targets, &a_scope.v_block_block, &a_scope.v_block_block};
-		for (auto& p : a_scope.v_block) p->f_flow(flow);
-		a_scope.v_block_block.f_merge(std::vector<bool>(a_scope.v_privates.size()));
-		flow(&a_scope.v_block_block);
-	}
+	a_scope.f_analyze(0);
 	v_scope = &a_scope;
 	v_arguments = 0;
 	std::vector<bool> privates(a_scope.v_privates.size());
@@ -1172,7 +1198,7 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 	v_code = &code->f_as<t_code>();
 	std::list<t_label> labels;
 	v_labels = &labels;
-	t_targets targets{nullptr, nullptr, v_stack, false, false, nullptr, nullptr, nullptr, nullptr, v_stack};
+	t_targets targets{nullptr, nullptr, v_stack, false, false, nullptr, nullptr, nullptr, nullptr, v_stack, false};
 	v_targets = &targets;
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions;
 	v_safe_positions = &safe_positions;
@@ -1195,8 +1221,11 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 
 void t_emit::f_join(const ast::t_block& a_junction)
 {
-	for (size_t i = 0; i < a_junction.v_uses.size(); ++i)
-		if (!(*v_privates)[i] && a_junction.v_uses[i]) *this << e_instruction__NUL << v_arguments + i;
+	for (size_t i = 0; i < a_junction.v_privates.size(); ++i) {
+		if ((*v_privates)[i]) continue;
+		auto& x = a_junction.v_privates[i];
+		if (x.v_use && x.v_in) *this << e_instruction__NUL << v_arguments + i;
+	}
 }
 
 }

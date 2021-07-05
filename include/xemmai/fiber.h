@@ -158,6 +158,9 @@ struct t_context
 	{
 		v_previous = f_stack();
 		f_stack__(v_base + v_lambda->f_as<t_lambda>().v_size);
+#ifndef NDEBUG
+		std::fill(v_base + v_lambda->f_as<t_lambda>().v_arguments, v_base + v_lambda->f_as<t_lambda>().v_privates, 0);
+#endif
 	}
 	template<typename T>
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(T&& a_value)

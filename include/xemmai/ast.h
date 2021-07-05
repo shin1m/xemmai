@@ -15,12 +15,37 @@ namespace ast
 
 struct t_block
 {
+	struct t_private
+	{
+		bool v_in = false;
+		bool v_out = false;
+		bool v_define = false;
+		bool v_use = false;
+	};
+
 	t_block* v_queue = nullptr;
-	std::vector<size_t> v_defines;
-	std::vector<bool> v_uses;
+	bool v_forward = false;
+	bool v_backward = false;
+	std::vector<t_private> v_privates;
+	std::vector<t_block*> v_previouses;
 	std::vector<t_block*> v_nexts;
 
-	bool f_merge(const std::vector<bool>& a_uses);
+	void f_use(size_t a_i, bool a_put)
+	{
+		if (v_privates.size() < a_i + 1) v_privates.resize(a_i + 1);
+		auto& x = v_privates[a_i];
+		if (x.v_out) return;
+		x.v_out = true;
+		x.v_define = a_put;
+		x.v_use = !a_put;
+	}
+	void f_next(t_block* a_next)
+	{
+		a_next->v_previouses.push_back(this);
+		v_nexts.push_back(a_next);
+	}
+	bool f_forward(const std::vector<t_private>& a_privates);
+	bool f_backward(const std::vector<t_private>& a_privates);
 };
 
 struct t_flow
@@ -35,10 +60,6 @@ struct t_flow
 	size_t v_arguments;
 	t_targets* v_targets;
 	t_block* v_current;
-	t_block* v_queue = nullptr;
-
-	void f_queue(t_block* a_block);
-	void operator()(t_block* a_block);
 };
 
 struct t_operand
@@ -116,10 +137,12 @@ struct t_scope
 	std::vector<t_code::t_variable*> v_privates;
 	size_t v_shareds = 0;
 	t_block v_block_block;
+	t_block v_junction;
 
 	t_scope(t_scope* a_outer) : v_outer(a_outer)
 	{
 	}
+	void f_analyze(size_t a_arguments);
 };
 
 struct t_lambda : t_node, t_scope
@@ -340,13 +363,13 @@ struct t_symbol_get : t_node
 	size_t v_outer;
 	t_scope* v_scope;
 	t_object* v_symbol;
-	size_t v_resolved = -1;
+	size_t v_resolved;
 	const t_code::t_variable* v_variable = nullptr;
 
 	t_symbol_get(const t_at& a_at, size_t a_outer, t_scope* a_scope, t_object* a_symbol) : t_node(a_at), v_outer(a_outer), v_scope(a_scope), v_symbol(a_symbol)
 	{
 	}
-	void f_resolve();
+	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
@@ -498,6 +521,7 @@ struct t_emit
 		t_label* v_return;
 		ast::t_block* v_return_junction;
 		size_t v_return_stack;
+		bool v_return_is_tail;
 	};
 
 	template<typename T>
@@ -610,7 +634,7 @@ struct t_emit
 	void f_join(const ast::t_block& a_junction);
 	void f_merge(const ast::t_block& a_junction)
 	{
-		std::copy(a_junction.v_uses.begin(), a_junction.v_uses.end(), v_privates->begin());
+		for (size_t i = 0; i < a_junction.v_privates.size(); ++i) (*v_privates)[i] = a_junction.v_privates[i].v_out;
 	}
 };
 
