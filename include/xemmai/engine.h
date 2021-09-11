@@ -119,11 +119,9 @@ private:
 	{
 		if (sem_post(&v_epoch__received) == -1) _exit(errno);
 		sigsuspend(&v_epoch__notsigusr2);
-		if (sem_post(&v_epoch__received) == -1) _exit(errno);
 	}
-	void f_epoch_send(pthread_t a_thread, int a_signal)
+	void f_epoch_wait()
 	{
-		pthread_kill(a_thread, a_signal);
 		while (sem_wait(&v_epoch__received) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
 	}
 #endif
@@ -332,7 +330,8 @@ t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields)
 inline void t_thread::t_internal::f_epoch_suspend()
 {
 #ifdef __unix__
-	f_engine()->f_epoch_send(v_handle, SIGUSR1);
+	pthread_kill(v_handle, SIGUSR1);
+	f_engine()->f_epoch_wait();
 #endif
 #ifdef _WIN32
 	SuspendThread(v_handle);
@@ -359,7 +358,7 @@ inline void t_thread::t_internal::f_epoch_suspend()
 inline void t_thread::t_internal::f_epoch_resume()
 {
 #ifdef __unix__
-	f_engine()->f_epoch_send(v_handle, SIGUSR2);
+	pthread_kill(v_handle, SIGUSR2);
 #endif
 #ifdef _WIN32
 	ResumeThread(v_handle);
