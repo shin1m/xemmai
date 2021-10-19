@@ -4,7 +4,9 @@
 #include "value.h"
 #include <array>
 #include <map>
+#ifdef _WIN32
 #include <typeindex>
+#endif
 #include <typeinfo>
 #include <vector>
 
@@ -47,15 +49,13 @@ inline t_type_id f_type_id()
 }
 #define XEMMAI__TYPE__IDS_MODIFIER inline const
 #else
-using t_type_id = void(*)();
+using t_type_id = const void*;
 template<typename T>
-void f__type_id()
-{
-}
+const void* v__type_id;
 template<typename T>
 constexpr t_type_id f_type_id()
 {
-	return f__type_id<T>;
+	return &v__type_id<T>;
 }
 #define XEMMAI__TYPE__IDS_MODIFIER constexpr
 #endif
