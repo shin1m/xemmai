@@ -16,6 +16,10 @@ namespace xemmai
 template<typename T>
 class t_heap
 {
+	static constexpr size_t f_log(size_t a_x)
+	{
+		return a_x > 1 ? f_log(a_x >> 1) + 1 : 0;
+	}
 	static void* f_map(size_t a_n)
 	{
 #ifdef __unix__
@@ -46,7 +50,7 @@ class t_heap
 
 		T* f_grow(t_heap& a_heap)
 		{
-			auto size = 128 << A_rank;
+			auto size = V_UNIT << A_rank;
 			auto length = size * A_size;
 			auto block = static_cast<char*>(f_map(length));
 			auto p = block;
@@ -135,6 +139,13 @@ class t_heap
 	constexpr T* f_allocate_medium(size_t a_size);
 
 public:
+	static constexpr size_t V_UNIT = 2 << f_log(sizeof(T) - 1);
+	static_assert(V_UNIT >> 1 < sizeof(T));
+	static_assert(V_UNIT >= sizeof(T));
+	static constexpr size_t V_RANKX = sizeof(void*) * 8 - f_log(V_UNIT);
+	static_assert((V_UNIT << (V_RANKX - 1)) - 1 == ~size_t(0) >> 1);
+	static_assert((V_UNIT << V_RANKX) - 1 == ~size_t(0));
+
 	t_heap(void(*a_tick)()) : v_tick(a_tick)
 	{
 	}
@@ -154,11 +165,11 @@ public:
 		a_each(size_t(2), v_of2.v_grown.load(std::memory_order_relaxed), v_of2.v_allocated.load(std::memory_order_relaxed), v_of2.v_returned);
 		a_each(size_t(3), v_of3.v_grown.load(std::memory_order_relaxed), v_of3.v_allocated.load(std::memory_order_relaxed), v_of3.v_returned);
 		a_each(size_t(4), v_of4.v_grown.load(std::memory_order_relaxed), v_of4.v_allocated.load(std::memory_order_relaxed), v_of4.v_returned);
-		a_each(size_t(57), size_t(0), v_allocated, v_freed);
+		a_each(size_t(V_RANKX), size_t(0), v_allocated, v_freed);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE constexpr T* f_allocate(size_t a_size)
 	{
-		if (a_size <= 1 << 7) [[likely]] return f_allocate(v_of0);
+		if (a_size <= V_UNIT) [[likely]] return f_allocate(v_of0);
 		return f_allocate_medium(a_size);
 	}
 	void f_return()
@@ -221,7 +232,7 @@ public:
 			--i;
 		}
 		size_t j = static_cast<char*>(a_p) - reinterpret_cast<char*>(i->first);
-		return j < i->second && (j & (128 << i->first->v_rank) - 1) == 0 ? static_cast<T*>(a_p) : nullptr;
+		return j < i->second && (j & (V_UNIT << i->first->v_rank) - 1) == 0 ? static_cast<T*>(a_p) : nullptr;
 	}
 };
 
@@ -238,7 +249,7 @@ template<typename T>
 T* t_heap<T>::f_allocate_large(size_t a_size)
 {
 	auto p = new(f_map(a_size)) T;
-	p->v_rank = 57;
+	p->v_rank = V_RANKX;
 	{
 		std::lock_guard lock(v_mutex);
 		v_blocks.emplace(p, a_size);
@@ -250,10 +261,10 @@ T* t_heap<T>::f_allocate_large(size_t a_size)
 template<typename T>
 constexpr T* t_heap<T>::f_allocate_medium(size_t a_size)
 {
-	if (a_size <= 1 << 8) return f_allocate(v_of1);
-	if (a_size <= 1 << 9) return f_allocate(v_of2);
-	if (a_size <= 1 << 10) return f_allocate(v_of3);
-	if (a_size <= 1 << 11) return f_allocate(v_of4);
+	if (a_size <= V_UNIT << 1) return f_allocate(v_of1);
+	if (a_size <= V_UNIT << 2) return f_allocate(v_of2);
+	if (a_size <= V_UNIT << 3) return f_allocate(v_of3);
+	if (a_size <= V_UNIT << 4) return f_allocate(v_of4);
 	return f_allocate_large(a_size);
 }
 

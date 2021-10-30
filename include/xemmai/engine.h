@@ -110,7 +110,7 @@ private:
 	}
 	t_object* f_object__find(void* a_p)
 	{
-		if (reinterpret_cast<uintptr_t>(a_p) & 127) return nullptr;
+		if (reinterpret_cast<uintptr_t>(a_p) & t_heap<t_object>::V_UNIT - 1) return nullptr;
 		auto p = v_object__heap.f_find(a_p);
 		return p && p->v_type ? p : nullptr;
 	}
