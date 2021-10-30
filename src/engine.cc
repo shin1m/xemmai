@@ -220,6 +220,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	if (sigaction(SIGUSR2, &sa, &v_epoch__old_sigusr2) == -1) throw std::system_error(errno, std::generic_category());
 	sa.sa_handler = [](int)
 	{
+		t_thread::v_current->v_active->f_epoch_get();
 		t_thread::v_current->f_epoch_get();
 		v_instance->f_epoch_suspend();
 	};

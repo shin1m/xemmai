@@ -36,7 +36,6 @@ struct t_thread
 		void f_initialize(t_thread* a_thread);
 		void f_epoch_get()
 		{
-			v_active->f_epoch_get();
 			v_increments.v_epoch.store(v_increments.v_head, std::memory_order_release);
 			v_decrements.v_epoch.store(v_decrements.v_head, std::memory_order_release);
 		}
