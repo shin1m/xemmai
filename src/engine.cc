@@ -228,11 +228,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	if (sigaction(SIGUSR1, &sa, &v_epoch__old_sigusr1) == -1) throw std::system_error(errno, std::generic_category());
 #endif
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
-	{
-		std::unique_lock lock(v_collector__mutex);
-		std::thread(&t_engine::f_collector, this).detach();
-		do v_collector__done.wait(lock); while (v_collector__running);
-	}
+	std::thread(&t_engine::f_collector, this).detach();
 	auto type_object = f_allocate_for_type<t_type>(26);
 	auto type = new(type_object->f_data()) t_type();
 	type->v_derive = &t_type::f_do_derive;
