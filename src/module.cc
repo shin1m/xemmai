@@ -64,7 +64,7 @@ t_object* t_module::f_load_library(std::wstring_view a_path)
 	if (!library) return nullptr;
 	auto factory = library.f_symbol<t_object*(*)(t_library::t_handle*)>("f_factory");
 	if (!factory) f_throw(L"f_factory not found."sv);
-	auto handle = new t_library::t_handle();
+	auto handle = new t_library::t_handle;
 	handle->v_library.f_swap(library);
 	return factory(handle);
 }

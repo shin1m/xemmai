@@ -230,7 +230,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	std::thread(&t_engine::f_collector, this).detach();
 	auto type_object = f_allocate_for_type<t_type>(26);
-	auto type = new(type_object->f_data()) t_type();
+	auto type = new(type_object->f_data()) t_type;
 	type->v_derive = &t_type::f_do_derive;
 	std::uninitialized_default_construct_n(type->f_fields(), 26);
 	auto type_type = f_allocate_for_type<t_class>(0);
@@ -361,7 +361,7 @@ t_engine::~t_engine()
 
 t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 {
-	auto internal = new t_thread::t_internal();
+	auto internal = new t_thread::t_internal;
 	{
 		std::lock_guard lock(v_thread__mutex);
 		internal->v_next = v_thread__internals;

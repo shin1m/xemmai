@@ -114,7 +114,7 @@ class t_client_wrapper : public t_client
 public:
 	static t_pvalue f_construct(t_type* a_class)
 	{
-		auto object = a_class->f_new<t_client*>(new t_client_wrapper());
+		auto object = a_class->f_new<t_client*>(new t_client_wrapper);
 		object->f_as<t_client_wrapper*>()->v_self = object;
 		return object;
 	}
