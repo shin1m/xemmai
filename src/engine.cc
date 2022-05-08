@@ -93,7 +93,6 @@ void t_engine::f_collector()
 				do p->f_cyclic_decrement(); while ((p = p->v_next) != cycle);
 				do {
 					auto q = p->v_next;
-					if (p->v_type == v_type_type) p->f_as<t_type>().~t_type();
 					f_free_as_collect(p);
 					p = q;
 				} while (p != cycle);
