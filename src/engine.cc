@@ -208,23 +208,23 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	v_instance = this;
 #ifdef __unix__
 	if (sem_init(&v_epoch__received, 0, 0) == -1) throw std::system_error(errno, std::generic_category());
-	sigfillset(&v_epoch__notsigusr2);
-	sigdelset(&v_epoch__notsigusr2, SIGUSR2);
+	sigfillset(&v_epoch__not_signal_resume);
+	sigdelset(&v_epoch__not_signal_resume, XEMMAI__SIGNAL_RESUME);
 	struct sigaction sa;
 	sa.sa_handler = [](int)
 	{
 	};
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;
-	if (sigaction(SIGUSR2, &sa, &v_epoch__old_sigusr2) == -1) throw std::system_error(errno, std::generic_category());
+	if (sigaction(XEMMAI__SIGNAL_RESUME, &sa, &v_epoch__old_signal_resume) == -1) throw std::system_error(errno, std::generic_category());
 	sa.sa_handler = [](int)
 	{
 		t_thread::v_current->v_active->f_epoch_get();
 		t_thread::v_current->f_epoch_get();
 		v_instance->f_epoch_suspend();
 	};
-	sigaddset(&sa.sa_mask, SIGUSR2);
-	if (sigaction(SIGUSR1, &sa, &v_epoch__old_sigusr1) == -1) throw std::system_error(errno, std::generic_category());
+	sigaddset(&sa.sa_mask, XEMMAI__SIGNAL_RESUME);
+	if (sigaction(XEMMAI__SIGNAL_SUSPEND, &sa, &v_epoch__old_signal_suspend) == -1) throw std::system_error(errno, std::generic_category());
 #endif
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	std::thread(&t_engine::f_collector, this).detach();
@@ -339,8 +339,8 @@ t_engine::~t_engine()
 	assert(!v_thread__internals);
 #ifdef __unix__
 	if (sem_destroy(&v_epoch__received) == -1) std::exit(errno);
-	if (sigaction(SIGUSR1, &v_epoch__old_sigusr1, NULL) == -1) std::exit(errno);
-	if (sigaction(SIGUSR2, &v_epoch__old_sigusr2, NULL) == -1) std::exit(errno);
+	if (sigaction(XEMMAI__SIGNAL_SUSPEND, &v_epoch__old_signal_suspend, NULL) == -1) std::exit(errno);
+	if (sigaction(XEMMAI__SIGNAL_RESUME, &v_epoch__old_signal_resume, NULL) == -1) std::exit(errno);
 #endif
 	if (v_options.v_verbose) {
 		std::fprintf(stderr, "statistics:\n\tobject:\n");

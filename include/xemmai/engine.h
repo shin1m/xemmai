@@ -67,9 +67,9 @@ private:
 	size_t v_object__collect = 0;
 #ifdef __unix__
 	sem_t v_epoch__received;
-	sigset_t v_epoch__notsigusr2;
-	struct sigaction v_epoch__old_sigusr1;
-	struct sigaction v_epoch__old_sigusr2;
+	sigset_t v_epoch__not_signal_resume;
+	struct sigaction v_epoch__old_signal_suspend;
+	struct sigaction v_epoch__old_signal_resume;
 #endif
 	t_thread::t_internal* v_thread__internals = new t_thread::t_internal{nullptr};
 	std::mutex v_thread__mutex;
@@ -118,7 +118,7 @@ private:
 	void f_epoch_suspend()
 	{
 		if (sem_post(&v_epoch__received) == -1) _exit(errno);
-		sigsuspend(&v_epoch__notsigusr2);
+		sigsuspend(&v_epoch__not_signal_resume);
 	}
 	void f_epoch_wait()
 	{
@@ -330,7 +330,7 @@ t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields)
 inline void t_thread::t_internal::f_epoch_suspend()
 {
 #ifdef __unix__
-	pthread_kill(v_handle, SIGUSR1);
+	pthread_kill(v_handle, XEMMAI__SIGNAL_SUSPEND);
 	f_engine()->f_epoch_wait();
 #endif
 #ifdef _WIN32
@@ -358,7 +358,7 @@ inline void t_thread::t_internal::f_epoch_suspend()
 inline void t_thread::t_internal::f_epoch_resume()
 {
 #ifdef __unix__
-	pthread_kill(v_handle, SIGUSR2);
+	pthread_kill(v_handle, XEMMAI__SIGNAL_RESUME);
 #endif
 #ifdef _WIN32
 	ResumeThread(v_handle);

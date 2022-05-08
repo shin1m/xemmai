@@ -24,4 +24,13 @@
 #define XEMMAI__PORTABLE__DEFINE_EXPORT
 #endif
 
+#ifdef __unix__
+#ifndef XEMMAI__SIGNAL_SUSPEND
+#define XEMMAI__SIGNAL_SUSPEND SIGRTMAX - 1
+#endif
+#ifndef XEMMAI__SIGNAL_RESUME
+#define XEMMAI__SIGNAL_RESUME SIGRTMAX
+#endif
+#endif
+
 #endif
