@@ -104,12 +104,12 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_type_type->v_builtin = true;
 	t_define(this).f_derive<t_builder, t_object>();
 	v_type_builder->v_builtin = true;
-	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_module__body));
+	t_define(this).f_derive<t_object>(v_type_module__body);
 	v_type_module__body->v_builtin = true;
 	t_define(this).f_derive<t_module, t_object>();
 	v_type_module->v_builtin = v_type_module->v_revive = true;
 	static_cast<t_type_of<t_symbol>*>(static_cast<t_type*>(v_type_symbol))->f_define();
-	t_define(this).f_derive<t_object>(static_cast<t_slot&>(v_type_native));
+	t_define(this).f_derive<t_object>(v_type_native);
 	v_type_native->v_builtin = v_type_native->v_bindable = true;
 	t_type_of<t_fiber>::f_define();
 	v_type_fiber->v_builtin = true;
@@ -156,27 +156,27 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	t_define(this).f_derive<t_parser::t_error, t_throwable>();
 	v_type_parser__error->v_builtin = true;
 	return t_define(this)
-		(L"Object"sv, t_object::f_of(v_type_object))
-		(L"Class"sv, t_object::f_of(v_type_type))
-		(L"Module"sv, t_object::f_of(v_type_module))
-		(L"Symbol"sv, t_object::f_of(v_type_symbol))
-		(L"Native"sv, t_object::f_of(v_type_native))
-		(L"Fiber"sv, t_object::f_of(v_type_fiber))
-		(L"Thread"sv, t_object::f_of(v_type_thread))
-		(L"Lambda"sv, t_object::f_of(v_type_lambda))
-		(L"Method"sv, t_object::f_of(v_type_method))
-		(L"Throwable"sv, t_object::f_of(v_type_throwable))
-		(L"Null"sv, t_object::f_of(v_type_null))
-		(L"Boolean"sv, t_object::f_of(v_type_boolean))
-		(L"Integer"sv, t_object::f_of(v_type_integer))
-		(L"Float"sv, t_object::f_of(v_type_float))
-		(L"String"sv, t_object::f_of(v_type_string))
-		(L"Tuple"sv, t_object::f_of(v_type_tuple))
-		(L"List"sv, t_object::f_of(v_type_list))
-		(L"Map"sv, t_object::f_of(v_type_map))
-		(L"Bytes"sv, t_object::f_of(v_type_bytes))
-		(L"LexerError"sv, t_object::f_of(v_type_lexer__error))
-		(L"ParserError"sv, t_object::f_of(v_type_parser__error))
+		(L"Object"sv, static_cast<t_object*>(v_type_object))
+		(L"Class"sv, static_cast<t_object*>(v_type_type))
+		(L"Module"sv, static_cast<t_object*>(v_type_module))
+		(L"Symbol"sv, static_cast<t_object*>(v_type_symbol))
+		(L"Native"sv, static_cast<t_object*>(v_type_native))
+		(L"Fiber"sv, static_cast<t_object*>(v_type_fiber))
+		(L"Thread"sv, static_cast<t_object*>(v_type_thread))
+		(L"Lambda"sv, static_cast<t_object*>(v_type_lambda))
+		(L"Method"sv, static_cast<t_object*>(v_type_method))
+		(L"Throwable"sv, static_cast<t_object*>(v_type_throwable))
+		(L"Null"sv, static_cast<t_object*>(v_type_null))
+		(L"Boolean"sv, static_cast<t_object*>(v_type_boolean))
+		(L"Integer"sv, static_cast<t_object*>(v_type_integer))
+		(L"Float"sv, static_cast<t_object*>(v_type_float))
+		(L"String"sv, static_cast<t_object*>(v_type_string))
+		(L"Tuple"sv, static_cast<t_object*>(v_type_tuple))
+		(L"List"sv, static_cast<t_object*>(v_type_list))
+		(L"Map"sv, static_cast<t_object*>(v_type_map))
+		(L"Bytes"sv, static_cast<t_object*>(v_type_bytes))
+		(L"LexerError"sv, static_cast<t_object*>(v_type_lexer__error))
+		(L"ParserError"sv, static_cast<t_object*>(v_type_parser__error))
 	;
 }
 

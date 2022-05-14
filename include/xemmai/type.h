@@ -76,13 +76,13 @@ public:
 	{
 		return v_p;
 	}
-	operator t_slot&()
+	operator t_object*() const
 	{
 		return v_slot;
 	}
 };
 
-using t_scan = void(*)(t_slot&);
+using t_scan = void(*)(t_object*);
 
 struct t_fields
 {

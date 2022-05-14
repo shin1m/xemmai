@@ -80,8 +80,8 @@ struct t_callback_library : t_library
 		t_type_of<t_client>::f_define(this);
 		t_type_of<t_server>::f_define(this);
 		return t_define(this)
-			(L"Client"sv, t_object::f_of(v_type_client))
-			(L"Server"sv, t_object::f_of(v_type_server))
+			(L"Client"sv, static_cast<t_object*>(v_type_client))
+			(L"Server"sv, static_cast<t_object*>(v_type_server))
 		;
 	}
 	template<typename T>

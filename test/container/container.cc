@@ -44,7 +44,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_container::f_define()
 	v_type_pair.f_construct(t_type_of<t_pair>::f_define(this));
 	t_type_of<t_queue>::f_define(this);
 	return t_define(this)
-		(L"Queue"sv, t_object::f_of(v_type_queue))
+		(L"Queue"sv, static_cast<t_object*>(v_type_queue))
 	;
 }
 

@@ -136,8 +136,8 @@ std::vector<std::pair<t_root, t_rvalue>> t_threading::f_define()
 	t_type_of<std::mutex>::f_define(this);
 	t_type_of<std::condition_variable>::f_define(this);
 	return t_define(this)
-		(L"Mutex"sv, t_object::f_of(v_type_mutex))
-		(L"Condition"sv, t_object::f_of(v_type_condition))
+		(L"Mutex"sv, static_cast<t_object*>(v_type_mutex))
+		(L"Condition"sv, static_cast<t_object*>(v_type_condition))
 	;
 }
 

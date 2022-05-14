@@ -51,18 +51,9 @@ class t_object
 		v_scan_stack = a_p;
 	}
 	template<void (t_object::*A_push)()>
-	static void f_push(t_slot& a_slot)
+	static void f_push(t_object* a_p)
 	{
-		auto p = a_slot.v_p.load(std::memory_order_relaxed);
-		if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) (p->*A_push)();
-	}
-	template<void (t_object::*A_push)()>
-	static void f_push_and_clear(t_slot& a_slot)
-	{
-		auto p = a_slot.v_p.load(std::memory_order_relaxed);
-		if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) return;
-		(p->*A_push)();
-		a_slot.v_p.store(nullptr, std::memory_order_relaxed);
+		if (reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT) (a_p->*A_push)();
 	}
 
 	t_object* v_next;
@@ -212,8 +203,8 @@ class t_object
 	}
 	void f_cyclic_decrement()
 	{
-		f_scan_fields(f_push_and_clear<&t_object::f_cyclic_decrement_push>);
-		if (v_type->f_finalize) v_type->f_finalize(this, f_push_and_clear<&t_object::f_cyclic_decrement_push>);
+		f_scan_fields(f_push<&t_object::f_cyclic_decrement_push>);
+		if (v_type->f_finalize) v_type->f_finalize(this, f_push<&t_object::f_cyclic_decrement_push>);
 		if (v_type->v_this) v_type->v_this->f_cyclic_decrement_push();
 		v_type = nullptr;
 	}
