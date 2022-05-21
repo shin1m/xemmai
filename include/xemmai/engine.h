@@ -308,7 +308,6 @@ inline void t_object::f_decrement_step()
 	if (v_type->f_finalize) v_type->f_finalize(this, f_push<&t_object::f_decrement_push>);
 	t_object::f_of(v_type)->f_decrement_push();
 	v_type = nullptr;
-	v_color = e_color__BLACK;
 	if (v_next) {
 		if (!v_previous) return;
 		v_next->v_previous = v_previous;
