@@ -33,7 +33,8 @@ class t_list : public t_sharable
 	t_slot v_tuple;
 	size_t v_head = 0;
 	size_t v_size = 0;
-	size_t v_mask = 0;
+	size_t v_grow = 0;
+	size_t v_shrink = 0;
 
 	t_list() = default;
 	~t_list() = default;
@@ -49,6 +50,13 @@ class t_list : public t_sharable
 			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range."sv);
 		}
 	}
+	t_svalue& f_at(size_t a_index) const
+	{
+		a_index += v_head;
+		auto& tuple = v_tuple->f_as<t_tuple>();
+		auto n = tuple.f_size();
+		return tuple[a_index < n ? a_index : a_index - n];
+	}
 
 public:
 	static XEMMAI__PORTABLE__EXPORT t_object* f_instantiate();
@@ -56,7 +64,7 @@ public:
 	void f_clear()
 	{
 		v_tuple = nullptr;
-		v_head = v_size = v_mask = 0;
+		v_head = v_size = v_grow = v_shrink = 0;
 	}
 	size_t f_size() const
 	{
@@ -65,44 +73,45 @@ public:
 	const t_svalue& operator[](intptr_t a_index) const
 	{
 		f_validate(a_index);
-		return v_tuple->f_as<t_tuple>()[v_head + a_index & v_mask];
+		return f_at(a_index);
 	}
 	t_svalue& operator[](intptr_t a_index)
 	{
 		f_validate(a_index);
-		return v_tuple->f_as<t_tuple>()[v_head + a_index & v_mask];
+		return f_at(a_index);
 	}
 	void f_push(const t_pvalue& a_value)
 	{
-		f_grow();
-		new(&v_tuple->f_as<t_tuple>()[v_head + v_size & v_mask]) t_svalue(a_value);
+		if (v_size >= v_grow) f_grow();
+		new(&f_at(v_size)) t_svalue(a_value);
 		++v_size;
 	}
 	t_pvalue f_pop()
 	{
 		if (v_size <= 0) f_throw(L"empty list."sv);
-		auto& x = v_tuple->f_as<t_tuple>()[v_head + --v_size & v_mask];
+		auto& x = f_at(--v_size);
 		t_pvalue p = x;
 		x = nullptr;
-		f_shrink();
+		if (v_size <= v_shrink) f_shrink();
 		return p;
 	}
 	void f_unshift(const t_pvalue& a_value)
 	{
-		f_grow();
-		v_head = v_head - 1 & v_mask;
-		new(&v_tuple->f_as<t_tuple>()[v_head]) t_svalue(a_value);
+		if (v_size >= v_grow) f_grow();
+		auto& tuple = v_tuple->f_as<t_tuple>();
+		v_head = (v_head > 0 ? v_head : tuple.f_size()) - 1;
+		new(&tuple[v_head]) t_svalue(a_value);
 		++v_size;
 	}
 	t_pvalue f_shift()
 	{
 		if (v_size <= 0) f_throw(L"empty list."sv);
-		auto& x = v_tuple->f_as<t_tuple>()[v_head];
+		auto& tuple = v_tuple->f_as<t_tuple>();
+		auto& x = tuple[v_head];
 		t_pvalue p = x;
 		x = nullptr;
-		v_head = v_head + 1 & v_mask;
-		--v_size;
-		f_shrink();
+		if (++v_head >= tuple.f_size()) v_head = 0;
+		if (--v_size <= v_shrink) f_shrink();
 		return p;
 	}
 	void f_insert(intptr_t a_index, const t_pvalue& a_value);

@@ -3,39 +3,62 @@
 namespace xemmai
 {
 
+namespace
+{
+
+inline size_t f_capacity(size_t a_size)
+{
+	return (a_size - t_object::f_fields_offset(sizeof(t_tuple))) / sizeof(t_slot);
+}
+
+template<typename T>
+inline void f_copy_construct(const t_tuple& a_tuple, size_t a_head, size_t a_size, T* a_p)
+{
+	size_t n = a_tuple.f_size();
+	size_t i = 0;
+	if (a_head + a_size > n) {
+		for (; a_head + i < n; ++i) new(&a_p[i]) T(a_tuple[a_head + i]);
+		a_head -= n;
+	}
+	for (; i < a_size; ++i) new(&a_p[i]) T(a_tuple[a_head + i]);
+}
+
+}
+
 void t_list::f_resize()
 {
+	auto size = (t_object::f_fields_offset(sizeof(t_tuple)) + v_size * sizeof(t_slot) + sizeof(t_object) - 1) / sizeof(t_object) * sizeof(t_object);
+	v_grow = f_capacity(size * 2);
+	v_shrink = size < sizeof(t_object) * 2 ? 0 : f_capacity(size / 2);
 	auto& tuple0 = v_tuple->f_as<t_tuple>();
-	v_tuple = t_tuple::f_instantiate(v_size * 2, [&](auto& tuple1)
+	v_tuple = t_tuple::f_instantiate(v_grow, [&](auto& tuple1)
 	{
-		for (size_t i = 0; i < v_size; ++i) new(&tuple1[i]) t_svalue(tuple0[v_head + i & v_mask]);
-		std::uninitialized_default_construct_n(&tuple1[0] + v_size, v_size);
+		f_copy_construct(tuple0, v_head, v_size, &tuple1[0]);
+		std::uninitialized_default_construct_n(&tuple1[0] + v_size, v_grow - v_size);
 	});
 	v_head = 0;
-	v_mask = v_size * 2 - 1;
 }
 
 void t_list::f_grow()
 {
 	if (v_size <= 0) {
-		v_tuple = t_tuple::f_instantiate(4, [](auto& tuple)
+		v_grow = f_capacity(sizeof(t_object));
+		v_tuple = t_tuple::f_instantiate(v_grow, [&](auto& tuple)
 		{
-			std::uninitialized_default_construct_n(&tuple[0], 4);
+			std::uninitialized_default_construct_n(&tuple[0], v_grow);
 		});
-		v_mask = 3;
-	} else if (v_size >= v_tuple->f_as<t_tuple>().f_size()) {
+	} else {
 		f_resize();
 	}
 }
 
 void t_list::f_shrink()
 {
-	if (v_size * 4 > v_tuple->f_as<t_tuple>().f_size()) return;
-	if (v_size > 1) {
-		f_resize();
-	} else if (v_size <= 0) {
+	if (v_size <= 0) {
 		v_tuple = nullptr;
-		v_head = 0;
+		v_head = v_grow = 0;
+	} else {
+		f_resize();
 	}
 }
 
@@ -47,7 +70,7 @@ t_object* t_list::f_instantiate()
 void t_list::f_insert(intptr_t a_index, const t_pvalue& a_value)
 {
 	f_validate(a_index);
-	f_grow();
+	if (v_size >= v_grow) f_grow();
 	size_t i = v_head + a_index;
 	size_t j = v_head + v_size;
 	auto& tuple = v_tuple->f_as<t_tuple>();
@@ -87,7 +110,7 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 	auto& tuple = v_tuple->f_as<t_tuple>();
 	size_t n = tuple.f_size();
 	auto p = &tuple[0];
-	t_pvalue q = p[i & v_mask];
+	t_pvalue q = p[i < n ? i : i - n];
 	if (a_index < static_cast<intptr_t>(v_size / 2)) {
 		if (i >= n) {
 			*f_move_forward(p, p + i - n) = p[n - 1];
@@ -107,8 +130,7 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 			f_move_backward(p + i, p + --j);
 		}
 	}
-	--v_size;
-	f_shrink();
+	if (--v_size <= v_shrink) f_shrink();
 	return q;
 }
 
@@ -242,30 +264,33 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 	t_object* object;
 	size_t head = 0;
 	size_t size = 0;
-	size_t mask = 0;
+	size_t grow = 0;
+	size_t shrink = 0;
 	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		object = a_self.v_tuple;
 		a_self.v_tuple = nullptr;
 		std::swap(a_self.v_head, head);
 		std::swap(a_self.v_size, size);
-		std::swap(a_self.v_mask, mask);
+		std::swap(a_self.v_grow, grow);
+		std::swap(a_self.v_shrink, shrink);
 	});
 	if (!object) return;
-	std::vector<t_rvalue> a(size);
 	auto& tuple = object->f_as<t_tuple>();
-	for (size_t i = 0; i < size; ++i) a[i] = tuple[head + i & mask];
-	std::sort(a.begin(), a.end(), [&](const auto& x, const auto& y)
+	std::vector<t_rvalue> xs(size);
+	f_copy_construct(tuple, head, size, xs.data());
+	std::sort(xs.begin(), xs.end(), [&](const auto& x, const auto& y)
 	{
 		return f_as<bool>(a_callable(x, y));
 	});
-	for (size_t i = 0; i < size; ++i) tuple[i] = a[i];
+	for (size_t i = 0; i < size; ++i) tuple[i] = xs[i];
 	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.v_tuple = object;
 		a_self.v_head = 0;
 		a_self.v_size = size;
-		a_self.v_mask = mask;
+		a_self.v_grow = grow;
+		a_self.v_shrink = shrink;
 	});
 }
 
