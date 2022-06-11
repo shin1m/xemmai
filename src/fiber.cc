@@ -26,15 +26,16 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 	std::putc('\n', a_out);
 }
 
-t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_thread(t_thread::v_current), v_estack(std::make_unique<t_pvalue[]>(a_stack)), v_estack_used(v_estack.get()), v_estack_buffer(std::make_unique<t_object*[]>(a_stack * 2)), v_estack_last_head(v_estack_buffer.get() + a_stack), v_estack_last_used(v_estack_last_head)
+t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_thread(t_thread::v_current), v_estack(new t_pvalue[a_stack]), v_estack_used(v_estack.get())
 {
 	v_next = t_thread::v_current->v_fibers;
 	t_thread::v_current->v_fibers = this;
-	auto limit = f_limit();
-	v_stack_buffer = std::make_unique<char[]>(limit * a_n);
-	auto p = v_stack_buffer.get() + limit;
-	v_stack_last_top = v_stack_last_bottom = reinterpret_cast<t_object**>(p);
-	v_stack_copy = reinterpret_cast<t_object**>(p + limit);
+	auto limit = f_limit() / sizeof(t_object*);
+	v_estack_buffer.reset(new t_object*[a_stack * 2 + limit * a_n]);
+	v_estack_last_head = v_estack_last_used = v_estack_buffer.get() + a_stack;
+	auto p = v_estack_last_head + a_stack + limit;
+	v_stack_last_top = v_stack_last_bottom = p;
+	v_stack_copy = p + limit;
 }
 
 t_fiber::t_internal::t_internal(size_t a_stack, void* a_bottom) : t_internal(a_stack, 2)
@@ -69,48 +70,30 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 void t_fiber::t_internal::f_epoch_copy()
 {
 	if (!v_thread) {
-		v_stack_top = v_stack_bottom;
 		v_estack_used = v_estack.get();
+		v_stack_top = v_stack_bottom;
 	}
-	auto n = v_stack_bottom - v_stack_top;
-	std::memcpy(v_stack_copy - n, v_stack_top, n * sizeof(t_object*));
 	auto m = v_estack_used - v_estack.get();
 	for (size_t i = 0; i < m; ++i) v_estack_buffer[i] = v_estack[i];
+	auto n = v_stack_bottom - v_stack_top;
+	std::memcpy(v_stack_copy - n, v_stack_top, n * sizeof(t_object*));
 }
 
 void t_fiber::t_internal::f_epoch_scan()
 {
-	auto n = v_stack_bottom - v_stack_top;
-	auto top0 = v_stack_copy - n;
-	auto top1 = v_stack_last_bottom - n;
-	auto top2 = v_stack_last_top;
-	v_stack_last_top = top1;
-	v_stack_decrements = v_stack_last_bottom;
 	auto m = v_estack_used - v_estack.get();
 	auto used0 = v_estack_buffer.get() + m;
 	auto used1 = v_estack_last_head + m;
 	auto used2 = v_estack_last_used;
 	v_estack_last_used = used1;
 	v_estack_decrements = v_estack_buffer.get();
+	auto n = v_stack_bottom - v_stack_top;
+	auto top0 = v_stack_copy - n;
+	auto top1 = v_stack_last_bottom - n;
+	auto top2 = v_stack_last_top;
+	v_stack_last_top = top1;
+	v_stack_decrements = v_stack_last_bottom;
 	std::lock_guard lock(f_engine()->v_object__heap.f_mutex());
-	if (top1 < top2)
-		do {
-			auto p = f_engine()->f_object__find(*top0++);
-			if (p) p->f_increment();
-			*top1++ = p;
-		} while (top1 < top2);
-	else
-		for (; top2 < top1; ++top2) if (*top2) *v_stack_decrements++ = *top2;
-	for (; top0 < v_stack_copy; ++top1) {
-		auto p = *top0++;
-		auto q = *top1;
-		if (p == q) continue;
-		p = f_engine()->f_object__find(p);
-		if (p == q) continue;
-		if (p) p->f_increment();
-		if (q) *v_stack_decrements++ = q;
-		*top1 = p;
-	}
 	auto p0 = v_estack_buffer.get();
 	auto p1 = v_estack_last_head;
 	for (auto used = std::min(used1, used2); p1 < used; ++p1) {
@@ -131,12 +114,30 @@ void t_fiber::t_internal::f_epoch_scan()
 		} while (p1 < used1);
 	else
 		for (; p1 < used2; ++p1) if (*p1) *v_estack_decrements++ = *p1;
+	if (top1 < top2)
+		do {
+			auto p = f_engine()->f_object__find(*top0++);
+			if (p) p->f_increment();
+			*top1++ = p;
+		} while (top1 < top2);
+	else
+		for (; top2 < top1; ++top2) if (*top2) *v_stack_decrements++ = *top2;
+	for (; top0 < v_stack_copy; ++top1) {
+		auto p = *top0++;
+		auto q = *top1;
+		if (p == q) continue;
+		p = f_engine()->f_object__find(p);
+		if (p == q) continue;
+		if (p) p->f_increment();
+		if (q) *v_stack_decrements++ = q;
+		*top1 = p;
+	}
 }
 
 void t_fiber::t_internal::f_epoch_decrement()
 {
-	for (auto p = v_stack_last_bottom; p != v_stack_decrements; ++p) (*p)->f_decrement();
 	for (auto p = v_estack_buffer.get(); p != v_estack_decrements; ++p) (*p)->f_decrement();
+	for (auto p = v_stack_last_bottom; p != v_stack_decrements; ++p) (*p)->f_decrement();
 }
 
 t_object* t_fiber::f_instantiate(const t_pvalue& a_callable, size_t a_stack)

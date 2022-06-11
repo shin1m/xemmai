@@ -44,19 +44,18 @@ struct t_fiber
 		t_internal* v_next;
 		void* v_thread;
 		t_fiber* v_fiber;
-		std::unique_ptr<char[]> v_stack_buffer;
-		t_object** v_stack_last_top;
-		t_object** v_stack_last_bottom;
-		t_object** v_stack_copy;
-		t_object** v_stack_bottom;
-		t_object** v_stack_top;
-		t_object** v_stack_decrements;
 		std::unique_ptr<t_pvalue[]> v_estack;
 		t_pvalue* v_estack_used;
 		std::unique_ptr<t_object*[]> v_estack_buffer;
 		t_object** v_estack_last_head;
 		t_object** v_estack_last_used;
 		t_object** v_estack_decrements;
+		t_object** v_stack_last_top;
+		t_object** v_stack_last_bottom;
+		t_object** v_stack_copy;
+		t_object** v_stack_bottom;
+		t_object** v_stack_top;
+		t_object** v_stack_decrements;
 #ifdef __unix__
 		ucontext_t v_context;
 #endif
@@ -75,11 +74,11 @@ struct t_fiber
 #endif
 		void f_epoch_get()
 		{
-			t_object* dummy = nullptr;
-			v_stack_top = &dummy;
 #ifndef _WIN32
 			v_estack_used = v_stack_used;
 #endif
+			t_object* dummy = nullptr;
+			v_stack_top = &dummy;
 		}
 		void f_epoch_copy();
 		void f_epoch_scan();
