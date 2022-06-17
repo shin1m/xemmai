@@ -239,21 +239,21 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		return std::unique_ptr<ast::t_node>(new ast::t_literal<bool>(at, false));
 	case t_lexer::e_token__INTEGER:
 		{
-			intptr_t value = f_number<intptr_t>();
+			auto value = f_number<intptr_t>();
 			v_lexer.f_next();
 			return std::unique_ptr<ast::t_node>(new ast::t_literal<intptr_t>(at, value));
 		}
 	case t_lexer::e_token__FLOAT:
 		{
-			double value = f_number<double>();
+			auto value = f_number<double>();
 			v_lexer.f_next();
 			return std::unique_ptr<ast::t_node>(new ast::t_literal<double>(at, value));
 		}
 	case t_lexer::e_token__STRING:
 		{
-			std::wstring value(v_lexer.f_value().begin(), v_lexer.f_value().end());
+			auto value = t_string::f_instantiate(v_lexer.f_value().data(), v_lexer.f_value().size());
 			v_lexer.f_next();
-			return std::unique_ptr<ast::t_node>(new ast::t_literal<t_svalue&>(at, v_module.f_slot(f_global()->f_as(std::move(value)))));
+			return std::unique_ptr<ast::t_node>(new ast::t_literal<t_svalue&>(at, v_module.f_slot(value)));
 		}
 	case t_lexer::e_token__BREAK:
 		{

@@ -2,6 +2,7 @@
 #define XEMMAI__FIBER_H
 
 #include "lambda.h"
+#include <memory>
 #include <cassert>
 #ifdef __unix__
 #include <sys/resource.h>

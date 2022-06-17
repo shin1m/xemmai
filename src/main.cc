@@ -67,12 +67,12 @@ class t_debugger : public xemmai::t_debugger
 	}
 	std::wstring f_read_string(wint_t& a_c, wchar_t a_terminator)
 	{
-		std::vector<wchar_t> cs;
+		std::wstring s;
 		while (a_c != WEOF && a_c != a_terminator) {
-			cs.push_back(a_c);
+			s.push_back(a_c);
 			a_c = std::getwchar();
 		}
-		return {cs.begin(), cs.end()};
+		return s;
 	}
 	std::pair<std::wstring, size_t> f_read_path(wint_t& a_c)
 	{

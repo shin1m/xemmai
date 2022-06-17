@@ -2,7 +2,6 @@
 #define XEMMAI__AST_H
 
 #include "code.h"
-#include <list>
 #include <set>
 
 namespace xemmai
@@ -537,7 +536,7 @@ struct t_emit
 	size_t v_arguments;
 	std::vector<bool>* v_privates;
 	size_t v_stack;
-	std::list<t_label>* v_labels;
+	std::deque<t_label>* v_labels;
 	t_targets* v_targets;
 	std::vector<std::tuple<size_t, size_t, size_t>>* v_safe_positions;
 

@@ -834,6 +834,18 @@ inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 	return t_code::f_loop(context);
 }
 
+template<typename T>
+t_object* t_string::f_instantiate(size_t a_n, T a_fill)
+{
+	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
+	auto s = new(object->f_data()) t_string(0);
+	object->f_be(f_global()->f_type<t_string>());
+	auto p = a_fill(s->f_entries());
+	*p = L'\0';
+	s->v_size = p - s->f_entries();
+	return object;
+}
+
 inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n)
 {
 	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));

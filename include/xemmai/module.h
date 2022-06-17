@@ -4,7 +4,7 @@
 #include "portable/library.h"
 #include "symbol.h"
 #include "code.h"
-#include <memory>
+#include <deque>
 
 namespace xemmai
 {
@@ -50,7 +50,7 @@ struct t_module
 struct t_script : t_module::t_body
 {
 	std::wstring v_path;
-	std::vector<std::unique_ptr<t_svalue>> v_slots;
+	std::deque<t_svalue> v_slots;
 	std::mutex v_mutex;
 
 	t_script(std::wstring_view a_path) : v_path(a_path)
@@ -59,9 +59,11 @@ struct t_script : t_module::t_body
 	virtual void f_scan(t_scan a_scan);
 	t_svalue& f_slot(t_object* a_p)
 	{
-		auto p = new t_svalue(a_p);
-		std::lock_guard lock(v_mutex);
-		return *v_slots.emplace_back(p);
+		v_mutex.lock();
+		auto& p = v_slots.emplace_back();
+		v_mutex.unlock();
+		p = a_p;
+		return p;
 	}
 };
 

@@ -11,18 +11,6 @@ inline size_t f_capacity(size_t a_size)
 	return (a_size - t_object::f_fields_offset(sizeof(t_tuple))) / sizeof(t_slot);
 }
 
-template<typename T>
-inline void f_copy_construct(const t_tuple& a_tuple, size_t a_head, size_t a_size, T* a_p)
-{
-	size_t n = a_tuple.f_size();
-	size_t i = 0;
-	if (a_head + a_size > n) {
-		for (; a_head + i < n; ++i) new(&a_p[i]) T(a_tuple[a_head + i]);
-		a_head -= n;
-	}
-	for (; i < a_size; ++i) new(&a_p[i]) T(a_tuple[a_head + i]);
-}
-
 }
 
 void t_list::f_resize()
@@ -33,8 +21,14 @@ void t_list::f_resize()
 	auto& tuple0 = v_tuple->f_as<t_tuple>();
 	v_tuple = t_tuple::f_instantiate(v_grow, [&](auto& tuple1)
 	{
-		f_copy_construct(tuple0, v_head, v_size, &tuple1[0]);
-		std::uninitialized_default_construct_n(&tuple1[0] + v_size, v_grow - v_size);
+		size_t n = tuple0.f_size();
+		size_t i = 0;
+		if (v_head + v_size > n) {
+			do new(&tuple1[i++]) t_svalue(tuple0[v_head++]); while (v_head < n);
+			v_head = 0;
+		}
+		do new(&tuple1[i++]) t_svalue(tuple0[v_head++]); while (i < v_size);
+		do new(&tuple1[i++]) t_svalue; while (i < v_grow);
 	});
 	v_head = 0;
 }
@@ -277,17 +271,21 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 	});
 	if (!object) return;
 	auto& tuple = object->f_as<t_tuple>();
-	std::vector<t_rvalue> xs(size);
-	f_copy_construct(tuple, head, size, xs.data());
-	std::sort(xs.begin(), xs.end(), [&](const auto& x, const auto& y)
+	auto p = reinterpret_cast<t_rvalue*>(&tuple[0]);
+	if (head + size > tuple.f_size()) {
+		std::rotate(p, p + head, p + tuple.f_size());
+		head = 0;
+	} else {
+		p += head;
+	}
+	std::sort(p, p + size, [&](const auto& x, const auto& y)
 	{
 		return f_as<bool>(a_callable(x, y));
 	});
-	for (size_t i = 0; i < size; ++i) tuple[i] = xs[i];
 	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
 		a_self.v_tuple = object;
-		a_self.v_head = 0;
+		a_self.v_head = head;
 		a_self.v_size = size;
 		a_self.v_grow = grow;
 		a_self.v_shrink = shrink;

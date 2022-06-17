@@ -73,16 +73,15 @@ t_object* t_reader::f_read(t_io* a_library, size_t a_size)
 {
 	t_lock_with_safe_region lock(v_mutex);
 	if (!v_stream) f_throw(L"already closed."sv);
-	std::vector<wchar_t> cs(a_size);
-	for (size_t i = 0; i < a_size; ++i) {
-		wint_t c = f_get(a_library);
-		if (c == WEOF) {
-			cs.resize(i);
-			break;
+	return t_string::f_instantiate(a_size, [&](auto p)
+	{
+		for (auto q = p + a_size; p < q; ++p) {
+			wint_t c = f_get(a_library);
+			if (c == WEOF) break;
+			*p = c;
 		}
-		cs[i] = c;
-	}
-	return t_string::f_instantiate(cs.data(), cs.size());
+		return p;
+	});
 }
 
 t_object* t_reader::f_read_line(t_io* a_library)

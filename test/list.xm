@@ -188,6 +188,29 @@ b.shift(
 print(b
 assert_sequence(b, [2, 1
 
+c = ["a", "b", "c", "d", "e"
+c.unshift("f"
+c.unshift("g"
+print(c
+assert_sequence(c, ["g", "f", "a", "b", "c", "d", "e"
+c.sort(@(x, y) x < y
+print(c
+assert_sequence(c, ["a", "b", "c", "d", "e", "f", "g"
+
+d = [
+for i = 0; i < 23; i = i + 1
+	d.push(i.__string(
+print(d
+assert(d.size() == 23
+for i = 0; i < 17; i = i + 1
+	d.shift(
+print(d
+assert_sequence(d, ["17", "18", "19", "20", "21", "22"
+for i = 0; i < 6; i = i + 1
+	d.shift(
+print(d
+assert_sequence(d, [
+
 Foo = List + @
 	$__initialize = @(*xs) $push(4
 

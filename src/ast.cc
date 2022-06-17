@@ -147,7 +147,7 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	auto stack0 = a_emit.v_stack;
 	a_emit.v_stack = v_privates.size();
 	auto labels0 = a_emit.v_labels;
-	std::list<t_emit::t_label> labels1;
+	std::deque<t_emit::t_label> labels1;
 	a_emit.v_labels = &labels1;
 	auto targets0 = a_emit.v_targets;
 	auto& return0 = a_emit.f_label();
@@ -1196,7 +1196,7 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 	v_stack = privates.size();
 	auto code = t_code::f_instantiate(v_module, true, false, privates.size(), a_scope.v_shareds, 0, 0);
 	v_code = &code->f_as<t_code>();
-	std::list<t_label> labels;
+	std::deque<t_label> labels;
 	v_labels = &labels;
 	t_targets targets{nullptr, nullptr, v_stack, false, false, nullptr, nullptr, nullptr, nullptr, v_stack, false};
 	v_targets = &targets;

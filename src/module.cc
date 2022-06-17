@@ -138,7 +138,7 @@ t_module::~t_module()
 void t_script::f_scan(t_scan a_scan)
 {
 	std::lock_guard lock(v_mutex);
-	for (auto& p : v_slots) a_scan(*p);
+	for (auto& p : v_slots) a_scan(p);
 }
 
 void t_debug_script::f_scan(t_scan a_scan)

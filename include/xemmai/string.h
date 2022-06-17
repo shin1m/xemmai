@@ -28,6 +28,8 @@ public:
 	{
 		return f_instantiate(a_value.data(), a_value.size());
 	}
+	template<typename T>
+	static t_object* f_instantiate(size_t a_n, T a_fill);
 
 	size_t f_size() const
 	{
