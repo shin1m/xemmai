@@ -32,8 +32,8 @@ t_path::t_path(std::wstring_view a_path)
 	if (a_path.empty()) return;
 	std::wstring path(a_path);
 	DWORD n = GetFullPathNameW(path.c_str(), 0, NULL, NULL);
-	v_path = std::wstring(n, L'\0');
-	GetFullPathNameW(path.c_str(), n + 1, v_path.data(), NULL);
+	v_path = std::wstring(n - 1, L'\0');
+	v_path.erase(GetFullPathNameW(path.c_str(), n, v_path.data(), NULL));
 }
 #endif
 
