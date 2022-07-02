@@ -743,6 +743,17 @@ inline t_object* f_new(t_library::t_handle* a_handle, T_an&&... a_an)
 	return f_global()->f_type<t_module::t_body>()->f_new<T_library>(a_handle, std::forward<T_an>(a_an)...);
 }
 
+template<typename T>
+inline t_object* f_string_or_null(const T& a_value)
+{
+	try {
+		auto p = a_value.f_string();
+		if (f_is<t_string>(p)) return p;
+	} catch (...) {
+	}
+	return nullptr;
+}
+
 template<typename T_context, typename T_main>
 intptr_t t_fiber::f_main(T_main a_main)
 {
@@ -755,18 +766,12 @@ intptr_t t_fiber::f_main(T_main a_main)
 			n = 0;
 		} catch (const t_rvalue& thrown) {
 			fiber.f_caught(thrown, nullptr);
-			do {
-				try {
-					auto p = thrown.f_string();
-					if (f_is<t_string>(p)) {
-						auto& s = p->f_as<t_string>();
-						std::fprintf(stderr, "caught: %.*ls\n", static_cast<int>(s.f_size()), static_cast<const wchar_t*>(s));
-						break;
-					}
-				} catch (...) {
-				}
+			if (auto p = f_string_or_null(thrown)) {
+				auto& s = p->f_as<t_string>();
+				std::fprintf(stderr, "caught: %.*ls\n", static_cast<int>(s.f_size()), static_cast<const wchar_t*>(s));
+			} else {
 				std::fprintf(stderr, "caught: <unprintable>\n");
-			} while (false);
+			}
 			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/26);
 		}
 	} catch (...) {

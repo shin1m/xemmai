@@ -2,14 +2,12 @@
 
 t_object* t_queue::f_string() const
 {
-	using namespace std::literals;
 	std::shared_lock lock(v_mutex);
 	std::vector<wchar_t> cs;
 	if (v_head) {
 		t_object* pair = v_head->f_as<t_pair>().v_next;
 		while (true) {
-			auto p = pair->f_as<t_pair>().v_value.f_string();
-			if (f_is<t_string>(p)) {
+			if (auto p = f_string_or_null(pair->f_as<t_pair>().v_value)) {
 				auto& s = p->f_as<t_string>();
 				cs.insert(cs.end(), static_cast<const wchar_t*>(s), s + s.f_size());
 			} else {
