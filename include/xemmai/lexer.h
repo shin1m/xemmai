@@ -89,7 +89,10 @@ private:
 	t_token v_token;
 	std::vector<wchar_t> v_value;
 
-	void f_throw [[noreturn]] ();
+	void f_throw [[noreturn]] ()
+	{
+		throw t_rvalue(t_error::f_instantiate(*this));
+	}
 	void f_get();
 	void f_read_indent()
 	{

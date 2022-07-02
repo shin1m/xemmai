@@ -28,7 +28,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			if (v_lexer.f_token() == t_lexer::e_token__COLON) {
 				outer = v_lexer.f_value().size();
 				for (size_t i = 0; i < outer; ++i) {
-					if (!scope) xemmai::f_throw(L"no more outer scope."sv);
+					if (!scope) f_throw(L"no more outer scope."sv);
 					scope = scope->v_outer;
 				}
 				v_lexer.f_next();
@@ -39,8 +39,8 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					t_object* symbol = f_symbol();
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
-						if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
-						if (!scope) xemmai::f_throw(L"no more outer scope."sv);
+						if (!a_assignable) f_throw(L"can not assign to expression."sv);
+						if (!scope) f_throw(L"no more outer scope."sv);
 						v_lexer.f_next();
 						auto& variable = f_variable(scope, symbol);
 						if (outer > 0) variable.v_shared = variable.v_varies = true;
@@ -51,7 +51,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				}
 			case t_lexer::e_token__SELF:
 				{
-					if (!scope) xemmai::f_throw(L"no more outer scope."sv);
+					if (!scope) f_throw(L"no more outer scope."sv);
 					if (outer > 0) scope->v_self_shared = true;
 					std::unique_ptr<ast::t_node> target(new ast::t_self(at, outer));
 					for (auto c : v_lexer.f_value()) target.reset(c == L'@' ? static_cast<ast::t_node*>(new ast::t_class(at, std::move(target))) : static_cast<ast::t_node*>(new ast::t_super(at, std::move(target))));
@@ -61,7 +61,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 						t_object* symbol = f_symbol();
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
-							if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
+							if (!a_assignable) f_throw(L"can not assign to expression."sv);
 							v_lexer.f_next();
 							return std::unique_ptr<ast::t_node>(new ast::t_object_put(at, std::move(target), symbol, f_expression()));
 						}
@@ -315,7 +315,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					if (v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'."sv);
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
-						if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
+						if (!a_assignable) f_throw(L"can not assign to expression."sv);
 						v_lexer.f_next();
 						return std::unique_ptr<ast::t_node>(new ast::t_object_put_indirect(at, std::move(a_target), std::move(key), f_expression()));
 					}
@@ -326,7 +326,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					t_object* symbol = f_symbol();
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
-						if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
+						if (!a_assignable) f_throw(L"can not assign to expression."sv);
 						v_lexer.f_next();
 						return std::unique_ptr<ast::t_node>(new ast::t_object_put(at, std::move(a_target), symbol, f_expression()));
 					}
@@ -370,7 +370,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 			if (v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) f_throw(L"expecting ']'."sv);
 			v_lexer.f_next();
 			if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
-				if (!a_assignable) xemmai::f_throw(L"can not assign to expression."sv);
+				if (!a_assignable) f_throw(L"can not assign to expression."sv);
 				v_lexer.f_next();
 				return std::unique_ptr<ast::t_node>(new ast::t_set_at(at, std::move(a_target), std::move(index), f_expression()));
 			}

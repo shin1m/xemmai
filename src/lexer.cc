@@ -3,11 +3,6 @@
 namespace xemmai
 {
 
-void t_lexer::f_throw()
-{
-	throw t_rvalue(t_error::f_instantiate(*this));
-}
-
 void t_lexer::f_get()
 {
 	switch (v_c) {
