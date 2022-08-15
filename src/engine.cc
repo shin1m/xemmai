@@ -326,10 +326,7 @@ t_engine::~t_engine()
 	}
 	v_object__heap.f_return();
 	v_options.v_collector__threshold = 0;
-	f_wait();
-	f_wait();
-	f_wait();
-	f_wait();
+	for (size_t i = 0; i < 4; ++i) f_wait();
 	{
 		std::unique_lock lock(v_collector__mutex);
 		v_collector__running = v_collector__quitting = true;

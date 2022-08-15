@@ -194,7 +194,7 @@ public:
 			v_collector__running = true;
 			v_collector__wake.notify_one();
 		}
-		v_collector__done.wait(lock);
+		do v_collector__done.wait(lock); while (v_collector__running);
 	}
 	t_object* f_module_global() const
 	{
