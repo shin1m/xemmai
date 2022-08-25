@@ -63,6 +63,7 @@ t_object* t_list::f_instantiate()
 
 void t_list::f_insert(intptr_t a_index, const t_pvalue& a_value)
 {
+	if (a_index == static_cast<intptr_t>(v_size)) return f_push(a_value);
 	f_validate(a_index);
 	if (v_size >= v_grow) f_grow();
 	size_t i = v_head + a_index;

@@ -44,7 +44,7 @@ print(
 b = [
 b.push(1
 b.push(2
-b.push(3
+b.insert(2, 3
 print(b
 assert_sequence(b, [1, 2, 3
 
