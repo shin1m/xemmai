@@ -64,6 +64,7 @@ t_object* t_list::f_instantiate()
 void t_list::f_insert(intptr_t a_index, const t_pvalue& a_value)
 {
 	if (a_index == static_cast<intptr_t>(v_size)) return f_push(a_value);
+	if (a_index == 0) return f_unshift(a_value);
 	f_validate(a_index);
 	if (v_size >= v_grow) f_grow();
 	size_t i = v_head + a_index;
@@ -71,18 +72,16 @@ void t_list::f_insert(intptr_t a_index, const t_pvalue& a_value)
 	auto& tuple = v_tuple->f_as<t_tuple>();
 	size_t n = tuple.f_size();
 	auto p = &tuple[0];
-	if (a_index < static_cast<intptr_t>(v_size / 2)) {
-		if (i >= n) {
+	if (a_index < static_cast<intptr_t>(v_size) - a_index) {
+		if (i > n) {
 			*f_move_backward(p + --v_head, p + n - 1) = *p;
 			*f_move_backward(p, p + --i - n) = a_value;
+		} else if (v_head > 0) {
+			*f_move_backward(p + --v_head, p + --i) = a_value;
 		} else {
-			if (v_head > 0) {
-				*f_move_backward(p + --v_head, p + --i) = a_value;
-			} else {
-				v_head = n - 1;
-				p[v_head] = *p;
-				*f_move_backward(p, p + --i) = a_value;
-			}
+			v_head = n - 1;
+			p[v_head] = *p;
+			*f_move_backward(p, p + --i) = a_value;
 		}
 	} else {
 		if (i >= n) {
@@ -106,15 +105,14 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 	size_t n = tuple.f_size();
 	auto p = &tuple[0];
 	t_pvalue q = p[i < n ? i : i - n];
-	if (a_index < static_cast<intptr_t>(v_size / 2)) {
+	if (a_index < static_cast<intptr_t>(v_size) - a_index) {
 		if (i >= n) {
 			*f_move_forward(p, p + i - n) = p[n - 1];
 			f_move_forward(p + v_head, p + n - 1);
-			if (++v_head >= n) v_head = 0;
 		} else {
 			f_move_forward(p + v_head, p + i);
-			++v_head;
 		}
+		if (++v_head >= n) v_head = 0;
 	} else {
 		if (i >= n) {
 			f_move_backward(p + i - n, p + --j - n);

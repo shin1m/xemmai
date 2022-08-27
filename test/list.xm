@@ -42,151 +42,168 @@ assert(a.size() == 3
 print(
 
 b = [
-b.push(1
-b.push(2
-b.insert(2, 3
+for i = 0; i < 5; i = i + 1: b.push(i
 print(b
-assert_sequence(b, [1, 2, 3
+assert_sequence(b, [0, 1, 2, 3, 4
+# 01234.
 
-b.insert(2, "four"
+b.insert(3, "x"
 print(b
-assert_sequence(b, [1, 2, "four", 3
+assert_sequence(b, [0, 1, 2, "x", 3, 4
+# 012x34
 
-print(b.remove(2
+print(b.remove(3
 print(b
-assert_sequence(b, [1, 2, 3
-
-b.push(4
-b.shift(
-print(b
-assert_sequence(b, [2, 3, 4
-
-b.insert(2, "five"
-print(b
-assert_sequence(b, [2, 3, "five", 4
-
-print(b.remove(2
-print(b
-assert_sequence(b, [2, 3, 4
+assert_sequence(b, [0, 1, 2, 3, 4
+# 01234.
 
 b.push(5
 b.shift(
 print(b
-assert_sequence(b, [3, 4, 5
+assert_sequence(b, [1, 2, 3, 4, 5
+# .12345
 
-b.insert(2, "six"
+b.insert(3, "x"
 print(b
-assert_sequence(b, [3, 4, "six", 5
+assert_sequence(b, [1, 2, 3, "x", 4, 5
+# 5123x4
 
-print(b.remove(2
+print(b.remove(3
 print(b
-assert_sequence(b, [3, 4, 5
+assert_sequence(b, [1, 2, 3, 4, 5
+# .12345
 
 b.push(6
 b.shift(
 print(b
-assert_sequence(b, [4, 5, 6
+assert_sequence(b, [2, 3, 4, 5, 6
+# 6.2345
 
-b.insert(2, "seven"
+b.insert(3, "x"
 print(b
-assert_sequence(b, [4, 5, "seven", 6
+assert_sequence(b, [2, 3, 4, "x", 5, 6
+# 56234x
 
-print(b.remove(2
+print(b.remove(3
 print(b
-assert_sequence(b, [4, 5, 6
+assert_sequence(b, [2, 3, 4, 5, 6
+# 6.2345
 
 b.push(7
 b.shift(
 print(b
-assert_sequence(b, [5, 6, 7
+assert_sequence(b, [3, 4, 5, 6, 7
+# 67.345
 
-b.insert(2, "eight"
+b.insert(3, "x"
 print(b
-assert_sequence(b, [5, 6, "eight", 7
+assert_sequence(b, [3, 4, 5, "x", 6, 7
+# x67345
 
-print(b.remove(2
+print(b.remove(3
 print(b
-assert_sequence(b, [5, 6, 7
+assert_sequence(b, [3, 4, 5, 6, 7
+# 67.345
 
 b.push(8
 b.shift(
 print(b
-assert_sequence(b, [6, 7, 8
+assert_sequence(b, [4, 5, 6, 7, 8
+# 678.45
 
-b.insert(1, "five"
+b.insert(3, "x"
 print(b
-assert_sequence(b, [6, "five", 7, 8
+assert_sequence(b, [4, 5, 6, "x", 7, 8
+# 6x7845
 
-print(b.remove(1
+print(b.remove(3
 print(b
-assert_sequence(b, [6, 7, 8
+assert_sequence(b, [4, 5, 6, 7, 8
+# 678.45
+
+b = [
+for i = 0; i < 5; i = i + 1: b.unshift(i
+print(b
+assert_sequence(b, [4, 3, 2, 1, 0
+# .43210
+
+b.insert(2, "x"
+print(b
+assert_sequence(b, [4, 3, "x", 2, 1, 0
+# 43x210
+
+print(b.remove(2
+print(b
+assert_sequence(b, [4, 3, 2, 1, 0
+# .43210
 
 b.unshift(5
 b.pop(
 print(b
-assert_sequence(b, [5, 6, 7
+assert_sequence(b, [5, 4, 3, 2, 1
+# 54321.
 
-b.insert(1, "four"
+b.insert(2, "x"
 print(b
-assert_sequence(b, [5, "four", 6, 7
+assert_sequence(b, [5, 4, "x", 3, 2, 1
+# 4x3215
 
-print(b.remove(1
-print(b
-assert_sequence(b, [5, 6, 7
-
-b.unshift(4
-b.pop(
-print(b
-assert_sequence(b, [4, 5, 6
-
-b.insert(1, "three"
-print(b
-assert_sequence(b, [4, "three", 5, 6
-
-print(b.remove(1
-print(b
-assert_sequence(b, [4, 5, 6
-
-b.unshift(3
-b.pop(
-print(b
-assert_sequence(b, [3, 4, 5
-
-b.insert(1, "two"
-print(b
-assert_sequence(b, [3, "two", 4, 5
-
-print(b.remove(1
-print(b
-assert_sequence(b, [3, 4, 5
-
-b.unshift(2
-b.pop(
-print(b
-assert_sequence(b, [2, 3, 4
-
-b.insert(1, "one"
-print(b
-assert_sequence(b, [2, "one", 3, 4
-
-print(b.remove(1
-print(b
-assert_sequence(b, [2, 3, 4
-
-b.unshift(1
-b.push(5
-print(b
-assert_sequence(b, [1, 2, 3, 4, 5
-
-b.sort(@(x, y) x > y
+print(b.remove(2
 print(b
 assert_sequence(b, [5, 4, 3, 2, 1
+# 54321.
 
-b.shift(
-b.shift(
-b.shift(
+b.unshift(6
+b.pop(
 print(b
-assert_sequence(b, [2, 1
+assert_sequence(b, [6, 5, 4, 3, 2
+# 5432.6
+
+b.insert(2, "x"
+print(b
+assert_sequence(b, [6, 5, "x", 4, 3, 2
+# x43265
+
+print(b.remove(2
+print(b
+assert_sequence(b, [6, 5, 4, 3, 2
+# 5432.6
+
+b.unshift(7
+b.pop(
+print(b
+assert_sequence(b, [7, 6, 5, 4, 3
+# 543.76
+
+b.insert(2, "x"
+print(b
+assert_sequence(b, [7, 6, "x", 5, 4, 3
+# 54376x
+
+print(b.remove(2
+print(b
+assert_sequence(b, [7, 6, 5, 4, 3
+# 543.76
+
+b.unshift(8
+b.pop(
+print(b
+assert_sequence(b, [8, 7, 6, 5, 4
+# 54.876
+
+b.insert(2, "x"
+print(b
+assert_sequence(b, [8, 7, "x", 6, 5, 4
+# 5487x6
+
+print(b.remove(2
+print(b
+assert_sequence(b, [8, 7, 6, 5, 4
+# 54.876
+
+b.sort(@(x, y) x < y
+print(b
+assert_sequence(b, [4, 5, 6, 7, 8
 
 c = ["a", "b", "c", "d", "e"
 c.unshift("f"
@@ -210,6 +227,18 @@ for i = 0; i < 6; i = i + 1
 	d.shift(
 print(d
 assert_sequence(d, [
+
+e = [
+for i = 0; i < 3; i = i + 1: e.insert(0, i
+print(e
+assert_sequence(e, [2, 1, 0
+for ; i < 7; i = i + 1: e.unshift(i
+print(e
+e.remove(0
+print(e
+e.remove(0
+print(e
+assert_sequence(e, [4, 3, 2, 1, 0
 
 Foo = List + @
 	$__initialize = @(*xs) $push(4
