@@ -235,6 +235,10 @@ struct t_type_of<t_object>
 	t_object* f_derive(t_object* a_module, const t_fields& a_fields);
 	XEMMAI__PORTABLE__EXPORT t_object* f_do_derive(const t_fields& a_fields);
 	t_object* (t_type::*v_derive)(const t_fields&) = nullptr;
+	t_object* f_derive(const t_fields& a_fields)
+	{
+		return (this->*v_derive)(a_fields);
+	}
 	bool f_derives(t_type* a_type);
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{

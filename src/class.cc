@@ -38,7 +38,7 @@ size_t t_class::f_do_add(t_object* a_this, t_pvalue* a_stack)
 		a_stack[1] = builder;
 		a_stack[2].f_call(a_stack, 0);
 	});
-	a_stack[0] = (p.*p.v_derive)(fields);
+	a_stack[0] = p.f_derive(fields);
 	return -1;
 }
 
