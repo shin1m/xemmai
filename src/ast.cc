@@ -391,6 +391,7 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 void t_try::f_flow(t_flow& a_flow)
 {
 	a_flow.v_current->f_next(&v_junction_try);
+	v_junction_try.f_next(&v_junction_finally);
 	v_junction_try.f_next(&v_block_try);
 	auto targets0 = a_flow.v_targets;
 	t_flow::t_targets targets1{&v_junction_finally, &v_junction_finally, &v_junction_finally};
