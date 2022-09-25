@@ -49,28 +49,28 @@ size_t t_type_of<t_string>::f_do_add(t_object* a_this, t_pvalue* a_stack)
 size_t t_type_of<t_string>::f_do_less(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_string>() < a_stack[2]->f_as<t_string>();
+	a_stack[0] = f__less(a_this->f_as<t_string>(), a_stack[2]->f_as<t_string>());
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_less_equal(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_string>() <= a_stack[2]->f_as<t_string>();
+	a_stack[0] = f__less_equal(a_this->f_as<t_string>(), a_stack[2]->f_as<t_string>());
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_greater(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_string>() > a_stack[2]->f_as<t_string>();
+	a_stack[0] = f__greater(a_this->f_as<t_string>(), a_stack[2]->f_as<t_string>());
 	return -1;
 }
 
 size_t t_type_of<t_string>::f_do_greater_equal(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_string>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_string>() >= a_stack[2]->f_as<t_string>();
+	a_stack[0] = f__greater_equal(a_this->f_as<t_string>(), a_stack[2]->f_as<t_string>());
 	return -1;
 }
 

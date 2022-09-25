@@ -42,168 +42,168 @@ assert(a.size() == 3
 print(
 
 b = [
-for i = 0; i < 5; i = i + 1: b.push(i
+for i = 0; i < 5; i = i + 1: b.push(i.__string(
 print(b
-assert_sequence(b, [0, 1, 2, 3, 4
+assert_sequence(b, ["0", "1", "2", "3", "4"
 # 01234.
 
 b.insert(3, "x"
 print(b
-assert_sequence(b, [0, 1, 2, "x", 3, 4
+assert_sequence(b, ["0", "1", "2", "x", "3", "4"
 # 012x34
 
 print(b.remove(3
 print(b
-assert_sequence(b, [0, 1, 2, 3, 4
+assert_sequence(b, ["0", "1", "2", "3", "4"
 # 01234.
 
-b.push(5
+b.push("5"
 b.shift(
 print(b
-assert_sequence(b, [1, 2, 3, 4, 5
+assert_sequence(b, ["1", "2", "3", "4", "5"
 # .12345
 
 b.insert(3, "x"
 print(b
-assert_sequence(b, [1, 2, 3, "x", 4, 5
+assert_sequence(b, ["1", "2", "3", "x", "4", "5"
 # 5123x4
 
 print(b.remove(3
 print(b
-assert_sequence(b, [1, 2, 3, 4, 5
+assert_sequence(b, ["1", "2", "3", "4", "5"
 # .12345
 
-b.push(6
+b.push("6"
 b.shift(
 print(b
-assert_sequence(b, [2, 3, 4, 5, 6
+assert_sequence(b, ["2", "3", "4", "5", "6"
 # 6.2345
 
 b.insert(3, "x"
 print(b
-assert_sequence(b, [2, 3, 4, "x", 5, 6
+assert_sequence(b, ["2", "3", "4", "x", "5", "6"
 # 56234x
 
 print(b.remove(3
 print(b
-assert_sequence(b, [2, 3, 4, 5, 6
+assert_sequence(b, ["2", "3", "4", "5", "6"
 # 6.2345
 
-b.push(7
+b.push("7"
 b.shift(
 print(b
-assert_sequence(b, [3, 4, 5, 6, 7
+assert_sequence(b, ["3", "4", "5", "6", "7"
 # 67.345
 
 b.insert(3, "x"
 print(b
-assert_sequence(b, [3, 4, 5, "x", 6, 7
+assert_sequence(b, ["3", "4", "5", "x", "6", "7"
 # x67345
 
 print(b.remove(3
 print(b
-assert_sequence(b, [3, 4, 5, 6, 7
+assert_sequence(b, ["3", "4", "5", "6", "7"
 # 67.345
 
-b.push(8
+b.push("8"
 b.shift(
 print(b
-assert_sequence(b, [4, 5, 6, 7, 8
+assert_sequence(b, ["4", "5", "6", "7", "8"
 # 678.45
 
 b.insert(3, "x"
 print(b
-assert_sequence(b, [4, 5, 6, "x", 7, 8
+assert_sequence(b, ["4", "5", "6", "x", "7", "8"
 # 6x7845
 
 print(b.remove(3
 print(b
-assert_sequence(b, [4, 5, 6, 7, 8
+assert_sequence(b, ["4", "5", "6", "7", "8"
 # 678.45
 
 b = [
-for i = 0; i < 5; i = i + 1: b.unshift(i
+for i = 0; i < 5; i = i + 1: b.unshift(i.__string(
 print(b
-assert_sequence(b, [4, 3, 2, 1, 0
+assert_sequence(b, ["4", "3", "2", "1", "0"
 # .43210
 
 b.insert(2, "x"
 print(b
-assert_sequence(b, [4, 3, "x", 2, 1, 0
+assert_sequence(b, ["4", "3", "x", "2", "1", "0"
 # 43x210
 
 print(b.remove(2
 print(b
-assert_sequence(b, [4, 3, 2, 1, 0
+assert_sequence(b, ["4", "3", "2", "1", "0"
 # .43210
 
-b.unshift(5
+b.unshift("5"
 b.pop(
 print(b
-assert_sequence(b, [5, 4, 3, 2, 1
+assert_sequence(b, ["5", "4", "3", "2", "1"
 # 54321.
 
 b.insert(2, "x"
 print(b
-assert_sequence(b, [5, 4, "x", 3, 2, 1
+assert_sequence(b, ["5", "4", "x", "3", "2", "1"
 # 4x3215
 
 print(b.remove(2
 print(b
-assert_sequence(b, [5, 4, 3, 2, 1
+assert_sequence(b, ["5", "4", "3", "2", "1"
 # 54321.
 
-b.unshift(6
+b.unshift("6"
 b.pop(
 print(b
-assert_sequence(b, [6, 5, 4, 3, 2
+assert_sequence(b, ["6", "5", "4", "3", "2"
 # 5432.6
 
 b.insert(2, "x"
 print(b
-assert_sequence(b, [6, 5, "x", 4, 3, 2
+assert_sequence(b, ["6", "5", "x", "4", "3", "2"
 # x43265
 
 print(b.remove(2
 print(b
-assert_sequence(b, [6, 5, 4, 3, 2
+assert_sequence(b, ["6", "5", "4", "3", "2"
 # 5432.6
 
-b.unshift(7
+b.unshift("7"
 b.pop(
 print(b
-assert_sequence(b, [7, 6, 5, 4, 3
+assert_sequence(b, ["7", "6", "5", "4", "3"
 # 543.76
 
 b.insert(2, "x"
 print(b
-assert_sequence(b, [7, 6, "x", 5, 4, 3
+assert_sequence(b, ["7", "6", "x", "5", "4", "3"
 # 54376x
 
 print(b.remove(2
 print(b
-assert_sequence(b, [7, 6, 5, 4, 3
+assert_sequence(b, ["7", "6", "5", "4", "3"
 # 543.76
 
-b.unshift(8
+b.unshift("8"
 b.pop(
 print(b
-assert_sequence(b, [8, 7, 6, 5, 4
+assert_sequence(b, ["8", "7", "6", "5", "4"
 # 54.876
 
 b.insert(2, "x"
 print(b
-assert_sequence(b, [8, 7, "x", 6, 5, 4
+assert_sequence(b, ["8", "7", "x", "6", "5", "4"
 # 5487x6
 
 print(b.remove(2
 print(b
-assert_sequence(b, [8, 7, 6, 5, 4
+assert_sequence(b, ["8", "7", "6", "5", "4"
 # 54.876
 
 b.sort(@(x, y) x < y
 print(b
-assert_sequence(b, [4, 5, 6, 7, 8
+assert_sequence(b, ["4", "5", "6", "7", "8"
 
 c = ["a", "b", "c", "d", "e"
 c.unshift("f"

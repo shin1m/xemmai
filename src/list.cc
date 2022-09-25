@@ -108,19 +108,19 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 	if (a_index < static_cast<intptr_t>(v_size) - a_index) {
 		if (i >= n) {
 			*f_move_forward(p, p + i - n) = p[n - 1];
-			f_move_forward(p + v_head, p + n - 1);
+			*f_move_forward(p + v_head, p + n - 1) = nullptr;
 		} else {
-			f_move_forward(p + v_head, p + i);
+			*f_move_forward(p + v_head, p + i) = nullptr;
 		}
 		if (++v_head >= n) v_head = 0;
 	} else {
 		if (i >= n) {
-			f_move_backward(p + i - n, p + --j - n);
+			*f_move_backward(p + i - n, p + --j - n) = nullptr;
 		} else if (j > n) {
 			*f_move_backward(p + i, p + n - 1) = *p;
-			f_move_backward(p, p + --j - n);
+			*f_move_backward(p, p + --j - n) = nullptr;
 		} else {
-			f_move_backward(p + i, p + --j);
+			*f_move_backward(p + i, p + --j) = nullptr;
 		}
 	}
 	if (--v_size <= v_shrink) f_shrink();
