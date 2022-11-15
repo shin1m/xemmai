@@ -28,3 +28,17 @@ test_owned(@ foo.push(""
 
 test_undefined_field = @(x) test(x, "foo"
 test_undefined_field(@ Object().foo = ""
+
+test_out_of_range = @(x) test(x, "out of range."
+test_out_of_range(@ "".substring(1
+test_out_of_range(@ "".substring(1, 1
+test_out_of_range(@ "".code_at(0
+test_out_of_range(@ '()[0]
+test_out_of_range(@ [][0]
+test_out_of_range(@ [][-1]
+test_out_of_range(@ Bytes(0)[0]
+test_out_of_range(@ Bytes(0)[-1]
+test_out_of_range(@ Bytes(0)[0] = 0
+test_out_of_range(@ Bytes(0).copy(0, 1, Bytes(1), 0
+test_out_of_range(@ Bytes(0).copy(-1, 0, Bytes(1), 0
+test_out_of_range(@ Bytes(1).copy(0, 1, Bytes(0), 0
