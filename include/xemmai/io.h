@@ -1,11 +1,11 @@
 #ifndef XEMMAI__IO_H
 #define XEMMAI__IO_H
 
-#include "global.h"
 #include "io/file.h"
 #include "io/reader.h"
 #include "io/writer.h"
 #include "io/path.h"
+#include "global.h"
 
 namespace xemmai
 {

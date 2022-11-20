@@ -557,7 +557,7 @@ struct t_enum_of : t_derivable<t_bears<T, t_type_of<intptr_t>>>
 
 	static t_pvalue f_transfer(const T_library* a_library, T a_value)
 	{
-		return a_library->template f_type<typename t_fundamental<T>::t_type>()->template f_new<intptr_t>(a_value);
+		return a_library->template f_type<typename t_fundamental<T>::t_type>()->template f_new<intptr_t>(static_cast<intptr_t>(a_value));
 	}
 	template<typename T_fields>
 	static t_object* f_define(t_library* a_library, T_fields a_fields)

@@ -364,6 +364,28 @@ inline void t_thread::t_internal::f_epoch_resume()
 #endif
 }
 
+inline void f__new_value(t_svalue* a_p)
+{
+}
+
+template<typename T_x, typename... T_xs>
+inline void f__new_value(t_svalue* a_p, T_x&& a_x, T_xs&&... a_xs)
+{
+	new(a_p) t_svalue(std::forward<T_x>(a_x));
+	f__new_value(++a_p, std::forward<T_xs>(a_xs)...);
+}
+
+template<typename... T_xs>
+inline t_object* f_new_value(t_type* a_type, T_xs&&... a_xs)
+{
+	assert(a_type->v_fields_offset == t_object::f_fields_offset(0));
+	assert(a_type->v_instance_fields == sizeof...(a_xs));
+	auto p = f_engine()->f_allocate(sizeof(t_svalue) * sizeof...(a_xs));
+	f__new_value(p->f_fields(0), std::forward<T_xs>(a_xs)...);
+	p->f_be(a_type);
+	return p;
+}
+
 }
 
 #endif

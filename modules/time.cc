@@ -26,7 +26,7 @@ struct t_time : t_library
 	}
 	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
-	t_object* f_type() const
+	t_type* f_type() const
 	{
 		return f_global()->f_type<T>();
 	}

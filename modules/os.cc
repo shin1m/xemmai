@@ -1,4 +1,5 @@
 #include <xemmai/convert.h>
+#include <filesystem>
 #ifdef __unix__
 #include <unistd.h>
 #endif
@@ -6,24 +7,164 @@
 namespace xemmai
 {
 
+struct t_os;
+
+template<>
+struct t_type_of<std::filesystem::file_type> : t_enum_of<std::filesystem::file_type, t_os>
+{
+	static t_object* f_define(t_library* a_library)
+	{
+		return t_base::f_define(a_library, [](auto a_fields)
+		{
+			a_fields
+			(L"NONE"sv, std::filesystem::file_type::none)
+			(L"NOT_FOUND"sv, std::filesystem::file_type::not_found)
+			(L"REGULAR"sv, std::filesystem::file_type::regular)
+			(L"DIRECTORY"sv, std::filesystem::file_type::directory)
+			(L"SYMLINK"sv, std::filesystem::file_type::symlink)
+			(L"BLOCK"sv, std::filesystem::file_type::block)
+			(L"CHARACTER"sv, std::filesystem::file_type::character)
+			(L"FIFO"sv, std::filesystem::file_type::fifo)
+			(L"SOCKET"sv, std::filesystem::file_type::socket)
+			(L"UNKNOWN"sv, std::filesystem::file_type::unknown)
+			;
+		});
+	}
+
+	using t_base::t_base;
+};
+
+template<>
+struct t_type_of<std::filesystem::perms> : t_enum_of<std::filesystem::perms, t_os>
+{
+	static t_object* f_define(t_library* a_library)
+	{
+		return t_base::f_define(a_library, [](auto a_fields)
+		{
+			a_fields
+			(L"NONE"sv, std::filesystem::perms::none)
+			(L"OWNER_READ"sv, std::filesystem::perms::owner_read)
+			(L"OWNER_WRITE"sv, std::filesystem::perms::owner_write)
+			(L"OWNER_EXEC"sv, std::filesystem::perms::owner_exec)
+			(L"OWNER_ALL"sv, std::filesystem::perms::owner_all)
+			(L"GROUP_READ"sv, std::filesystem::perms::group_read)
+			(L"GROUP_WRITE"sv, std::filesystem::perms::group_write)
+			(L"GROUP_EXEC"sv, std::filesystem::perms::group_exec)
+			(L"GROUP_ALL"sv, std::filesystem::perms::group_all)
+			(L"OTHERS_READ"sv, std::filesystem::perms::others_read)
+			(L"OTHERS_WRITE"sv, std::filesystem::perms::others_write)
+			(L"OTHERS_EXEC"sv, std::filesystem::perms::others_exec)
+			(L"OTHERS_ALL"sv, std::filesystem::perms::others_all)
+			(L"ALL"sv, std::filesystem::perms::all)
+			(L"SET_UID"sv, std::filesystem::perms::set_uid)
+			(L"SET_GID"sv, std::filesystem::perms::set_gid)
+			(L"STICKY_BIT"sv, std::filesystem::perms::sticky_bit)
+			(L"MASK"sv, std::filesystem::perms::mask)
+			;
+		});
+	}
+
+	using t_base::t_base;
+};
+
+struct t_directory
+{
+	std::filesystem::directory_iterator v_i;
+	std::shared_mutex v_mutex;
+
+	t_directory(std::wstring_view a_path) : v_i(portable::f_convert(a_path))
+	{
+	}
+	void f_close()
+	{
+		t_lock_with_safe_region lock(v_mutex);
+		v_i = {};
+	}
+	t_pvalue f_read(t_os* a_library);
+};
+
+template<>
+struct t_type_of<t_directory> : t_derivable<t_holds<t_directory>>
+{
+	using t_library = t_os;
+
+	static void f_define(t_os* a_library);
+
+	using t_base::t_base;
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+};
+
 struct t_os : t_library
 {
+	t_slot_of<t_type> v_type_file_type;
+	t_slot_of<t_type> v_type_permissions;
+	t_slot_of<t_type> v_type_directory_entry;
+	t_slot_of<t_type> v_type_directory;
+
 	using t_library::t_library;
 	virtual void f_scan(t_scan a_scan)
 	{
+		a_scan(v_type_file_type);
+		a_scan(v_type_permissions);
+		a_scan(v_type_directory_entry);
+		a_scan(v_type_directory);
 	}
 	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
 	template<typename T>
-	t_object* f_type() const
+	const T* f_library() const
 	{
-		return f_global()->f_type<T>();
+		return f_global();
+	}
+	template<typename T>
+	t_slot_of<t_type>& f_type_slot()
+	{
+		return f_global()->f_type_slot<T>();
+	}
+	template<typename T>
+	t_type* f_type() const
+	{
+		return const_cast<t_os*>(this)->f_type_slot<T>();
 	}
 	template<typename T>
 	t_pvalue f_as(T&& a_value) const
 	{
-		return f_global()->f_as(std::forward<T>(a_value));
+		using t = t_type_of<typename t_fundamental<T>::t_type>;
+		return t::f_transfer(f_library<typename t::t_library>(), std::forward<T>(a_value));
 	}
 };
+
+template<>
+inline const t_os* t_os::f_library<t_os>() const
+{
+	return this;
+}
+
+XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::file_type, file_type)
+XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::perms, permissions)
+XEMMAI__LIBRARY__TYPE(t_os, directory)
+
+t_pvalue t_directory::f_read(t_os* a_library)
+{
+	t_shared_lock_with_safe_region lock(v_mutex);
+	if (v_i == decltype(v_i){}) return nullptr;
+	auto status = v_i->status();
+	auto p = f_new_value(a_library->v_type_directory_entry, t_string::f_instantiate(v_i->path().filename().wstring()), a_library->f_as(status.type()), a_library->f_as(status.permissions()));
+	++v_i;
+	return p;
+}
+
+void t_type_of<t_directory>::f_define(t_os* a_library)
+{
+	t_define{a_library}
+		(L"close"sv, t_member<void(t_directory::*)(), &t_directory::f_close>())
+		(L"read"sv, t_member<t_pvalue(t_directory::*)(t_os*), &t_directory::f_read>())
+	.f_derive<t_directory, t_object>();
+}
+
+t_pvalue t_type_of<t_directory>::f_do_construct(t_pvalue* a_stack, size_t a_n)
+{
+	return t_construct<std::wstring_view>::t_bind<t_directory>::f_do(this, a_stack, a_n);
+}
 
 namespace
 {
@@ -61,7 +202,17 @@ t_object* f_pipe()
 
 std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()
 {
+	v_type_directory_entry.f_construct(f_global()->f_type<t_object>()->f_derive({{
+		t_symbol::f_instantiate(L"name"sv),
+		t_symbol::f_instantiate(L"type"sv),
+		t_symbol::f_instantiate(L"permissions"sv)
+	}}));
+	t_type_of<t_directory>::f_define(this);
 	return t_define(this)
+		(L"FileType"sv, t_type_of<std::filesystem::file_type>::f_define(this))
+		(L"Permissions"sv, t_type_of<std::filesystem::perms>::f_define(this))
+		(L"DirectoryEntry"sv, static_cast<t_object*>(v_type_directory_entry))
+		(L"Directory"sv, static_cast<t_object*>(v_type_directory))
 		(L"system"sv, t_static<int(*)(const t_string&), f_system>())
 		(L"sleep"sv, t_static<void(*)(intptr_t), f_sleep>())
 #ifdef __unix__

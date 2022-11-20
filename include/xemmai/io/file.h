@@ -1,9 +1,8 @@
 #ifndef XEMMAI__IO__FILE_H
 #define XEMMAI__IO__FILE_H
 
+#include "../engine.h"
 #include "../bytes.h"
-#include "../string.h"
-#include <cstdio>
 
 namespace xemmai
 {
