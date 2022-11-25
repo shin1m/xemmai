@@ -21,21 +21,10 @@ struct t_time : t_library
 #endif
 
 	using t_library::t_library;
-	virtual void f_scan(t_scan a_scan)
-	{
-	}
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	t_type* f_type() const
-	{
-		return f_global()->f_type<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		return f_global()->f_as(std::forward<T>(a_value));
-	}
+	XEMMAI__LIBRARY__MEMBERS
 };
+
+XEMMAI__LIBRARY__BASE(t_time, t_global, f_global())
 
 namespace
 {
@@ -532,6 +521,10 @@ t_object* f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_pre
 	return t_string::f_instantiate(cs, n);
 }
 
+}
+
+void t_time::f_scan(t_scan a_scan)
+{
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()

@@ -3,7 +3,7 @@
 namespace xemmai
 {
 
-class t_threading;
+struct t_threading;
 
 template<>
 struct t_type_of<std::mutex> : t_holds<std::mutex>
@@ -33,36 +33,16 @@ struct t_type_of<std::condition_variable> : t_holds<std::condition_variable>
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
-class t_threading : public t_library
+struct t_threading : t_library
 {
 	t_slot_of<t_type> v_type_mutex;
 	t_slot_of<t_type> v_type_condition;
 
-public:
 	using t_library::t_library;
-	virtual void f_scan(t_scan a_scan)
-	{
-		a_scan(v_type_mutex);
-		a_scan(v_type_condition);
-	}
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	t_slot_of<t_type>& f_type_slot()
-	{
-		return f_global()->f_type_slot<T>();
-	}
-	template<typename T>
-	t_type* f_type() const
-	{
-		return const_cast<t_threading*>(this)->f_type_slot<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		return f_global()->f_as(std::forward<T>(a_value));
-	}
+	XEMMAI__LIBRARY__MEMBERS
 };
 
+XEMMAI__LIBRARY__BASE(t_threading, t_global, f_global())
 XEMMAI__LIBRARY__TYPE_AS(t_threading, std::mutex, mutex)
 XEMMAI__LIBRARY__TYPE_AS(t_threading, std::condition_variable, condition)
 
@@ -129,6 +109,12 @@ void t_type_of<std::condition_variable>::f_define(t_threading* a_library)
 t_pvalue t_type_of<std::condition_variable>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_construct<>::t_bind<std::condition_variable>::f_do(this, a_stack, a_n);
+}
+
+void t_threading::f_scan(t_scan a_scan)
+{
+	a_scan(v_type_mutex);
+	a_scan(v_type_condition);
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_threading::f_define()

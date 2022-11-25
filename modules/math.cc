@@ -10,21 +10,10 @@ namespace xemmai
 struct t_math : t_library
 {
 	using t_library::t_library;
-	virtual void f_scan(t_scan a_scan)
-	{
-	}
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	t_type* f_type() const
-	{
-		return f_global()->f_type<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		return f_global()->f_as(std::forward<T>(a_value));
-	}
+	XEMMAI__LIBRARY__MEMBERS
 };
+
+XEMMAI__LIBRARY__BASE(t_math, t_global, f_global())
 
 namespace
 {
@@ -55,6 +44,10 @@ bool f_boolean(double a_value)
 	return A_function(a_value);
 }
 
+}
+
+void t_math::f_scan(t_scan a_scan)
+{
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_math::f_define()

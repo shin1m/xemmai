@@ -102,43 +102,10 @@ struct t_os : t_library
 	t_slot_of<t_type> v_type_directory;
 
 	using t_library::t_library;
-	virtual void f_scan(t_scan a_scan)
-	{
-		a_scan(v_type_file_type);
-		a_scan(v_type_permissions);
-		a_scan(v_type_directory_entry);
-		a_scan(v_type_directory);
-	}
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	const T* f_library() const
-	{
-		return f_global();
-	}
-	template<typename T>
-	t_slot_of<t_type>& f_type_slot()
-	{
-		return f_global()->f_type_slot<T>();
-	}
-	template<typename T>
-	t_type* f_type() const
-	{
-		return const_cast<t_os*>(this)->f_type_slot<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		using t = t_type_of<typename t_fundamental<T>::t_type>;
-		return t::f_transfer(f_library<typename t::t_library>(), std::forward<T>(a_value));
-	}
+	XEMMAI__LIBRARY__MEMBERS
 };
 
-template<>
-inline const t_os* t_os::f_library<t_os>() const
-{
-	return this;
-}
-
+XEMMAI__LIBRARY__BASE(t_os, t_global, f_global())
 XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::file_type, file_type)
 XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::perms, permissions)
 XEMMAI__LIBRARY__TYPE(t_os, directory)
@@ -198,6 +165,14 @@ t_object* f_pipe()
 }
 #endif
 
+}
+
+void t_os::f_scan(t_scan a_scan)
+{
+	a_scan(v_type_file_type);
+	a_scan(v_type_permissions);
+	a_scan(v_type_directory_entry);
+	a_scan(v_type_directory);
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()

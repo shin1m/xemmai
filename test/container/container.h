@@ -47,25 +47,10 @@ struct t_container : t_library
 	t_slot_of<t_type> v_type_queue;
 
 	using t_library::t_library;
-	virtual void f_scan(t_scan a_scan);
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	t_slot_of<t_type>& f_type_slot()
-	{
-		return f_global()->f_type_slot<T>();
-	}
-	template<typename T>
-	t_type* f_type() const
-	{
-		return const_cast<t_container*>(this)->f_type_slot<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		return f_global()->f_as(std::forward<T>(a_value));
-	}
+	XEMMAI__LIBRARY__MEMBERS
 };
 
+XEMMAI__LIBRARY__BASE(t_container, t_global, f_global())
 XEMMAI__LIBRARY__TYPE(t_container, pair)
 XEMMAI__LIBRARY__TYPE(t_container, queue)
 

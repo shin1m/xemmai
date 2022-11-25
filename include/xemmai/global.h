@@ -89,15 +89,7 @@ public:
 		v_type_type.f_construct(a_type_type);
 		v_type_module__body.f_construct(a_type_module__body);
 	}
-	virtual void f_scan(t_scan a_scan);
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	t_slot_of<t_type>& f_type_slot();
-	template<typename T>
-	t_type* f_type() const
-	{
-		return const_cast<t_global*>(this)->f_type_slot<T>();
-	}
+	XEMMAI__LIBRARY__MEMBERS
 	t_object* f_symbol_initialize() const
 	{
 		return v_symbol_initialize;
@@ -210,26 +202,7 @@ public:
 	{
 		return v_string_empty;
 	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		using t = t_type_of<typename t_fundamental<T>::t_type>;
-		return t::f_transfer(this, std::forward<T>(a_value));
-	}
 };
-
-#define XEMMAI__LIBRARY__TYPE(a_library, a_name)\
-template<>\
-inline t_slot_of<t_type>& a_library::f_type_slot<t_##a_name>()\
-{\
-	return v_type_##a_name;\
-}
-#define XEMMAI__LIBRARY__TYPE_AS(a_library, a_type, a_name)\
-template<>\
-inline t_slot_of<t_type>& a_library::f_type_slot<a_type>()\
-{\
-	return v_type_##a_name;\
-}
 
 XEMMAI__LIBRARY__TYPE(t_global, object)
 XEMMAI__LIBRARY__TYPE(t_global, sharable)

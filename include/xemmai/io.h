@@ -27,13 +27,7 @@ public:
 	t_io() : t_library(nullptr)
 	{
 	}
-	virtual void f_scan(t_scan a_scan);
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	const T* f_library() const
-	{
-		return f_global();
-	}
+	XEMMAI__LIBRARY__MEMBERS
 	t_object* f_symbol_close() const
 	{
 		return v_symbol_close;
@@ -58,30 +52,9 @@ public:
 	{
 		return v_symbol_write_line;
 	}
-	template<typename T>
-	t_slot_of<t_type>& f_type_slot()
-	{
-		return f_global()->f_type_slot<T>();
-	}
-	template<typename T>
-	t_type* f_type() const
-	{
-		return const_cast<t_io*>(this)->f_type_slot<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		using t = t_type_of<typename t_fundamental<T>::t_type>;
-		return t::f_transfer(f_library<typename t::t_library>(), std::forward<T>(a_value));
-	}
 };
 
-template<>
-inline const t_io* t_io::f_library<t_io>() const
-{
-	return this;
-}
-
+XEMMAI__LIBRARY__BASE(t_io, t_global, f_global())
 XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_file, file)
 XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_reader, reader)
 XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_writer, writer)

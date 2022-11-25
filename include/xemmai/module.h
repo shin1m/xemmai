@@ -131,4 +131,48 @@ inline t_object* f_new(T_library* a_library, T_an&&... a_an)
 
 #define XEMMAI__MODULE__FACTORY extern "C" XEMMAI__PORTABLE__DEFINE_EXPORT xemmai::t_object* f_factory
 
+#define XEMMAI__LIBRARY__MEMBERS\
+	virtual void f_scan(t_scan a_scan);\
+	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();\
+	template<typename T>\
+	const T* f_library() const\
+	{\
+		return this;\
+	}\
+	template<typename T>\
+	t_slot_of<t_type>& f_type_slot();\
+	template<typename T>\
+	t_type* f_type() const\
+	{\
+		using t = t_type_of<typename t_fundamental<T>::t_type>;\
+		return const_cast<typename t::t_library*>(f_library<typename t::t_library>())->template f_type_slot<T>();\
+	}\
+	template<typename T>\
+	t_pvalue f_as(T&& a_value) const\
+	{\
+		using t = t_type_of<typename t_fundamental<T>::t_type>;\
+		return t::f_transfer(f_library<typename t::t_library>(), std::forward<T>(a_value));\
+	}
+
+#define XEMMAI__LIBRARY__BASE(a_library, T_base, a_base)\
+template<>\
+inline const T_base* a_library::f_library<T_base>() const\
+{\
+	return a_base;\
+}
+
+#define XEMMAI__LIBRARY__TYPE(a_library, a_name)\
+template<>\
+inline t_slot_of<t_type>& a_library::f_type_slot<t_##a_name>()\
+{\
+	return v_type_##a_name;\
+}
+
+#define XEMMAI__LIBRARY__TYPE_AS(a_library, a_type, a_name)\
+template<>\
+inline t_slot_of<t_type>& a_library::f_type_slot<a_type>()\
+{\
+	return v_type_##a_name;\
+}
+
 #endif

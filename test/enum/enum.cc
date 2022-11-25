@@ -12,40 +12,10 @@ struct t_enum : t_library
 	t_slot_of<t_type> v_type_number;
 
 	using t_library::t_library;
-	virtual void f_scan(t_scan a_scan)
-	{
-		a_scan(v_type_number);
-	}
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define();
-	template<typename T>
-	const T* f_library() const
-	{
-		return f_global();
-	}
-	template<typename T>
-	t_slot_of<t_type>& f_type_slot()
-	{
-		return f_global()->f_type_slot<T>();
-	}
-	template<typename T>
-	t_type* f_type() const
-	{
-		return const_cast<t_enum*>(this)->f_type_slot<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		using t = t_type_of<typename t_fundamental<T>::t_type>;
-		return t::f_transfer(f_library<typename t::t_library>(), std::forward<T>(a_value));
-	}
+	XEMMAI__LIBRARY__MEMBERS
 };
 
-template<>
-inline const t_enum* t_enum::f_library<t_enum>() const
-{
-	return this;
-}
-
+XEMMAI__LIBRARY__BASE(t_enum, t_global, f_global())
 XEMMAI__LIBRARY__TYPE(t_enum, number)
 
 namespace xemmai
@@ -68,6 +38,11 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 	using t_base::t_base;
 };
 
+}
+
+void t_enum::f_scan(t_scan a_scan)
+{
+	a_scan(v_type_number);
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_enum::f_define()

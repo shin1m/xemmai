@@ -68,40 +68,11 @@ struct t_callback_library : t_library
 	t_slot_of<t_type> v_type_server;
 
 	using t_library::t_library;
-	virtual void f_scan(t_scan a_scan)
-	{
-		a_scan(v_symbol_on_message);
-		a_scan(v_type_client);
-		a_scan(v_type_server);
-	}
-	virtual std::vector<std::pair<t_root, t_rvalue>> f_define()
-	{
-		v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
-		t_type_of<t_client>::f_define(this);
-		t_type_of<t_server>::f_define(this);
-		return t_define(this)
-			(L"Client"sv, static_cast<t_object*>(v_type_client))
-			(L"Server"sv, static_cast<t_object*>(v_type_server))
-		;
-	}
-	template<typename T>
-	t_slot_of<t_type>& f_type_slot()
-	{
-		return f_global()->f_type_slot<T>();
-	}
-	template<typename T>
-	t_type* f_type() const
-	{
-		return const_cast<t_callback_library*>(this)->f_type_slot<T>();
-	}
-	template<typename T>
-	t_pvalue f_as(T&& a_value) const
-	{
-		return f_global()->f_as(std::forward<T>(a_value));
-	}
+	XEMMAI__LIBRARY__MEMBERS
 	t_pvalue f_as(t_client* a_value) const;
 };
 
+XEMMAI__LIBRARY__BASE(t_callback_library, t_global, f_global())
 XEMMAI__LIBRARY__TYPE(t_callback_library, client)
 XEMMAI__LIBRARY__TYPE(t_callback_library, server)
 
@@ -169,6 +140,24 @@ t_pvalue t_type_of<t_server>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 	return t_construct<>::t_bind<t_server>::f_do(this, a_stack, a_n);
 }
 
+}
+
+void t_callback_library::f_scan(t_scan a_scan)
+{
+	a_scan(v_symbol_on_message);
+	a_scan(v_type_client);
+	a_scan(v_type_server);
+}
+
+std::vector<std::pair<t_root, t_rvalue>> t_callback_library::f_define()
+{
+	v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
+	t_type_of<t_client>::f_define(this);
+	t_type_of<t_server>::f_define(this);
+	return t_define(this)
+		(L"Client"sv, static_cast<t_object*>(v_type_client))
+		(L"Server"sv, static_cast<t_object*>(v_type_server))
+	;
 }
 
 t_pvalue t_callback_library::f_as(t_client* a_value) const
