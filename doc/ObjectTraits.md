@@ -80,7 +80,6 @@ It can be called only if the object is in the shared state which means no thread
     io.File    yes        *3
     io.Reader  yes        *3
     io.Writer  yes        *3
-    io.Path    yes        *3
 
 * \*1 It overrides `f_instantiate` to skip normal instantiation process because it is not derivable.
 * \*2 It overrides `f_construct` and manually constructs its native part.

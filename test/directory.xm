@@ -1,10 +1,9 @@
 system = Module("system"
 print = system.out.write_line
-io = Module("io"
 os = Module("os"
 assert = @(x) x || throw Throwable("Assertion failed."
 
-directory = os.Directory("" + io.Path(system.script) / ".."
+directory = os.Directory("" + os.Path(system.script) / ".."
 try
 	while (entry = directory.read()) !== null
 		special = entry.permissions >> 9

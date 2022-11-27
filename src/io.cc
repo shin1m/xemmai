@@ -15,7 +15,6 @@ void t_io::f_scan(t_scan a_scan)
 	a_scan(v_type_file);
 	a_scan(v_type_reader);
 	a_scan(v_type_writer);
-	a_scan(v_type_path);
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_io::f_define()
@@ -32,13 +31,10 @@ std::vector<std::pair<t_root, t_rvalue>> t_io::f_define()
 	v_type_reader->v_builtin = true;
 	t_type_of<io::t_writer>::f_define(this);
 	v_type_writer->v_builtin = true;
-	t_type_of<portable::t_path>::f_define(this);
-	v_type_path->v_builtin = true;
 	return t_define(this)
 		(L"File"sv, static_cast<t_object*>(v_type_file))
 		(L"Reader"sv, static_cast<t_object*>(v_type_reader))
 		(L"Writer"sv, static_cast<t_object*>(v_type_writer))
-		(L"Path"sv, static_cast<t_object*>(v_type_path))
 	;
 }
 

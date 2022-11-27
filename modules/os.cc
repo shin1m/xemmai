@@ -1,3 +1,4 @@
+#include <xemmai/portable/path.h>
 #include <xemmai/convert.h>
 #include <filesystem>
 #ifdef __unix__
@@ -8,6 +9,31 @@ namespace xemmai
 {
 
 struct t_os;
+
+template<>
+struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path>>
+{
+	using t_library = t_os;
+
+	template<typename T>
+	static t_object* f_transfer(const t_os* a_library, T&& a_value)
+	{
+		return xemmai::f_new<portable::t_path>(a_library, std::forward<T>(a_value));
+	}
+	static t_pvalue f_construct(t_type* a_class, const t_string& a_value)
+	{
+		return a_class->f_new<portable::t_path>(a_value);
+	}
+	static portable::t_path f__divide(const portable::t_path& a_self, const t_string& a_value)
+	{
+		return a_self / a_value;
+	}
+	static void f_define(t_os* a_library);
+
+	using t_base::t_base;
+	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	static size_t f_do_divide(t_object* a_this, t_pvalue* a_stack);
+};
 
 template<>
 struct t_type_of<std::filesystem::file_type> : t_enum_of<std::filesystem::file_type, t_os>
@@ -96,6 +122,7 @@ struct t_type_of<t_directory> : t_derivable<t_holds<t_directory>>
 
 struct t_os : t_library
 {
+	t_slot_of<t_type> v_type_path;
 	t_slot_of<t_type> v_type_file_type;
 	t_slot_of<t_type> v_type_permissions;
 	t_slot_of<t_type> v_type_directory_entry;
@@ -106,9 +133,30 @@ struct t_os : t_library
 };
 
 XEMMAI__LIBRARY__BASE(t_os, t_global, f_global())
+XEMMAI__LIBRARY__TYPE_AS(t_os, portable::t_path, path)
 XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::file_type, file_type)
 XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::perms, permissions)
 XEMMAI__LIBRARY__TYPE(t_os, directory)
+
+void t_type_of<portable::t_path>::f_define(t_os* a_library)
+{
+	t_define{a_library}
+		(f_global()->f_symbol_string(), t_member<const std::wstring&(portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
+		(f_global()->f_symbol_divide(), t_member<portable::t_path(*)(const portable::t_path&, const t_string&), f__divide>())
+	.f_derive<portable::t_path, t_object>();
+}
+
+t_pvalue t_type_of<portable::t_path>::f_do_construct(t_pvalue* a_stack, size_t a_n)
+{
+	return t_construct_with<t_pvalue(*)(t_type*, const t_string&), f_construct>::t_bind<portable::t_path>::f_do(this, a_stack, a_n);
+}
+
+size_t t_type_of<portable::t_path>::f_do_divide(t_object* a_this, t_pvalue* a_stack)
+{
+	f_check<t_string>(a_stack[2], L"argument0");
+	a_stack[0] = a_this->f_type()->v_module->f_as<t_os>().f_as(a_this->f_as<portable::t_path>() / f_as<std::wstring>(a_stack[2]));
+	return -1;
+}
 
 t_pvalue t_directory::f_read(t_os* a_library)
 {
@@ -169,6 +217,7 @@ t_object* f_pipe()
 
 void t_os::f_scan(t_scan a_scan)
 {
+	a_scan(v_type_path);
 	a_scan(v_type_file_type);
 	a_scan(v_type_permissions);
 	a_scan(v_type_directory_entry);
@@ -177,6 +226,7 @@ void t_os::f_scan(t_scan a_scan)
 
 std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()
 {
+	t_type_of<portable::t_path>::f_define(this);
 	v_type_directory_entry.f_construct(f_global()->f_type<t_object>()->f_derive({{
 		t_symbol::f_instantiate(L"name"sv),
 		t_symbol::f_instantiate(L"type"sv),
@@ -184,6 +234,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()
 	}}));
 	t_type_of<t_directory>::f_define(this);
 	return t_define(this)
+		(L"Path"sv, static_cast<t_object*>(v_type_path))
 		(L"FileType"sv, t_type_of<std::filesystem::file_type>::f_define(this))
 		(L"Permissions"sv, t_type_of<std::filesystem::perms>::f_define(this))
 		(L"DirectoryEntry"sv, static_cast<t_object*>(v_type_directory_entry))
