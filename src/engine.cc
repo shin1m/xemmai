@@ -201,6 +201,16 @@ void t_engine::f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock)
 	--v_debug__safe;
 }
 
+void t_engine::f_finalize(t_thread::t_internal* a_thread)
+{
+	v_object__heap.f_return();
+	a_thread->f_epoch_get();
+	std::unique_lock lock(v_thread__mutex);
+	a_thread->v_active->v_thread = nullptr;
+	++a_thread->v_done;
+	v_thread__condition.notify_all();
+}
+
 t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_arguments) : v_object__heap([]
 {
 	v_instance->f_tick();
@@ -317,15 +327,9 @@ t_engine::~t_engine()
 	v_module_system = nullptr;
 	v_module_io = nullptr;
 	v_fiber_exit = nullptr;
-	{
-		auto internal = v_thread->f_as<t_thread>().v_internal;
-		v_thread = nullptr;
-		internal->f_epoch_get();
-		std::lock_guard lock(v_thread__mutex);
-		internal->v_active->v_thread = nullptr;
-		++internal->v_done;
-	}
-	v_object__heap.f_return();
+	auto internal = v_thread->f_as<t_thread>().v_internal;
+	v_thread = nullptr;
+	f_finalize(internal);
 	v_options.v_collector__threshold = 0;
 	for (size_t i = 0; i < 4; ++i) f_wait();
 	{
@@ -387,7 +391,6 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 				t_fiber::f_main<t_debug_context>(main);
 			else
 				t_fiber::f_main<t_context>(main);
-			v_object__heap.f_return();
 			{
 				std::unique_lock lock(v_thread__mutex);
 				if (v_debugger) {
@@ -397,11 +400,7 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 				p.v_internal = nullptr;
 			}
 			t_slot::t_decrements::f_push(thread);
-			internal->f_epoch_get();
-			std::unique_lock lock(v_thread__mutex);
-			internal->v_active->v_thread = nullptr;
-			++internal->v_done;
-			v_thread__condition.notify_all();
+			f_finalize(internal);
 		}).detach();
 	} catch (std::system_error&) {
 		t_slot::t_decrements::f_push(thread);

@@ -149,6 +149,7 @@ private:
 	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock);
 	void f_debug_script_loaded(t_debug_script& a_debug);
 	void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
+	void f_finalize(t_thread::t_internal* a_thread);
 
 public:
 	t_engine(const t_options& a_options, size_t a_count, char** a_arguments);
