@@ -464,7 +464,9 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	{
 		t_emit::t_targets targets2{nullptr, nullptr, 0, false, false, nullptr, nullptr, nullptr, nullptr, 0, false};
 		a_emit.v_targets = &targets2;
+		if (a_clear) a_emit.f_push();
 		f_emit_block_without_value(a_emit, v_finally);
+		if (a_clear) a_emit.f_pop();
 	}
 	a_emit << e_instruction__YRT;
 	auto operand = [&](t_emit::t_label* a_label, t_block* a_junction, size_t a_stack) -> t_emit::t_label*
