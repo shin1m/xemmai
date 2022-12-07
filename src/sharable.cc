@@ -5,7 +5,7 @@ namespace xemmai
 
 void t_sharable::f_own()
 {
-	std::lock_guard lock(v_mutex);
+	t_lock_with_safe_region lock(v_mutex);
 	if (v_owner) f_throw(L"already owned."sv);
 	v_owner = t_slot::t_increments::v_instance;
 }
@@ -13,7 +13,7 @@ void t_sharable::f_own()
 void t_sharable::f_share()
 {
 	if (v_owner != t_slot::t_increments::v_instance) f_throw(L"not owned."sv);
-	std::lock_guard lock(v_mutex);
+	t_lock_with_safe_region lock(v_mutex);
 	v_owner = nullptr;
 }
 

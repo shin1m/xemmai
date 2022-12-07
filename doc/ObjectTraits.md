@@ -52,34 +52,34 @@ It can be called only if the object is in the shared state which means no thread
 
 ## Table of Builtin Classes
 
-    Name       Derivable  Implementation Notes
-    Object     yes        *2
-    Class      no         *1
-    Module     no         *1
-    Fiber      no         *1
-    Thread     no         *1
-    Symbol     no         *1
-    Native     no         *1
-    Scope      no         *1
-    Code       no         *1
-    Lambda     no         *1
-    Method     no         *1
-    Throwable  yes        *3
-    Null       no         *1
-    Boolean    no         *1
-    Integer    yes        *4
-    Float      yes        *4
-    String     no         *1
-    Tuple      no         *1
-    Sharable   no         *1
-      List     yes        *2
-      Map      yes        *2
-    Bytes      no         *1
-    Lexer      no         *1
-    Parser     no         *1
-    io.File    yes        *3
-    io.Reader  yes        *3
-    io.Writer  yes        *3
+    Name        Derivable  Implementation Notes
+    Object      yes        *2
+    Class       no         *1
+    Module      no         *1
+    Fiber       no         *1
+    Thread      no         *1
+    Symbol      no         *1
+    Native      no         *1
+    Scope       no         *1
+    Code        no         *1
+    Lambda      no         *1
+    Method      no         *1
+    Throwable   yes        *3
+    Null        no         *1
+    Boolean     no         *1
+    Integer     yes        *4
+    Float       yes        *4
+    String      no         *1
+    Tuple       no         *1
+    Sharable    no         *1
+      List      yes        *2
+      Map       yes        *2
+      io.File   yes        *3
+      io.Reader yes        *3
+      io.Writer yes        *3
+    Bytes       no         *1
+    Lexer       no         *1
+    Parser      no         *1
 
 * \*1 It overrides `f_instantiate` to skip normal instantiation process because it is not derivable.
 * \*2 It overrides `f_construct` and manually constructs its native part.

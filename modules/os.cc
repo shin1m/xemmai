@@ -93,17 +93,16 @@ struct t_type_of<std::filesystem::perms> : t_enum_of<std::filesystem::perms, t_o
 	using t_base::t_base;
 };
 
-struct t_directory
+struct t_directory : t_owned
 {
 	std::filesystem::directory_iterator v_i;
-	std::shared_mutex v_mutex;
 
 	t_directory(std::wstring_view a_path) : v_i(portable::f_convert(a_path))
 	{
 	}
 	void f_close()
 	{
-		t_lock_with_safe_region lock(v_mutex);
+		f_owned_or_throw();
 		v_i = {};
 	}
 	t_pvalue f_read(t_os* a_library);
@@ -160,7 +159,7 @@ size_t t_type_of<portable::t_path>::f_do_divide(t_object* a_this, t_pvalue* a_st
 
 t_pvalue t_directory::f_read(t_os* a_library)
 {
-	t_shared_lock_with_safe_region lock(v_mutex);
+	f_owned_or_throw();
 	if (v_i == decltype(v_i){}) return nullptr;
 	auto status = v_i->status();
 	auto p = f_new_value(a_library->v_type_directory_entry, t_string::f_instantiate(v_i->path().filename().wstring()), a_library->f_as(status.type()), a_library->f_as(status.permissions()));

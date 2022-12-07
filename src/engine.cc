@@ -310,13 +310,19 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	}
 	{
 		auto file = io::t_file::f_instantiate(stdout);
+		file->f_as<io::t_file>().f_share();
 		system(L"raw_out"sv, file);
-		system(L"out"sv, io::t_writer::f_instantiate(file, L""sv));
+		auto writer = io::t_writer::f_instantiate(file, L""sv);
+		writer->f_as<io::t_writer>().f_share();
+		system(L"out"sv, writer);
 	}
 	{
 		auto file = io::t_file::f_instantiate(stderr);
+		file->f_as<io::t_file>().f_share();
 		system(L"raw_error"sv, file);
-		system(L"error"sv, io::t_writer::f_instantiate(file, L""sv));
+		auto writer = io::t_writer::f_instantiate(file, L""sv);
+		writer->f_as<io::t_writer>().f_share();
+		system(L"error"sv, writer);
 	}
 	v_module_system = t_module::f_new(L"system"sv, nullptr, system);
 }

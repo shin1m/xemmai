@@ -28,62 +28,74 @@ t_file::t_file(int a_fd, std::wstring_view a_mode) : t_FILE(fdopen(a_fd, portabl
 
 void t_file::f_reopen(std::wstring_view a_path, std::wstring_view a_mode)
 {
-	t_lock_with_safe_region lock(v_mutex);
-	v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
-	if (v_stream == NULL) f_throw(L"failed to open."sv);
-	std::setbuf(v_stream, NULL);
+	f_owned_or_shared<t_lock_with_safe_region>([&]
+	{
+		v_stream = std::freopen(portable::f_convert(a_path).c_str(), portable::f_convert(a_mode).c_str(), v_stream);
+		if (v_stream == NULL) f_throw(L"failed to open."sv);
+		std::setbuf(v_stream, NULL);
+	});
 }
 
 size_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	t_shared_lock_with_safe_region lock(v_mutex);
-	if (v_stream == NULL) f_throw(L"already closed."sv);
-	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
-	size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
-	if (n <= 0 && std::ferror(v_stream)) f_throw(L"failed to read."sv);
-	return n;
+	return f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+	{
+		if (v_stream == NULL) f_throw(L"already closed."sv);
+		if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
+		size_t n = std::fread(&a_bytes[0] + a_offset, 1, a_size, v_stream);
+		if (n <= 0 && std::ferror(v_stream)) f_throw(L"failed to read."sv);
+		return n;
+	});
 }
 
 void t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 {
-	t_shared_lock_with_safe_region lock(v_mutex);
-	if (v_stream == NULL) f_throw(L"already closed."sv);
-	if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
-	unsigned char* p = &a_bytes[0] + a_offset;
-	while (true) {
-		size_t n = std::fwrite(p, 1, a_size, v_stream);
-		if (n <= 0 && std::ferror(v_stream)) f_throw(L"failed to write."sv);
-		a_size -= n;
-		if (a_size <= 0) break;
-		p += n;
-	}
+	f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+	{
+		if (v_stream == NULL) f_throw(L"already closed."sv);
+		if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
+		unsigned char* p = &a_bytes[0] + a_offset;
+		while (true) {
+			size_t n = std::fwrite(p, 1, a_size, v_stream);
+			if (n <= 0 && std::ferror(v_stream)) f_throw(L"failed to write."sv);
+			a_size -= n;
+			if (a_size <= 0) break;
+			p += n;
+		}
+	});
 }
 
 bool t_file::f_tty()
 {
-	t_shared_lock_with_safe_region lock(v_mutex);
-	if (v_stream == NULL) f_throw(L"already closed."sv);
-	return isatty(fileno(v_stream)) == 1;
+	return f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+	{
+		if (v_stream == NULL) f_throw(L"already closed."sv);
+		return isatty(fileno(v_stream)) == 1;
+	});
 }
 
 #ifdef __unix__
 bool t_file::f_blocking()
 {
-	t_shared_lock_with_safe_region lock(v_mutex);
-	if (v_stream == NULL) f_throw(L"already closed."sv);
-	return (fcntl(fileno(v_stream), F_GETFL) & O_NONBLOCK) == 0;
+	return f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+	{
+		if (v_stream == NULL) f_throw(L"already closed."sv);
+		return (fcntl(fileno(v_stream), F_GETFL) & O_NONBLOCK) == 0;
+	});
 }
 
 void t_file::f_blocking__(bool a_value)
 {
-	t_shared_lock_with_safe_region lock(v_mutex);
-	if (v_stream == NULL) f_throw(L"already closed."sv);
-	int flags = fcntl(fileno(v_stream), F_GETFL);
-	if (a_value)
-		flags &= ~O_NONBLOCK;
-	else
-		flags |= O_NONBLOCK;
-	if (fcntl(fileno(v_stream), F_SETFL, flags) == -1) f_throw(L"failed to F_SETFL."sv);
+	f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+	{
+		if (v_stream == NULL) f_throw(L"already closed."sv);
+		int flags = fcntl(fileno(v_stream), F_GETFL);
+		if (a_value)
+			flags &= ~O_NONBLOCK;
+		else
+			flags |= O_NONBLOCK;
+		if (fcntl(fileno(v_stream), F_SETFL, flags) == -1) f_throw(L"failed to F_SETFL."sv);
+	});
 }
 #endif
 
@@ -104,7 +116,7 @@ void t_type_of<io::t_file>::f_define(t_io* a_library)
 		(L"blocking"sv, t_member<bool(io::t_file::*)(), &io::t_file::f_blocking>())
 		(L"blocking__"sv, t_member<void(io::t_file::*)(bool), &io::t_file::f_blocking__>())
 #endif
-	.f_derive<io::t_file, t_object>();
+	.f_derive<io::t_file, t_sharable>();
 }
 
 t_pvalue t_type_of<io::t_file>::f_do_construct(t_pvalue* a_stack, size_t a_n)

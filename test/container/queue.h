@@ -1,8 +1,8 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include <shared_mutex>
-#include <xemmai/string.h>
+#include <xemmai/engine.h>
+#include <xemmai/sharable.h>
 
 using namespace xemmai;
 
@@ -23,9 +23,8 @@ struct t_pair
 	}
 };
 
-class t_queue
+class t_queue : public t_sharable
 {
-	mutable std::shared_mutex v_mutex;
 	t_slot v_head;
 
 public:
@@ -41,8 +40,14 @@ public:
 	{
 		a_scan(v_head);
 	}
-	t_object* f_string() const;
-	bool f_empty() const;
+	t_object* f_string();
+	bool f_empty()
+	{
+		return f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+		{
+			return !v_head;
+		});
+	}
 	void f_push(t_container* a_library, const t_pvalue& a_value);
 	t_pvalue f_pop();
 };

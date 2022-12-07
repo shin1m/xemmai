@@ -62,40 +62,46 @@ t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_
 
 void t_reader::f_close(t_io* a_library)
 {
-	t_lock_with_safe_region lock(v_mutex);
-	if (!v_stream) f_throw(L"already closed."sv);
-	static size_t index;
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_close(), index);
-	v_stream = nullptr;
+	f_owned_or_shared<t_lock_with_safe_region>([&]
+	{
+		if (!v_stream) f_throw(L"already closed."sv);
+		static size_t index;
+		t_pvalue(v_stream).f_invoke(a_library->f_symbol_close(), index);
+		v_stream = nullptr;
+	});
 }
 
 t_object* t_reader::f_read(t_io* a_library, size_t a_size)
 {
-	t_lock_with_safe_region lock(v_mutex);
-	if (!v_stream) f_throw(L"already closed."sv);
-	return t_string::f_instantiate(a_size, [&](auto p)
+	return f_owned_or_shared<t_lock_with_safe_region>([&]
 	{
-		for (auto q = p + a_size; p < q; ++p) {
-			wint_t c = f_get(a_library);
-			if (c == WEOF) break;
-			*p = c;
-		}
-		return p;
+		if (!v_stream) f_throw(L"already closed."sv);
+		return t_string::f_instantiate(a_size, [&](auto p)
+		{
+			for (auto q = p + a_size; p < q; ++p) {
+				wint_t c = f_get(a_library);
+				if (c == WEOF) break;
+				*p = c;
+			}
+			return p;
+		});
 	});
 }
 
 t_object* t_reader::f_read_line(t_io* a_library)
 {
-	t_lock_with_safe_region lock(v_mutex);
-	if (!v_stream) f_throw(L"already closed."sv);
-	std::vector<wchar_t> cs;
-	while (true) {
-		wint_t c = f_get(a_library);
-		if (c == WEOF) break;
-		cs.push_back(c);
-		if (c == L'\n') break;
-	}
-	return t_string::f_instantiate(cs.data(), cs.size());
+	return f_owned_or_shared<t_lock_with_safe_region>([&]
+	{
+		if (!v_stream) f_throw(L"already closed."sv);
+		std::vector<wchar_t> cs;
+		while (true) {
+			wint_t c = f_get(a_library);
+			if (c == WEOF) break;
+			cs.push_back(c);
+			if (c == L'\n') break;
+		}
+		return t_string::f_instantiate(cs.data(), cs.size());
+	});
 }
 
 }
@@ -106,7 +112,7 @@ void t_type_of<io::t_reader>::f_define(t_io* a_library)
 		(a_library->f_symbol_close(), t_member<void(io::t_reader::*)(t_io*), &io::t_reader::f_close>())
 		(a_library->f_symbol_read(), t_member<t_object*(io::t_reader::*)(t_io*, size_t), &io::t_reader::f_read>())
 		(a_library->f_symbol_read_line(), t_member<t_object*(io::t_reader::*)(t_io*), &io::t_reader::f_read_line>())
-	.f_derive<io::t_reader, t_object>();
+	.f_derive<io::t_reader, t_sharable>();
 }
 
 t_pvalue t_type_of<io::t_reader>::f_do_construct(t_pvalue* a_stack, size_t a_n)

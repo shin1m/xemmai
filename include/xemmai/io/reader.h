@@ -1,6 +1,7 @@
 #ifndef XEMMAI__IO__READER_H
 #define XEMMAI__IO__READER_H
 
+#include "../sharable.h"
 #include "../string.h"
 #include <iconv.h>
 
@@ -12,11 +13,10 @@ class t_io;
 namespace io
 {
 
-class t_reader
+class t_reader : public t_sharable
 {
 	friend struct t_type_of<t_reader>;
 
-	std::mutex v_mutex;
 	iconv_t v_cd;
 	t_slot v_stream;
 	t_slot v_buffer;
