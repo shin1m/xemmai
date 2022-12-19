@@ -116,13 +116,13 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			XEMMAI__CODE__LABEL_UNARY(NOT)
 			XEMMAI__CODE__LABEL_UNARY(COMPLEMENT)
 #define XEMMAI__CODE__LABEL_BINARY(a_name)\
-			&&label__##a_name##_II,\
-			&&label__##a_name##_FI,\
+			nullptr,\
+			nullptr,\
 			&&label__##a_name##_LI,\
 			&&label__##a_name##_VI,\
 			&&label__##a_name##_TI,\
-			&&label__##a_name##_IF,\
-			&&label__##a_name##_FF,\
+			nullptr,\
+			nullptr,\
 			&&label__##a_name##_LF,\
 			&&label__##a_name##_VF,\
 			&&label__##a_name##_TF,\
@@ -705,26 +705,30 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__UNARY
-#define XEMMAI__CODE__BINARY
+#define XEMMAI__CODE__BINARY_LX
 #define XEMMAI__CODE__OPERANDS _LL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _LV
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _LT
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_LX
+#define XEMMAI__CODE__BINARY_XL
 #define XEMMAI__CODE__OPERANDS _VL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_XL
+#define XEMMAI__CODE__BINARY_XX
 #define XEMMAI__CODE__OPERANDS _VV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LT
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _VT
@@ -733,11 +737,13 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__OPERANDS _TT
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#undef XEMMAI__CODE__BINARY
-#define XEMMAI__CODE__BINARY_XI
+#undef XEMMAI__CODE__BINARY_XX
+#define XEMMAI__CODE__BINARY_LI
 #define XEMMAI__CODE__OPERANDS _LI
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_LI
+#define XEMMAI__CODE__BINARY_XI
 #define XEMMAI__CODE__OPERANDS _VI
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -745,10 +751,12 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_XI
-#define XEMMAI__CODE__BINARY_IX
+#define XEMMAI__CODE__BINARY_IL
 #define XEMMAI__CODE__OPERANDS _IL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_IL
+#define XEMMAI__CODE__BINARY_IX
 #define XEMMAI__CODE__OPERANDS _IV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -756,10 +764,12 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_IX
-#define XEMMAI__CODE__BINARY_XF
+#define XEMMAI__CODE__BINARY_LF
 #define XEMMAI__CODE__OPERANDS _LF
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_LF
+#define XEMMAI__CODE__BINARY_XF
 #define XEMMAI__CODE__OPERANDS _VF
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -767,10 +777,12 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_XF
-#define XEMMAI__CODE__BINARY_FX
+#define XEMMAI__CODE__BINARY_FL
 #define XEMMAI__CODE__OPERANDS _FL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_FL
+#define XEMMAI__CODE__BINARY_FX
 #define XEMMAI__CODE__OPERANDS _FV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -778,20 +790,6 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_FX
-#define XEMMAI__CODE__BINARY_NA
-#define XEMMAI__CODE__OPERANDS _II
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _FI
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _IF
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _FF
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#undef XEMMAI__CODE__BINARY_NA
 #undef XEMMAI__CODE__CASE_NAME
 #undef XEMMAI__CODE__STACK
 #undef XEMMAI__CODE__PRIMITIVE_CALL
@@ -879,26 +877,30 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__UNARY
-#define XEMMAI__CODE__BINARY
+#define XEMMAI__CODE__BINARY_LX
 #define XEMMAI__CODE__OPERANDS _LL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _LV
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#define XEMMAI__CODE__OPERANDS _LT
+#include "code_operator.h"
+#undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_LX
+#define XEMMAI__CODE__BINARY_XL
 #define XEMMAI__CODE__OPERANDS _VL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_XL
+#define XEMMAI__CODE__BINARY_XX
 #define XEMMAI__CODE__OPERANDS _VV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _TV
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _LT
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #define XEMMAI__CODE__OPERANDS _VT
@@ -907,11 +909,13 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__OPERANDS _TT
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
-#undef XEMMAI__CODE__BINARY
-#define XEMMAI__CODE__BINARY_XI
+#undef XEMMAI__CODE__BINARY_XX
+#define XEMMAI__CODE__BINARY_LI
 #define XEMMAI__CODE__OPERANDS _LI
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_LI
+#define XEMMAI__CODE__BINARY_XI
 #define XEMMAI__CODE__OPERANDS _VI
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -919,10 +923,12 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_XI
-#define XEMMAI__CODE__BINARY_IX
+#define XEMMAI__CODE__BINARY_IL
 #define XEMMAI__CODE__OPERANDS _IL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_IL
+#define XEMMAI__CODE__BINARY_IX
 #define XEMMAI__CODE__OPERANDS _IV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -930,10 +936,12 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_IX
-#define XEMMAI__CODE__BINARY_XF
+#define XEMMAI__CODE__BINARY_LF
 #define XEMMAI__CODE__OPERANDS _LF
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_LF
+#define XEMMAI__CODE__BINARY_XF
 #define XEMMAI__CODE__OPERANDS _VF
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -941,10 +949,12 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_XF
-#define XEMMAI__CODE__BINARY_FX
+#define XEMMAI__CODE__BINARY_FL
 #define XEMMAI__CODE__OPERANDS _FL
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
+#undef XEMMAI__CODE__BINARY_FL
+#define XEMMAI__CODE__BINARY_FX
 #define XEMMAI__CODE__OPERANDS _FV
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
@@ -952,20 +962,6 @@ size_t t_code::f_loop(t_context* a_context)
 #include "code_operator.h"
 #undef XEMMAI__CODE__OPERANDS
 #undef XEMMAI__CODE__BINARY_FX
-#define XEMMAI__CODE__BINARY_NA
-#define XEMMAI__CODE__OPERANDS _II
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _FI
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _IF
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#define XEMMAI__CODE__OPERANDS _FF
-#include "code_operator.h"
-#undef XEMMAI__CODE__OPERANDS
-#undef XEMMAI__CODE__BINARY_NA
 #undef XEMMAI__CODE__CASE_NAME
 #undef XEMMAI__CODE__STACK
 #undef XEMMAI__CODE__PRIMITIVE_CALL
