@@ -686,9 +686,6 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__CASE_END\
 			}\
 			XEMMAI__CODE__BREAK
-#define XEMMAI__CODE__CASE_NA(a_name)\
-		XEMMAI__CODE__CASE_NAME(a_name)\
-			goto label__THROW_NOT_SUPPORTED;
 #define XEMMAI__CODE__OTHERS
 #define XEMMAI__CODE__OPERANDS
 #include "code_operator.h"
