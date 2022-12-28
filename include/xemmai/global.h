@@ -43,7 +43,6 @@ class t_global : public t_library
 	_(method)\
 	_(throwable)\
 	_##_AS(std::nullptr_t, null)\
-	_##_AS(bool, boolean)\
 	_##_AS(intptr_t, integer)\
 	_##_AS(double, float)\
 	_(string)\
@@ -150,9 +149,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
 		return t_type_of<std::nullptr_t>::f__##a_name(*this);\
-	case c_tag__FALSE:\
-	case c_tag__TRUE:\
-		return t_type_of<bool>::f__##a_name(*this);\
 	case c_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer);\
 	case c_tag__FLOAT:\
@@ -184,8 +180,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
-	case c_tag__TRUE:\
 		f_throw(L"not supported."sv);\
 	case c_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
@@ -206,8 +200,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return static_cast<uintptr_t>(v_integer) a_operator f_as<intptr_t>(a_value);\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
-	case c_tag__TRUE:\
 	case c_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
 	default:\
@@ -221,9 +213,7 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
-	case c_tag__TRUE:\
-		return a_operator(p == a_value.v_p);\
+		return a_operator(a_value.f_tag() == c_tag__NULL);\
 	case c_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
 	case c_tag__FLOAT:\
@@ -232,21 +222,19 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
 	}\
 }
-#define XEMMAI__VALUE__BINARY_BITWISE(a_name, a_operator)\
+#define XEMMAI__VALUE__BINARY_BITWISE(a_name, a_operator, a_null, a_true)\
 template<typename T_tag>\
 inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case c_tag__FALSE:\
-	case c_tag__TRUE:\
-		return static_cast<bool>(f_as<bool>(*this) a_operator f_as<bool>(a_value));\
+	case c_tag__NULL:\
+		return a_null;\
 	case c_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return v_integer a_operator f_as<intptr_t>(a_value);\
-	case c_tag__NULL:\
 	case c_tag__FLOAT:\
-		f_throw(L"not supported."sv);\
+		return a_true;\
 	default:\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
 	}\
@@ -265,9 +253,9 @@ XEMMAI__VALUE__BINARY_ARITHMETIC(greater, >)
 XEMMAI__VALUE__BINARY_ARITHMETIC(greater_equal, >=)
 XEMMAI__VALUE__BINARY_EQUALITY(equals, )
 XEMMAI__VALUE__BINARY_EQUALITY(not_equals, !)
-XEMMAI__VALUE__BINARY_BITWISE(and, &)
-XEMMAI__VALUE__BINARY_BITWISE(xor, ^)
-XEMMAI__VALUE__BINARY_BITWISE(or, |)
+XEMMAI__VALUE__BINARY_BITWISE(and, &, false, a_value)
+XEMMAI__VALUE__BINARY_BITWISE(xor, ^, a_value, a_value ? false : *this)
+XEMMAI__VALUE__BINARY_BITWISE(or, |, a_value, *this)
 
 template<typename T>
 inline t_object* t_type::f_new(auto&&... a_xs)

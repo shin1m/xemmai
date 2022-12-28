@@ -104,9 +104,6 @@
     NUL
         |
         |N
-    BOOLEAN
-        |
-        |B
     INTEGER
         |
         |I

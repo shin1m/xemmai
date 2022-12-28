@@ -66,7 +66,6 @@ It can be called only if the object is in the shared state which means no thread
     Method      no         *1
     Throwable   yes        *3
     Null        no         *1
-    Boolean     no         *1
     Integer     yes        *4
     Float       yes        *4
     String      no         *1
