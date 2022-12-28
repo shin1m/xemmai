@@ -259,7 +259,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(BRANCH)
 			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
-			if (f_as<bool>(stack[0]))
+			if (stack[0])
 				++pc;
 			else
 				pc = static_cast<void**>(*pc);
