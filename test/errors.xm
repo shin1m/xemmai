@@ -18,7 +18,6 @@ test_not_supported(@ null[""]
 test_not_supported(@ null[""] = ""
 test_not_supported(@ null + ""
 test_not_supported(@ 0 + ""
-test_not_supported(@ 0.0 & ""
 
 test_owned = @(x) test(x, @(x) x == "owned by another thread."
 foo = [
