@@ -42,8 +42,6 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 			if (!std::is_same_v<typename t_fundamental<T>::t_type, double>) return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
 			switch (reinterpret_cast<uintptr_t>(a_object)) {
 			case c_tag__NULL:
-			case c_tag__FALSE:
-			case c_tag__TRUE:
 				return false;
 			case c_tag__INTEGER:
 			case c_tag__FLOAT:

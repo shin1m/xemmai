@@ -2,7 +2,6 @@
 #define XEMMAI__MAP_H
 
 #include "sharable.h"
-#include "boolean.h"
 #include "integer.h"
 
 namespace xemmai
@@ -86,7 +85,7 @@ private:
 		}
 		static bool f_equals(const t_entry& a_p, size_t a_hash, const t_pvalue& a_key)
 		{
-			return a_p.v_hash == a_hash && f_as<bool>(a_p.v_key.f_equals(a_key));
+			return a_p.v_hash == a_hash && a_p.v_key.f_equals(a_key);
 		}
 		XEMMAI__PORTABLE__ALWAYS_INLINE t_entry* f_find(const t_pvalue& a_key) const
 		{

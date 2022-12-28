@@ -262,8 +262,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
-	case c_tag__TRUE:\
 		f_throw(L"not supported."sv);\
 	case c_tag__INTEGER:\
 		return a_operator(v_integer);\
@@ -285,8 +283,6 @@ inline t_pvalue t_value<T_tag>::f_complement() const
 	case c_tag__INTEGER:
 		return ~v_integer;
 	case c_tag__NULL:
-	case c_tag__FALSE:
-	case c_tag__TRUE:
 	case c_tag__FLOAT:
 		f_throw(L"not supported."sv);
 	default:

@@ -330,7 +330,7 @@ inline void t_slot_of<T>::f_construct(t_object* a_value)
 	v_slot = a_value;
 }
 
-template<typename T>
+template<typename T, typename>
 struct t_type::t_cast
 {
 	static T f_as(auto&& a_object)
@@ -359,8 +359,6 @@ struct t_type::t_cast<T*>
 		switch (reinterpret_cast<uintptr_t>(a_object)) {
 		case c_tag__NULL:
 			return true;
-		case c_tag__FALSE:
-		case c_tag__TRUE:
 		case c_tag__INTEGER:
 		case c_tag__FLOAT:
 			return false;

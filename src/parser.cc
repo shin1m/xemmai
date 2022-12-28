@@ -246,10 +246,10 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 		return v_arena.f_new<ast::t_null>(at);
 	case t_lexer::c_token__TRUE:
 		v_lexer.f_next();
-		return v_arena.f_new<ast::t_literal<bool>>(at, true);
+		return v_arena.f_new<ast::t_literal<double>>(at, 1.0);
 	case t_lexer::c_token__FALSE:
 		v_lexer.f_next();
-		return v_arena.f_new<ast::t_literal<bool>>(at, false);
+		return v_arena.f_new<ast::t_null>(at);
 	case t_lexer::c_token__INTEGER:
 		{
 			auto value = v_lexer.f_integer();
