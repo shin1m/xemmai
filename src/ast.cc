@@ -906,7 +906,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__LEFT_SHIFT_TT:
 				return t_literal<intptr_t>(v_at, left.v_integer << right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__RIGHT_SHIFT_TT:
-				return t_literal<intptr_t>(v_at, static_cast<size_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_literal<intptr_t>(v_at, static_cast<uintptr_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
 				return t_literal<bool>(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
