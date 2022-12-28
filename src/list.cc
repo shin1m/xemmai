@@ -258,7 +258,7 @@ void t_type_of<t_list>::f_define()
 		}
 		std::sort(p, p + size, [&](const auto& x, const auto& y)
 		{
-			return f_as<bool>(a_less(x, y));
+			return a_less(x, y);
 		});
 		a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{

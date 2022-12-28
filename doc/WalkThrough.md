@@ -12,8 +12,8 @@ This document walks through xemmai language.
     1.5 * 2.0 # => 3.0
     "This is a string."
     null
-    true
-    false
+    true # => 1.0
+    false # => null
 
 Only `null` and `false` are falsy.
 All the other values are truthy.

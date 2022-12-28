@@ -16,7 +16,10 @@ This page explains literals.
 
     boolean: 'true' | 'false' ;
 
-`null` and `false` are falsy. The other values are all truthy.
+xemmai has no boolean type.
+The only falsy value is `null`. The other values are all truthy.
+`true` is an alias for `1.0`, which is float not integer `1` because bitwise operators have to distinguish integer operations and boolean operations.
+`false` is an alias for `null`.
 
 ## Integer Literals
 
