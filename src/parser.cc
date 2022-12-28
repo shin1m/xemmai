@@ -224,10 +224,10 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		return std::make_unique<ast::t_null>(at);
 	case t_lexer::e_token__TRUE:
 		v_lexer.f_next();
-		return std::make_unique<ast::t_literal<bool>>(at, true);
+		return std::make_unique<ast::t_literal<double>>(at, 1.0);
 	case t_lexer::e_token__FALSE:
 		v_lexer.f_next();
-		return std::make_unique<ast::t_literal<bool>>(at, false);
+		return std::make_unique<ast::t_null>(at);
 	case t_lexer::e_token__INTEGER:
 		{
 			auto value = v_lexer.f_integer();

@@ -266,7 +266,7 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 	}
 	std::sort(p, p + size, [&](const auto& x, const auto& y)
 	{
-		return f_as<bool>(a_callable(x, y));
+		return a_callable(x, y);
 	});
 	a_self.f_owned_or_shared<std::lock_guard>([&]
 	{
