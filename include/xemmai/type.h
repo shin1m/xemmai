@@ -34,6 +34,12 @@ struct t_fundamental<t_value<T_tag>>
 	using t_type = t_object;
 };
 
+template<>
+struct t_fundamental<bool>
+{
+	using t_type = t_object;
+};
+
 template<typename T, size_t... A_i>
 static constexpr std::array<T, sizeof...(A_i) + 1> f_append(const std::array<T, sizeof...(A_i)>& a_xs, std::index_sequence<A_i...>, T a_x)
 {
@@ -92,7 +98,7 @@ struct t_fields
 template<>
 struct t_type_of<t_object>
 {
-	template<typename> struct t_cast;
+	template<typename, typename = void> struct t_cast;
 	template<typename T_tag>
 	struct t_cast<const t_value<T_tag>&>
 	{
@@ -101,6 +107,18 @@ struct t_type_of<t_object>
 			return a_object;
 		}
 		static bool f_is(t_object* a_object)
+		{
+			return true;
+		}
+	};
+	template<typename T>
+	struct t_cast<T, std::enable_if_t<std::is_same_v<std::remove_const_t<std::remove_reference_t<T>>, bool>>>
+	{
+		static bool f_as(auto&& a_object)
+		{
+			return a_object;
+		}
+		static bool f_is(auto&&)
 		{
 			return true;
 		}
