@@ -38,8 +38,6 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 			case e_tag__INTEGER:
 				return true;
 			case e_tag__NULL:
-			case e_tag__FALSE:
-			case e_tag__TRUE:
 			case e_tag__FLOAT:
 				return false;
 			default:

@@ -40,7 +40,6 @@ class t_global : public t_library
 	t_slot_of<t_type> v_type_method;
 	t_slot_of<t_type> v_type_throwable;
 	t_slot_of<t_type> v_type_null;
-	t_slot_of<t_type> v_type_boolean;
 	t_slot_of<t_type> v_type_integer;
 	t_slot_of<t_type> v_type_float;
 	t_slot_of<t_type> v_type_string;
@@ -217,7 +216,6 @@ XEMMAI__LIBRARY__TYPE_AS(t_global, t_advanced_lambda<t_lambda_shared>, advanced_
 XEMMAI__LIBRARY__TYPE(t_global, method)
 XEMMAI__LIBRARY__TYPE(t_global, throwable)
 XEMMAI__LIBRARY__TYPE_AS(t_global, std::nullptr_t, null)
-XEMMAI__LIBRARY__TYPE_AS(t_global, bool, boolean)
 XEMMAI__LIBRARY__TYPE_AS(t_global, intptr_t, integer)
 XEMMAI__LIBRARY__TYPE_AS(t_global, double, float)
 XEMMAI__LIBRARY__TYPE(t_global, string)
@@ -245,9 +243,6 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 	switch (reinterpret_cast<uintptr_t>(p)) {
 	case e_tag__NULL:
 		return f_global()->f_type<std::nullptr_t>();
-	case e_tag__FALSE:
-	case e_tag__TRUE:
-		return f_global()->f_type<bool>();
 	case e_tag__INTEGER:
 		return f_global()->f_type<intptr_t>();
 	case e_tag__FLOAT:
@@ -283,9 +278,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__NULL:\
 		return t_type_of<std::nullptr_t>::f__##a_name(*this);\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
-		return t_type_of<bool>::f__##a_name(*this);\
 	case e_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer);\
 	case e_tag__FLOAT:\
@@ -317,8 +309,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__NULL:\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
 		f_throw(L"not supported."sv);\
 	case e_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
@@ -339,8 +329,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return static_cast<uintptr_t>(v_integer) a_operator f_as<intptr_t>(a_value);\
 	case e_tag__NULL:\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
 	case e_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
 	default:\
@@ -354,9 +342,7 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__NULL:\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
-		return a_operator(p == a_value.v_p);\
+		return a_operator(a_value.f_tag() == e_tag__NULL);\
 	case e_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
 	case e_tag__FLOAT:\
@@ -365,21 +351,19 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
 	}\
 }
-#define XEMMAI__VALUE__BINARY_BITWISE(a_name, a_operator)\
+#define XEMMAI__VALUE__BINARY_BITWISE(a_name, a_operator, a_null, a_true)\
 template<typename T_tag>\
 inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
-		return static_cast<bool>(f_as<bool>(*this) a_operator f_as<bool>(a_value));\
+	case e_tag__NULL:\
+		return a_null;\
 	case e_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return v_integer a_operator f_as<intptr_t>(a_value);\
-	case e_tag__NULL:\
 	case e_tag__FLOAT:\
-		f_throw(L"not supported."sv);\
+		return a_true;\
 	default:\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
 	}\
@@ -398,9 +382,9 @@ XEMMAI__VALUE__BINARY_ARITHMETIC(greater, >)
 XEMMAI__VALUE__BINARY_ARITHMETIC(greater_equal, >=)
 XEMMAI__VALUE__BINARY_EQUALITY(equals, )
 XEMMAI__VALUE__BINARY_EQUALITY(not_equals, !)
-XEMMAI__VALUE__BINARY_BITWISE(and, &)
-XEMMAI__VALUE__BINARY_BITWISE(xor, ^)
-XEMMAI__VALUE__BINARY_BITWISE(or, |)
+XEMMAI__VALUE__BINARY_BITWISE(and, &, false, a_value)
+XEMMAI__VALUE__BINARY_BITWISE(xor, ^, a_value, a_value ? false : *this)
+XEMMAI__VALUE__BINARY_BITWISE(or, |, a_value, *this)
 
 template<typename T>
 inline t_object* t_type::f_new(auto&&... a_xs)

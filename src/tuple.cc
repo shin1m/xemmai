@@ -36,7 +36,7 @@ int t_tuple::f_compare(const t_tuple& a_other) const
 		if (i >= a_other.f_size()) return 1;
 		auto& x = (*this)[i];
 		auto& y = a_other[i];
-		if (!f_as<bool>(x.f_equals(y))) return f_as<bool>(x.f_less(y)) ? -1 : 1;
+		if (!x.f_equals(y)) return x.f_less(y) ? -1 : 1;
 	}
 	return i < a_other.f_size() ? -1 : 0;
 }
@@ -47,7 +47,7 @@ bool t_tuple::f_equals(const t_pvalue& a_other) const
 	auto& other = a_other->f_as<t_tuple>();
 	if (this == &other) return true;
 	if (v_size != other.v_size) return false;
-	for (size_t i = 0; i < v_size; ++i) if (!f_as<bool>((*this)[i].f_equals(other[i]))) return false;
+	for (size_t i = 0; i < v_size; ++i) if (!(*this)[i].f_equals(other[i])) return false;
 	return true;
 }
 
