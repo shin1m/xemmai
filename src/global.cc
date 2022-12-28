@@ -64,8 +64,6 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_type_throwable->v_builtin = true;
 	t_type_of<std::nullptr_t>::f_define();
 	v_type_null->v_builtin = true;
-	t_type_of<bool>::f_define();
-	v_type_boolean->v_builtin = true;
 	t_type_of<intptr_t>::f_define();
 	v_type_integer->v_builtin = true;
 	t_type_of<double>::f_define();
@@ -87,7 +85,6 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	t_define(this).f_derive<t_parser::t_error, t_throwable>();
 	v_type_parser__error->v_builtin = true;
 	v_tag_types[c_tag__NULL] = v_type_null;
-	v_tag_types[c_tag__FALSE] = v_tag_types[c_tag__TRUE] = v_type_boolean;
 	v_tag_types[c_tag__INTEGER] = v_type_integer;
 	v_tag_types[c_tag__FLOAT] = v_type_float;
 	return t_define(this)
@@ -102,7 +99,6 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	(L"Method"sv, static_cast<t_object*>(v_type_method))
 	(L"Throwable"sv, static_cast<t_object*>(v_type_throwable))
 	(L"Null"sv, static_cast<t_object*>(v_type_null))
-	(L"Boolean"sv, static_cast<t_object*>(v_type_boolean))
 	(L"Integer"sv, static_cast<t_object*>(v_type_integer))
 	(L"Float"sv, static_cast<t_object*>(v_type_float))
 	(L"String"sv, static_cast<t_object*>(v_type_string))

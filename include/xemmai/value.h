@@ -19,8 +19,6 @@ using t_type = t_type_of<t_object>;
 enum t_tag
 {
 	c_tag__NULL,
-	c_tag__FALSE,
-	c_tag__TRUE,
 	c_tag__INTEGER,
 	c_tag__FLOAT,
 	c_tag__OBJECT
@@ -257,8 +255,9 @@ class t_value : public T_tag
 
 public:
 	using T_tag::T_tag;
-	t_value(bool a_value) : T_tag(reinterpret_cast<t_object*>(a_value ? c_tag__TRUE : c_tag__FALSE))
+	t_value(bool a_value) : T_tag(reinterpret_cast<t_object*>(a_value ? c_tag__FLOAT : c_tag__NULL))
 	{
+		if (a_value) v_float = 1.0;
 	}
 	template<typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
 	t_value(T a_value) : T_tag(reinterpret_cast<t_object*>(c_tag__INTEGER)), v_integer(a_value)
@@ -303,10 +302,6 @@ public:
 	{
 		return reinterpret_cast<uintptr_t>(static_cast<t_object*>(*this));
 	}
-	bool f_boolean() const
-	{
-		return f_tag() >= c_tag__TRUE;
-	}
 	intptr_t f_integer() const;
 	double f_float() const;
 	t_type_of<t_object>* f_type() const;
@@ -342,10 +337,6 @@ public:
 	t_value<t_pointer> f_set_at(const t_value<t_pointer>& a_index, const t_value<t_pointer>& a_value) const;
 	t_value<t_pointer> f_plus() const;
 	t_value<t_pointer> f_minus() const;
-	t_value<t_pointer> f_not() const
-	{
-		return f_tag() < c_tag__TRUE;
-	}
 	t_value<t_pointer> f_complement() const;
 	t_value<t_pointer> f_multiply(const t_value<t_pointer>& a_value) const;
 	t_value<t_pointer> f_divide(const t_value<t_pointer>& a_value) const;
