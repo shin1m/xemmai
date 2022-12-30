@@ -12,11 +12,6 @@ void t_type_of<bool>::f_define()
 {
 	t_define{f_global()}
 		(f_global()->f_symbol_string(), t_member<t_object*(*)(bool), f__string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(bool), f__hash>())
-		(f_global()->f_symbol_not(), t_member<bool(*)(bool), f_not>())
-		(f_global()->f_symbol_and(), t_member<bool(*)(bool, bool), f_and>())
-		(f_global()->f_symbol_xor(), t_member<bool(*)(bool, bool), f_xor>())
-		(f_global()->f_symbol_or(), t_member<bool(*)(bool, bool), f_or>())
 	.f_derive<bool, t_object>();
 }
 

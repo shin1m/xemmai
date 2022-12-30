@@ -33,22 +33,6 @@ struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 	{
 		return a_self ? 1 : 0;
 	}
-	static bool f_not(bool a_self)
-	{
-		return !a_self;
-	}
-	static bool f_and(bool a_self, bool a_value)
-	{
-		return a_self & a_value;
-	}
-	static bool f_xor(bool a_self, bool a_value)
-	{
-		return a_self ^ a_value;
-	}
-	static bool f_or(bool a_self, bool a_value)
-	{
-		return a_self | a_value;
-	}
 	static void f_define();
 
 	using t_base::t_base;

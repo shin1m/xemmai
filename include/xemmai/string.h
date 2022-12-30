@@ -122,29 +122,10 @@ struct t_type_of<t_string> : t_holds<t_string>
 		return a_self;
 	}
 	static t_object* f__add(t_object* a_self, const t_pvalue& a_value);
-	static t_object* f__add(const t_pvalue& a_self, const t_pvalue& a_value)
+	static bool f__equals(const t_string& a_self, const t_pvalue& a_value)
 	{
-		f_check<t_string>(a_self, L"self");
-		return f__add(static_cast<t_object*>(a_self), a_value);
+		return f_is<t_string>(a_value) && a_self == a_value->f_as<t_string>();
 	}
-	static bool f__less(const t_string& a_self, const t_string& a_value)
-	{
-		return a_self.f_compare(a_value) < 0;
-	}
-	static bool f__less_equal(const t_string& a_self, const t_string& a_value)
-	{
-		return a_self.f_compare(a_value) <= 0;
-	}
-	static bool f__greater(const t_string& a_self, const t_string& a_value)
-	{
-		return a_self.f_compare(a_value) > 0;
-	}
-	static bool f__greater_equal(const t_string& a_self, const t_string& a_value)
-	{
-		return a_self.f_compare(a_value) >= 0;
-	}
-	static bool f__equals(const t_string& a_self, const t_pvalue& a_value);
-	static bool f__not_equals(const t_string& a_self, const t_pvalue& a_value);
 	static t_object* f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n);
 	static t_object* f_substring(t_global* a_library, const t_string& a_self, size_t a_i)
 	{

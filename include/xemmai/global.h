@@ -867,16 +867,6 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_object* t_type_of<t_string>::f__add(t_o
 	return add(x);
 }
 
-inline bool t_type_of<t_string>::f__equals(const t_string& a_self, const t_pvalue& a_value)
-{
-	return f_is<t_string>(a_value) && a_self == a_value->f_as<t_string>();
-}
-
-inline bool t_type_of<t_string>::f__not_equals(const t_string& a_self, const t_pvalue& a_value)
-{
-	return !f_is<t_string>(a_value) || a_self != a_value->f_as<t_string>();
-}
-
 inline t_object* t_type_of<t_string>::f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)
 {
 	return a_n > 0 ? f__construct(a_library->f_type<t_string>(), static_cast<const wchar_t*>(a_self) + a_i, a_n) : a_library->f_string_empty();
