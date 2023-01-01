@@ -82,10 +82,10 @@
 #if defined(XEMMAI__CODE__BINARY_XF) || defined(XEMMAI__CODE__BINARY_LI) || defined(XEMMAI__CODE__BINARY_LF)
 #define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method) XEMMAI__CODE__OTHERS_OBJECT(a_name, a_method)
 #endif
-#define XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, a_type, a_field)\
+#define XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, a_type, a_cast, a_field)\
 					if (a1.f_tag() >= e_tag__OBJECT) {\
 						if (a1->f_type()->template f_derives<a_type>()) {\
-							XEMMAI__CODE__PRIMITIVE_CALL(a0 a_field a_operator a1->f_as<a_type>())\
+							XEMMAI__CODE__PRIMITIVE_CALL(a_cast(a0 a_field) a_operator a1->f_as<a_type>())\
 						} else {\
 							goto label__THROW_NOT_SUPPORTED;\
 						}\
@@ -99,6 +99,102 @@
 						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(false))\
 					}
 #if defined(XEMMAI__CODE__BINARY_LX) || defined(XEMMAI__CODE__BINARY_XL) || defined(XEMMAI__CODE__BINARY_XX)
+#ifdef XEMMAI__CODE__BINARY_LX
+#define XEMMAI__CODE__BINARY_EQUALITY_PRIMITIVE(a_operator)
+#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
+		XEMMAI__CODE__CASE_BEGIN(a_name)\
+				if (a0.f_tag() == e_tag__BOOLEAN) {\
+					XEMMAI__CODE__BOOLEAN_OR_THROW(a_operator)\
+				} else XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
+		XEMMAI__CODE__CASE_END
+#else
+#ifdef XEMMAI__CODE__BINARY_XL
+#define XEMMAI__CODE__BINARY_INTEGER(a_operator, a_cast)
+#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)
+#define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)
+#define XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)
+#define XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)
+#else
+#define XEMMAI__CODE__BINARY_INTEGER(a_operator, a_cast)\
+					if (a1.f_tag() == e_tag__INTEGER) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a_cast(a0.v_integer) a_operator a1.v_integer)\
+					} else
+#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)\
+					XEMMAI__CODE__BINARY_INTEGER(a_operator, )\
+					if (a1.f_tag() == e_tag__FLOAT) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer a_operator a1.v_float)\
+					} else
+#define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
+					if (a1.f_tag() == e_tag__FLOAT) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float a_operator a1.v_float)\
+					} else if (a1.f_tag() == e_tag__INTEGER) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float a_operator a1.v_integer)\
+					} else
+#define XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)\
+					if (a1.f_tag() == e_tag__INTEGER) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_integer == a1.v_integer))\
+					} else if (a1.f_tag() == e_tag__FLOAT) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_integer == a1.v_float))\
+					} else
+#define XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)\
+					if (a1.f_tag() == e_tag__FLOAT) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_float == a1.v_float))\
+					} else if (a1.f_tag() == e_tag__INTEGER) {\
+						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_float == a1.v_integer))\
+					} else
+#endif
+#define XEMMAI__CODE__BINARY_ARITHMETIC(a_name, a_operator, a_method)\
+		XEMMAI__CODE__CASE_BEGIN(a_name)\
+				switch (a0.f_tag()) {\
+				case e_tag__NULL:\
+				case e_tag__BOOLEAN:\
+					goto label__THROW_NOT_SUPPORTED;\
+				case e_tag__INTEGER:\
+					XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)\
+					XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, , .v_integer)\
+					break;\
+				case e_tag__FLOAT:\
+					XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
+					XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, double, , .v_float)\
+					break;\
+				default:\
+					XEMMAI__CODE__OBJECT_CALL(a_method)\
+				}\
+		XEMMAI__CODE__CASE_END
+#define XEMMAI__CODE__BINARY_INTEGRAL(a_name, a_operator, a_method)\
+		XEMMAI__CODE__CASE_BEGIN(a_name)\
+				if (a0.f_tag() == e_tag__INTEGER) {\
+					XEMMAI__CODE__BINARY_INTEGER(a_operator, static_cast<uintptr_t>)\
+					XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, static_cast<uintptr_t>, .v_integer)\
+				} else XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
+		XEMMAI__CODE__CASE_END
+#define XEMMAI__CODE__BINARY_EQUALITY_PRIMITIVE(a_operator)\
+				case e_tag__INTEGER:\
+					XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)\
+					XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, intptr_t, .v_integer)\
+					break;\
+				case e_tag__FLOAT:\
+					XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)\
+					XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, double, .v_float)\
+					break;
+#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
+		XEMMAI__CODE__CASE_BEGIN(a_name)\
+				switch (a0.f_tag()) {\
+				case e_tag__BOOLEAN:\
+					XEMMAI__CODE__BOOLEAN_OR_THROW(a_operator)\
+					break;\
+				case e_tag__INTEGER:\
+					XEMMAI__CODE__BINARY_INTEGER(a_operator, )\
+					XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, , .v_integer)\
+					break;\
+				case e_tag__NULL:\
+				case e_tag__FLOAT:\
+					goto label__THROW_NOT_SUPPORTED;\
+				default:\
+					XEMMAI__CODE__OBJECT_CALL(a_method)\
+				}\
+		XEMMAI__CODE__CASE_END
+#endif
 #define XEMMAI__CODE__BINARY_EQUALITY(a_name, a_operator, a_method)\
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 				switch (a0.f_tag()) {\
@@ -117,101 +213,6 @@
 					}\
 				}\
 		XEMMAI__CODE__CASE_END
-#ifdef XEMMAI__CODE__BINARY_LX
-#define XEMMAI__CODE__BINARY_EQUALITY_PRIMITIVE(a_operator)
-#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
-		XEMMAI__CODE__CASE_BEGIN(a_name)\
-				if (a0.f_tag() == e_tag__BOOLEAN) {\
-					XEMMAI__CODE__BOOLEAN_OR_THROW(a_operator)\
-				} else XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
-		XEMMAI__CODE__CASE_END
-#else
-#ifdef XEMMAI__CODE__BINARY_XL
-#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)
-#define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)
-#else
-#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)\
-					if (a1.f_tag() == e_tag__INTEGER) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer a_operator a1.v_integer)\
-					} else if (a1.f_tag() == e_tag__FLOAT) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer a_operator a1.v_float)\
-					} else
-#define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
-					if (a1.f_tag() == e_tag__FLOAT) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float a_operator a1.v_float)\
-					} else if (a1.f_tag() == e_tag__INTEGER) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a0.v_float a_operator a1.v_integer)\
-					} else
-#endif
-#define XEMMAI__CODE__BINARY_ARITHMETIC(a_name, a_operator, a_method)\
-		XEMMAI__CODE__CASE_BEGIN(a_name)\
-				switch (a0.f_tag()) {\
-				case e_tag__NULL:\
-				case e_tag__BOOLEAN:\
-					goto label__THROW_NOT_SUPPORTED;\
-				case e_tag__INTEGER:\
-					XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)\
-					XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, .v_integer)\
-					break;\
-				case e_tag__FLOAT:\
-					XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
-					XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, double, .v_float)\
-					break;\
-				default:\
-					XEMMAI__CODE__OBJECT_CALL(a_method)\
-				}\
-		XEMMAI__CODE__CASE_END
-#define XEMMAI__CODE__BINARY_INTEGRAL(a_name, a_operator, a_method)\
-		XEMMAI__CODE__CASE_BEGIN(a_name)\
-				if (a0.f_tag() == e_tag__INTEGER) {\
-					f_check<intptr_t>(a1, L"argument0");\
-					XEMMAI__CODE__PRIMITIVE_CALL(static_cast<uintptr_t>(a0.v_integer) a_operator f_as<intptr_t>(a1))\
-				} else XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
-		XEMMAI__CODE__CASE_END
-#ifdef XEMMAI__CODE__BINARY_XL
-#define XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)
-#define XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)
-#else
-#define XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)\
-					if (a1.f_tag() == e_tag__INTEGER) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_integer == a1.v_integer))\
-					} else if (a1.f_tag() == e_tag__FLOAT) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_integer == a1.v_float))\
-					} else
-#define XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)\
-					if (a1.f_tag() == e_tag__FLOAT) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_float == a1.v_float))\
-					} else if (a1.f_tag() == e_tag__INTEGER) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_float == a1.v_integer))\
-					} else
-#endif
-#define XEMMAI__CODE__BINARY_EQUALITY_PRIMITIVE(a_operator)\
-				case e_tag__INTEGER:\
-					XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)\
-					XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, intptr_t, .v_integer)\
-					break;\
-				case e_tag__FLOAT:\
-					XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)\
-					XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, double, .v_float)\
-					break;
-#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
-		XEMMAI__CODE__CASE_BEGIN(a_name)\
-				switch (a0.f_tag()) {\
-				case e_tag__BOOLEAN:\
-					XEMMAI__CODE__BOOLEAN_OR_THROW(a_operator)\
-					break;\
-				case e_tag__INTEGER:\
-					f_check<intptr_t>(a1, L"argument0");\
-					XEMMAI__CODE__PRIMITIVE_CALL(a0.v_integer a_operator f_as<intptr_t>(a1))\
-					break;\
-				case e_tag__NULL:\
-				case e_tag__FLOAT:\
-					goto label__THROW_NOT_SUPPORTED;\
-				default:\
-					XEMMAI__CODE__OBJECT_CALL(a_method)\
-				}\
-		XEMMAI__CODE__CASE_END
-#endif
 #endif
 #ifdef XEMMAI__CODE__BINARY_XI
 #define XEMMAI__CODE__BINARY_ARITHMETIC(a_name, a_operator, a_method)\
@@ -268,10 +269,13 @@
 #define XEMMAI__CODE__BINARY_TYPE double
 #endif
 #if defined(XEMMAI__CODE__BINARY_IX)
-#define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
+#define XEMMAI__CODE__BINARY_INTEGER(a_operator, a_cast)\
 				if (a1.f_tag() == e_tag__INTEGER) {\
-					XEMMAI__CODE__PRIMITIVE_CALL(a0 a_operator a1.v_integer)\
-				} else if (a1.f_tag() == e_tag__FLOAT) {\
+					XEMMAI__CODE__PRIMITIVE_CALL(a_cast(a0) a_operator a1.v_integer)\
+				} else
+#define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
+				XEMMAI__CODE__BINARY_INTEGER(a_operator, )\
+				if (a1.f_tag() == e_tag__FLOAT) {\
 					XEMMAI__CODE__PRIMITIVE_CALL(a0 a_operator a1.v_float)\
 				} else
 #elif defined(XEMMAI__CODE__BINARY_FX)
@@ -282,21 +286,28 @@
 					XEMMAI__CODE__PRIMITIVE_CALL(a0 a_operator a1.v_integer)\
 				} else
 #else
+#define XEMMAI__CODE__BINARY_INTEGER(a_operator, a_cast)
 #define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)
 #endif
 #define XEMMAI__CODE__BINARY_ARITHMETIC(a_name, a_operator, a_method)\
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 				XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
-				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, XEMMAI__CODE__BINARY_TYPE, )\
+				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, XEMMAI__CODE__BINARY_TYPE, , )\
 		XEMMAI__CODE__CASE_END
-#ifdef XEMMAI__CODE__BINARY_IX
+#if defined(XEMMAI__CODE__BINARY_IL) || defined(XEMMAI__CODE__BINARY_IX)
 #define XEMMAI__CODE__BINARY_INTEGRAL(a_name, a_operator, a_method)\
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
-				f_check<intptr_t>(a1, L"argument0");\
-				XEMMAI__CODE__PRIMITIVE_CALL(static_cast<uintptr_t>(a0) a_operator f_as<intptr_t>(a1))\
+				XEMMAI__CODE__BINARY_INTEGER(a_operator, static_cast<uintptr_t>)\
+				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, static_cast<uintptr_t>, )\
+		XEMMAI__CODE__CASE_END
+#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
+		XEMMAI__CODE__CASE_BEGIN(a_name)\
+				XEMMAI__CODE__BINARY_INTEGER(a_operator, )\
+				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, , )\
 		XEMMAI__CODE__CASE_END
 #else
 #define XEMMAI__CODE__BINARY_INTEGRAL(a_name, a_operator, a_method) XEMMAI__CODE__CASE_NA(a_name)
+#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method) XEMMAI__CODE__CASE_NA(a_name)
 #endif
 #if defined(XEMMAI__CODE__BINARY_IX)
 #define XEMMAI__CODE__BINARY_EQUALITY_PRIMITIVE(a_operator)\
@@ -320,15 +331,6 @@
 				XEMMAI__CODE__BINARY_EQUALITY_PRIMITIVE(a_operator)\
 				XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, XEMMAI__CODE__BINARY_TYPE, )\
 		XEMMAI__CODE__CASE_END
-#ifdef XEMMAI__CODE__BINARY_IX
-#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
-		XEMMAI__CODE__CASE_BEGIN(a_name)\
-				f_check<intptr_t>(a1, L"argument0");\
-				XEMMAI__CODE__PRIMITIVE_CALL(a0 a_operator f_as<intptr_t>(a1))\
-		XEMMAI__CODE__CASE_END
-#else
-#define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method) XEMMAI__CODE__CASE_NA(a_name)
-#endif
 #endif
 		XEMMAI__CODE__BINARY_ARITHMETIC(MULTIPLY, *, f_multiply)
 		XEMMAI__CODE__BINARY_ARITHMETIC(DIVIDE, /, f_divide)
@@ -348,6 +350,7 @@
 		XEMMAI__CODE__BINARY_BITWISE(AND, &, f_and)
 		XEMMAI__CODE__BINARY_BITWISE(XOR, ^, f_xor)
 		XEMMAI__CODE__BINARY_BITWISE(OR, |, f_or)
+#undef XEMMAI__CODE__BINARY_INTEGER
 #undef XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER
 #undef XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT
 #undef XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE
