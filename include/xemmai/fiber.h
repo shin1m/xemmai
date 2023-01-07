@@ -286,40 +286,26 @@ inline t_pvalue t_value<T_tag>::f_set_at(const t_pvalue& a_index, const t_pvalue
 			if (n != size_t(-1)) f_loop(stack, n);\
 			return stack[0];\
 		}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_plus() const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return v_integer;
-	case e_tag__FLOAT:
-		return v_float;
-	default:
-		XEMMAI__VALUE__UNARY(f_plus)
-	}
+#define XEMMAI__VALUE__UNARY_ARITHMETIC(a_name, a_operator)\
+template<typename T_tag>\
+inline t_pvalue t_value<T_tag>::f_##a_name() const\
+{\
+	auto p = static_cast<t_object*>(*this);\
+	switch (reinterpret_cast<uintptr_t>(p)) {\
+	case e_tag__NULL:\
+	case e_tag__BOOLEAN:\
+		f_throw(L"not supported."sv);\
+	case e_tag__INTEGER:\
+		return a_operator(v_integer);\
+	case e_tag__FLOAT:\
+		return a_operator(v_float);\
+	default:\
+		XEMMAI__VALUE__UNARY(f_##a_name)\
+	}\
 }
 
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_minus() const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return -v_integer;
-	case e_tag__FLOAT:
-		return -v_float;
-	default:
-		XEMMAI__VALUE__UNARY(f_minus)
-	}
-}
+XEMMAI__VALUE__UNARY_ARITHMETIC(plus, )
+XEMMAI__VALUE__UNARY_ARITHMETIC(minus, -)
 
 template<typename T_tag>
 inline t_pvalue t_value<T_tag>::f_not() const

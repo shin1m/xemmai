@@ -278,24 +278,24 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline void t_value<T_tag>::f_call(t_object* a_k
 	f_type()->f_invoke(*this, a_key, a_index, a_stack, a_n);
 }
 
-#define XEMMAI__VALUE__NULLARY(a_method)\
+#define XEMMAI__VALUE__NULLARY(a_name)\
 template<typename T_tag>\
-inline t_pvalue t_value<T_tag>::f_##a_method() const\
+inline t_pvalue t_value<T_tag>::f_##a_name() const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__NULL:\
-		return t_type_of<std::nullptr_t>::f__##a_method(*this);\
+		return t_type_of<std::nullptr_t>::f__##a_name(*this);\
 	case e_tag__BOOLEAN:\
-		return t_type_of<bool>::f__##a_method(v_boolean);\
+		return t_type_of<bool>::f__##a_name(v_boolean);\
 	case e_tag__INTEGER:\
-		return t_type_of<intptr_t>::f__##a_method(v_integer);\
+		return t_type_of<intptr_t>::f__##a_name(v_integer);\
 	case e_tag__FLOAT:\
-		return t_type_of<double>::f__##a_method(v_float);\
+		return t_type_of<double>::f__##a_name(v_float);\
 	default:\
 		{\
 			t_scoped_stack stack(2);\
-			p->f_type()->f_##a_method(p, stack);\
+			p->f_type()->f_##a_name(p, stack);\
 			return stack[0];\
 		}\
 	}\
@@ -312,294 +312,95 @@ XEMMAI__VALUE__NULLARY(hash)
 			if (n != size_t(-1)) f_loop(stack, n);\
 			return stack[0];\
 		}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_multiply(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__multiply(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float * f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_multiply)
-	}
+#define XEMMAI__VALUE__BINARY_ARITHMETIC(a_name, a_operator)\
+template<typename T_tag>\
+inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
+{\
+	auto p = static_cast<t_object*>(*this);\
+	switch (reinterpret_cast<uintptr_t>(p)) {\
+	case e_tag__NULL:\
+	case e_tag__BOOLEAN:\
+		f_throw(L"not supported."sv);\
+	case e_tag__INTEGER:\
+		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
+	case e_tag__FLOAT:\
+		f_check<double>(a_value, L"argument0");\
+		return v_float a_operator f_as<double>(a_value);\
+	default:\
+		XEMMAI__VALUE__BINARY(f_##a_name)\
+	}\
+}
+#define XEMMAI__VALUE__BINARY_INTEGRAL(a_name, a_operator)\
+template<typename T_tag>\
+inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
+{\
+	auto p = static_cast<t_object*>(*this);\
+	switch (reinterpret_cast<uintptr_t>(p)) {\
+	case e_tag__INTEGER:\
+		f_check<intptr_t>(a_value, L"argument0");\
+		return static_cast<uintptr_t>(v_integer) a_operator f_as<intptr_t>(a_value);\
+	case e_tag__NULL:\
+	case e_tag__BOOLEAN:\
+	case e_tag__FLOAT:\
+		f_throw(L"not supported."sv);\
+	default:\
+		XEMMAI__VALUE__BINARY(f_##a_name)\
+	}\
+}
+#define XEMMAI__VALUE__BINARY_EQUALITY(a_name, a_operator)\
+template<typename T_tag>\
+inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
+{\
+	auto p = static_cast<t_object*>(*this);\
+	switch (reinterpret_cast<uintptr_t>(p)) {\
+	case e_tag__NULL:\
+		return a_operator(p == a_value.v_p);\
+	case e_tag__BOOLEAN:\
+		return a_operator(p == a_value.v_p && v_boolean == a_value.v_boolean);\
+	case e_tag__INTEGER:\
+		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
+	case e_tag__FLOAT:\
+		return t_type_of<double>::f__##a_name(v_float, a_value);\
+	default:\
+		XEMMAI__VALUE__BINARY(f_##a_name)\
+	}\
+}
+#define XEMMAI__VALUE__BINARY_BITWISE(a_name, a_operator)\
+template<typename T_tag>\
+inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
+{\
+	auto p = static_cast<t_object*>(*this);\
+	switch (reinterpret_cast<uintptr_t>(p)) {\
+	case e_tag__BOOLEAN:\
+		f_check<bool>(a_value, L"argument0");\
+		return static_cast<bool>(v_boolean a_operator f_as<bool>(a_value));\
+	case e_tag__INTEGER:\
+		f_check<intptr_t>(a_value, L"argument0");\
+		return v_integer a_operator f_as<intptr_t>(a_value);\
+	case e_tag__NULL:\
+	case e_tag__FLOAT:\
+		f_throw(L"not supported."sv);\
+	default:\
+		XEMMAI__VALUE__BINARY(f_##a_name)\
+	}\
 }
 
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_divide(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__divide(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float / f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_divide)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_modulus(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__INTEGER:
-		f_check<intptr_t>(a_value, L"argument0");
-		return v_integer % f_as<intptr_t>(a_value);
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__BINARY(f_modulus)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_add(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__add(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float + f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_add)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_subtract(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__subtract(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float - f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_subtract)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_left_shift(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__INTEGER:
-		f_check<intptr_t>(a_value, L"argument0");
-		return v_integer << f_as<intptr_t>(a_value);
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__BINARY(f_left_shift)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_right_shift(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__INTEGER:
-		f_check<intptr_t>(a_value, L"argument0");
-		return static_cast<size_t>(v_integer) >> f_as<intptr_t>(a_value);
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__BINARY(f_right_shift)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_less(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__less(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float < f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_less)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_less_equal(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__less_equal(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float <= f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_less_equal)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_greater(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__greater(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float > f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_greater)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_greater_equal(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		f_throw(L"not supported."sv);
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__greater_equal(v_integer, a_value);
-	case e_tag__FLOAT:
-		f_check<double>(a_value, L"argument0");
-		return v_float >= f_as<double>(a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_greater_equal)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_equals(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-		return p == a_value.v_p;
-	case e_tag__BOOLEAN:
-		return p == a_value.v_p && v_boolean == a_value.v_boolean;
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__equals(v_integer, a_value);
-	case e_tag__FLOAT:
-		return t_type_of<double>::f__equals(v_float, a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_equals)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_not_equals(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
-		return p != a_value.v_p;
-	case e_tag__BOOLEAN:
-		return p != a_value.v_p || v_boolean != a_value.v_boolean;
-	case e_tag__INTEGER:
-		return t_type_of<intptr_t>::f__not_equals(v_integer, a_value);
-	case e_tag__FLOAT:
-		return t_type_of<double>::f__not_equals(v_float, a_value);
-	default:
-		XEMMAI__VALUE__BINARY(f_not_equals)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_and(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__BOOLEAN:
-		f_check<bool>(a_value, L"argument0");
-		return static_cast<bool>(v_boolean & f_as<bool>(a_value));
-	case e_tag__INTEGER:
-		f_check<intptr_t>(a_value, L"argument0");
-		return v_integer & f_as<intptr_t>(a_value);
-	case e_tag__NULL:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__BINARY(f_and)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_xor(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__BOOLEAN:
-		f_check<bool>(a_value, L"argument0");
-		return static_cast<bool>(v_boolean ^ f_as<bool>(a_value));
-	case e_tag__INTEGER:
-		f_check<intptr_t>(a_value, L"argument0");
-		return v_integer ^ f_as<intptr_t>(a_value);
-	case e_tag__NULL:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__BINARY(f_xor)
-	}
-}
-
-template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_or(const t_pvalue& a_value) const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__BOOLEAN:
-		f_check<bool>(a_value, L"argument0");
-		return static_cast<bool>(v_boolean | f_as<bool>(a_value));
-	case e_tag__INTEGER:
-		f_check<intptr_t>(a_value, L"argument0");
-		return v_integer | f_as<intptr_t>(a_value);
-	case e_tag__NULL:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__BINARY(f_or)
-	}
-}
+XEMMAI__VALUE__BINARY_ARITHMETIC(multiply, *)
+XEMMAI__VALUE__BINARY_ARITHMETIC(divide, /)
+XEMMAI__VALUE__BINARY_INTEGRAL(modulus, %)
+XEMMAI__VALUE__BINARY_ARITHMETIC(add, +)
+XEMMAI__VALUE__BINARY_ARITHMETIC(subtract, -)
+XEMMAI__VALUE__BINARY_INTEGRAL(left_shift, <<)
+XEMMAI__VALUE__BINARY_INTEGRAL(right_shift, >>)
+XEMMAI__VALUE__BINARY_ARITHMETIC(less, <)
+XEMMAI__VALUE__BINARY_ARITHMETIC(less_equal, <=)
+XEMMAI__VALUE__BINARY_ARITHMETIC(greater, >)
+XEMMAI__VALUE__BINARY_ARITHMETIC(greater_equal, >=)
+XEMMAI__VALUE__BINARY_EQUALITY(equals, )
+XEMMAI__VALUE__BINARY_EQUALITY(not_equals, !)
+XEMMAI__VALUE__BINARY_BITWISE(and, &)
+XEMMAI__VALUE__BINARY_BITWISE(xor, ^)
+XEMMAI__VALUE__BINARY_BITWISE(or, |)
 
 template<typename T, typename... T_an>
 inline t_object* t_type::f_new(T_an&&... a_an)
