@@ -70,7 +70,7 @@ It also has a concurrent garbage collector to utilize multiple processors.
 
 The MIT License (MIT)
 
-Copyright (c) 2008-2022 Shin-ichi MORITA
+Copyright (c) Shin-ichi MORITA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
