@@ -245,7 +245,7 @@ public:
 	template<typename T>
 	T& f_as()
 	{
-		return *reinterpret_cast<T*>(v_data);
+		return reinterpret_cast<T&>(v_data);
 	}
 	t_svalue* f_fields(size_t a_native)
 	{
