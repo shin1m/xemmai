@@ -1,6 +1,5 @@
 #include <xemmai/portable/path.h>
 #include <xemmai/portable/convert.h>
-#include <system_error>
 #include <climits>
 #ifdef __unix__
 #include <unistd.h>

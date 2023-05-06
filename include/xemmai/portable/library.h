@@ -6,7 +6,6 @@
 #include <dlfcn.h>
 #endif
 #include <cstdio>
-#include <string>
 
 namespace xemmai::portable
 {
