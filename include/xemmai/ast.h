@@ -81,9 +81,6 @@ struct t_operand
 		size_t v_index;
 	};
 
-	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(reinterpret_cast<t_object*>(a_value ? e_tag__TRUE : e_tag__FALSE))
-	{
-	}
 	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_integer(a_value)
 	{
 	}
@@ -411,11 +408,16 @@ struct t_super : t_node
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_null : t_node
+struct t_boolean : t_node
 {
-	using t_node::t_node;
+	bool v_value;
+
+	t_boolean(const t_at& a_at, bool a_value = false) : t_node(a_at), v_value(a_value)
+	{
+	}
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
+using t_null = t_boolean;
 
 template<typename T>
 struct t_literal : t_node
@@ -426,14 +428,6 @@ struct t_literal : t_node
 	{
 	}
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
-};
-
-template<>
-struct t_literal<bool> : t_literal<t_object*>
-{
-	t_literal(const t_at& a_at, bool a_value) : t_literal<t_object*>(a_at, reinterpret_cast<t_object*>(a_value ? e_tag__TRUE : e_tag__FALSE))
-	{
-	}
 };
 
 struct t_unary : t_node
@@ -569,10 +563,6 @@ struct XEMMAI__LOCAL t_emit
 	{
 		v_code->v_instructions.push_back(reinterpret_cast<void*>(a_operand));
 		return *this;
-	}
-	t_emit& operator<<(bool a_operand)
-	{
-		return *this << (a_operand ? 1 : 0);
 	}
 	t_emit& operator<<(double a_operand)
 	{

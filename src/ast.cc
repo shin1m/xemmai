@@ -717,10 +717,16 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 			a_emit << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
 			break;
 		case t_operand::e_tag__LITERAL:
-			if (operand.v_value)
-				a_emit << e_instruction__INSTANCE << v_variable.v_index << operand.v_value;
-			else
+			switch (reinterpret_cast<uintptr_t>(operand.v_value)) {
+			case e_tag__NULL:
 				a_emit << e_instruction__NUL << v_variable.v_index;
+				break;
+			case e_tag__TRUE:
+				a_emit << e_instruction__TRU << v_variable.v_index;
+				break;
+			default:
+				a_emit << e_instruction__INSTANCE << v_variable.v_index << operand.v_value;
+			}
 			break;
 		case t_operand::e_tag__VARIABLE:
 			a_emit << e_instruction__STACK_PUT << operand.v_index << v_variable.v_index;
@@ -796,15 +802,15 @@ t_operand t_super::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	return {};
 }
 
-t_operand t_null::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
+t_operand t_boolean::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	if (a_operand) return nullptr;
+	if (a_operand) return reinterpret_cast<t_object*>(static_cast<uintptr_t>(v_value));
 	if (a_clear) return {};
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
-		(a_emit << e_instruction__RETURN_NUL).f_push();
+		(a_emit << static_cast<t_instruction>(e_instruction__RETURN_NUL + v_value)).f_push();
 	} else {
-		a_emit.f_emit_null();
+		(a_emit << static_cast<t_instruction>(e_instruction__NUL + v_value) << a_emit.v_stack).f_push();
 	}
 	a_emit.f_at(this);
 	return {};
@@ -827,7 +833,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		case e_instruction__MINUS_T:
 			return t_literal(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__NOT_T:
-			return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_null(v_at).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__COMPLEMENT_T:
 			return t_literal(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
@@ -841,7 +847,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		case e_instruction__MINUS_T:
 			return t_literal(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__NOT_T:
-			return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+			return t_null(v_at).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			f_throw(L"not supported."sv);
 		}
@@ -906,19 +912,19 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__RIGHT_SHIFT_TT:
 				return t_literal<intptr_t>(v_at, static_cast<uintptr_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_literal(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_literal(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_literal(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_literal(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_literal(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_literal(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__AND_TT:
 				return t_literal(v_at, left.v_integer & right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__XOR_TT:
@@ -940,21 +946,21 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__SUBTRACT_TT:
 				return t_literal(v_at, left.v_integer - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_literal(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_literal(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_literal(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_literal(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_literal(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_literal(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_literal(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				f_throw(L"not supported."sv);
 			}
@@ -972,21 +978,21 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__SUBTRACT_TT:
 				return t_literal(v_at, left.v_float - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_literal(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_literal(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_literal(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_literal(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
-				return t_literal(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
-				return t_literal(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__IDENTICAL_TT:
-				return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_literal(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				f_throw(L"not supported."sv);
 			}
@@ -1002,19 +1008,19 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__SUBTRACT_TT:
 				return t_literal(v_at, left.v_float - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_TT:
-				return t_literal(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__LESS_EQUAL_TT:
-				return t_literal(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_TT:
-				return t_literal(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__GREATER_EQUAL_TT:
-				return t_literal(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__EQUALS_TT:
 			case e_instruction__IDENTICAL_TT:
-				return t_literal(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			case e_instruction__NOT_EQUALS_TT:
 			case e_instruction__NOT_IDENTICAL_TT:
-				return t_literal(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+				return t_boolean(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				f_throw(L"not supported."sv);
 			}
