@@ -4,7 +4,6 @@
 #include "engine.h"
 #include "native.h"
 #include "method.h"
-#include "null.h"
 #include "list.h"
 #include "map.h"
 #include "bytes.h"
@@ -41,7 +40,6 @@ class t_global : public t_library
 	t_slot_of<t_type> v_type_advanced_lambda_shared;
 	t_slot_of<t_type> v_type_method;
 	t_slot_of<t_type> v_type_throwable;
-	t_slot_of<t_type> v_type_null;
 	t_slot_of<t_type> v_type_boolean;
 	t_slot_of<t_type> v_type_integer;
 	t_slot_of<t_type> v_type_float;
@@ -218,7 +216,6 @@ XEMMAI__LIBRARY__TYPE_AS(t_global, t_advanced_lambda<t_lambda>, advanced_lambda)
 XEMMAI__LIBRARY__TYPE_AS(t_global, t_advanced_lambda<t_lambda_shared>, advanced_lambda_shared)
 XEMMAI__LIBRARY__TYPE(t_global, method)
 XEMMAI__LIBRARY__TYPE(t_global, throwable)
-XEMMAI__LIBRARY__TYPE_AS(t_global, std::nullptr_t, null)
 XEMMAI__LIBRARY__TYPE_AS(t_global, bool, boolean)
 XEMMAI__LIBRARY__TYPE_AS(t_global, intptr_t, integer)
 XEMMAI__LIBRARY__TYPE_AS(t_global, double, float)
@@ -273,8 +270,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-		return t_type_of<std::nullptr_t>::f__##a_name(*this);\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 		return t_type_of<bool>::f__##a_name(*this);\
 	case c_tag__INTEGER:\
@@ -308,7 +303,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 		f_throw(L"not supported."sv);\
 	case c_tag__INTEGER:\
@@ -330,7 +324,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return static_cast<uintptr_t>(v_integer) a_operator f_as<intptr_t>(a_value);\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 	case c_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
@@ -345,7 +338,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 		return a_operator(p == a_value.v_p);\
 	case c_tag__INTEGER:\
@@ -362,13 +354,12 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case c_tag__FALSE:\
+	case c_tag__NULL:\
 	case c_tag__TRUE:\
-		return static_cast<bool>(f_as<bool>(*this) a_operator f_as<bool>(a_value));\
+		return static_cast<bool>(static_cast<bool>(p) a_operator f_as<bool>(a_value));\
 	case c_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return v_integer a_operator f_as<intptr_t>(a_value);\
-	case c_tag__NULL:\
 	case c_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
 	default:\
