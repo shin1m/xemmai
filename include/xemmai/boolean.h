@@ -14,7 +14,7 @@ struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 	{
 		static bool f_as(auto&& a_object)
 		{
-			return a_object.f_boolean();
+			return a_object;
 		}
 		static bool f_is(t_object* a_object)
 		{
@@ -24,7 +24,7 @@ struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 
 	static t_object* f__string(const t_pvalue& a_self)
 	{
-		return t_string::f_instantiate(a_self.f_boolean() ? L"true"sv : L"false"sv);
+		return t_string::f_instantiate(a_self ? L"true"sv : L"null"sv);
 	}
 	XEMMAI__LOCAL static void f_define();
 

@@ -104,7 +104,7 @@
     NUL
         |
         |N
-    BOOLEAN
+    TRUE
         |
         |B
     INTEGER
