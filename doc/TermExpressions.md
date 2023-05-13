@@ -10,7 +10,7 @@ See [PrimaryExpressions](PrimaryExpressions.md).
 
     unary: ('+' | '-' | '!' | '~')* primary ;
 
-Negate operator (`!`) returns `true` if the operand is falsy, returns `false` otherwise.
+Negate operator (`!`) returns `true` if the operand is `false` (`null`), returns `false` (`null`) otherwise.
 
 ## Multiplicative Expressions
 
@@ -28,7 +28,7 @@ Negate operator (`!`) returns `true` if the operand is falsy, returns `false` ot
 
     relational: shift (('<' | '>' | '<=' | '>=') shift)* ;
 
-Relational, equality, and identity operators return either `true` or `false`.
+Relational, equality, and identity operators return either `true` or `false` (`null`).
 
 ## Equality Expressions
 
@@ -42,7 +42,7 @@ Relational, equality, and identity operators return either `true` or `false`.
 
     and: identity ('&' identity)* ;
 
-Bitwise operators (`&`, `^`, and `|`) do bitwise operations if both the operands are integers, do boolean operations if the left operand is boolean, throws an exception otherwise.
+Bitwise operators (`&`, `^`, and `|`) do bitwise operations if both the operands are integers, do boolean operations if the left operand is boolean (`true`, `false`, or `null`), throws an exception otherwise.
 
 ## Xor Expressions
 
@@ -56,13 +56,13 @@ Bitwise operators (`&`, `^`, and `|`) do bitwise operations if both the operands
 
     and_also: or ('&&' or)* ;
 
-Evaluates the left operand, returns it if it is falsy, evaluates the right operand and returns it otherwise.
+Evaluates the left operand, returns it if it is `false` (`null`), evaluates the right operand and returns it otherwise.
 
 ## Or Else Expressions
 
     or_else: and_also ('||' and_also)* ;
 
-Evaluates the left operand, returns it if it is truthy, evaluates the right operand and returns it otherwise.
+Evaluates the left operand, returns it if it is not `false` (`null`), evaluates the right operand and returns it otherwise.
 
 ## Conditional Expressions
 

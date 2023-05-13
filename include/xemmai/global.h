@@ -4,7 +4,6 @@
 #include "engine.h"
 #include "native.h"
 #include "method.h"
-#include "null.h"
 #include "list.h"
 #include "map.h"
 #include "bytes.h"
@@ -42,7 +41,6 @@ class t_global : public t_library
 	_##_AS(t_advanced_lambda<t_lambda_shared>, advanced_lambda_shared)\
 	_(method)\
 	_(throwable)\
-	_##_AS(std::nullptr_t, null)\
 	_##_AS(bool, boolean)\
 	_##_AS(intptr_t, integer)\
 	_##_AS(double, float)\
@@ -149,8 +147,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-		return t_type_of<std::nullptr_t>::f__##a_name(*this);\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 		return t_type_of<bool>::f__##a_name(*this);\
 	case c_tag__INTEGER:\
@@ -184,7 +180,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 		f_throw(L"not supported."sv);\
 	case c_tag__INTEGER:\
@@ -206,7 +201,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return static_cast<uintptr_t>(v_integer) a_operator f_as<intptr_t>(a_value);\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 	case c_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
@@ -221,7 +215,6 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case c_tag__NULL:\
-	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 		return a_operator(p == a_value.v_p);\
 	case c_tag__INTEGER:\
@@ -238,13 +231,12 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case c_tag__FALSE:\
+	case c_tag__NULL:\
 	case c_tag__TRUE:\
-		return static_cast<bool>(f_as<bool>(*this) a_operator f_as<bool>(a_value));\
+		return static_cast<bool>(static_cast<bool>(p) a_operator f_as<bool>(a_value));\
 	case c_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return v_integer a_operator f_as<intptr_t>(a_value);\
-	case c_tag__NULL:\
 	case c_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
 	default:\
