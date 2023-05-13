@@ -189,9 +189,6 @@ class t_debugger : public xemmai::t_debugger
 		case c_tag__NULL:
 			std::fputs("null", v_out);
 			break;
-		case c_tag__FALSE:
-			std::fputs("false", v_out);
-			break;
 		case c_tag__TRUE:
 			std::fputs("true", v_out);
 			break;

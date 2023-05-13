@@ -13,7 +13,7 @@ This document walks through xemmai language.
     "This is a string."
     null
     true
-    false
+    false # => null
 
 Only `null` and `false` are falsy.
 All the other values are truthy.

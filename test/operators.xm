@@ -30,7 +30,7 @@ assert(a["x"] == "a[x]"
 assert((a["x"] = "y") == "a[x] = y"
 assert(+a == "+a"
 assert(-a == "-a"
-assert(!a === false
+assert(!a === null
 assert(~a == "~a"
 assert(a * "x" == "a * x"
 assert(a / "x" == "a / x"
