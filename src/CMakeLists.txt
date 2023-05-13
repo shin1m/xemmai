@@ -12,7 +12,6 @@ add_executable(xemmai
 	code.cc
 	lambda.cc
 	throwable.cc
-	null.cc
 	boolean.cc
 	integer.cc
 	float.cc

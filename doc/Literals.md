@@ -16,7 +16,9 @@ This page explains literals.
 
     boolean: 'true' | 'false' ;
 
-`null` and `false` are falsy. The other values are all truthy.
+`false` is an alias for `null`.
+The only falsy value is `null`. The other values are all truthy.
+`true` is the value that is just truthy.
 
 ## Integer Literals
 
