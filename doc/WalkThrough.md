@@ -13,7 +13,7 @@ This document walks through xemmai language.
     "This is a string."
     null
     true
-    false
+    false # => null
 
 ## Variables
 
