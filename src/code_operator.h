@@ -26,7 +26,6 @@
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 				switch (a0.f_tag()) {\
 				case c_tag__NULL:\
-				case c_tag__FALSE:\
 				case c_tag__TRUE:\
 					goto label__THROW_NOT_SUPPORTED;\
 				case c_tag__INTEGER:\
@@ -42,7 +41,7 @@
 		XEMMAI__CODE__UNARY_ARITHMETIC(PLUS, , f_plus)
 		XEMMAI__CODE__UNARY_ARITHMETIC(MINUS, -, f_minus)
 		XEMMAI__CODE__CASE_BEGIN(NOT)
-				XEMMAI__CODE__PRIMITIVE_CALL(!f_as<bool>(a0))
+				XEMMAI__CODE__PRIMITIVE_CALL(!a0)
 		XEMMAI__CODE__CASE_END
 		XEMMAI__CODE__CASE_BEGIN(COMPLEMENT)
 				if (a0.f_tag() == c_tag__INTEGER) {
@@ -97,12 +96,12 @@
 #define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 				switch (a0.f_tag()) {\
-				case c_tag__FALSE:\
+				case c_tag__NULL:\
 				case c_tag__TRUE:\
 					XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(f_as<bool>(a0) a_operator f_as<bool>(a1)))\
 					break;\
 				default:\
-					XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
+					XEMMAI__CODE__OBJECT_CALL(a_method)\
 				}\
 		XEMMAI__CODE__CASE_END
 #else
@@ -145,7 +144,6 @@
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 				switch (a0.f_tag()) {\
 				case c_tag__NULL:\
-				case c_tag__FALSE:\
 				case c_tag__TRUE:\
 					goto label__THROW_NOT_SUPPORTED;\
 				case c_tag__INTEGER:\
@@ -179,7 +177,7 @@
 #define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method)\
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 				switch (a0.f_tag()) {\
-				case c_tag__FALSE:\
+				case c_tag__NULL:\
 				case c_tag__TRUE:\
 					XEMMAI__CODE__PRIMITIVE_CALL(static_cast<bool>(f_as<bool>(a0) a_operator f_as<bool>(a1)))\
 					break;\
@@ -196,7 +194,6 @@
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 				switch (a0.f_tag()) {\
 				case c_tag__NULL:\
-				case c_tag__FALSE:\
 				case c_tag__TRUE:\
 					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_p == a1.v_p))\
 					break;\
