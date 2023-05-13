@@ -2,6 +2,8 @@ system = Module("system"
 print = system.out.write_line
 assert = @(x) x || throw Throwable("Assertion failed."
 
+assert(false === null
+
 print("!false = " + !false
 assert(!false === true
 print("!true = " + !true
