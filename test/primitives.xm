@@ -2,14 +2,130 @@ system = Module("system"
 print = system.out.write_line
 assert = @(x) x || throw Throwable("Assertion failed."
 
-print("!true = " + (!true)
-assert(!true == false
+print("!false = " + !false
+assert(!false === true
+print("!true = " + !true
+assert(!true === false
+print("false & false = " + (false & false)
+assert((false & false) === false
+print("true & false = " + (true & false)
+assert((true & false) === false
+print("false & true = " + (false & true)
+assert((false & true) === false
 print("true & true = " + (true & true)
-assert(true & true == true
+assert((true & true) === true
+print("false | false = " + (false | false)
+assert((false | false) === false
+print("true | false = " + (true | false)
+assert((true | false) === true
+print("false | true = " + (false | true)
+assert((false | true) === true
 print("true | true = " + (true | true)
-assert(true | true == true
+assert((true | true) === true
+print("false ^ false = " + (false ^ false)
+assert((false ^ false) === false
+print("true ^ false = " + (true ^ false)
+assert((true ^ false) === true
+print("false ^ true = " + (false ^ true)
+assert((false ^ true) === true
 print("true ^ true = " + (true ^ true)
-assert(true ^ true == false
+assert((true ^ true) === false
+
+FALSE = false
+TRUE = true
+
+print("!FALSE = " + !FALSE
+assert(!FALSE === true
+print("!TRUE = " + !TRUE
+assert(!TRUE === false
+print("FALSE & false = " + (FALSE & false)
+assert((FALSE & false) === false
+print("TRUE & false = " + (TRUE & false)
+assert((TRUE & false) === false
+print("FALSE & true = " + (FALSE & true)
+assert((FALSE & true) === FALSE
+print("TRUE & true = " + (TRUE & true)
+assert((TRUE & true) === true
+print("FALSE | false = " + (FALSE | false)
+assert((FALSE | false) === false
+print("TRUE | false = " + (TRUE | false)
+assert((TRUE | false) === true
+print("FALSE | true = " + (FALSE | true)
+assert((FALSE | true) === true
+print("TRUE | true = " + (TRUE | true)
+assert((TRUE | true) === true
+print("FALSE ^ false = " + (FALSE ^ false)
+assert((FALSE ^ false) === false
+print("TRUE ^ false = " + (TRUE ^ false)
+assert((TRUE ^ false) === true
+print("FALSE ^ true = " + (FALSE ^ true)
+assert((FALSE ^ true) === true
+print("TRUE ^ true = " + (TRUE ^ true)
+assert((TRUE ^ true) === false
+
+print("!false = " + !false
+assert(!false === TRUE
+print("!true = " + !true
+assert(!true === FALSE
+print("false & FALSE = " + (false & FALSE)
+assert((false & FALSE) === FALSE
+print("true & FALSE = " + (true & FALSE)
+assert((true & FALSE) === FALSE
+print("false & TRUE = " + (false & TRUE)
+assert((false & TRUE) === FALSE
+print("true & TRUE = " + (true & TRUE)
+assert((true & TRUE) === TRUE
+print("false | FALSE = " + (false | FALSE)
+assert((false | FALSE) === FALSE
+print("true | FALSE = " + (true | FALSE)
+assert((true | FALSE) === TRUE
+print("false | TRUE = " + (false | TRUE)
+assert((false | TRUE) === TRUE
+print("true | TRUE = " + (true | TRUE)
+assert((true | TRUE) === TRUE
+print("false ^ FALSE = " + (false ^ FALSE)
+assert((false ^ FALSE) === FALSE
+print("true ^ FALSE = " + (true ^ FALSE)
+assert((true ^ FALSE) === TRUE
+print("false ^ TRUE = " + (false ^ TRUE)
+assert((false ^ TRUE) === TRUE
+print("true ^ TRUE = " + (true ^ TRUE)
+assert((true ^ TRUE) === FALSE
+
+print("!FALSE = " + !FALSE
+assert(!FALSE === TRUE
+print("!TRUE = " + !TRUE
+assert(!TRUE === FALSE
+print("FALSE & FALSE = " + (FALSE & FALSE)
+assert((FALSE & FALSE) === FALSE
+print("TRUE & FALSE = " + (TRUE & FALSE)
+assert((TRUE & FALSE) === FALSE
+print("FALSE & TRUE = " + (FALSE & TRUE)
+assert((FALSE & TRUE) === FALSE
+print("TRUE & TRUE = " + (TRUE & TRUE)
+assert((TRUE & TRUE) === TRUE
+print("FALSE | FALSE = " + (FALSE | FALSE)
+assert((FALSE | FALSE) === FALSE
+print("TRUE | FALSE = " + (TRUE | FALSE)
+assert((TRUE | FALSE) === TRUE
+print("FALSE | TRUE = " + (FALSE | TRUE)
+assert((FALSE | TRUE) === TRUE
+print("TRUE | TRUE = " + (TRUE | TRUE)
+assert((TRUE | TRUE) === TRUE
+print("FALSE ^ FALSE = " + (FALSE ^ FALSE)
+assert((FALSE ^ FALSE) === FALSE
+print("TRUE ^ FALSE = " + (TRUE ^ FALSE)
+assert((TRUE ^ FALSE) === TRUE
+print("FALSE ^ TRUE = " + (FALSE ^ TRUE)
+assert((FALSE ^ TRUE) === TRUE
+print("TRUE ^ TRUE = " + (TRUE ^ TRUE)
+assert((TRUE ^ TRUE) === FALSE
+
+foo = "foo"
+assert((false && foo) === false
+assert((true && foo) === foo
+assert((false || foo) === foo
+assert((true || foo) === true
 
 print("+(0 + 1) = " + +(0 + 1)
 assert(+(0 + 1) == 1
@@ -105,6 +221,5 @@ assert(!Bar(1.0).__equals(2.0)
 
 assert("" === ""
 assert("" + "" === ""
-foo = "a"
 assert(foo + "" === foo
 assert("" + foo === foo

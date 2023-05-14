@@ -92,11 +92,11 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__INTEGER,
 			&&label__FLOAT,
 			&&label__INSTANCE,
-			&&label__RETURN_N,
-			&&label__RETURN_B,
-			&&label__RETURN_I,
-			&&label__RETURN_F,
-			&&label__RETURN_L,
+			&&label__RETURN_NUL,
+			&&label__RETURN_BOOLEAN,
+			&&label__RETURN_INTEGER,
+			&&label__RETURN_FLOAT,
+			&&label__RETURN_INSTANCE,
 			&&label__RETURN_V,
 			&&label__RETURN_T,
 			&&label__CALL,
@@ -493,22 +493,22 @@ size_t t_code::f_loop(t_context* a_context)
 				stack[0] = value;
 			}
 			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(RETURN_N)
+		XEMMAI__CODE__CASE(RETURN_NUL)
 			a_context->f_return(nullptr);
 			return -1;
-		XEMMAI__CODE__CASE(RETURN_B)
+		XEMMAI__CODE__CASE(RETURN_BOOLEAN)
 			a_context->f_return(reinterpret_cast<intptr_t>(*++pc) != 0);
 			return -1;
-		XEMMAI__CODE__CASE(RETURN_I)
+		XEMMAI__CODE__CASE(RETURN_INTEGER)
 			a_context->f_return(reinterpret_cast<intptr_t>(*++pc));
 			return -1;
-		XEMMAI__CODE__CASE(RETURN_F)
+		XEMMAI__CODE__CASE(RETURN_FLOAT)
 			{
 				XEMMAI__CODE__FLOAT(v0, v1)
 				a_context->f_return(v0);
 			}
 			return -1;
-		XEMMAI__CODE__CASE(RETURN_L)
+		XEMMAI__CODE__CASE(RETURN_INSTANCE)
 			a_context->f_return(*static_cast<const t_pvalue*>(*++pc));
 			return -1;
 		XEMMAI__CODE__CASE(RETURN_V)

@@ -188,7 +188,7 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	}
 	(a_emit << a_emit.v_stack << code).f_push();
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_if::f_flow(t_flow& a_flow)
@@ -225,7 +225,7 @@ t_operand t_if::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear
 	a_emit.f_join(v_junction);
 	a_emit.f_target(label1);
 	a_emit.f_merge(v_junction);
-	return t_operand();
+	return {};
 }
 
 void t_while::f_flow(t_flow& a_flow)
@@ -269,7 +269,7 @@ t_operand t_while::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	if (!a_clear) a_emit.f_emit_null();
 	a_emit.f_target(break0);
 	a_emit.f_merge(v_junction_exit);
-	return t_operand();
+	return {};
 }
 
 void t_for::f_flow(t_flow& a_flow)
@@ -326,7 +326,7 @@ t_operand t_for::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	if (!a_clear) a_emit.f_emit_null();
 	a_emit.f_target(break0);
 	a_emit.f_merge(v_junction_exit);
-	return t_operand();
+	return {};
 }
 
 void t_break::f_flow(t_flow& a_flow)
@@ -347,7 +347,7 @@ t_operand t_break::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	if (!a_clear) a_emit.f_push();
 	a_emit.f_join(*a_emit.v_targets->v_break_junction);
 	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_break;
-	return t_operand();
+	return {};
 }
 
 void t_continue::f_flow(t_flow& a_flow)
@@ -359,7 +359,7 @@ t_operand t_continue::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a
 {
 	if (!a_clear) a_emit.f_push();
 	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_continue;
-	return t_operand();
+	return {};
 }
 
 void t_return::f_flow(t_flow& a_flow)
@@ -385,7 +385,7 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	}
 	a_emit.v_stack = stack;
 	if (!a_clear) a_emit.f_push();
-	return t_operand();
+	return {};
 }
 
 void t_try::f_flow(t_flow& a_flow)
@@ -509,7 +509,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	join(return0, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack);
 	if (step) a_emit.f_target(*step);
 	a_emit.v_targets = targets0;
-	return t_operand();
+	return {};
 }
 
 void t_throw::f_flow(t_flow& a_flow)
@@ -525,7 +525,7 @@ t_operand t_throw::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit << e_instruction__THROW << a_emit.v_stack;
 	if (!a_clear) a_emit.f_push();
 	a_emit.f_at(this);
-	return t_operand();
+	return {};
 }
 
 void t_object_get::f_flow(t_flow& a_flow)
@@ -540,7 +540,7 @@ t_operand t_object_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	a_emit << e_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_object_get::f_method(t_emit& a_emit)
@@ -568,7 +568,7 @@ t_operand t_object_get_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_object_put::f_flow(t_flow& a_flow)
@@ -586,7 +586,7 @@ t_operand t_object_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_object_put_indirect::f_flow(t_flow& a_flow)
@@ -606,7 +606,7 @@ t_operand t_object_put_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_object_has::f_flow(t_flow& a_flow)
@@ -621,7 +621,7 @@ t_operand t_object_has::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	a_emit << e_instruction__OBJECT_HAS << a_emit.v_stack - 1 << v_key << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_object_has_indirect::f_flow(t_flow& a_flow)
@@ -639,7 +639,7 @@ t_operand t_object_has_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_symbol_get::f_flow(t_flow& a_flow)
@@ -666,7 +666,7 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 		a_emit.f_push();
 		a_emit.f_at(this);
 		if (a_clear) a_emit.f_pop();
-		return t_operand();
+		return {};
 	}
 	if (v_variable->v_shared) {
 		size_t instruction = e_instruction__SCOPE_GET0 + (v_resolved < 3 ? v_resolved : 3);
@@ -691,7 +691,7 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_scope_put::f_flow(t_flow& a_flow)
@@ -736,7 +736,7 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 			a_emit.f_pop();
 		}
 		a_emit.f_at(this);
-		return t_operand();
+		return {};
 	}
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
@@ -753,12 +753,12 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 	a_emit << v_variable.v_index;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 t_operand t_self::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	if (a_clear) return t_operand();
+	if (a_clear) return {};
 	if (a_tail) a_emit.f_emit_safe_point(this);
 	if (v_outer > 0) {
 		a_emit << static_cast<t_instruction>(e_instruction__SCOPE_GET0 + (v_outer < 3 ? v_outer : 3)) << a_emit.v_stack;
@@ -769,7 +769,7 @@ t_operand t_self::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	}
 	a_emit.f_push();
 	a_emit.f_at(this);
-	return t_operand();
+	return {};
 }
 
 void t_class::f_flow(t_flow& a_flow)
@@ -784,7 +784,7 @@ t_operand t_class::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit << e_instruction__CLASS << a_emit.v_stack - 1;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_super::f_flow(t_flow& a_flow)
@@ -799,21 +799,21 @@ t_operand t_super::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit << e_instruction__SUPER << a_emit.v_stack - 1;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 t_operand t_null::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (a_operand) return nullptr;
-	if (a_clear) return t_operand();
+	if (a_clear) return {};
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
-		(a_emit << e_instruction__RETURN_N).f_push();
+		(a_emit << e_instruction__RETURN_NUL).f_push();
 	} else {
 		a_emit.f_emit_null();
 	}
 	a_emit.f_at(this);
-	return t_operand();
+	return {};
 }
 
 void t_unary::f_flow(t_flow& a_flow)
@@ -875,7 +875,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_binary::f_flow(t_flow& a_flow)
@@ -1090,7 +1090,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_call::f_flow(t_flow& a_flow)
@@ -1131,7 +1131,7 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_get_at::f_flow(t_flow& a_flow)
@@ -1152,7 +1152,7 @@ t_operand t_get_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 void t_get_at::f_bind(t_emit& a_emit)
@@ -1184,7 +1184,7 @@ t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.f_pop().f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
-	return t_operand();
+	return {};
 }
 
 }
@@ -1209,7 +1209,7 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 		<< e_instruction__STACK_GET << v_stack << 0
 		<< e_instruction__SCOPE_PUT0 << v_stack << 0;
 	ast::f_emit_block_without_value(*this, a_scope.v_block);
-	*this << e_instruction__RETURN_N;
+	*this << e_instruction__RETURN_NUL;
 	f_resolve();
 	if (v_safe_points) {
 		t_code::t_variable self;

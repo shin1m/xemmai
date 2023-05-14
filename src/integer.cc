@@ -13,189 +13,129 @@ t_object* t_type_of<intptr_t>::f__string(intptr_t a_self)
 t_pvalue t_type_of<intptr_t>::f__multiply(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self * a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self * a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self * p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self * p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 t_pvalue t_type_of<intptr_t>::f__divide(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self / a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self / a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self / p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self / p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 t_pvalue t_type_of<intptr_t>::f__add(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self + a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self + a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self + p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self + p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 t_pvalue t_type_of<intptr_t>::f__subtract(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self - a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self - a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self - p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self - p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 bool t_type_of<intptr_t>::f__less(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self < a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self < a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self < p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self < p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 bool t_type_of<intptr_t>::f__less_equal(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self <= a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self <= a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self <= p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self <= p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 bool t_type_of<intptr_t>::f__greater(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self > a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self > a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self > p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self > p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 bool t_type_of<intptr_t>::f__greater_equal(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		break;
 	case e_tag__INTEGER:
 		return a_self >= a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self >= a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			if (f_is<intptr_t>(p)) return a_self >= p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	if (f_is<intptr_t>(p)) return a_self >= p->f_as<intptr_t>();
 	f_throw(L"not supported."sv);
 }
 
 bool t_type_of<intptr_t>::f__equals(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		return false;
 	case e_tag__INTEGER:
 		return a_self == a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self == a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			return f_is<intptr_t>(p) && a_self == p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	return f_is<intptr_t>(p) && a_self == p->f_as<intptr_t>();
 }
 
 bool t_type_of<intptr_t>::f__not_equals(intptr_t a_self, const t_pvalue& a_value)
 {
 	switch (a_value.f_tag()) {
-	case e_tag__NULL:
-	case e_tag__BOOLEAN:
-		return true;
 	case e_tag__INTEGER:
 		return a_self != a_value.v_integer;
 	case e_tag__FLOAT:
 		return a_self != a_value.v_float;
-	default:
-		{
-			t_object* p = a_value;
-			return !f_is<intptr_t>(p) || a_self != p->f_as<intptr_t>();
-		}
 	}
+	t_object* p = a_value;
+	return !f_is<intptr_t>(p) || a_self != p->f_as<intptr_t>();
 }
 
 void t_type_of<intptr_t>::f_define()
