@@ -31,7 +31,7 @@ add_executable(xemmai
 	engine.cc
 	main.cc
 	)
-target_compile_features(xemmai PUBLIC cxx_std_17)
+target_compile_features(xemmai PUBLIC cxx_std_20)
 target_include_directories(xemmai PUBLIC
 	"$<BUILD_INTERFACE:${xemmai_SOURCE_DIR}/include>"
 	"$<INSTALL_INTERFACE:include/xemmai-${xemmai_VERSION}>"

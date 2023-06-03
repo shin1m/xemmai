@@ -5,27 +5,6 @@
 namespace xemmai
 {
 
-t_module::t_scoped_lock::t_scoped_lock()
-{
-	auto& thread = f_engine()->v_module__thread;
-	auto current = t_thread::f_current();
-	if (thread == current) return;
-	auto& mutex = f_engine()->v_module__mutex;
-	auto& condition = f_engine()->v_module__condition;
-	std::unique_lock lock(mutex);
-	while (thread) condition.wait(lock);
-	v_own = true;
-	thread = current;
-}
-
-t_module::t_scoped_lock::~t_scoped_lock()
-{
-	if (!v_own) return;
-	std::lock_guard lock(f_engine()->v_module__mutex);
-	f_engine()->v_module__thread = nullptr;
-	f_engine()->v_module__condition.notify_all();
-}
-
 t_object* t_module::f_load_script(std::wstring_view a_path)
 {
 	io::t_FILE stream(std::fopen(portable::f_convert(a_path).c_str(), "r"));
@@ -90,7 +69,7 @@ t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std:
 
 t_object* t_module::f_instantiate(std::wstring_view a_name)
 {
-	t_scoped_lock lock;
+	t_lock_with_safe_region lock(f_engine()->v_module__instantiate__mutex);
 	f_engine()->v_object__reviving__mutex.lock();
 	f_engine()->v_module__mutex.lock();
 	{

@@ -27,7 +27,7 @@ class t_throwable
 	friend struct t_finalizes<t_bears<t_throwable>>;
 	friend struct t_type_of<t_throwable>;
 
-	std::atomic<t_backtrace*> v_backtrace = nullptr;
+	std::atomic<t_backtrace*> v_backtrace;
 	std::wstring v_message;
 
 protected:

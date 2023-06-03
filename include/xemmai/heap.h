@@ -42,10 +42,10 @@ class t_heap
 	template<size_t A_rank, size_t A_size>
 	struct t_of
 	{
-		std::atomic<T*> v_chunks = nullptr;
-		std::atomic_size_t v_grown = 0;
-		std::atomic_size_t v_allocated = 0;
-		std::atomic_size_t v_returned = 0;
+		std::atomic<T*> v_chunks;
+		std::atomic_size_t v_grown;
+		std::atomic_size_t v_allocated;
+		std::atomic_size_t v_returned;
 		size_t v_freed = 0;
 
 		T* f_grow(t_heap& a_heap)

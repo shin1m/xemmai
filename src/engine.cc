@@ -12,13 +12,10 @@ void t_engine::f_collector()
 	if (v_options.v_verbose) std::fprintf(stderr, "collector starting...\n");
 	t_object::v_roots.v_next = t_object::v_roots.v_previous = reinterpret_cast<t_object*>(&t_object::v_roots);
 	while (true) {
-		{
-			std::unique_lock lock(v_collector__mutex);
-			v_collector__running = false;
-			v_collector__done.notify_all();
-			do v_collector__wake.wait(lock); while (!v_collector__running);
-			if (v_collector__quitting) break;
-		}
+		v_collector__running.clear(std::memory_order_relaxed);
+		v_collector__running.notify_all();
+		v_collector__running.wait(false, std::memory_order_acquire);
+		if (v_collector__quitting) break;
 		++v_collector__epoch;
 		{
 			std::lock_guard lock(v_object__reviving__mutex);
@@ -159,9 +156,8 @@ void t_engine::f_collector()
 		v_object__heap.f_flush();
 	}
 	if (v_options.v_verbose) std::fprintf(stderr, "collector quitting...\n");
-	std::lock_guard lock(v_collector__mutex);
-	v_collector__running = false;
-	v_collector__done.notify_one();
+	v_collector__running.clear(std::memory_order_relaxed);
+	v_collector__running.notify_one();
 }
 
 void t_engine::f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock)
@@ -217,6 +213,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 }), v_options(a_options)
 {
 	v_instance = this;
+	v_collector__running.test_and_set(std::memory_order_relaxed);
 #ifdef __unix__
 	if (sem_init(&v_epoch__received, 0, 0) == -1) throw std::system_error(errno, std::generic_category());
 	sigfillset(&v_epoch__not_signal_resume);
@@ -338,12 +335,9 @@ t_engine::~t_engine()
 	f_finalize(internal);
 	v_options.v_collector__threshold = 0;
 	for (size_t i = 0; i < 4; ++i) f_wait();
-	{
-		std::unique_lock lock(v_collector__mutex);
-		v_collector__running = v_collector__quitting = true;
-		v_collector__wake.notify_one();
-		do v_collector__done.wait(lock); while (v_collector__running);
-	}
+	v_collector__quitting = true;
+	if (!v_collector__running.test_and_set(std::memory_order_release)) v_collector__running.notify_one();
+	v_collector__running.wait(true, std::memory_order_relaxed);
 	assert(!v_thread__internals);
 #ifdef __unix__
 	if (sem_destroy(&v_epoch__received) == -1) std::exit(errno);
@@ -361,7 +355,7 @@ t_engine::~t_engine()
 			freed += a_freed;
 		});
 		std::fprintf(stderr, "\t\ttotal: %zu - %zu = %zu, release = %zu, collect = %zu\n", allocated, freed, allocated - freed, v_object__release, v_object__collect);
-		std::fprintf(stderr, "\tcollector: tick = %zu, wait = %zu, epoch = %zu, collect = %zu\n", v_collector__tick, v_collector__wait, v_collector__epoch, v_collector__collect);
+		std::fprintf(stderr, "\tcollector: tick = %zu, wait = %zu, epoch = %zu, collect = %zu\n", v_collector__tick.load(std::memory_order_relaxed), v_collector__wait.load(std::memory_order_relaxed), v_collector__epoch, v_collector__collect);
 		if (allocated != freed) std::terminate();
 	}
 }

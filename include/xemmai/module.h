@@ -11,14 +11,6 @@ namespace xemmai
 
 struct t_module
 {
-	class t_scoped_lock
-	{
-		bool v_own = false;
-
-	public:
-		t_scoped_lock();
-		~t_scoped_lock();
-	};
 	struct t_body
 	{
 		virtual ~t_body() = default;

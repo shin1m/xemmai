@@ -49,13 +49,10 @@ public:
 private:
 	static inline XEMMAI__PORTABLE__THREAD t_engine* v_instance;
 
-	bool v_collector__running = true;
+	std::atomic_flag v_collector__running;
 	bool v_collector__quitting = false;
-	std::mutex v_collector__mutex;
-	std::condition_variable v_collector__wake;
-	std::condition_variable v_collector__done;
-	size_t v_collector__tick = 0;
-	size_t v_collector__wait = 0;
+	std::atomic_size_t v_collector__tick;
+	std::atomic_size_t v_collector__wait;
 	size_t v_collector__epoch = 0;
 	size_t v_collector__collect = 0;
 	t_object* v_cycles = nullptr;
@@ -77,8 +74,7 @@ private:
 	t_type* v_type_type;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
 	std::mutex v_module__mutex;
-	std::condition_variable v_module__condition;
-	t_object* v_module__thread = nullptr;
+	std::recursive_mutex v_module__instantiate__mutex;
 	t_library::t_handle* v_library__handle__finalizing = nullptr;
 	std::map<std::wstring, t_slot, std::less<>> v_symbol__instances;
 	std::mutex v_symbol__instantiate__mutex;
@@ -180,22 +176,15 @@ public:
 	}
 	void f_tick()
 	{
-		if (v_collector__running) return;
-		std::lock_guard lock(v_collector__mutex);
-		++v_collector__tick;
-		if (v_collector__running) return;
-		v_collector__running = true;
-		v_collector__wake.notify_one();
+		if (v_collector__running.test(std::memory_order_relaxed)) return;
+		v_collector__tick.fetch_add(1, std::memory_order_relaxed);
+		if (!v_collector__running.test_and_set(std::memory_order_release)) v_collector__running.notify_one();
 	}
 	void f_wait()
 	{
-		std::unique_lock lock(v_collector__mutex);
-		++v_collector__wait;
-		if (!v_collector__running) {
-			v_collector__running = true;
-			v_collector__wake.notify_one();
-		}
-		do v_collector__done.wait(lock); while (v_collector__running);
+		v_collector__wait.fetch_add(1, std::memory_order_relaxed);
+		if (!v_collector__running.test_and_set(std::memory_order_release)) v_collector__running.notify_one();
+		v_collector__running.wait(true, std::memory_order_relaxed);
 	}
 	t_object* f_module_global() const
 	{
