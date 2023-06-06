@@ -140,8 +140,7 @@ private:
 		f_debug_wait_and_leave(a_lock);
 	}
 	void f_debug_safe_point(std::unique_lock<std::mutex>& a_lock);
-	template<typename T>
-	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_do);
+	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock, auto a_do);
 	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock);
 	void f_debug_script_loaded(t_debug_script& a_debug);
 	void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
@@ -200,8 +199,7 @@ public:
 	}
 	t_object* f_fork(const t_pvalue& a_callable, size_t a_stack);
 	intptr_t f_run(t_debugger* a_debugger);
-	template<typename T>
-	void f_threads(T a_callback)
+	void f_threads(auto a_callback)
 	{
 		for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done == 0) a_callback(p->v_thread);
 	}
@@ -222,8 +220,7 @@ public:
 	void f_debug_continue(t_thread* a_stepping = nullptr);
 };
 
-template<typename T>
-void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, T a_do)
+void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, auto a_do)
 {
 	while (v_debug__stopping) f_debug_enter_leave(a_lock);
 	++v_debug__safe;
@@ -354,24 +351,12 @@ inline void t_thread::t_internal::f_epoch_resume()
 #endif
 }
 
-inline void f__new_value(t_svalue* a_p)
-{
-}
-
-template<typename T_x, typename... T_xs>
-inline void f__new_value(t_svalue* a_p, T_x&& a_x, T_xs&&... a_xs)
-{
-	new(a_p) t_svalue(std::forward<T_x>(a_x));
-	f__new_value(++a_p, std::forward<T_xs>(a_xs)...);
-}
-
-template<typename... T_xs>
-inline t_object* f_new_value(t_type* a_type, T_xs&&... a_xs)
+inline t_object* f_new_value(t_type* a_type, auto&&... a_xs)
 {
 	assert(a_type->v_fields_offset == t_object::f_fields_offset(0));
 	assert(a_type->v_instance_fields == sizeof...(a_xs));
 	auto p = f_engine()->f_allocate(sizeof(t_svalue) * sizeof...(a_xs));
-	f__new_value(p->f_fields(0), std::forward<T_xs>(a_xs)...);
+	f__construct(p->f_fields(0), std::forward<decltype(a_xs)>(a_xs)...);
 	p->f_be(a_type);
 	return p;
 }

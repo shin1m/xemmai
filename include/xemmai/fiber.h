@@ -94,8 +94,8 @@ struct t_fiber
 
 	static t_object* f_current();
 	static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
-	template<typename T_context, typename T_main>
-	static intptr_t f_main(T_main a_main);
+	template<typename T_context>
+	static intptr_t f_main(auto a_main);
 	template<typename T_context>
 	static void f_run();
 
@@ -162,10 +162,9 @@ struct t_context
 		std::fill(v_base + v_lambda->f_as<t_lambda>().v_arguments, v_base + v_lambda->f_as<t_lambda>().v_privates, 0);
 #endif
 	}
-	template<typename T>
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(T&& a_value)
+	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(auto&& a_value)
 	{
-		v_base[-2] = std::forward<T>(a_value);
+		v_base[-2] = std::forward<decltype(a_value)>(a_value);
 		f_stack__(v_previous);
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_tail(t_pvalue* a_stack, size_t a_n)
@@ -221,10 +220,9 @@ public:
 		v_p = f_stack();
 		f_stack__(v_p + a_n);
 	}
-	template<typename T_x, typename... T>
-	t_scoped_stack(size_t a_n, T_x&& a_x, T&&... a_xs) : t_scoped_stack(a_n, std::forward<T>(a_xs)...)
+	t_scoped_stack(size_t a_n, auto&& a_x, auto&&... a_xs) : t_scoped_stack(a_n, std::forward<decltype(a_xs)>(a_xs)...)
 	{
-		v_p[a_n - sizeof...(a_xs) - 1] = std::forward<T_x>(a_x);
+		v_p[a_n - sizeof...(a_xs) - 1] = std::forward<decltype(a_x)>(a_x);
 	}
 	~t_scoped_stack()
 	{
@@ -237,20 +235,18 @@ public:
 };
 
 template<typename T_tag>
-template<typename... T>
-inline t_pvalue t_value<T_tag>::operator()(T&&... a_arguments) const
+inline t_pvalue t_value<T_tag>::operator()(auto&&... a_arguments) const
 {
-	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<decltype(a_arguments)>(a_arguments)...);
 	stack[1] = nullptr;
 	f_call(stack, sizeof...(a_arguments));
 	return stack[0];
 }
 
 template<typename T_tag>
-template<typename... T>
-inline t_pvalue t_value<T_tag>::f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments) const
+inline t_pvalue t_value<T_tag>::f_invoke(t_object* a_key, size_t& a_index, auto&&... a_arguments) const
 {
-	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<decltype(a_arguments)>(a_arguments)...);
 	stack[1] = nullptr;
 	f_call(a_key, a_index, stack, sizeof...(a_arguments));
 	return stack[0];
@@ -339,19 +335,17 @@ inline t_pvalue t_value<T_tag>::f_complement() const
 	}
 }
 
-template<typename... T>
-inline t_pvalue t_object::f_invoke_class(size_t a_index, T&&... a_arguments)
+inline t_pvalue t_object::f_invoke_class(size_t a_index, auto&&... a_arguments)
 {
-	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<decltype(a_arguments)>(a_arguments)...);
 	stack[1] = nullptr;
 	v_type->f_invoke_class(this, a_index, stack, sizeof...(a_arguments));
 	return stack[0];
 }
 
-template<typename... T>
-inline t_pvalue t_object::f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments)
+inline t_pvalue t_object::f_invoke(t_object* a_key, size_t& a_index, auto&&... a_arguments)
 {
-	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<T>(a_arguments)...);
+	t_scoped_stack stack(sizeof...(a_arguments) + 2, std::forward<decltype(a_arguments)>(a_arguments)...);
 	stack[1] = nullptr;
 	f_call(a_key, a_index, stack, sizeof...(a_arguments));
 	return stack[0];

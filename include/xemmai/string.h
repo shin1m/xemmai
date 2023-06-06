@@ -28,8 +28,7 @@ public:
 	{
 		return f_instantiate(a_value.data(), a_value.size());
 	}
-	template<typename T>
-	static t_object* f_instantiate(size_t a_n, T a_fill);
+	static t_object* f_instantiate(size_t a_n, auto a_fill);
 
 	size_t f_size() const
 	{
@@ -82,24 +81,22 @@ struct t_fundamental<std::wstring_view>
 template<>
 struct t_type_of<t_string> : t_holds<t_string>
 {
-	template<typename T0>
+	template<typename T>
 	struct t_as
 	{
-		template<typename T1>
-		static T0 f_call(T1&& a_object)
+		static T f_call(auto&& a_object)
 		{
-			return f_object(std::forward<T1>(a_object))->template f_as<t_string>();
+			return f_object(std::forward<decltype(a_object)>(a_object))->template f_as<t_string>();
 		}
 	};
-	template<typename T0>
-	struct t_as<T0*>
+	template<typename T>
+	struct t_as<T*>
 	{
-		static_assert(std::is_same_v<std::decay_t<T0>, t_string>);
+		static_assert(std::is_same_v<std::decay_t<T>, t_string>);
 
-		template<typename T1>
-		static T0* f_call(T1&& a_object)
+		static T* f_call(auto&& a_object)
 		{
-			auto p = f_object(std::forward<T1>(a_object));
+			auto p = f_object(std::forward<decltype(a_object)>(a_object));
 			return p ? &p->template f_as<t_string>() : nullptr;
 		}
 	};
@@ -114,8 +111,7 @@ struct t_type_of<t_string> : t_holds<t_string>
 		return f__construct(a_class, a_value.data(), a_value.size());
 	}
 	static t_object* f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y);
-	template<typename T>
-	static t_pvalue f_transfer(const t_global* a_library, T&& a_value);
+	static t_pvalue f_transfer(const t_global* a_library, auto&& a_value);
 	static t_object* f_from_code(t_global* a_library, intptr_t a_code);
 	static t_object* f_string(const t_pvalue& a_self)
 	{
@@ -159,10 +155,9 @@ struct t_type_of<t_string> : t_holds<t_string>
 template<>
 struct t_type_of<t_string>::t_as<std::wstring_view&&>
 {
-	template<typename T>
-	static std::wstring_view f_call(T&& a_object)
+	static std::wstring_view f_call(auto&& a_object)
 	{
-		return f_object(std::forward<T>(a_object))->template f_as<t_string>();
+		return f_object(std::forward<decltype(a_object)>(a_object))->template f_as<t_string>();
 	}
 };
 

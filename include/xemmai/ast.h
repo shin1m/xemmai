@@ -563,8 +563,7 @@ struct t_emit
 		--v_stack;
 		return *this;
 	}
-	template<typename T>
-	t_emit& operator<<(T a_operand)
+	t_emit& operator<<(auto a_operand)
 	{
 		v_code->v_instructions.push_back(reinterpret_cast<void*>(a_operand));
 		return *this;

@@ -15,10 +15,9 @@ struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path>>
 {
 	using t_library = t_os;
 
-	template<typename T>
-	static t_object* f_transfer(const t_os* a_library, T&& a_value)
+	static t_object* f_transfer(const t_os* a_library, auto&& a_value)
 	{
-		return xemmai::f_new<portable::t_path>(a_library, std::forward<T>(a_value));
+		return xemmai::f_new<portable::t_path>(a_library, std::forward<decltype(a_value)>(a_value));
 	}
 	static t_pvalue f_construct(t_type* a_class, const t_string& a_value)
 	{

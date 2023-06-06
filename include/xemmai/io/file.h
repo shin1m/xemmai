@@ -39,8 +39,7 @@ class t_file : public t_sharable, public t_FILE
 	bool v_own = false;
 
 public:
-	template<typename... T_an>
-	static t_object* f_instantiate(T_an&&... a_an);
+	static t_object* f_instantiate(auto&&... a_xs);
 
 	using t_FILE::t_FILE;
 	t_file(std::wstring_view a_path, std::wstring_view a_mode);

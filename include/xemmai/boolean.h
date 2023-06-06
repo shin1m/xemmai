@@ -9,22 +9,20 @@ namespace xemmai
 template<>
 struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 {
-	template<typename T0>
+	template<typename T>
 	struct t_as
 	{
-		template<typename T1>
-		static bool f_call(T1&& a_object)
+		static bool f_call(auto&& a_object)
 		{
 			return a_object.f_boolean();
 		}
 	};
-	template<typename T0>
+	template<typename T>
 	struct t_is
 	{
-		template<typename T1>
-		static bool f_call(T1&& a_object)
+		static bool f_call(auto&& a_object)
 		{
-			return reinterpret_cast<uintptr_t>(f_object(std::forward<T1>(a_object))) == e_tag__BOOLEAN;
+			return reinterpret_cast<uintptr_t>(f_object(std::forward<decltype(a_object)>(a_object))) == e_tag__BOOLEAN;
 		}
 	};
 

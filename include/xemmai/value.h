@@ -76,8 +76,7 @@ protected:
 		t_object* volatile* v_tail{v_objects + V_SIZE - 1};
 
 		void f_next() noexcept;
-		template<typename T>
-		void f__flush(t_object* volatile* a_epoch, T a_do)
+		void f__flush(t_object* volatile* a_epoch, auto a_do)
 		{
 			auto end = v_objects + V_SIZE - 1;
 			if (a_epoch > v_objects)
@@ -250,8 +249,7 @@ class t_value : public T_tag
 		double v_float;
 	};
 
-	template<typename T>
-	void f_copy(const t_value<T>& a_value)
+	void f_copy(const auto& a_value)
 	{
 		if (sizeof(double) > sizeof(intptr_t))
 			v_float = a_value.v_float;
@@ -348,10 +346,8 @@ public:
 	}
 	void f_call(t_value<t_pointer>* a_stack, size_t a_n) const;
 	void f_call(t_object* a_key, size_t& a_index, t_value<t_pointer>* a_stack, size_t a_n) const;
-	template<typename... T>
-	t_value<t_pointer> operator()(T&&... a_arguments) const;
-	template<typename... T>
-	t_value<t_pointer> f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments) const;
+	t_value<t_pointer> operator()(auto&&... a_arguments) const;
+	t_value<t_pointer> f_invoke(t_object* a_key, size_t& a_index, auto&&... a_arguments) const;
 	t_value<t_pointer> f_string() const;
 	t_value<t_pointer> f_hash() const;
 	t_value<t_pointer> f_get_at(const t_value<t_pointer>& a_index) const;

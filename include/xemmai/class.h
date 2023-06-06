@@ -1,7 +1,7 @@
 #ifndef XEMMAI__CLASS_H
 #define XEMMAI__CLASS_H
 
-#include "object.h"
+#include "sharable.h"
 
 namespace xemmai
 {
@@ -29,8 +29,7 @@ using t_class = t_type_of<t_type>;
 
 struct t_builder : t_owned
 {
-	template<typename T>
-	static void f_do(t_fields& a_fields, T a_do);
+	static void f_do(t_fields& a_fields, auto a_do);
 
 	t_fields* v_fields;
 };
@@ -38,8 +37,7 @@ struct t_builder : t_owned
 template<>
 struct t_type_of<t_builder> : t_uninstantiatable<t_finalizes<t_derives<t_builder>>>
 {
-	template<typename... T_an>
-	t_type_of(T_an&&... a_an) : t_base(std::forward<T_an>(a_an)...)
+	t_type_of(auto&&... a_xs) : t_base(std::forward<decltype(a_xs)>(a_xs)...)
 	{
 		v_get = static_cast<t_pvalue (t_type::*)(t_object*, t_object*, size_t&)>(&t_type_of::f_do_get);
 		v_put = f_do_put;

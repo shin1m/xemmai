@@ -31,8 +31,8 @@ struct t_sharable : t_owned
 	}
 	void f_own();
 	void f_share();
-	template<template<typename> typename T_lock, typename T>
-	auto f_owned_or_shared(T a_do)
+	template<template<typename> typename T_lock>
+	auto f_owned_or_shared(auto a_do)
 	{
 		if (f_owned()) return a_do();
 		if (!f_shared()) f_throw(L"owned by another thread."sv);

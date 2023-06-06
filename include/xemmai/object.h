@@ -274,8 +274,7 @@ public:
 	{
 		return v_type->f_has(this, a_key, a_index);
 	}
-	template<typename... T>
-	t_pvalue f_invoke_class(size_t a_index, T&&... a_arguments);
+	t_pvalue f_invoke_class(size_t a_index, auto&&... a_arguments);
 	XEMMAI__PORTABLE__ALWAYS_INLINE size_t f_call_without_loop(t_pvalue* a_stack, size_t a_n)
 	{
 		return v_type->f_call(this, a_stack, a_n);
@@ -284,8 +283,7 @@ public:
 	{
 		v_type->f_invoke(this, a_key, a_index, a_stack, a_n);
 	}
-	template<typename... T>
-	t_pvalue f_invoke(t_object* a_key, size_t& a_index, T&&... a_arguments);
+	t_pvalue f_invoke(t_object* a_key, size_t& a_index, auto&&... a_arguments);
 };
 
 template<typename T_tag>

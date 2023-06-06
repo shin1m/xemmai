@@ -72,11 +72,11 @@ struct t_signature
 	{
 		return A_function(a_library, a_self, std::forward<T_an>(a_n)...);
 	}
-	template<t_pvalue(*A_function)(t_library*, const t_pvalue&, T_an&&...), typename T_a0, typename... T_am, typename... T_ak>
-	static t_pvalue f__call(t_library* a_library, const t_pvalue& a_self, t_pvalue* a_stack, T_ak&&... a_k)
+	template<t_pvalue(*A_function)(t_library*, const t_pvalue&, T_an&&...), typename T_a0, typename... T_am>
+	static t_pvalue f__call(t_library* a_library, const t_pvalue& a_self, t_pvalue* a_stack, auto&&... a_k)
 	{
 		++a_stack;
-		return f__call<A_function, T_am...>(a_library, a_self, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(*a_stack));
+		return f__call<A_function, T_am...>(a_library, a_self, a_stack, std::forward<decltype(a_k)>(a_k)..., f_as<T_a0>(*a_stack));
 	}
 	template<t_pvalue(*A_function)(t_library*, const t_pvalue&, T_an&&...)>
 	static void f_call(t_library* a_library, const t_pvalue& a_self, t_pvalue* a_stack)
@@ -110,11 +110,11 @@ struct t_call_construct<t_pvalue(*)(t_type*, T_an...), A_function>
 	{
 		return A_function(a_class, std::forward<T_an>(a_n)...);
 	}
-	template<typename T_a0, typename... T_am, typename... T_ak>
-	static t_pvalue f__do(t_type* a_class, t_pvalue* a_stack, T_ak&&... a_k)
+	template<typename T_a0, typename... T_am>
+	static t_pvalue f__do(t_type* a_class, t_pvalue* a_stack, auto&&... a_k)
 	{
 		++a_stack;
-		return f__do<T_am...>(a_class, a_stack, std::forward<T_ak>(a_k)..., f_as<T_a0>(*a_stack));
+		return f__do<T_am...>(a_class, a_stack, std::forward<decltype(a_k)>(a_k)..., f_as<T_a0>(*a_stack));
 	}
 	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, size_t a_n)
 	{
@@ -300,10 +300,9 @@ struct t_member
 		using t_self = typename t_call_member<T_library, T_function>::t_self;
 		using t_signature = typename t_call_member<T_library, T_function>::t_signature;
 
-		template<typename... T_an>
-		static t_pvalue f_function(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+		static t_pvalue f_function(t_library* a_library, const t_pvalue& a_self, auto&&... a_xs)
 		{
-			return t_call_member<T_library, T_function>::template f_call<A_function>(a_library, a_self, std::forward<T_an>(a_n)...);
+			return t_call_member<T_library, T_function>::template f_call<A_function>(a_library, a_self, std::forward<decltype(a_xs)>(a_xs)...);
 		}
 		static void f_call(t_library* a_library, t_pvalue* a_stack, size_t a_n)
 		{
@@ -384,10 +383,9 @@ struct t_static
 	{
 		using t_signature = typename t_call_static<T_library, T_function>::t_signature;
 
-		template<typename... T_an>
-		static t_pvalue f_function(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+		static t_pvalue f_function(t_library* a_library, const t_pvalue& a_self, auto&&... a_xs)
 		{
-			return t_call_static<T_library, T_function>::template f_call<A_function>(static_cast<T_library*>(a_library), std::forward<T_an>(a_n)...);
+			return t_call_static<T_library, T_function>::template f_call<A_function>(static_cast<T_library*>(a_library), std::forward<decltype(a_xs)>(a_xs)...);
 		}
 		static void f_call(t_library* a_library, t_pvalue* a_stack, size_t a_n)
 		{
@@ -511,8 +509,7 @@ public:
 		v_fields.v_instance.push_back(a_name);
 		return *this;
 	}
-	template<typename T_value>
-	t_define& operator()(t_object* a_name, T_value a_value)
+	t_define& operator()(t_object* a_name, auto a_value)
 	{
 		v_fields.v_class.emplace_back(a_name, v_library->f_as(a_value));
 		return *this;
@@ -542,10 +539,9 @@ public:
 	{
 		return (*this)(a_name, t_overload<t_static<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T_library>::f_call);
 	}
-	template<typename... T_an>
-	t_define& operator()(std::wstring_view a_name, T_an&&... a_n)
+	t_define& operator()(std::wstring_view a_name, auto&&... a_xs)
 	{
-		return (*this)(t_symbol::f_instantiate(a_name), std::forward<T_an>(a_n)...);
+		return (*this)(t_symbol::f_instantiate(a_name), std::forward<decltype(a_xs)>(a_xs)...);
 	}
 };
 
@@ -559,8 +555,7 @@ struct t_enum_of : t_derivable<t_bears<T, t_type_of<intptr_t>>>
 	{
 		return a_library->template f_type<typename t_fundamental<T>::t_type>()->template f_new<intptr_t>(static_cast<intptr_t>(a_value));
 	}
-	template<typename T_fields>
-	static t_object* f_define(t_library* a_library, T_fields a_fields)
+	static t_object* f_define(t_library* a_library, auto a_fields)
 	{
 		t_define{a_library}.template f_derive<T, intptr_t>();
 		t_define fields(a_library);

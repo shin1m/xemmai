@@ -18,13 +18,12 @@ struct t_fundamental<T, std::enable_if_t<std::conjunction_v<std::is_same<T, std:
 template<>
 struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<intptr_t>>
 {
-	template<typename T0>
+	template<typename T>
 	struct t_as
 	{
-		using t_type = typename t_fundamental<T0>::t_type;
+		using t_type = typename t_fundamental<T>::t_type;
 
-		template<typename T1>
-		static t_type f_call(T1&& a_object)
+		static t_type f_call(auto&& a_object)
 		{
 			return static_cast<t_type>(a_object.f_integer());
 		}
@@ -33,14 +32,13 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 			return static_cast<t_type>(a_object->f_as<intptr_t>());
 		}
 	};
-	template<typename T0>
+	template<typename T>
 	struct t_is
 	{
-		template<typename T1>
-		static bool f_call(T1&& a_object)
+		static bool f_call(auto&& a_object)
 		{
-			auto p = f_object(std::forward<T1>(a_object));
-			if (!std::is_same_v<typename t_fundamental<T0>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T0>::t_type>();
+			auto p = f_object(std::forward<decltype(a_object)>(a_object));
+			if (!std::is_same_v<typename t_fundamental<T>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T>::t_type>();
 			switch (reinterpret_cast<uintptr_t>(p)) {
 			case e_tag__INTEGER:
 				return true;

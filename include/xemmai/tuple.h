@@ -23,8 +23,7 @@ class t_tuple
 	}
 
 public:
-	template<typename T>
-	static t_object* f_instantiate(size_t a_size, T a_construct);
+	static t_object* f_instantiate(size_t a_size, auto a_construct);
 
 	void f_scan(t_scan a_scan)
 	{
@@ -83,24 +82,21 @@ struct t_type_of<t_tuple> : t_holds<t_tuple>
 	static size_t f_do_not_equals(t_object* a_this, t_pvalue* a_stack);
 };
 
-template<size_t A_i>
-inline void f_tuple(t_tuple& a_tuple)
+inline void f__construct(t_svalue* a_p)
 {
 }
 
-template<size_t A_i, typename T_x, typename... T_xs>
-inline void f_tuple(t_tuple& a_tuple, T_x&& a_x, T_xs&&... a_xs)
+inline void f__construct(t_svalue* a_p, auto&& a_x, auto&&... a_xs)
 {
-	new(&a_tuple[A_i]) t_svalue(std::forward<T_x>(a_x));
-	f_tuple<A_i + 1>(a_tuple, std::forward<T_xs>(a_xs)...);
+	new(a_p) t_svalue(std::forward<decltype(a_x)>(a_x));
+	f__construct(++a_p, std::forward<decltype(a_xs)>(a_xs)...);
 }
 
-template<typename... T_xs>
-inline t_object* f_tuple(T_xs&&... a_xs)
+inline t_object* f_tuple(auto&&... a_xs)
 {
-	return t_tuple::f_instantiate(sizeof...(T_xs), [&](auto& tuple)
+	return t_tuple::f_instantiate(sizeof...(a_xs), [&](auto& tuple)
 	{
-		f_tuple<0>(tuple, std::forward<T_xs>(a_xs)...);
+		f__construct(&tuple[0], std::forward<decltype(a_xs)>(a_xs)...);
 	});
 }
 

@@ -404,13 +404,13 @@ XEMMAI__VALUE__BINARY_BITWISE(and, &)
 XEMMAI__VALUE__BINARY_BITWISE(xor, ^)
 XEMMAI__VALUE__BINARY_BITWISE(or, |)
 
-template<typename T, typename... T_an>
-inline t_object* t_type::f_new(T_an&&... a_an)
+template<typename T>
+inline t_object* t_type::f_new(auto&&... a_xs)
 {
 	auto p = f_engine()->f_allocate(t_object::f_align_for_fields(sizeof(T)) + sizeof(t_svalue) * v_instance_fields);
 	std::uninitialized_default_construct_n(p->f_fields(sizeof(T)), v_instance_fields);
 	try {
-		new(p->f_data()) T(std::forward<T_an>(a_an)...);
+		new(p->f_data()) T(std::forward<decltype(a_xs)>(a_xs)...);
 		p->f_be(this);
 		return p;
 	} catch (...) {
@@ -436,14 +436,13 @@ inline t_pvalue t_type::f_get(const t_pvalue& a_this, t_object* a_key, size_t& a
 	return f__get(a_this, a_key, a_index);
 }
 
-template<typename T>
-inline void t_type::f_bind_class(T&& a_this, size_t a_index, t_pvalue* a_stack)
+inline void t_type::f_bind_class(auto&& a_this, size_t a_index, t_pvalue* a_stack)
 {
 	auto& field = f_fields()[a_index].second;
 	t_object* p = field;
 	if (f_is_bindable(p)) {
 		a_stack[0] = p;
-		a_stack[1] = std::forward<T>(a_this);
+		a_stack[1] = std::forward<decltype(a_this)>(a_this);
 	} else {
 		a_stack[0] = field;
 		a_stack[1] = nullptr;
@@ -475,11 +474,10 @@ inline void t_type::f_put(t_object* a_this, t_object* a_key, size_t& a_index, co
 		f__put(a_this, a_key, a_index, a_value);
 }
 
-template<typename T>
-inline void t_type::f_invoke_class(T&& a_this, size_t a_index, t_pvalue* a_stack, size_t a_n)
+inline void t_type::f_invoke_class(auto&& a_this, size_t a_index, t_pvalue* a_stack, size_t a_n)
 {
 	auto p = f_fields()[a_index].second.f_object_or_throw();
-	if (p->f_type()->v_bindable) a_stack[1] = std::forward<T>(a_this);
+	if (p->f_type()->v_bindable) a_stack[1] = std::forward<decltype(a_this)>(a_this);
 	size_t n = p->f_call_without_loop(a_stack, a_n);
 	if (n != size_t(-1)) f_loop(a_stack, n);
 }
@@ -498,8 +496,7 @@ inline void t_type::f_invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_
 	}
 }
 
-template<typename T>
-void t_builder::f_do(t_fields& a_fields, T a_do)
+void t_builder::f_do(t_fields& a_fields, auto a_do)
 {
 	auto builder = f_new<t_builder>(f_global());
 	builder->f_as<t_builder>().v_fields = &a_fields;
@@ -512,14 +509,13 @@ void t_builder::f_do(t_fields& a_fields, T a_do)
 	}
 }
 
-template<typename T_library, typename... T_an>
-inline t_object* f_new(t_library::t_handle* a_handle, T_an&&... a_an)
+template<typename T_library>
+inline t_object* f_new(t_library::t_handle* a_handle, auto&&... a_xs)
 {
-	return f_global()->f_type<t_module::t_body>()->f_new<T_library>(a_handle, std::forward<T_an>(a_an)...);
+	return f_global()->f_type<t_module::t_body>()->f_new<T_library>(a_handle, std::forward<decltype(a_xs)>(a_xs)...);
 }
 
-template<typename T>
-inline t_object* f_string_or_null(const T& a_value)
+inline t_object* f_string_or_null(const auto& a_value)
 {
 	try {
 		auto p = a_value.f_string();
@@ -529,8 +525,8 @@ inline t_object* f_string_or_null(const T& a_value)
 	return nullptr;
 }
 
-template<typename T_context, typename T_main>
-intptr_t t_fiber::f_main(T_main a_main)
+template<typename T_context>
+intptr_t t_fiber::f_main(auto a_main)
 {
 	auto& fiber = t_thread::v_current->v_thread->v_fiber->f_as<t_fiber>();
 	intptr_t n = -1;
@@ -581,8 +577,7 @@ intptr_t t_fiber::f_main(T_main a_main)
 	return n;
 }
 
-template<typename T>
-inline t_object* t_tuple::f_instantiate(size_t a_size, T a_construct)
+inline t_object* t_tuple::f_instantiate(size_t a_size, auto a_construct)
 {
 	auto p = f_engine()->f_allocate(sizeof(t_tuple) + sizeof(t_svalue) * a_size);
 	a_construct(*new(p->f_data()) t_tuple(a_size));
@@ -614,8 +609,7 @@ inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 	return t_code::f_loop(context);
 }
 
-template<typename T>
-t_object* t_string::f_instantiate(size_t a_n, T a_fill)
+t_object* t_string::f_instantiate(size_t a_n, auto a_fill)
 {
 	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
 	auto s = new(object->f_data()) t_string(0);
@@ -643,10 +637,9 @@ inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, const t_stri
 	return object;
 }
 
-template<typename T>
-inline t_pvalue t_type_of<t_string>::f_transfer(const t_global* a_library, T&& a_value)
+inline t_pvalue t_type_of<t_string>::f_transfer(const t_global* a_library, auto&& a_value)
 {
-	return a_value.empty() ? a_library->f_string_empty() : f__construct(a_library->f_type<t_string>(), std::forward<T>(a_value));
+	return a_value.empty() ? a_library->f_string_empty() : f__construct(a_library->f_type<t_string>(), std::forward<decltype(a_value)>(a_value));
 }
 
 inline t_object* t_type_of<t_string>::f_from_code(t_global* a_library, intptr_t a_code)

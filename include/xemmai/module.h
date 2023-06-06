@@ -113,10 +113,10 @@ struct t_type_of<t_module> : t_holds<t_module>
 	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 };
 
-template<typename T_type, typename T_library, typename... T_an>
-inline t_object* f_new(T_library* a_library, T_an&&... a_an)
+template<typename T_type>
+inline t_object* f_new(auto* a_library, auto&&... a_xs)
 {
-	return a_library->template f_type<T_type>()->template f_new<T_type>(std::forward<T_an>(a_an)...);
+	return a_library->template f_type<T_type>()->template f_new<T_type>(std::forward<decltype(a_xs)>(a_xs)...);
 }
 
 }
@@ -139,11 +139,10 @@ inline t_object* f_new(T_library* a_library, T_an&&... a_an)
 		using t = t_type_of<typename t_fundamental<T>::t_type>;\
 		return const_cast<typename t::t_library*>(f_library<typename t::t_library>())->template f_type_slot<T>();\
 	}\
-	template<typename T>\
-	t_pvalue f_as(T&& a_value) const\
+	t_pvalue f_as(auto&& a_value) const\
 	{\
-		using t = t_type_of<typename t_fundamental<T>::t_type>;\
-		return t::f_transfer(f_library<typename t::t_library>(), std::forward<T>(a_value));\
+		using t = t_type_of<typename t_fundamental<decltype(a_value)>::t_type>;\
+		return t::f_transfer(f_library<typename t::t_library>(), std::forward<decltype(a_value)>(a_value));\
 	}
 
 #define XEMMAI__LIBRARY__BASE(a_library, T_base, a_base)\

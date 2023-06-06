@@ -13,30 +13,27 @@ struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 {
 	using t_library = t_callback_library;
 
-	template<typename T0>
+	template<typename T>
 	struct t_as
 	{
-		template<typename T1>
-		static T0 f_call(T1&& a_object)
+		static T f_call(auto&& a_object)
 		{
-			return *f_object(std::forward<T1>(a_object))->template f_as<t_client*>();
+			return *f_object(std::forward<decltype(a_object)>(a_object))->template f_as<t_client*>();
 		}
 	};
-	template<typename T0>
-	struct t_as<T0*>
+	template<typename T>
+	struct t_as<T*>
 	{
-		template<typename T1>
-		static T0* f_call(T1&& a_object)
+		static T* f_call(auto&& a_object)
 		{
-			auto p = f_object(std::forward<T1>(a_object));
+			auto p = f_object(std::forward<decltype(a_object)>(a_object));
 			return p ? p->template f_as<t_client*>() : nullptr;
 		}
 	};
 
 	static void f_define(t_callback_library* a_library);
 
-	template<typename... T_an>
-	t_type_of(T_an&&... a_an) : t_base(std::forward<T_an>(a_an)...)
+	t_type_of(auto&&... a_xs) : t_base(std::forward<decltype(a_xs)>(a_xs)...)
 	{
 		f_finalize = f_do_finalize;
 	}

@@ -157,8 +157,7 @@ public:
 	{
 		return v_of0.f_live() + v_of1.f_live() + v_of2.f_live() + v_of3.f_live() + v_of4.f_live() + v_allocated - v_freed;
 	}
-	template<typename T_each>
-	void f_statistics(T_each a_each) const
+	void f_statistics(auto a_each) const
 	{
 		a_each(size_t(0), v_of0.v_grown.load(std::memory_order_relaxed), v_of0.v_allocated.load(std::memory_order_relaxed), v_of0.v_returned.load(std::memory_order_relaxed));
 		a_each(size_t(1), v_of1.v_grown.load(std::memory_order_relaxed), v_of1.v_allocated.load(std::memory_order_relaxed), v_of1.v_returned.load(std::memory_order_relaxed));

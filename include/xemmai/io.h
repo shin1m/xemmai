@@ -57,10 +57,9 @@ XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_file, file)
 XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_reader, reader)
 XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_writer, writer)
 
-template<typename... T_an>
-inline t_object* io::t_file::f_instantiate(T_an&&... a_an)
+inline t_object* io::t_file::f_instantiate(auto&&... a_xs)
 {
-	return f_new<t_file>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), std::forward<T_an>(a_an)...);
+	return f_new<t_file>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), std::forward<decltype(a_xs)>(a_xs)...);
 }
 
 }
