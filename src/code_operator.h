@@ -84,7 +84,7 @@
 #endif
 #define XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, a_type, a_cast, a_field)\
 					if (a1.f_tag() >= e_tag__OBJECT) {\
-						if (a1->f_type()->template f_derives<a_type>()) {\
+						if (a1->f_type()->f_derives<a_type>()) {\
 							XEMMAI__CODE__PRIMITIVE_CALL(a_cast(a0 a_field) a_operator a1->f_as<a_type>())\
 						} else {\
 							goto label__THROW_NOT_SUPPORTED;\
@@ -94,7 +94,7 @@
 					}
 #define XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, a_type, a_field)\
 					if (a1.f_tag() >= e_tag__OBJECT) {\
-						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a1->f_type()->template f_derives<a_type>() && a0 a_field == a1->f_as<a_type>()))\
+						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a1->f_type()->f_derives<a_type>() && a0 a_field == a1->f_as<a_type>()))\
 					} else {\
 						XEMMAI__CODE__PRIMITIVE_CALL(a_operator(false))\
 					}

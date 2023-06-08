@@ -14,20 +14,20 @@ struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 	using t_library = t_callback_library;
 
 	template<typename T>
-	struct t_as
+	struct t_cast : t_type::t_cast<T>
 	{
-		static T f_call(auto&& a_object)
+		static T f_as(auto&& a_object)
 		{
-			return *f_object(std::forward<decltype(a_object)>(a_object))->template f_as<t_client*>();
+			return *static_cast<t_object*>(a_object)->f_as<t_client*>();
 		}
 	};
 	template<typename T>
-	struct t_as<T*>
+	struct t_cast<T*> : t_type::t_cast<T*>
 	{
-		static T* f_call(auto&& a_object)
+		static T* f_as(auto&& a_object)
 		{
-			auto p = f_object(std::forward<decltype(a_object)>(a_object));
-			return p ? p->template f_as<t_client*>() : nullptr;
+			auto p = static_cast<t_object*>(a_object);
+			return p ? p->f_as<t_client*>() : nullptr;
 		}
 	};
 

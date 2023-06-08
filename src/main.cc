@@ -169,7 +169,7 @@ class t_debugger : public xemmai::t_debugger
 	template<typename T>
 	bool f_is(t_object* a_object)
 	{
-		return a_object->f_type()->template f_derives<T>();
+		return a_object->f_type()->f_derives<T>();
 	}
 	template<typename T>
 	void f_print_sequence(t_object* a_value, size_t a_depth)

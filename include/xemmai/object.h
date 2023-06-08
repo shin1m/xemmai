@@ -310,9 +310,50 @@ inline bool t_value<T_tag>::f_has(t_object* a_key, size_t& a_index) const
 template<typename T>
 inline void t_slot_of<T>::f_construct(t_object* a_value)
 {
-	v_p = &a_value->template f_as<T>();
+	v_p = &a_value->f_as<T>();
 	v_slot = a_value;
 }
+
+template<typename T>
+struct t_type::t_cast
+{
+	static T f_as(auto&& a_object)
+	{
+		return static_cast<t_object*>(a_object)->f_as<typename t_fundamental<T>::t_type>();
+	}
+	static bool f_is(auto&& a_object)
+	{
+		if constexpr (std::is_same_v<typename t_fundamental<T>::t_type, t_object>) return true;
+		auto p = static_cast<t_object*>(a_object);
+		return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+	}
+};
+
+template<typename T>
+struct t_type::t_cast<T*>
+{
+	static_assert(!std::is_same_v<T, t_object>);
+
+	static T* f_as(auto&& a_object)
+	{
+		auto p = static_cast<t_object*>(a_object);
+		return p ? &p->f_as<T>() : nullptr;
+	}
+	static bool f_is(auto&& a_object)
+	{
+		auto p = static_cast<t_object*>(a_object);
+		switch (reinterpret_cast<uintptr_t>(p)) {
+		case e_tag__NULL:
+			return true;
+		case e_tag__BOOLEAN:
+		case e_tag__INTEGER:
+		case e_tag__FLOAT:
+			return false;
+		default:
+			return p->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+		}
+	}
+};
 
 inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(V_ids.size() - 1), v_ids(V_ids.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
 {

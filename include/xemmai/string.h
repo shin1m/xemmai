@@ -81,26 +81,6 @@ struct t_fundamental<std::wstring_view>
 template<>
 struct t_type_of<t_string> : t_holds<t_string>
 {
-	template<typename T>
-	struct t_as
-	{
-		static T f_call(auto&& a_object)
-		{
-			return f_object(std::forward<decltype(a_object)>(a_object))->template f_as<t_string>();
-		}
-	};
-	template<typename T>
-	struct t_as<T*>
-	{
-		static_assert(std::is_same_v<std::decay_t<T>, t_string>);
-
-		static T* f_call(auto&& a_object)
-		{
-			auto p = f_object(std::forward<decltype(a_object)>(a_object));
-			return p ? &p->template f_as<t_string>() : nullptr;
-		}
-	};
-
 	static t_object* f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n);
 	static t_pvalue f__construct(t_type* a_class, const t_string& a_value)
 	{
@@ -153,12 +133,8 @@ struct t_type_of<t_string> : t_holds<t_string>
 };
 
 template<>
-struct t_type_of<t_string>::t_as<std::wstring_view&&>
+struct t_type::t_cast<std::wstring_view&&> : t_type::t_cast<std::wstring_view>
 {
-	static std::wstring_view f_call(auto&& a_object)
-	{
-		return f_object(std::forward<decltype(a_object)>(a_object))->template f_as<t_string>();
-	}
 };
 
 }

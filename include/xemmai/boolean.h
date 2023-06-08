@@ -10,19 +10,15 @@ template<>
 struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 {
 	template<typename T>
-	struct t_as
+	struct t_cast
 	{
-		static bool f_call(auto&& a_object)
+		static bool f_as(auto&& a_object)
 		{
 			return a_object.f_boolean();
 		}
-	};
-	template<typename T>
-	struct t_is
-	{
-		static bool f_call(auto&& a_object)
+		static bool f_is(auto&& a_object)
 		{
-			return reinterpret_cast<uintptr_t>(f_object(std::forward<decltype(a_object)>(a_object))) == e_tag__BOOLEAN;
+			return reinterpret_cast<uintptr_t>(static_cast<t_object*>(a_object)) == e_tag__BOOLEAN;
 		}
 	};
 

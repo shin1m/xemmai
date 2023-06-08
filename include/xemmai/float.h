@@ -17,34 +17,30 @@ template<>
 struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<double>>
 {
 	template<typename T>
-	struct t_as
+	struct t_cast
 	{
 		using t_type = typename t_fundamental<T>::t_type;
 
-		static t_type f_call(auto&& a_object)
+		static t_type f_as(auto&& a_object)
 		{
-			auto p = f_object(std::forward<decltype(a_object)>(a_object));
+			auto p = static_cast<t_object*>(a_object);
 			switch (reinterpret_cast<uintptr_t>(p)) {
 			case e_tag__INTEGER:
 				return a_object.f_integer();
 			case e_tag__FLOAT:
 				return a_object.f_float();
 			default:
-				return p->template f_as<double>();
+				return p->f_as<double>();
 			}
 		}
-		static t_type f_call(t_object* a_object)
+		static t_type f_as(t_object* a_object)
 		{
 			return a_object->f_as<double>();
 		}
-	};
-	template<typename T>
-	struct t_is
-	{
-		static bool f_call(auto&& a_object)
+		static bool f_is(auto&& a_object)
 		{
-			auto p = f_object(std::forward<decltype(a_object)>(a_object));
-			if (!std::is_same_v<typename t_fundamental<T>::t_type, double>) return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T>::t_type>();
+			auto p = static_cast<t_object*>(a_object);
+			if (!std::is_same_v<typename t_fundamental<T>::t_type, double>) return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->f_derives<typename t_fundamental<T>::t_type>();
 			switch (reinterpret_cast<uintptr_t>(p)) {
 			case e_tag__NULL:
 			case e_tag__BOOLEAN:
@@ -53,7 +49,7 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 			case e_tag__FLOAT:
 				return true;
 			default:
-				return p->f_type()->template f_derives<double>();
+				return p->f_type()->f_derives<double>();
 			}
 		}
 	};

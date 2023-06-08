@@ -50,8 +50,7 @@ inline t_type_id f_type_id()
 #define XEMMAI__TYPE__IDS_MODIFIER inline const
 #else
 using t_type_id = const void*;
-template<typename T>
-const void* v__type_id;
+template<typename> const void* v__type_id;
 template<typename T>
 constexpr t_type_id f_type_id()
 {
@@ -93,65 +92,17 @@ struct t_fields
 template<>
 struct t_type_of<t_object>
 {
-	static t_object* f_object(auto&& a_value)
-	{
-		return a_value;
-	}
-	template<typename T>
-	struct t_as
-	{
-		static T f_call(auto&& a_object)
-		{
-			return f_object(std::forward<decltype(a_object)>(a_object))->template f_as<typename t_fundamental<T>::t_type>();
-		}
-	};
-	template<typename T>
-	struct t_as<T*>
-	{
-		static_assert(!std::is_same_v<T, t_object>);
-
-		static T* f_call(auto&& a_object)
-		{
-			auto p = f_object(std::forward<decltype(a_object)>(a_object));
-			return p ? &p->template f_as<T>() : nullptr;
-		}
-	};
+	template<typename> struct t_cast;
 	template<typename T_tag>
-	struct t_as<const t_value<T_tag>&>
+	struct t_cast<const t_value<T_tag>&>
 	{
-		static const t_value<T_tag>& f_call(auto&& a_object)
+		static const t_value<T_tag>& f_as(auto&& a_object)
 		{
 			return a_object;
 		}
-	};
-	template<typename T>
-	struct t_is
-	{
-		static bool f_call(auto&& a_object)
+		static bool f_is(auto&& a_object)
 		{
-			if (std::is_same_v<typename t_fundamental<T>::t_type, t_object>) return true;
-			auto p = f_object(std::forward<decltype(a_object)>(a_object));
-			return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->template f_derives<typename t_fundamental<T>::t_type>();
-		}
-	};
-	template<typename T>
-	struct t_is<T*>
-	{
-		static_assert(!std::is_same_v<T, t_object>);
-
-		static bool f_call(auto&& a_object)
-		{
-			auto p = f_object(std::forward<decltype(a_object)>(a_object));
-			switch (reinterpret_cast<uintptr_t>(p)) {
-			case e_tag__NULL:
-				return true;
-			case e_tag__BOOLEAN:
-			case e_tag__INTEGER:
-			case e_tag__FLOAT:
-				return false;
-			default:
-				return p->f_type()->template f_derives<typename t_fundamental<T>::t_type>();
-			}
+			return true;
 		}
 	};
 	using t_library = t_global;
@@ -356,13 +307,13 @@ inline bool t_type_of<t_object>::f_derives<t_object>() const
 template<typename T>
 inline decltype(auto) f_as(auto&& a_object)
 {
-	return t_type_of<typename t_fundamental<T>::t_type>::template t_as<T>::f_call(std::forward<decltype(a_object)>(a_object));
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_cast<T>::f_as(std::forward<decltype(a_object)>(a_object));
 }
 
 template<typename T>
 inline bool f_is(auto&& a_object)
 {
-	return t_type_of<typename t_fundamental<T>::t_type>::template t_is<T>::f_call(std::forward<decltype(a_object)>(a_object));
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_cast<T>::f_is(std::forward<decltype(a_object)>(a_object));
 }
 
 XEMMAI__PORTABLE__EXPORT void f_throw_type_error [[noreturn]] (const std::type_info& a_type, const wchar_t* a_name);
