@@ -235,7 +235,9 @@ XEMMAI__LIBRARY__TYPE(t_global, bytes)
 XEMMAI__LIBRARY__TYPE_AS(t_global, t_lexer::t_error, lexer__error)
 XEMMAI__LIBRARY__TYPE_AS(t_global, t_parser::t_error, parser__error)
 
-#ifndef _WIN32
+#ifdef _WIN32
+XEMMAI__PORTABLE__EXPORT t_global* f_global();
+#else
 inline t_global* f_global()
 {
 	return t_global::v_instance;

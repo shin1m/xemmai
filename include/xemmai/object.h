@@ -32,6 +32,9 @@ class t_object
 	friend class t_with_lock_for_write;
 
 	static inline XEMMAI__PORTABLE__THREAD struct
+#ifdef _WIN32
+		t_roots
+#endif
 	{
 		t_object* v_next;
 		t_object* v_previous;
