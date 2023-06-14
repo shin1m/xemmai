@@ -109,6 +109,7 @@ struct t_type_of<t_object>
 
 	static XEMMAI__TYPE__IDS_MODIFIER std::array<t_type_id, 1> V_ids{f_type_id<t_object>()};
 	static constexpr size_t V_native = 0;
+	static constexpr size_t V_fields = 26;
 
 	static t_pvalue f_transfer(auto* a_library, auto&& a_value)
 	{

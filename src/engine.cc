@@ -236,16 +236,16 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 #endif
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	std::thread(&t_engine::f_collector, this).detach();
-	auto type_object = f_allocate_for_type<t_type>(26);
+	auto type_object = f_allocate_for_type<t_type>(t_type::V_fields);
 	auto type = new(type_object->f_data()) t_type;
 	type->v_derive = &t_type::f_do_derive;
-	std::uninitialized_default_construct_n(type->f_fields(), 26);
+	std::uninitialized_default_construct_n(type->f_fields(), t_type::V_fields);
 	auto type_type = f_allocate_for_type<t_class>(0);
 	v_type_type = new(type_type->f_data()) t_class(t_class::V_ids, type);
 	type_object->f_be(v_type_type);
 	type_type->f_be(v_type_type);
 	{
-		auto type_module__body = f_new_type_on_boot<t_module::t_body>(26, type, nullptr);
+		auto type_module__body = f_new_type_on_boot<t_module::t_body>(t_type::V_fields, type, nullptr);
 		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_type, type_module__body);
 		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}

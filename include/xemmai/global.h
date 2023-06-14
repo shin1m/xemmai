@@ -543,7 +543,7 @@ intptr_t t_fiber::f_main(auto a_main)
 			} else {
 				std::fprintf(stderr, "caught: <unprintable>\n");
 			}
-			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/26);
+			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/t_type::V_fields);
 		}
 	} catch (...) {
 		std::fprintf(stderr, "caught: <unexpected>\n");

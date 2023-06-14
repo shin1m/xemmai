@@ -70,8 +70,8 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_type_object->v_module = t_object::f_of(this);
 	v_type_type->v_module = t_object::f_of(this);
 	v_type_module__body->v_module = t_object::f_of(this);
-	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(26, v_type_object, t_object::f_of(this)));
-	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(26, v_type_object, t_object::f_of(this)));
+	v_type_symbol.f_construct(f_engine()->f_new_type_on_boot<t_symbol>(t_type::V_fields, v_type_object, t_object::f_of(this)));
+	v_type_native.f_construct(f_engine()->f_new_type_on_boot<t_native>(t_type::V_fields, v_type_object, t_object::f_of(this)));
 	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
 	v_symbol_call = t_symbol::f_instantiate(L"__call"sv);
 	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
