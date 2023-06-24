@@ -11,6 +11,29 @@ assert(a == 6
 
 a = (Object + @
 	$
+		.f = @(x) x * x
+)(
+assert(a.f(2) == 4
+assert(a
+	.f(2) == 4
+assert(4 ==
+	a
+	.f(2
+
+b = (Object + @
+	$x
+	$__initialize = @ $x = 0
+	$f = @(x)
+		$x = $x + x
+		$
+)(
+assert(b
+	.f(a.f(2
+	.f(1
+	.x == 5
+
+a = (Object + @
+	$
 		.f = @(x)@(y) x + y
 )(
 assert(a.f(1)(2) == 3
