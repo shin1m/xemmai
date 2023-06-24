@@ -35,30 +35,30 @@ class XEMMAI__LOCAL t_parser
 		return v_module.f_slot(t_symbol::f_instantiate(v_lexer.f_value()));
 	}
 	t_code::t_variable& f_variable(ast::t_scope* a_scope, t_object* a_symbol);
-	std::unique_ptr<ast::t_node> f_target(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_action(size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);
-	std::unique_ptr<ast::t_node> f_action(size_t a_indent, ast::t_node* a_target, bool a_assignable)
+	std::unique_ptr<ast::t_node> f_target(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_action(size_t a_depth, size_t a_head, size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_action(size_t a_depth, size_t a_head, size_t a_indent, ast::t_node* a_target, bool a_assignable)
 	{
-		return f_action(a_indent, std::unique_ptr<ast::t_node>(a_target), a_assignable);
+		return f_action(a_depth, a_head, a_indent, std::unique_ptr<ast::t_node>(a_target), a_assignable);
 	}
-	std::unique_ptr<ast::t_node> f_unary(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_multiplicative(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_additive(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_shift(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_relational(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_equality(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_and(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_xor(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_or(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_and_also(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_or_else(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_conditional(bool a_assignable);
-	std::unique_ptr<ast::t_node> f_expression();
-	bool f_expressions(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	void f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
+	std::unique_ptr<ast::t_node> f_unary(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_multiplicative(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_additive(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_shift(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_relational(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_equality(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_and(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_xor(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_or(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_and_also(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_or_else(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_conditional(size_t a_depth, size_t a_head, bool a_assignable);
+	std::unique_ptr<ast::t_node> f_expression(size_t a_depth, size_t a_head);
+	bool f_expressions(size_t a_depth, size_t a_head, size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_expressions(size_t a_depth, size_t a_head, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
 	{
 		while (true) {
-			a_nodes.push_back(f_expression());
+			a_nodes.push_back(f_expression(a_depth, a_head));
 			if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
 			v_lexer.f_next();
 		}
@@ -79,8 +79,8 @@ class XEMMAI__LOCAL t_parser
 			return false;
 		}
 	}
-	void f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	void f_block_or_expression(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_block(size_t a_depth, size_t a_head, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_block_or_expression(size_t a_depth, size_t a_head, size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
 
 public:
 	struct t_error : t_throwable
