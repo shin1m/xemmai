@@ -38,26 +38,26 @@ class XEMMAI__LOCAL t_parser
 		if ((!v_lexer.f_newline() || v_lexer.f_indent() >= a_indent) && v_lexer.f_token() == a_right) v_lexer.f_next();
 	}
 	bool f_has_expression() const;
-	ast::t_node* f_target(bool a_assignable);
-	ast::t_node* f_action(size_t a_indent, ast::t_node* a_target, bool a_assignable);
-	ast::t_node* f_unary(bool a_assignable);
-	ast::t_node* f_multiplicative(bool a_assignable);
-	ast::t_node* f_additive(bool a_assignable);
-	ast::t_node* f_shift(bool a_assignable);
-	ast::t_node* f_relational(bool a_assignable);
-	ast::t_node* f_equality(bool a_assignable);
-	ast::t_node* f_and(bool a_assignable);
-	ast::t_node* f_xor(bool a_assignable);
-	ast::t_node* f_or(bool a_assignable);
-	ast::t_node* f_and_also(bool a_assignable);
-	ast::t_node* f_or_else(bool a_assignable);
-	ast::t_node* f_conditional(bool a_assignable);
-	ast::t_node* f_expression();
-	bool f_argument(size_t a_indent, ast::t_nodes& a_nodes);
-	void f_arguments(size_t a_indent, ast::t_call* a_call);
-	void f_expressions(ast::t_nodes& a_nodes);
-	ast::t_nodes* f_options();
-	ast::t_node* f_body(size_t a_indent);
+	ast::t_node* f_target(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_action(size_t a_depth, size_t a_head, size_t a_indent, ast::t_node* a_target, bool a_assignable);
+	ast::t_node* f_unary(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_multiplicative(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_additive(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_shift(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_relational(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_equality(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_and(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_xor(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_or(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_and_also(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_or_else(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_conditional(size_t a_depth, size_t a_head, bool a_assignable);
+	ast::t_node* f_expression(size_t a_depth, size_t a_head);
+	bool f_argument(size_t a_depth, size_t a_head, size_t a_indent, ast::t_nodes& a_nodes);
+	void f_arguments(size_t a_depth, size_t a_head, size_t a_indent, ast::t_call* a_call);
+	void f_expressions(size_t a_depth, size_t a_head, ast::t_nodes& a_nodes);
+	ast::t_nodes* f_options(size_t a_depth, size_t a_head);
+	ast::t_node* f_body(size_t a_depth, size_t a_head, size_t a_indent);
 
 public:
 	struct t_error : t_throwable
