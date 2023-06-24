@@ -52,7 +52,7 @@ bool t_parser::f_has_expression() const
 	}
 }
 
-ast::t_node* t_parser::f_target(bool a_assignable)
+ast::t_node* t_parser::f_target(size_t a_depth, size_t a_head, bool a_assignable)
 {
 	t_at at = v_lexer.f_at();
 	switch (v_lexer.f_token()) {
@@ -81,7 +81,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 						v_lexer.f_next();
 						auto& variable = f_variable(scope, symbol);
 						if (outer > 0) variable.v_shared = variable.v_varies = true;
-						return v_arena.f_new<ast::t_scope_put>(at, outer, variable, f_expression());
+						return v_arena.f_new<ast::t_scope_put>(at, outer, variable, f_expression(a_depth + 1, a_head));
 					}
 					if (scope) (outer > 0 ? scope->v_unresolveds : scope->v_references).insert(symbol);
 					return v_arena.f_new<ast::t_symbol_get>(at, outer, scope, symbol);
@@ -100,7 +100,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 						if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 							if (!a_assignable) f_throw(L"can not assign to expression."sv);
 							v_lexer.f_next();
-							return v_arena.f_new<ast::t_object_put>(at, target, key, f_expression());
+							return v_arena.f_new<ast::t_object_put>(at, target, key, f_expression(a_depth + 1, a_head));
 						}
 						return v_arena.f_new<ast::t_object_get>(at, target, key);
 					}
@@ -124,7 +124,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = v_arena.f_new<ast::t_call>(at, v_arena.f_new<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))));
-				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) f_arguments(indent, call);
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) f_arguments(a_depth + 1, a_head, indent, call);
 				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				return call;
 			}
@@ -136,7 +136,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto nodes = v_arena.f_new<ast::t_nodes>();
-			if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) while (f_argument(indent, *nodes));
+			if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) while (f_argument(a_depth, a_head, indent, *nodes));
 			f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 			return nodes;
 		}
@@ -155,7 +155,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 							v_lexer.f_next();
 							if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 								v_lexer.f_next();
-								lambda->v_defaults.f_push(f_expression());
+								lambda->v_defaults.f_push(f_expression(a_depth + 1, a_head));
 							} else {
 								if (lambda->v_defaults.v_size > 0) f_throw(L"expecting '='."sv);
 							}
@@ -187,7 +187,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 			bool can_jump = v_can_jump;
 			bool can_return = v_can_return;
 			v_can_return = true;
-			lambda->v_body = f_body(indent);
+			lambda->v_body = f_body(a_depth + 1, a_head, indent);
 			for (auto symbol : lambda->v_unresolveds) {
 				auto i = lambda->v_variables.find(symbol);
 				if (i == lambda->v_variables.end())
@@ -216,7 +216,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto call = v_arena.f_new<ast::t_call>(at, v_arena.f_new<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_list>()))));
-			if (f_any(indent, t_lexer::c_token__RIGHT_BRACKET)) f_arguments(indent, call);
+			if (f_any(indent, t_lexer::c_token__RIGHT_BRACKET)) f_arguments(a_depth + 1, a_head, indent, call);
 			f_close(indent, t_lexer::c_token__RIGHT_BRACKET);
 			return call;
 		}
@@ -227,10 +227,10 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 			auto call = v_arena.f_new<ast::t_call>(at, v_arena.f_new<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_map>()))));
 			if (f_any(indent, t_lexer::c_token__RIGHT_BRACE))
 				while (true) {
-					call->v_arguments.f_push(f_expression());
+					call->v_arguments.f_push(f_expression(a_depth + 1, a_head));
 					if (!f_single_colon()) f_throw(L"expecting ':'."sv);
 					v_lexer.f_next();
-					call->v_arguments.f_push(f_expression());
+					call->v_arguments.f_push(f_expression(a_depth + 1, a_head));
 					if (v_lexer.f_token() == t_lexer::c_token__COMMA) {
 						if (v_lexer.f_newline() && v_lexer.f_indent() < indent) break;
 						v_lexer.f_next();
@@ -273,7 +273,7 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 			if (!v_can_jump) f_throw(L"expecting inside loop."sv);
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			return v_arena.f_new<ast::t_break>(f_has_expression() ? f_expression() : v_arena.f_new<ast::t_null>(at));
+			return v_arena.f_new<ast::t_break>(f_has_expression() ? f_expression(a_depth, a_head) : v_arena.f_new<ast::t_null>(at));
 		}
 	case t_lexer::c_token__CONTINUE:
 		{
@@ -287,22 +287,32 @@ ast::t_node* t_parser::f_target(bool a_assignable)
 			if (!v_can_return) f_throw(L"expecting within lambda."sv);
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			return v_arena.f_new<ast::t_return>(f_has_expression() ? f_expression() : v_arena.f_new<ast::t_null>(at));
+			return v_arena.f_new<ast::t_return>(f_has_expression() ? f_expression(a_depth, a_head) : v_arena.f_new<ast::t_null>(at));
 		}
 	case t_lexer::c_token__THROW:
 		{
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			return v_arena.f_new<ast::t_throw>(at, f_expression());
+			return v_arena.f_new<ast::t_throw>(at, f_expression(a_depth, a_head));
 		}
 	default:
 		f_throw(L"unexpected token."sv);
 	}
 }
 
-ast::t_node* t_parser::f_action(size_t a_indent, ast::t_node* a_target, bool a_assignable)
+ast::t_node* t_parser::f_action(size_t a_depth, size_t a_head, size_t a_indent, ast::t_node* a_target, bool a_assignable)
 {
-	while (!v_lexer.f_newline() || v_lexer.f_indent() > a_indent && v_lexer.f_token() == t_lexer::c_token__DOT) {
+	while (true) {
+		if (v_lexer.f_newline()) {
+			if (v_lexer.f_token() != t_lexer::c_token__DOT) break;
+			size_t indent = v_lexer.f_indent();
+			if (indent < a_indent) break;
+			if (a_depth > a_head) {
+				if (indent == a_indent) break;
+				a_head = a_depth;
+				a_indent = indent;
+			}
+		}
 		switch (v_lexer.f_token()) {
 		case t_lexer::c_token__LEFT_PARENTHESIS:
 			{
@@ -310,7 +320,7 @@ ast::t_node* t_parser::f_action(size_t a_indent, ast::t_node* a_target, bool a_a
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = v_arena.f_new<ast::t_call>(at, a_target);
-				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) f_arguments(indent, call);
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) f_arguments(a_depth + 1, a_head, indent, call);
 				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				a_target = call;
 				continue;
@@ -324,12 +334,12 @@ ast::t_node* t_parser::f_action(size_t a_indent, ast::t_node* a_target, bool a_a
 					{
 						size_t indent = v_lexer.f_indent();
 						v_lexer.f_next();
-						auto key = f_expression();
+						auto key = f_expression(a_depth + 1, a_head);
 						f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 						if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 							if (!a_assignable) f_throw(L"can not assign to expression."sv);
 							v_lexer.f_next();
-							return v_arena.f_new<ast::t_object_put_indirect>(at, a_target, key, f_expression());
+							return v_arena.f_new<ast::t_object_put_indirect>(at, a_target, key, f_expression(a_depth + 1, a_head));
 						}
 						a_target = v_arena.f_new<ast::t_object_get_indirect>(at, a_target, key);
 						continue;
@@ -341,7 +351,7 @@ ast::t_node* t_parser::f_action(size_t a_indent, ast::t_node* a_target, bool a_a
 						if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 							if (!a_assignable) f_throw(L"can not assign to expression."sv);
 							v_lexer.f_next();
-							return v_arena.f_new<ast::t_object_put>(at, a_target, key, f_expression());
+							return v_arena.f_new<ast::t_object_put>(at, a_target, key, f_expression(a_depth + 1, a_head));
 						}
 						a_target = v_arena.f_new<ast::t_object_get>(at, a_target, key);
 						continue;
@@ -361,7 +371,7 @@ ast::t_node* t_parser::f_action(size_t a_indent, ast::t_node* a_target, bool a_a
 						{
 							size_t indent = v_lexer.f_indent();
 							v_lexer.f_next();
-							auto key = f_expression();
+							auto key = f_expression(a_depth + 1, a_head);
 							f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 							a_target = v_arena.f_new<ast::t_object_has_indirect>(at, a_target, key);
 							continue;
@@ -385,12 +395,12 @@ ast::t_node* t_parser::f_action(size_t a_indent, ast::t_node* a_target, bool a_a
 				t_at at = v_lexer.f_at();
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
-				auto index = f_expression();
+				auto index = f_expression(a_depth + 1, a_head);
 				f_close(indent, t_lexer::c_token__RIGHT_BRACKET);
 				if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 					if (!a_assignable) f_throw(L"can not assign to expression."sv);
 					v_lexer.f_next();
-					return v_arena.f_new<ast::t_set_at>(at, a_target, index, f_expression());
+					return v_arena.f_new<ast::t_set_at>(at, a_target, index, f_expression(a_depth + 1, a_head));
 				}
 				a_target = v_arena.f_new<ast::t_get_at>(at, a_target, index);
 				continue;
@@ -401,9 +411,9 @@ ast::t_node* t_parser::f_action(size_t a_indent, ast::t_node* a_target, bool a_a
 	return a_target;
 }
 
-ast::t_node* t_parser::f_unary(bool a_assignable)
+ast::t_node* t_parser::f_unary(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	size_t indent = v_lexer.f_indent();
+	if (v_lexer.f_newline()) a_head = a_depth;
 	t_instruction instruction;
 	switch (v_lexer.f_token()) {
 	case t_lexer::c_token__PLUS:
@@ -419,7 +429,10 @@ ast::t_node* t_parser::f_unary(bool a_assignable)
 		instruction = c_instruction__COMPLEMENT_T;
 		break;
 	default:
-		return f_action(indent, f_target(a_assignable), a_assignable);
+		{
+			size_t indent = v_lexer.f_indent();
+			return f_action(a_depth, a_head, indent, f_target(a_depth, a_head, a_assignable), a_assignable);
+		}
 	}
 	t_at at = v_lexer.f_at();
 	v_lexer.f_next();
@@ -431,13 +444,13 @@ ast::t_node* t_parser::f_unary(bool a_assignable)
 			{
 				auto value = v_lexer.f_integer();
 				v_lexer.f_next();
-				return f_action(indent, v_arena.f_new<ast::t_literal<intptr_t>>(at, instruction == c_instruction__MINUS_T ? -value : value), a_assignable);
+				return f_action(a_depth, a_head, v_lexer.f_indent(), v_arena.f_new<ast::t_literal<intptr_t>>(at, instruction == c_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		case t_lexer::c_token__FLOAT:
 			{
 				auto value = v_lexer.f_float();
 				v_lexer.f_next();
-				return f_action(indent, v_arena.f_new<ast::t_literal<double>>(at, instruction == c_instruction__MINUS_T ? -value : value), a_assignable);
+				return f_action(a_depth, a_head, v_lexer.f_indent(), v_arena.f_new<ast::t_literal<double>>(at, instruction == c_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		}
 		break;
@@ -445,16 +458,16 @@ ast::t_node* t_parser::f_unary(bool a_assignable)
 		if (v_lexer.f_token() == t_lexer::c_token__INTEGER) {
 			auto value = v_lexer.f_integer();
 			v_lexer.f_next();
-			return f_action(indent, v_arena.f_new<ast::t_literal<intptr_t>>(at, ~value), a_assignable);
+			return f_action(a_depth, a_head, v_lexer.f_indent(), v_arena.f_new<ast::t_literal<intptr_t>>(at, ~value), a_assignable);
 		}
 		break;
 	}
-	return v_arena.f_new<ast::t_unary>(at, instruction, f_unary(false));
+	return v_arena.f_new<ast::t_unary>(at, instruction, f_unary(a_depth, a_head, false));
 }
 
-ast::t_node* t_parser::f_multiplicative(bool a_assignable)
+ast::t_node* t_parser::f_multiplicative(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_unary(a_assignable);
+	auto node = f_unary(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline()) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
@@ -472,14 +485,14 @@ ast::t_node* t_parser::f_multiplicative(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_unary(false));
+		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_unary(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_additive(bool a_assignable)
+ast::t_node* t_parser::f_additive(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_multiplicative(a_assignable);
+	auto node = f_multiplicative(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline()) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
@@ -494,14 +507,14 @@ ast::t_node* t_parser::f_additive(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_multiplicative(false));
+		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_multiplicative(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_shift(bool a_assignable)
+ast::t_node* t_parser::f_shift(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_additive(a_assignable);
+	auto node = f_additive(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline()) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
@@ -516,14 +529,14 @@ ast::t_node* t_parser::f_shift(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_additive(false));
+		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_additive(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_relational(bool a_assignable)
+ast::t_node* t_parser::f_relational(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_shift(a_assignable);
+	auto node = f_shift(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline()) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
@@ -544,14 +557,14 @@ ast::t_node* t_parser::f_relational(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_shift(false));
+		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_shift(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_equality(bool a_assignable)
+ast::t_node* t_parser::f_equality(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_relational(a_assignable);
+	auto node = f_relational(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline()) {
 		t_instruction instruction;
 		switch (v_lexer.f_token()) {
@@ -572,84 +585,84 @@ ast::t_node* t_parser::f_equality(bool a_assignable)
 		}
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_relational(false));
+		node = v_arena.f_new<ast::t_binary>(at, instruction, node, f_relational(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_and(bool a_assignable)
+ast::t_node* t_parser::f_and(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_equality(a_assignable);
+	auto node = f_equality(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::c_token__AMPERSAND) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, c_instruction__AND_TT, node, f_equality(false));
+		node = v_arena.f_new<ast::t_binary>(at, c_instruction__AND_TT, node, f_equality(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_xor(bool a_assignable)
+ast::t_node* t_parser::f_xor(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_and(a_assignable);
+	auto node = f_and(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::c_token__HAT) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, c_instruction__XOR_TT, node, f_and(false));
+		node = v_arena.f_new<ast::t_binary>(at, c_instruction__XOR_TT, node, f_and(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_or(bool a_assignable)
+ast::t_node* t_parser::f_or(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_xor(a_assignable);
+	auto node = f_xor(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::c_token__BAR) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		node = v_arena.f_new<ast::t_binary>(at, c_instruction__OR_TT, node, f_xor(false));
+		node = v_arena.f_new<ast::t_binary>(at, c_instruction__OR_TT, node, f_xor(++a_depth, a_head, false));
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_and_also(bool a_assignable)
+ast::t_node* t_parser::f_and_also(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_or(a_assignable);
+	auto node = f_or(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::c_token__AND_ALSO) {
 		v_lexer.f_next();
 		auto branch = v_arena.f_new<ast::t_if>(v_arena, node);
-		branch->v_true = f_or(false);
+		branch->v_true = f_or(++a_depth, a_head, false);
 		branch->v_false = v_arena.f_new<ast::t_preserve>();
 		node = branch;
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_or_else(bool a_assignable)
+ast::t_node* t_parser::f_or_else(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_and_also(a_assignable);
+	auto node = f_and_also(a_depth, a_head, a_assignable);
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::c_token__OR_ELSE) {
 		v_lexer.f_next();
 		auto branch = v_arena.f_new<ast::t_if>(v_arena, node);
 		branch->v_true = v_arena.f_new<ast::t_preserve>();
-		branch->v_false = f_and_also(false);
+		branch->v_false = f_and_also(++a_depth, a_head, false);
 		node = branch;
 	}
 	return node;
 }
 
-ast::t_node* t_parser::f_conditional(bool a_assignable)
+ast::t_node* t_parser::f_conditional(size_t a_depth, size_t a_head, bool a_assignable)
 {
-	auto node = f_or_else(a_assignable);
+	auto node = f_or_else(a_depth, a_head, a_assignable);
 	if (v_lexer.f_newline() || v_lexer.f_token() != t_lexer::c_token__QUESTION) return node;
 	v_lexer.f_next();
 	auto branch = v_arena.f_new<ast::t_if>(v_arena, node);
-	branch->v_true = f_conditional(false);
+	branch->v_true = f_conditional(++a_depth, a_head, false);
 	if (!f_single_colon()) f_throw(L"expecting ':'."sv);
 	v_lexer.f_next();
-	branch->v_false = f_conditional(false);
+	branch->v_false = f_conditional(a_depth, a_head, false);
 	return branch;
 }
 
-ast::t_node* t_parser::f_expression()
+ast::t_node* t_parser::f_expression(size_t a_depth, size_t a_head)
 {
 	switch (v_lexer.f_token()) {
 	case t_lexer::c_token__IF:
@@ -657,11 +670,11 @@ ast::t_node* t_parser::f_expression()
 			t_at at = v_lexer.f_at();
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto node = v_arena.f_new<ast::t_if>(v_arena, f_options());
-			node->v_true = f_body(indent);
+			auto node = v_arena.f_new<ast::t_if>(v_arena, f_options(a_depth + 1, a_head));
+			node->v_true = f_body(a_depth + 1, a_head, indent);
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() == indent) && v_lexer.f_token() == t_lexer::c_token__ELSE) {
 				v_lexer.f_next();
-				node->v_false = f_body(indent);
+				node->v_false = f_body(a_depth + 1, a_head, indent);
 			} else {
 				node->v_false = v_arena.f_new<ast::t_null>(at);
 			}
@@ -672,10 +685,10 @@ ast::t_node* t_parser::f_expression()
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto tail = v_scope->v_privates.v_tail;
-			auto node = v_arena.f_new<ast::t_while>(v_arena, f_options());
+			auto node = v_arena.f_new<ast::t_while>(v_arena, f_options(a_depth + 1, a_head));
 			bool can_jump = v_can_jump;
 			v_can_jump = true;
-			node->v_body = f_body(indent);
+			node->v_body = f_body(a_depth + 1, a_head, indent);
 			v_can_jump = can_jump;
 			v_scope->f_vary(tail);
 			return node;
@@ -685,13 +698,13 @@ ast::t_node* t_parser::f_expression()
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto node = v_arena.f_new<ast::t_for>(v_arena);
-			node->v_initialization = f_options();
+			node->v_initialization = f_options(a_depth + 1, a_head);
 			auto tail = v_scope->v_privates.v_tail;
-			node->v_condition = f_options();
-			node->v_next = f_options();
+			node->v_condition = f_options(a_depth + 1, a_head);
+			node->v_next = f_options(a_depth + 1, a_head);
 			bool can_jump = v_can_jump;
 			v_can_jump = true;
-			node->v_body = f_body(indent);
+			node->v_body = f_body(a_depth + 1, a_head, indent);
 			v_can_jump = can_jump;
 			v_scope->f_vary(tail);
 			return node;
@@ -703,16 +716,16 @@ ast::t_node* t_parser::f_expression()
 			auto node = v_arena.f_new<ast::t_try>(v_arena);
 			bool catching = false;
 			{
-				node->v_body = f_body(indent);
+				node->v_body = f_body(a_depth + 1, a_head, indent);
 				while (v_lexer.f_indent() == indent && v_lexer.f_token() == t_lexer::c_token__CATCH) {
 					catching = true;
 					v_lexer.f_next();
-					auto expression = f_expression();
+					auto expression = f_expression(a_depth + 1, a_head);
 					if (v_lexer.f_token() != t_lexer::c_token__SYMBOL) f_throw(L"expecting symbol."sv);
 					auto symbol = f_symbol();
 					v_lexer.f_next();
 					auto c = v_arena.f_new<ast::t_try::t_catch>(v_arena, expression, f_variable(v_scope, symbol));
-					c->v_body = f_body(indent);
+					c->v_body = f_body(a_depth + 1, a_head, indent);
 					node->v_catches.f_push(c);
 				}
 			}
@@ -722,7 +735,7 @@ ast::t_node* t_parser::f_expression()
 				v_can_jump = false;
 				bool can_return = v_can_return;
 				v_can_return = false;
-				node->v_finally = f_body(indent);
+				node->v_finally = f_body(a_depth + 1, a_head, indent);
 				v_can_jump = can_jump;
 				v_can_return = can_return;
 			} else {
@@ -731,37 +744,37 @@ ast::t_node* t_parser::f_expression()
 			return node;
 		}
 	default:
-		return f_conditional(true);
+		return f_conditional(a_depth, a_head, true);
 	}
 }
 
-bool t_parser::f_argument(size_t a_indent, ast::t_nodes& a_nodes)
+bool t_parser::f_argument(size_t a_depth, size_t a_head, size_t a_indent, ast::t_nodes& a_nodes)
 {
-	a_nodes.f_push(f_expression());
+	a_nodes.f_push(f_expression(a_depth, a_head));
 	if (v_lexer.f_token() != t_lexer::c_token__COMMA) return v_lexer.f_newline() && v_lexer.f_indent() > a_indent;
 	if (v_lexer.f_newline() && v_lexer.f_indent() < a_indent) return false;
 	v_lexer.f_next();
 	return true;
 }
 
-void t_parser::f_arguments(size_t a_indent, ast::t_call* a_call)
+void t_parser::f_arguments(size_t a_depth, size_t a_head, size_t a_indent, ast::t_call* a_call)
 {
 	do if (v_lexer.f_token() == t_lexer::c_token__ASTERISK) {
 		a_call->v_expands.f_push(v_arena.f_new<ast::t_call::t_expand>(v_lexer.f_at(), a_call->v_arguments.v_size));
 		v_lexer.f_next();
-	} while (f_argument(a_indent, a_call->v_arguments));
+	} while (f_argument(a_depth, a_head, a_indent, a_call->v_arguments));
 }
 
-void t_parser::f_expressions(ast::t_nodes& a_nodes)
+void t_parser::f_expressions(size_t a_depth, size_t a_head, ast::t_nodes& a_nodes)
 {
 	while (true) {
-		a_nodes.f_push(f_expression());
+		a_nodes.f_push(f_expression(a_depth, a_head));
 		if (v_lexer.f_newline() || v_lexer.f_token() != t_lexer::c_token__COMMA) break;
 		v_lexer.f_next();
 	}
 }
 
-ast::t_nodes* t_parser::f_options()
+ast::t_nodes* t_parser::f_options(size_t a_depth, size_t a_head)
 {
 	if (v_lexer.f_newline()) return nullptr;
 	if (v_lexer.f_token() == t_lexer::c_token__SEMICOLON) {
@@ -769,7 +782,7 @@ ast::t_nodes* t_parser::f_options()
 		return nullptr;
 	}
 	auto nodes = v_arena.f_new<ast::t_nodes>();
-	f_expressions(*nodes);
+	f_expressions(a_depth, a_head, *nodes);
 	if (!v_lexer.f_newline()) {
 		if (v_lexer.f_token() != t_lexer::c_token__SEMICOLON) f_throw(L"expecting ';'."sv);
 		v_lexer.f_next();
@@ -777,13 +790,13 @@ ast::t_nodes* t_parser::f_options()
 	return nodes;
 }
 
-ast::t_node* t_parser::f_body(size_t a_indent)
+ast::t_node* t_parser::f_body(size_t a_depth, size_t a_head, size_t a_indent)
 {
-	if (!v_lexer.f_newline()) return f_expression();
+	if (!v_lexer.f_newline()) return f_expression(a_depth, a_head);
 	auto nodes = v_arena.f_new<ast::t_nodes>();
 	size_t indent = v_lexer.f_indent();
 	if (indent > a_indent) {
-		do f_expressions(*nodes); while (v_lexer.f_newline() && v_lexer.f_indent() == indent);
+		do f_expressions(a_depth, a_head, *nodes); while (v_lexer.f_newline() && v_lexer.f_indent() == indent);
 		if (v_lexer.f_indent() > indent) f_throw(L"unexpected indent."sv);
 	}
 	return nodes;
@@ -796,7 +809,7 @@ void t_parser::operator()(ast::t_scope& a_scope)
 	if (v_lexer.f_token() != t_lexer::c_token__EOF) {
 		size_t indent = v_lexer.f_indent();
 		while (true) {
-			f_expressions(*nodes);
+			f_expressions(0, 0, *nodes);
 			if (v_lexer.f_token() == t_lexer::c_token__EOF) break;
 			if (!v_lexer.f_newline()) f_throw(L"expecting newline."sv);
 			if (v_lexer.f_indent() != indent) f_throw(L"unexpected indent."sv);
