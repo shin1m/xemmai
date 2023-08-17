@@ -9,7 +9,6 @@
 #include "map.h"
 #include "bytes.h"
 #include "parser.h"
-#include <algorithm>
 
 namespace xemmai
 {
@@ -611,28 +610,17 @@ inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 
 t_object* t_string::f_instantiate(size_t a_n, auto a_fill)
 {
-	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
-	auto s = new(object->f_data()) t_string(0);
-	object->f_be(f_global()->f_type<t_string>());
-	auto p = a_fill(s->f_entries());
+	auto object = t_type_of<t_string>::f__construct(f_global()->f_type<t_string>(), a_n);
+	auto& s = object->f_as<t_string>();
+	auto p = a_fill(s.f_entries());
 	*p = L'\0';
-	s->v_size = p - s->f_entries();
+	s.v_size = p - s.f_entries();
 	return object;
 }
 
-inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n)
+inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, size_t a_n)
 {
 	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1));
-	*std::copy_n(a_p, a_n, (new(object->f_data()) t_string(a_n))->f_entries()) = L'\0';
-	object->f_be(a_class);
-	return object;
-}
-
-inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y)
-{
-	size_t n = a_x.v_size + a_y.v_size;
-	auto object = f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (n + 1));
-	*std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, (new(object->f_data()) t_string(n))->f_entries())) = L'\0';
 	object->f_be(a_class);
 	return object;
 }
@@ -648,24 +636,13 @@ inline t_object* t_type_of<t_string>::f_from_code(t_global* a_library, intptr_t 
 	return f__construct(a_library->f_type<t_string>(), &c, 1);
 }
 
-XEMMAI__PORTABLE__ALWAYS_INLINE inline t_object* t_type_of<t_string>::f__add(t_object* a_self, const t_pvalue& a_value)
-{
-	auto add = [&](t_object* x)
-	{
-		auto& s0 = a_self->f_as<t_string>();
-		if (s0.f_size() <= 0) return x;
-		auto& s1 = x->f_as<t_string>();
-		return s1.f_size() <= 0 ? a_self : f__construct(a_self->f_type(), s0, s1);
-	};
-	if (f_is<t_string>(a_value)) return add(a_value);
-	auto x = a_value.f_string();
-	f_check<t_string>(x, L"argument0");
-	return add(x);
-}
-
 inline t_object* t_type_of<t_string>::f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)
 {
 	return a_n > 0 ? f__construct(a_library->f_type<t_string>(), static_cast<const wchar_t*>(a_self) + a_i, a_n) : a_library->f_string_empty();
+}
+
+inline t_stringer::t_stringer() : v_p(f_global()->f_string_empty()), v_i(const_cast<wchar_t*>(static_cast<const wchar_t*>(v_p->f_as<t_string>()))), v_j(v_i)
+{
 }
 
 inline t_pvalue t_type_of<t_bytes>::f__construct(t_type* a_class, size_t a_size)

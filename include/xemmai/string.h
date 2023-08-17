@@ -2,6 +2,7 @@
 #define XEMMAI__STRING_H
 
 #include "object.h"
+#include <algorithm>
 
 namespace xemmai
 {
@@ -81,7 +82,13 @@ struct t_fundamental<std::wstring_view>
 template<>
 struct t_type_of<t_string> : t_holds<t_string>
 {
-	static t_object* f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n);
+	static t_object* f__construct(t_type* a_class, size_t a_n);
+	static t_object* f__construct(t_type* a_class, const wchar_t* a_p, size_t a_n)
+	{
+		auto object = f__construct(a_class, a_n);
+		*std::copy_n(a_p, a_n, (new(object->f_data()) t_string(a_n))->f_entries()) = L'\0';
+		return object;
+	}
 	static t_pvalue f__construct(t_type* a_class, const t_string& a_value)
 	{
 		return f__construct(a_class, static_cast<const wchar_t*>(a_value), a_value.v_size);
@@ -90,14 +97,33 @@ struct t_type_of<t_string> : t_holds<t_string>
 	{
 		return f__construct(a_class, a_value.data(), a_value.size());
 	}
-	static t_object* f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y);
+	static t_object* f__construct(t_type* a_class, const t_string& a_x, const t_string& a_y)
+	{
+		size_t n = a_x.v_size + a_y.v_size;
+		auto object = f__construct(a_class, n);
+		*std::copy_n(static_cast<const wchar_t*>(a_y), a_y.v_size, std::copy_n(static_cast<const wchar_t*>(a_x), a_x.v_size, (new(object->f_data()) t_string(n))->f_entries())) = L'\0';
+		return object;
+	}
 	static t_pvalue f_transfer(const t_global* a_library, auto&& a_value);
 	static t_object* f_from_code(t_global* a_library, intptr_t a_code);
 	static t_object* f_string(const t_pvalue& a_self)
 	{
 		return a_self;
 	}
-	static t_object* f__add(t_object* a_self, const t_pvalue& a_value);
+	static XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f__add(t_object* a_self, const t_pvalue& a_value)
+	{
+		auto add = [&](t_object* x)
+		{
+			auto& s0 = a_self->f_as<t_string>();
+			if (s0.f_size() <= 0) return x;
+			auto& s1 = x->f_as<t_string>();
+			return s1.f_size() <= 0 ? a_self : f__construct(a_self->f_type(), s0, s1);
+		};
+		if (f_is<t_string>(a_value)) return add(a_value);
+		auto x = a_value.f_string();
+		f_check<t_string>(x, L"argument0");
+		return add(x);
+	}
 	static bool f__equals(const t_string& a_self, const t_pvalue& a_value)
 	{
 		return f_is<t_string>(a_value) && a_self == a_value->f_as<t_string>();
@@ -135,6 +161,35 @@ struct t_type_of<t_string> : t_holds<t_string>
 template<>
 struct t_type::t_cast<std::wstring_view&&> : t_type::t_cast<std::wstring_view>
 {
+};
+
+struct t_stringer
+{
+	t_object* v_p;
+	wchar_t* v_i;
+	wchar_t* v_j;
+
+	void f_grow();
+
+	t_stringer();
+	operator t_object*() const
+	{
+		*v_i = L'\0';
+		v_p->f_as<size_t>() = v_i - v_p->f_as<t_string>();
+		return v_p;
+	}
+	t_stringer& operator<<(wchar_t a_c)
+	{
+		if (v_i == v_j) f_grow();
+		*v_i++ = a_c;
+		return *this;
+	}
+	t_stringer& operator<<(std::wstring_view a_s)
+	{
+		while (v_j - v_i < a_s.size()) f_grow();
+		v_i = std::copy(a_s.begin(), a_s.end(), v_i);
+		return *this;
+	}
 };
 
 }

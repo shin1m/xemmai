@@ -78,4 +78,16 @@ size_t t_type_of<t_string>::f_do_not_equals(t_object* a_this, t_pvalue* a_stack)
 	return -1;
 }
 
+void t_stringer::f_grow()
+{
+	auto& s = v_p->f_as<t_string>();
+	auto n0 = v_j - s;
+	auto n1 = t_object::f_size_to_capacity<t_string, wchar_t>(n0 > 0 ? t_object::f_capacity_to_size<t_string, wchar_t>(n0 + 1) * 2 : sizeof(t_object)) - 1;
+	auto object = t_type_of<t_string>::f__construct(f_global()->f_type<t_string>(), n1);
+	auto p = const_cast<wchar_t*>(static_cast<const wchar_t*>(object->f_as<t_string>()));
+	v_i = std::copy(static_cast<const wchar_t*>(s), const_cast<const wchar_t*>(v_i), p);
+	v_j = p + n1;
+	v_p = object;
+}
+
 }

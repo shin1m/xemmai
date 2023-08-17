@@ -113,8 +113,9 @@ t_pvalue t_map::f_remove(const t_pvalue& a_key)
 
 t_object* t_type_of<t_map>::f__string(t_map& a_self)
 {
+	t_stringer s;
+	s << L'{';
 	t_map::t_iterator i(a_self);
-	std::vector<wchar_t> cs{L'{'};
 	t_pvalue x;
 	t_pvalue y;
 	auto get = [&]
@@ -124,31 +125,20 @@ t_object* t_type_of<t_map>::f__string(t_map& a_self)
 		y = i.f_entry()->v_value;
 		return true;
 	};
-	if (a_self.f_owned_or_shared<t_shared_lock_with_safe_region>(get)) {
-		auto push = [&](t_pvalue& x, const wchar_t* name)
+	if (a_self.f_owned_or_shared<t_shared_lock_with_safe_region>(get)) while (true) {
+		x = x.f_string();
+		f_check<t_string>(x, L"key");
+		y = y.f_string();
+		f_check<t_string>(y, L"value");
+		s << x->f_as<t_string>() << L':' << L' ' << y->f_as<t_string>();
+		if (!a_self.f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 		{
-			x = x.f_string();
-			f_check<t_string>(x, name);
-			auto& s = x->f_as<t_string>();
-			auto p = static_cast<const wchar_t*>(s);
-			cs.insert(cs.end(), p, p + s.f_size());
-		};
-		while (true) {
-			push(x, L"key");
-			cs.push_back(L':');
-			cs.push_back(L' ');
-			push(y, L"value");
-			if (!a_self.f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-			{
-				i.f_next();
-				return get();
-			})) break;
-			cs.push_back(L',');
-			cs.push_back(L' ');
-		}
+			i.f_next();
+			return get();
+		})) break;
+		s << L',' << L' ';
 	}
-	cs.push_back(L'}');
-	return t_string::f_instantiate(cs.data(), cs.size());
+	return s << L'}';
 }
 
 void t_type_of<t_map>::f_clear(t_map& a_self)

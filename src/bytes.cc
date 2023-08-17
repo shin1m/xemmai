@@ -11,17 +11,16 @@ t_object* t_bytes::f_instantiate(size_t a_size)
 
 t_object* t_bytes::f_string() const
 {
-	std::vector<wchar_t> cs{L'\'', L'['};
+	t_stringer s;
+	s << L'\'' << L'[';
 	if (v_size > 0) for (size_t i = 0;;) {
-		wchar_t s[3];
-		std::swprintf(s, 3, L"%02x", (*this)[i]);
-		cs.insert(cs.end(), s, s + 2);
+		wchar_t cs[3];
+		std::swprintf(cs, 3, L"%02x", (*this)[i]);
+		s << cs[0] << cs[1];
 		if (++i >= v_size) break;
-		cs.push_back(L',');
-		cs.push_back(L' ');
+		s << L',' << L' ';
 	}
-	cs.push_back(L']');
-	return t_string::f_instantiate(cs.data(), cs.size());
+	return s << L']';
 }
 
 void t_type_of<t_bytes>::f_define()

@@ -5,19 +5,16 @@ namespace xemmai
 
 t_object* t_tuple::f_string() const
 {
-	std::vector<wchar_t> cs{L'\'', L'('};
+	t_stringer s;
+	s << L'\'' << L'(';
 	if (v_size > 0) for (size_t i = 0;;) {
 		auto x = (*this)[i].f_string();
 		f_check<t_string>(x, L"value");
-		auto& s = x->f_as<t_string>();
-		auto p = static_cast<const wchar_t*>(s);
-		cs.insert(cs.end(), p, p + s.f_size());
+		s << x->f_as<t_string>();
 		if (++i >= v_size) break;
-		cs.push_back(L',');
-		cs.push_back(L' ');
+		s << L',' << L' ';
 	}
-	cs.push_back(L')');
-	return t_string::f_instantiate(cs.data(), cs.size());
+	return s << L')';
 }
 
 intptr_t t_tuple::f_hash() const

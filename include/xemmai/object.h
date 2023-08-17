@@ -225,6 +225,16 @@ public:
 	{
 		return offsetof(t_object, v_data) + f_align_for_fields(a_native);
 	}
+	template<typename T_object, typename T_element>
+	static size_t f_capacity_to_size(size_t a_size)
+	{
+		return (f_fields_offset(sizeof(T_object)) + a_size * sizeof(T_element) + sizeof(t_object) - 1) / sizeof(t_object) * sizeof(t_object);
+	}
+	template<typename T_object, typename T_element>
+	static size_t f_size_to_capacity(size_t a_size)
+	{
+		return (a_size - f_fields_offset(sizeof(T_object))) / sizeof(T_element);
+	}
 
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_be(t_type* a_type)
 	{

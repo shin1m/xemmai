@@ -3,21 +3,11 @@
 namespace xemmai
 {
 
-namespace
-{
-
-inline size_t f_capacity(size_t a_size)
-{
-	return (a_size - t_object::f_fields_offset(sizeof(t_tuple))) / sizeof(t_slot);
-}
-
-}
-
 void t_list::f_resize()
 {
-	auto size = (t_object::f_fields_offset(sizeof(t_tuple)) + v_size * sizeof(t_slot) + sizeof(t_object) - 1) / sizeof(t_object) * sizeof(t_object);
-	v_grow = f_capacity(size * 2);
-	v_shrink = size < sizeof(t_object) * 2 ? 0 : f_capacity(size / 2);
+	auto size = t_object::f_capacity_to_size<t_tuple, t_slot>(v_size);
+	v_grow = t_object::f_size_to_capacity<t_tuple, t_slot>(size * 2);
+	v_shrink = size < sizeof(t_object) * 2 ? 0 : t_object::f_size_to_capacity<t_tuple, t_slot>(size / 2);
 	auto& tuple0 = v_tuple->f_as<t_tuple>();
 	v_tuple = t_tuple::f_instantiate(v_grow, [&](auto& tuple1)
 	{
@@ -36,7 +26,7 @@ void t_list::f_resize()
 void t_list::f_grow()
 {
 	if (v_size <= 0) {
-		v_grow = f_capacity(sizeof(t_object));
+		v_grow = t_object::f_size_to_capacity<t_tuple, t_slot>(sizeof(t_object));
 		v_tuple = t_tuple::f_instantiate(v_grow, [&](auto& tuple)
 		{
 			std::uninitialized_default_construct_n(&tuple[0], v_grow);
@@ -129,7 +119,8 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 
 t_object* t_type_of<t_list>::f__string(t_list& a_self)
 {
-	std::vector<wchar_t> cs{L'['};
+	t_stringer s;
+	s << L'[';
 	t_pvalue x;
 	if (a_self.f_owned_or_shared<std::shared_lock>([&]
 	{
@@ -139,9 +130,7 @@ t_object* t_type_of<t_list>::f__string(t_list& a_self)
 	})) for (size_t i = 0;;) {
 		x = x.f_string();
 		f_check<t_string>(x, L"value");
-		auto& s = x->f_as<t_string>();
-		auto p = static_cast<const wchar_t*>(s);
-		cs.insert(cs.end(), p, p + s.f_size());
+		s << x->f_as<t_string>();
 		++i;
 		if (!a_self.f_owned_or_shared<std::shared_lock>([&]
 		{
@@ -149,11 +138,9 @@ t_object* t_type_of<t_list>::f__string(t_list& a_self)
 			x = a_self[i];
 			return true;
 		})) break;
-		cs.push_back(L',');
-		cs.push_back(L' ');
+		s << L',' << L' ';
 	}
-	cs.push_back(L']');
-	return t_string::f_instantiate(cs.data(), cs.size());
+	return s << L']';
 }
 
 void t_type_of<t_list>::f_clear(t_list& a_self)
