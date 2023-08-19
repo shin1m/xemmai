@@ -51,34 +51,33 @@ void t_lexer::f_next()
 	}
 	v_at = {v_position, v_line, v_column};
 	v_value.clear();
+	auto get = [&]
+	{
+		f_get();
+		return v_c;
+	};
 	switch (v_c) {
 	case WEOF:
 		v_token = e_token__EOF;
 		break;
 	case L'!':
-		f_get();
-		if (v_c == L'=') {
-			f_get();
-			if (v_c == L'=') {
-				v_token = e_token__NOT_IDENTICAL;
-				f_get();
-			} else {
-				v_token = e_token__NOT_EQUALS;
-			}
-		} else {
+		if (get() != L'=') {
 			v_token = e_token__EXCLAMATION;
+		} else if (get() != L'=') {
+			v_token = e_token__NOT_EQUALS;
+		} else {
+			v_token = e_token__NOT_IDENTICAL;
+			f_get();
 		}
 		break;
 	case L'"':
 		v_token = e_token__STRING;
-		f_get();
-		while (v_c != WEOF) {
+		while (get() != WEOF) {
 			if (v_c == L'"') {
 				f_get();
 				break;
 			} else if (v_c == L'\\') {
-				f_get();
-				switch (v_c) {
+				switch (get()) {
 				case L'"':
 					v_value.push_back(L'"');
 					break;
@@ -115,7 +114,6 @@ void t_lexer::f_next()
 			} else {
 				v_value.push_back(v_c);
 			}
-			f_get();
 		}
 		break;
 	case L'$':
@@ -131,8 +129,7 @@ void t_lexer::f_next()
 		f_get();
 		break;
 	case L'&':
-		f_get();
-		if (v_c == L'&') {
+		if (get() == L'&') {
 			v_token = e_token__AND_ALSO;
 			f_get();
 		} else {
@@ -177,18 +174,14 @@ void t_lexer::f_next()
 		break;
 	case L':':
 		v_token = e_token__COLON;
-		do {
-			v_value.push_back(v_c);
-			f_get();
-		} while (v_c == L':');
+		do v_value.push_back(v_c); while (get() == L':');
 		break;
 	case L';':
 		v_token = e_token__SEMICOLON;
 		f_get();
 		break;
 	case L'<':
-		f_get();
-		switch (v_c) {
+		switch (get()) {
 		case L'<':
 			v_token = e_token__LEFT_SHIFT;
 			f_get();
@@ -202,22 +195,17 @@ void t_lexer::f_next()
 		}
 		break;
 	case L'=':
-		f_get();
-		if (v_c == L'=') {
-			f_get();
-			if (v_c == L'=') {
-				v_token = e_token__IDENTICAL;
-				f_get();
-			} else {
-				v_token = e_token__EQUALS;
-			}
-		} else {
+		if (get() != L'=') {
 			v_token = e_token__EQUAL;
+		} else if (get() != L'=') {
+			v_token = e_token__EQUALS;
+		} else {
+			v_token = e_token__IDENTICAL;
+			f_get();
 		}
 		break;
 	case L'>':
-		f_get();
-		switch (v_c) {
+		switch (get()) {
 		case L'=':
 			v_token = e_token__GREATER_EQUAL;
 			f_get();
@@ -255,8 +243,7 @@ void t_lexer::f_next()
 		f_get();
 		break;
 	case L'|':
-		f_get();
-		if (v_c == L'|') {
+		if (get() == L'|') {
 			v_token = e_token__OR_ELSE;
 			f_get();
 		} else {
@@ -273,309 +260,89 @@ void t_lexer::f_next()
 		break;
 	default:
 		if (std::iswalpha(v_c) || v_c == L'_') {
+			auto match = [&](auto a_s, auto a_i, auto a_token)
+			{
+				auto i = a_s.begin() + a_i;
+				for (;; ++i) {
+					if (i == a_s.end()) {
+						if (!f_is_symbol(get())) {
+							v_token = a_token;
+							return true;
+						}
+						break;
+					}
+					if (get() != *i) break;
+				}
+				v_value.insert(v_value.end(), a_s.begin(), i);
+				return false;
+			};
 			switch (v_c) {
 			case L'b':
-				v_value.push_back(v_c);
-				f_get();
-				if (v_c == L'r') {
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'e') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'a') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'k') {
-								v_value.push_back(v_c);
-								f_get();
-								if (!f_is_symbol(v_c)) {
-									v_token = e_token__BREAK;
-									return;
-								}
-							}
-						}
-					}
-				}
+				if (match(L"break"sv, 1, e_token__BREAK)) return;
 				break;
 			case L'c':
-				v_value.push_back(v_c);
-				f_get();
-				switch (v_c) {
+				switch (get()) {
 				case L'a':
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L't') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'c') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'h') {
-								v_value.push_back(v_c);
-								f_get();
-								if (!f_is_symbol(v_c)) {
-									v_token = e_token__CATCH;
-									return;
-								}
-							}
-						}
-					}
+					if (match(L"catch"sv, 2, e_token__CATCH)) return;
 					break;
 				case L'o':
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'n') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L't') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'i') {
-								v_value.push_back(v_c);
-								f_get();
-								if (v_c == L'n') {
-									v_value.push_back(v_c);
-									f_get();
-									if (v_c == L'u') {
-										v_value.push_back(v_c);
-										f_get();
-										if (v_c == L'e') {
-											v_value.push_back(v_c);
-											f_get();
-											if (!f_is_symbol(v_c)) {
-												v_token = e_token__CONTINUE;
-												return;
-											}
-										}
-									}
-								}
-							}
-						}
-					}
+					if (match(L"continue"sv, 2, e_token__CONTINUE)) return;
 					break;
+				default:
+					v_value.push_back(L'c');
 				}
 				break;
 			case L'e':
-				v_value.push_back(v_c);
-				f_get();
-				if (v_c == L'l') {
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L's') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'e') {
-							v_value.push_back(v_c);
-							f_get();
-							if (!f_is_symbol(v_c)) {
-								v_token = e_token__ELSE;
-								return;
-							}
-						}
-					}
-				}
+				if (match(L"else"sv, 1, e_token__ELSE)) return;
 				break;
 			case L'f':
-				v_value.push_back(v_c);
-				f_get();
-				switch (v_c) {
+				switch (get()) {
 				case L'a':
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'l') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L's') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'e') {
-								v_value.push_back(v_c);
-								f_get();
-								if (!f_is_symbol(v_c)) {
-									v_token = e_token__FALSE;
-									return;
-								}
-							}
-						}
-					}
+					if (match(L"false"sv, 2, e_token__FALSE)) return;
 					break;
 				case L'i':
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'n') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'a') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'l') {
-								v_value.push_back(v_c);
-								f_get();
-								if (v_c == L'l') {
-									v_value.push_back(v_c);
-									f_get();
-									if (v_c == L'y') {
-										v_value.push_back(v_c);
-										f_get();
-										if (!f_is_symbol(v_c)) {
-											v_token = e_token__FINALLY;
-											return;
-										}
-									}
-								}
-							}
-						}
-					}
+					if (match(L"finally"sv, 2, e_token__FINALLY)) return;
 					break;
 				case L'o':
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'r') {
-						v_value.push_back(v_c);
-						f_get();
-						if (!f_is_symbol(v_c)) {
-							v_token = e_token__FOR;
-							return;
-						}
-					}
+					if (match(L"for"sv, 2, e_token__FOR)) return;
 					break;
+				default:
+					v_value.push_back(L'f');
 				}
 				break;
 			case L'i':
-				v_value.push_back(v_c);
-				f_get();
-				if (v_c == L'f') {
-					v_value.push_back(v_c);
-					f_get();
-					if (!f_is_symbol(v_c)) {
-						v_token = e_token__IF;
-						return;
-					}
-				}
+				if (match(L"if"sv, 1, e_token__IF)) return;
 				break;
 			case L'n':
-				v_value.push_back(v_c);
-				f_get();
-				if (v_c == L'u') {
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'l') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'l') {
-							v_value.push_back(v_c);
-							f_get();
-							if (!f_is_symbol(v_c)) {
-								v_token = e_token__NULL;
-								return;
-							}
-						}
-					}
-				}
+				if (match(L"null"sv, 1, e_token__NULL)) return;
 				break;
 			case L'r':
-				v_value.push_back(v_c);
-				f_get();
-				if (v_c == L'e') {
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L't') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'u') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'r') {
-								v_value.push_back(v_c);
-								f_get();
-								if (v_c == L'n') {
-									v_value.push_back(v_c);
-									f_get();
-									if (!f_is_symbol(v_c)) {
-										v_token = e_token__RETURN;
-										return;
-									}
-								}
-							}
-						}
-					}
-				}
+				if (match(L"return"sv, 1, e_token__RETURN)) return;
 				break;
 			case L't':
-				v_value.push_back(v_c);
-				f_get();
-				switch (v_c) {
+				switch (get()) {
 				case L'h':
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'r') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'o') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'w') {
-								v_value.push_back(v_c);
-								f_get();
-								if (!f_is_symbol(v_c)) {
-									v_token = e_token__THROW;
-									return;
-								}
-							}
-						}
-					}
+					if (match(L"throw"sv, 2, e_token__THROW)) return;
 					break;
 				case L'r':
-					v_value.push_back(v_c);
-					f_get();
-					switch (v_c) {
+					switch (get()) {
 					case L'u':
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'e') {
-							v_value.push_back(v_c);
-							f_get();
-							if (!f_is_symbol(v_c)) {
-								v_token = e_token__TRUE;
-								return;
-							}
-						}
+						if (match(L"true"sv, 3, e_token__TRUE)) return;
 						break;
 					case L'y':
-						v_value.push_back(v_c);
-						f_get();
-						if (!f_is_symbol(v_c)) {
-							v_token = e_token__TRY;
-							return;
-						}
+						if (match(L"try"sv, 3, e_token__TRY)) return;
+						break;
+					default:
+						v_value.push_back(L't');
+						v_value.push_back(L'r');
 					}
 					break;
+				default:
+					v_value.push_back(L't');
 				}
 				break;
 			case L'w':
-				v_value.push_back(v_c);
-				f_get();
-				if (v_c == L'h') {
-					v_value.push_back(v_c);
-					f_get();
-					if (v_c == L'i') {
-						v_value.push_back(v_c);
-						f_get();
-						if (v_c == L'l') {
-							v_value.push_back(v_c);
-							f_get();
-							if (v_c == L'e') {
-								v_value.push_back(v_c);
-								f_get();
-								if (!f_is_symbol(v_c)) {
-									v_token = e_token__WHILE;
-									return;
-								}
-							}
-						}
-					}
-				}
+				if (match(L"while"sv, 1, e_token__WHILE)) return;
 				break;
 			}
 			while (f_is_symbol(v_c)) {
@@ -586,20 +353,15 @@ void t_lexer::f_next()
 		} else if (std::iswdigit(v_c)) {
 			if (v_c == L'0') {
 				v_value.push_back(v_c);
-				f_get();
-				switch (v_c) {
+				switch (get()) {
 				case L'.':
 					break;
 				case L'X':
 				case L'x':
 					v_token = e_token__INTEGER;
 					v_value.push_back(v_c);
-					f_get();
-					if (!std::iswxdigit(v_c)) f_throw();
-					do {
-						v_value.push_back(v_c);
-						f_get();
-					} while (std::iswxdigit(v_c));
+					if (!std::iswxdigit(get())) f_throw();
+					do v_value.push_back(v_c); while (std::iswxdigit(get()));
 					v_value.push_back(L'\0');
 					return;
 				default:
@@ -619,10 +381,7 @@ void t_lexer::f_next()
 			}
 			if (v_c == L'.') {
 				v_token = e_token__FLOAT;
-				do {
-					v_value.push_back(v_c);
-					f_get();
-				} while (std::iswdigit(v_c));
+				do v_value.push_back(v_c); while (std::iswdigit(get()));
 				if (v_c == L'E' || v_c == L'e') {
 					v_value.push_back(v_c);
 					f_get();
@@ -631,10 +390,7 @@ void t_lexer::f_next()
 						f_get();
 					}
 					if (!std::iswdigit(v_c)) f_throw();
-					do {
-						v_value.push_back(v_c);
-						f_get();
-					} while (std::iswdigit(v_c));
+					do v_value.push_back(v_c); while (std::iswdigit(get()));
 				}
 			} else {
 				v_token = e_token__INTEGER;
