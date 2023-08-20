@@ -190,6 +190,14 @@ struct t_stringer
 		v_i = std::copy(a_s.begin(), a_s.end(), v_i);
 		return *this;
 	}
+	void f_rewind(size_t a_i)
+	{
+		v_i = const_cast<wchar_t*>(static_cast<const wchar_t*>(v_p->f_as<t_string>())) + a_i;
+	}
+	operator std::wstring_view() const
+	{
+		return {static_cast<const wchar_t*>(v_p->f_as<t_string>()), v_i};
+	}
 };
 
 }

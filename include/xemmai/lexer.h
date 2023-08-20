@@ -85,9 +85,15 @@ private:
 	wint_t v_c;
 	t_at v_at{0, 0, 0};
 	bool v_newline;
-	std::vector<wchar_t> v_indent;
+	t_stringer v_indent;
 	t_token v_token;
-	std::vector<wchar_t> v_value;
+	t_stringer v_value;
+	union
+	{
+		t_object* v_string;
+		intptr_t v_integer;
+		double v_float;
+	};
 
 	void f_throw [[noreturn]] ()
 	{
@@ -97,7 +103,7 @@ private:
 	void f_read_indent()
 	{
 		while (v_c != L'\n' && std::iswspace(v_c)) {
-			v_indent.push_back(v_c);
+			v_indent << v_c;
 			f_get();
 		}
 	}
@@ -141,15 +147,27 @@ public:
 	}
 	size_t f_indent() const
 	{
-		return v_indent.size();
+		return static_cast<std::wstring_view>(v_indent).size();
 	}
 	t_token f_token() const
 	{
 		return v_token;
 	}
-	const std::vector<wchar_t>& f_value() const
+	std::wstring_view f_value() const
 	{
 		return v_value;
+	}
+	t_object* f_string() const
+	{
+		return v_string;
+	}
+	intptr_t f_integer() const
+	{
+		return v_integer;
+	}
+	double f_float() const
+	{
+		return v_float;
 	}
 	void f_next();
 };

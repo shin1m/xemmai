@@ -64,10 +64,6 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 	}
 	static t_pvalue f_construct(t_type* a_class, const t_string& a_value)
 	{
-		return f_parse(a_value);
-	}
-	static double f_parse(const wchar_t* a_value)
-	{
 		return std::wcstod(a_value, NULL);
 	}
 	XEMMAI__PORTABLE__EXPORT static t_object* f__string(double a_self);

@@ -20,7 +20,7 @@ class t_parser
 
 	bool f_single_colon() const
 	{
-		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1;
+		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_integer() == 1;
 	}
 	void f_throw [[noreturn]] (std::wstring_view a_message, const t_at& a_at)
 	{
@@ -32,14 +32,9 @@ class t_parser
 	}
 	t_svalue& f_symbol() const
 	{
-		return v_module.f_slot(t_symbol::f_instantiate({v_lexer.f_value().data(), v_lexer.f_value().size()}));
+		return v_module.f_slot(t_symbol::f_instantiate(v_lexer.f_value()));
 	}
 	t_code::t_variable& f_variable(ast::t_scope* a_scope, t_object* a_symbol);
-	template<typename T>
-	T f_number() const
-	{
-		return t_type_of<T>::f_parse(v_lexer.f_value().data());
-	}
 	std::unique_ptr<ast::t_node> f_target(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_action(size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);
 	std::unique_ptr<ast::t_node> f_action(size_t a_indent, ast::t_node* a_target, bool a_assignable)

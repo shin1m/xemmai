@@ -26,7 +26,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			size_t outer = 0;
 			auto scope = v_scope;
 			if (v_lexer.f_token() == t_lexer::e_token__COLON) {
-				outer = v_lexer.f_value().size();
+				outer = v_lexer.f_integer();
 				for (size_t i = 0; i < outer; ++i) {
 					if (!scope) f_throw(L"no more outer scope."sv);
 					scope = scope->v_outer;
@@ -230,19 +230,19 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		return std::make_unique<ast::t_literal<bool>>(at, false);
 	case t_lexer::e_token__INTEGER:
 		{
-			auto value = f_number<intptr_t>();
+			auto value = v_lexer.f_integer();
 			v_lexer.f_next();
 			return std::make_unique<ast::t_literal<intptr_t>>(at, value);
 		}
 	case t_lexer::e_token__FLOAT:
 		{
-			auto value = f_number<double>();
+			auto value = v_lexer.f_float();
 			v_lexer.f_next();
 			return std::make_unique<ast::t_literal<double>>(at, value);
 		}
 	case t_lexer::e_token__STRING:
 		{
-			auto value = t_string::f_instantiate(v_lexer.f_value().data(), v_lexer.f_value().size());
+			auto value = v_lexer.f_string();
 			v_lexer.f_next();
 			return std::make_unique<ast::t_literal<t_svalue&>>(at, v_module.f_slot(value));
 		}
@@ -407,13 +407,13 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__INTEGER:
 			{
-				auto value = f_number<intptr_t>();
+				auto value = v_lexer.f_integer();
 				v_lexer.f_next();
 				return f_action(indent, new ast::t_literal<intptr_t>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		case t_lexer::e_token__FLOAT:
 			{
-				auto value = f_number<double>();
+				auto value = v_lexer.f_float();
 				v_lexer.f_next();
 				return f_action(indent, new ast::t_literal<double>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
@@ -421,7 +421,7 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		break;
 	case e_instruction__COMPLEMENT_T:
 		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
-			auto value = f_number<intptr_t>();
+			auto value = v_lexer.f_integer();
 			v_lexer.f_next();
 			return f_action(indent, new ast::t_literal<intptr_t>(at, ~value), a_assignable);
 		}
@@ -641,7 +641,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			auto node = std::make_unique<ast::t_if>(at, f_expression());
 			if (v_lexer.f_newline()) {
 				if (v_lexer.f_indent() > indent) f_block(node->v_true);
-			} else if (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1) {
+			} else if (f_single_colon()) {
 				v_lexer.f_next();
 				node->v_true.push_back(f_expression());
 			} else {
@@ -651,7 +651,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 				v_lexer.f_next();
 				if (v_lexer.f_newline()) {
 					if (v_lexer.f_indent() > indent) f_block(node->v_false);
-				} else if (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1) {
+				} else if (f_single_colon()) {
 					v_lexer.f_next();
 					node->v_false.push_back(f_expression());
 				} else if (v_lexer.f_token() == t_lexer::e_token__IF) {
@@ -689,7 +689,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) node->v_condition = f_expression();
 			if (v_lexer.f_token() != t_lexer::e_token__SEMICOLON) f_throw(L"expecting ';'."sv);
 			v_lexer.f_next();
-			if (!v_lexer.f_newline() && !(v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1)) f_expressions(node->v_next);
+			if (!v_lexer.f_newline() && !f_single_colon()) f_expressions(node->v_next);
 			bool can_jump = v_can_jump;
 			v_can_jump = true;
 			f_block_or_expression(indent, node->v_block);
@@ -767,7 +767,7 @@ void t_parser::f_block_or_expression(size_t a_indent, std::vector<std::unique_pt
 {
 	if (v_lexer.f_newline()) {
 		if (v_lexer.f_indent() > a_indent) f_block(a_nodes);
-	} else if (v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_value().size() == 1) {
+	} else if (f_single_colon()) {
 		v_lexer.f_next();
 		a_nodes.push_back(f_expression());
 	} else {

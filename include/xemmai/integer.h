@@ -58,10 +58,6 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 	}
 	static t_pvalue f_construct(t_type* a_class, const t_string& a_value)
 	{
-		return f_parse(a_value);
-	}
-	static intptr_t f_parse(const wchar_t* a_value)
-	{
 		intptr_t value;
 		std::swscanf(a_value, XEMMAI__MACRO__L("%" SCNiPTR), &value);
 		return value;
