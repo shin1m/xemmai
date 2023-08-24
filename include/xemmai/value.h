@@ -50,25 +50,17 @@ protected:
 		static inline XEMMAI__PORTABLE__THREAD t_object* volatile* v_next;
 
 #ifdef _WIN32
-		static void f__push(t_object* a_object)
+		void f__push(t_object* a_object)
 #else
 		XEMMAI__PORTABLE__ALWAYS_INLINE static void f_push(t_object* a_object)
 #endif
 		{
-#ifdef _WIN32
-			auto p = v_instance->v_head;
-#else
 			auto p = v_head;
-#endif
 			*p = a_object;
 			if (p == v_next)
 				v_instance->f_next();
 			else
-#ifdef _WIN32
-				[[likely]] v_instance->v_head = p + 1;
-#else
 				[[likely]] v_head = p + 1;
-#endif
 		}
 
 		t_object* volatile v_objects[V_SIZE];

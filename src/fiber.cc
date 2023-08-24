@@ -81,57 +81,36 @@ void t_fiber::t_internal::f_epoch_copy()
 
 void t_fiber::t_internal::f_epoch_scan()
 {
-	auto m = v_estack_used - v_estack.get();
-	auto used0 = v_estack_buffer.get() + m;
-	auto used1 = v_estack_last_head + m;
+	auto used1 = v_estack_last_head + (v_estack_used - v_estack.get());
 	auto used2 = v_estack_last_used;
 	v_estack_last_used = used1;
-	v_estack_decrements = v_estack_buffer.get();
 	auto n = v_stack_bottom - v_stack_top;
 	auto top0 = v_stack_copy - n;
 	auto top1 = v_stack_last_bottom - n;
 	auto top2 = v_stack_last_top;
 	v_stack_last_top = top1;
-	v_stack_decrements = v_stack_last_bottom;
 	std::lock_guard lock(f_engine()->v_object__heap.f_mutex());
-	auto p0 = v_estack_buffer.get();
+	auto p0 = v_estack_decrements = v_estack_buffer.get();
 	auto p1 = v_estack_last_head;
-	for (auto used = std::min(used1, used2); p1 < used; ++p1) {
-		auto p = *p0++;
-		auto q = *p1;
-		if (p == q) continue;
-		p = f_engine()->f_object__find(p);
-		if (p == q) continue;
-		if (p) p->f_increment();
-		if (q) *v_estack_decrements++ = q;
-		*p1 = p;
-	}
-	if (used1 > used2)
+	f_engine()->f_epoch_increment(p0, p1, std::min(used1, used2), v_estack_decrements);
+	auto increment = [&](auto& p0, auto& p1, auto p2)
+	{
 		do {
 			auto p = f_engine()->f_object__find(*p0++);
 			if (p) p->f_increment();
 			*p1++ = p;
-		} while (p1 < used1);
+		} while (p1 < p2);
+	};
+	if (used1 > used2)
+		increment(p0, p1, used1);
 	else
 		for (; p1 < used2; ++p1) if (*p1) *v_estack_decrements++ = *p1;
+	v_stack_decrements = v_stack_last_bottom;
 	if (top1 < top2)
-		do {
-			auto p = f_engine()->f_object__find(*top0++);
-			if (p) p->f_increment();
-			*top1++ = p;
-		} while (top1 < top2);
+		increment(top0, top1, top2);
 	else
 		for (; top2 < top1; ++top2) if (*top2) *v_stack_decrements++ = *top2;
-	for (; top0 < v_stack_copy; ++top1) {
-		auto p = *top0++;
-		auto q = *top1;
-		if (p == q) continue;
-		p = f_engine()->f_object__find(p);
-		if (p == q) continue;
-		if (p) p->f_increment();
-		if (q) *v_stack_decrements++ = q;
-		*top1 = p;
-	}
+	f_engine()->f_epoch_increment(top0, top1, v_stack_last_bottom, v_stack_decrements);
 }
 
 void t_fiber::t_internal::f_epoch_decrement()

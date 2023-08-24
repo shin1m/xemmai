@@ -23,6 +23,8 @@ struct t_thread
 #endif
 #ifdef _WIN32
 		HANDLE v_handle = NULL;
+		CONTEXT v_context_last{};
+		CONTEXT v_context;
 #endif
 		t_object* volatile* v_reviving = nullptr;
 

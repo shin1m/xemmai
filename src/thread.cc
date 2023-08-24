@@ -37,12 +37,24 @@ void t_thread::t_internal::f_epoch()
 	if (v_done > 0) {
 		++v_done;
 		for (auto p = v_fibers; p; p = p->v_next) p->f_epoch_copy();
+#ifdef _WIN32
+		v_context = {};
+#endif
 	} else {
 		f_epoch_suspend();
 		for (auto p = v_fibers; p; p = p->v_next) p->f_epoch_copy();
 		f_epoch_resume();
 	}
 	for (auto p = v_fibers; p; p = p->v_next) p->f_epoch_scan();
+#ifdef _WIN32
+	auto decrements = reinterpret_cast<t_object**>(&v_context);
+	{
+		std::lock_guard lock(f_engine()->v_object__heap.f_mutex());
+		auto p0 = decrements;
+		auto p1 = reinterpret_cast<t_object**>(&v_context_last);
+		f_engine()->f_epoch_increment(p0, p1, reinterpret_cast<t_object**>(&v_context_last + 1), decrements);
+	}
+#endif
 	v_increments.f_flush();
 	for (auto p = &v_fibers; *p;) {
 		auto q = *p;
@@ -54,6 +66,9 @@ void t_thread::t_internal::f_epoch()
 			delete q;
 		}
 	}
+#ifdef _WIN32
+	for (auto p = reinterpret_cast<t_object**>(&v_context); p != decrements; ++p) (*p)->f_decrement();
+#endif
 	v_decrements.f_flush();
 }
 

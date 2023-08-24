@@ -533,12 +533,12 @@ void t_engine::f_debug_continue(t_thread* a_stepping)
 #ifdef _WIN32
 void t_slot::t_increments::f_push(t_object* a_object)
 {
-	f__push(a_object);
+	v_instance->f__push(a_object);
 }
 
 void t_slot::t_decrements::f_push(t_object* a_object)
 {
-	f__push(a_object);
+	v_instance->f__push(a_object);
 }
 
 t_object* t_engine::f_allocate(size_t a_size)

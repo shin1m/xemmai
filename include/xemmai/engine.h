@@ -121,6 +121,19 @@ private:
 		while (sem_wait(&v_epoch__received) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
 	}
 #endif
+	void f_epoch_increment(t_object**& a_p0, t_object**& a_p1, t_object** a_q1, t_object**& a_decrements)
+	{
+		for (; a_p1 < a_q1; ++a_p1) {
+			auto p = *a_p0++;
+			auto q = *a_p1;
+			if (p == q) continue;
+			p = f_object__find(p);
+			if (p == q) continue;
+			if (p) p->f_increment();
+			if (q) *a_decrements++ = q;
+			*a_p1 = p;
+		}
+	}
 	void f_collector();
 	void f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock);
 	void f_debug_enter_and_notify()
@@ -321,10 +334,9 @@ inline void t_thread::t_internal::f_epoch_suspend()
 #endif
 #ifdef _WIN32
 	SuspendThread(v_handle);
-	CONTEXT context;
-	context.ContextFlags = CONTEXT_CONTROL;
-	GetThreadContext(v_handle, &context);
-	auto sp = reinterpret_cast<t_object**>(context.Rsp);
+	v_context.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
+	GetThreadContext(v_handle, &v_context);
+	auto sp = reinterpret_cast<t_object**>(v_context.Rsp);
 	MEMORY_BASIC_INFORMATION mbi;
 	for (auto p = sp;;) {
 		VirtualQuery(p, &mbi, sizeof(mbi));
