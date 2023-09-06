@@ -38,7 +38,7 @@ target_include_directories(xemmai PUBLIC
 	)
 target_compile_definitions(xemmai PRIVATE
 	"XEMMAI_MODULE_PATH=../lib/xemmai-${xemmai_VERSION}"
-	"$<$<PLATFORM_ID:Windows>:XEMMAI__PORTABLE__EXPORT=__declspec(dllexport)>"
+	"$<$<PLATFORM_ID:Windows>:XEMMAI__PUBLIC=__declspec(dllexport)>"
 	PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:_ITERATOR_DEBUG_LEVEL=0>"
 	)
 target_link_libraries(xemmai PRIVATE $<$<NOT:$<PLATFORM_ID:Windows>>:dl> Iconv::Iconv Threads::Threads)

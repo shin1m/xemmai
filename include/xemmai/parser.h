@@ -10,7 +10,7 @@
 namespace xemmai
 {
 
-class t_parser
+class XEMMAI__LOCAL t_parser
 {
 	t_script& v_module;
 	t_lexer v_lexer;

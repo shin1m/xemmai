@@ -40,7 +40,7 @@ class t_bytes
 	}
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_object* f_instantiate(size_t a_size);
+	XEMMAI__PUBLIC static t_object* f_instantiate(size_t a_size);
 
 	t_object* f_string() const;
 	intptr_t f_get_at(intptr_t a_index) const
@@ -78,7 +78,7 @@ template<>
 struct t_type_of<t_bytes> : t_holds<t_bytes>
 {
 	static t_pvalue f__construct(t_type* a_class, size_t a_size);
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);

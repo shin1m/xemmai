@@ -32,7 +32,7 @@ class t_engine
 	friend class t_symbol;
 	friend struct t_code;
 	friend struct t_safe_region;
-	friend XEMMAI__PORTABLE__EXPORT t_engine* f_engine();
+	friend XEMMAI__PUBLIC t_engine* f_engine();
 
 public:
 	struct t_options
@@ -134,8 +134,8 @@ private:
 			*a_p1 = p;
 		}
 	}
-	void f_collector();
-	void f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock);
+	XEMMAI__LOCAL void f_collector();
+	XEMMAI__LOCAL void f_debug_stop_and_wait(std::unique_lock<std::mutex>& a_lock);
 	void f_debug_enter_and_notify()
 	{
 		++v_debug__safe;
@@ -152,12 +152,12 @@ private:
 		f_debug_enter_and_notify();
 		f_debug_wait_and_leave(a_lock);
 	}
-	void f_debug_safe_point(std::unique_lock<std::mutex>& a_lock);
+	XEMMAI__LOCAL void f_debug_safe_point(std::unique_lock<std::mutex>& a_lock);
 	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock, auto a_do);
-	void f_debug_break_point(std::unique_lock<std::mutex>& a_lock);
-	void f_debug_script_loaded(t_debug_script& a_debug);
-	void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
-	void f_finalize(t_thread::t_internal* a_thread);
+	XEMMAI__LOCAL void f_debug_break_point(std::unique_lock<std::mutex>& a_lock);
+	XEMMAI__LOCAL void f_debug_script_loaded(t_debug_script& a_debug);
+	XEMMAI__LOCAL void f_debug_safe_region_leave(std::unique_lock<std::mutex>& a_lock);
+	XEMMAI__LOCAL void f_finalize(t_thread::t_internal* a_thread);
 
 public:
 	t_engine(const t_options& a_options, size_t a_count, char** a_arguments);
@@ -176,7 +176,7 @@ public:
 		return p;
 	}
 #ifdef _WIN32
-	XEMMAI__PORTABLE__EXPORT t_object* f_allocate(size_t a_size);
+	XEMMAI__PUBLIC t_object* f_allocate(size_t a_size);
 	t_object* f__allocate(size_t a_size)
 #else
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f_allocate(size_t a_size)
@@ -210,8 +210,8 @@ public:
 	{
 		return v_module_io;
 	}
-	t_object* f_fork(const t_pvalue& a_callable, size_t a_stack);
-	intptr_t f_run(t_debugger* a_debugger);
+	XEMMAI__LOCAL t_object* f_fork(const t_pvalue& a_callable, size_t a_stack);
+	XEMMAI__LOCAL intptr_t f_run(t_debugger* a_debugger);
 	void f_threads(auto a_callback)
 	{
 		for (auto p = v_thread__internals; p; p = p->v_next) if (p->v_done == 0) a_callback(p->v_thread);
@@ -220,17 +220,17 @@ public:
 	{
 		return v_module__instances;
 	}
-	void f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc);
-	void f_debug_safe_point();
-	void f_debug_break_point();
-	XEMMAI__PORTABLE__EXPORT void f_debug_safe_region_enter();
-	XEMMAI__PORTABLE__EXPORT void f_debug_safe_region_leave();
-	void f_debug_stop();
+	XEMMAI__LOCAL void f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc);
+	XEMMAI__LOCAL void f_debug_safe_point();
+	XEMMAI__LOCAL void f_debug_break_point();
+	XEMMAI__PUBLIC void f_debug_safe_region_enter();
+	XEMMAI__PUBLIC void f_debug_safe_region_leave();
+	XEMMAI__LOCAL void f_debug_stop();
 	t_thread* f_debug_stepping() const
 	{
 		return v_debug__stepping;
 	}
-	void f_debug_continue(t_thread* a_stepping = nullptr);
+	XEMMAI__LOCAL void f_debug_continue(t_thread* a_stepping = nullptr);
 };
 
 void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, auto a_do)

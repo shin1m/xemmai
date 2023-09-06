@@ -9,7 +9,7 @@
 namespace xemmai
 {
 
-struct t_lexer
+struct XEMMAI__LOCAL t_lexer
 {
 	enum t_token
 	{

@@ -20,10 +20,10 @@ class t_symbol
 	{
 		v_entry->second = t_object::f_of(this);
 	}
-	~t_symbol();
+	XEMMAI__LOCAL ~t_symbol();
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_value);
+	XEMMAI__PUBLIC static t_object* f_instantiate(std::wstring_view a_value);
 
 	const std::wstring& f_string() const
 	{
@@ -34,7 +34,7 @@ public:
 template<>
 struct t_type_of<t_symbol> : t_holds<t_symbol>
 {
-	void f_define();
+	XEMMAI__LOCAL void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

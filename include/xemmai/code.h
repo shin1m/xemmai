@@ -152,7 +152,7 @@ struct t_at
 	size_t v_column;
 };
 
-struct t_code
+struct XEMMAI__LOCAL t_code
 {
 	struct t_variable
 	{
@@ -180,7 +180,7 @@ struct t_code
 	};
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-	static size_t f_loop(t_context* a_context, const void*** a_labels = nullptr);
+	XEMMAI__PUBLIC static size_t f_loop(t_context* a_context, const void*** a_labels = nullptr);
 	static const void** f_labels()
 	{
 		const void** labels;
@@ -190,7 +190,7 @@ struct t_code
 
 	static inline const void** v_labels = f_labels();
 #else
-	static XEMMAI__PORTABLE__EXPORT size_t f_loop(t_context* a_context);
+	XEMMAI__PUBLIC static size_t f_loop(t_context* a_context);
 #endif
 	static void f_rethrow [[noreturn]] ();
 	static void f_try(t_context* a_context);

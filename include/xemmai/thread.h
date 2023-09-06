@@ -34,8 +34,8 @@ struct t_thread
 			if (v_handle != NULL) CloseHandle(v_handle);
 		}
 #endif
-		void f_initialize(size_t a_stack, void* a_bottom);
-		void f_initialize(t_thread* a_thread);
+		XEMMAI__LOCAL void f_initialize(size_t a_stack, void* a_bottom);
+		XEMMAI__LOCAL void f_initialize(t_thread* a_thread);
 		void f_epoch_get()
 		{
 			v_increments.v_epoch.store(v_increments.v_head, std::memory_order_release);
@@ -43,7 +43,7 @@ struct t_thread
 		}
 		void f_epoch_suspend();
 		void f_epoch_resume();
-		void f_epoch();
+		XEMMAI__LOCAL void f_epoch();
 		void f_revive()
 		{
 			v_reviving = v_increments.v_head;
@@ -56,7 +56,7 @@ struct t_thread
 	{
 		return t_object::f_of(v_current->v_thread);
 	}
-	static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
+	XEMMAI__LOCAL static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
 
 	t_internal* v_internal;
 	t_slot v_fiber;
@@ -64,13 +64,13 @@ struct t_thread
 	t_thread(t_internal* a_internal, t_object* a_fiber) : v_internal(a_internal), v_fiber(a_fiber)
 	{
 	}
-	void f_join();
+	XEMMAI__LOCAL void f_join();
 };
 
 template<>
 struct t_type_of<t_thread> : t_holds<t_thread>
 {
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

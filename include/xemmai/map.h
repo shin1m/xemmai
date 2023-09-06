@@ -109,7 +109,7 @@ private:
 			for (; p->v_gap >= gap && !f_equals(*p, a_hash, a_key); ++gap) if (++p >= v_end) p = f_entries();
 			return {p, gap};
 		}
-		void f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_pvalue a_key, t_pvalue a_value);
+		XEMMAI__LOCAL void f_put(t_entry* a_p, size_t a_gap, size_t a_hash, t_pvalue a_key, t_pvalue a_value);
 	};
 	friend struct t_type_of<t_table>;
 
@@ -118,7 +118,7 @@ private:
 	t_map(t_type* a_table) : v_table(t_table::f_instantiate(a_table, t_table::v_ranks[0]))
 	{
 	}
-	void f_rehash(const t_table::t_rank& a_rank);
+	XEMMAI__LOCAL void f_rehash(const t_table::t_rank& a_rank);
 
 public:
 	class t_iterator
@@ -166,15 +166,15 @@ struct t_type_of<t_map::t_table> : t_uninstantiatable<t_finalizes<t_derives<t_ma
 template<>
 struct t_type_of<t_map> : t_derivable<t_holds<t_map, t_type_of<t_sharable>>>
 {
-	static t_object* f__string(t_map& a_self);
-	static void f_clear(t_map& a_self);
-	static size_t f_size(t_map& a_self);
-	static t_pvalue f__get_at(t_map& a_self, const t_pvalue& a_key);
-	static t_pvalue f__set_at(t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value);
-	static bool f_has(t_map& a_self, const t_pvalue& a_key);
-	static t_pvalue f_remove(t_map& a_self, const t_pvalue& a_key);
-	static void f_each(t_map& a_self, const t_pvalue& a_callable);
-	static void f_define();
+	XEMMAI__LOCAL static t_object* f__string(t_map& a_self);
+	XEMMAI__LOCAL static void f_clear(t_map& a_self);
+	XEMMAI__LOCAL static size_t f_size(t_map& a_self);
+	XEMMAI__LOCAL static t_pvalue f__get_at(t_map& a_self, const t_pvalue& a_key);
+	XEMMAI__LOCAL static t_pvalue f__set_at(t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f_has(t_map& a_self, const t_pvalue& a_key);
+	XEMMAI__LOCAL static t_pvalue f_remove(t_map& a_self, const t_pvalue& a_key);
+	XEMMAI__LOCAL static void f_each(t_map& a_self, const t_pvalue& a_callable);
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

@@ -45,7 +45,7 @@ struct t_sharable : t_owned
 template<>
 struct t_type_of<t_sharable> : t_bears<t_sharable>
 {
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 };

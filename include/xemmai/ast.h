@@ -9,7 +9,7 @@ namespace xemmai
 
 struct t_emit;
 
-namespace ast
+namespace ast XEMMAI__LOCAL
 {
 
 struct t_block
@@ -500,7 +500,7 @@ struct t_set_at : t_node
 
 }
 
-struct t_emit
+struct XEMMAI__LOCAL t_emit
 {
 	class t_label : std::vector<size_t>
 	{

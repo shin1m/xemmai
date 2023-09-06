@@ -115,9 +115,9 @@ struct t_type_of<t_object>
 	{
 		return std::forward<decltype(a_value)>(a_value);
 	}
-	static void f_initialize(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
-	static void f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
-	static t_object* f__string(const t_pvalue& a_self);
+	XEMMAI__LOCAL static void f_initialize(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
+	XEMMAI__LOCAL static void f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
+	XEMMAI__LOCAL static t_object* f__string(const t_pvalue& a_self);
 	static intptr_t f__hash(const t_pvalue& a_self)
 	{
 		return a_self.f_tag();
@@ -130,7 +130,7 @@ struct t_type_of<t_object>
 	{
 		return a_self != a_other;
 	}
-	void f_define();
+	XEMMAI__LOCAL void f_define();
 
 	t_slot v_this;
 	size_t v_depth;
@@ -155,7 +155,7 @@ struct t_type_of<t_object>
 	{
 		return reinterpret_cast<std::pair<t_object*, size_t>*>(f_fields() + v_fields);
 	}
-	size_t f_index(t_object* a_key);
+	XEMMAI__LOCAL size_t f_index(t_object* a_key);
 	void f_scan_type(t_scan a_scan)
 	{
 		a_scan(v_this);
@@ -175,10 +175,10 @@ struct t_type_of<t_object>
 		size_t i = t_type_of<T>::V_ids.size() - 1;
 		return i <= v_depth && v_ids[i] == f_type_id<T>();
 	}
-	XEMMAI__PORTABLE__EXPORT std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> f_merge(const t_fields& a_fields);
+	XEMMAI__PUBLIC std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> f_merge(const t_fields& a_fields);
 	template<typename T>
 	t_object* f_derive(t_object* a_module, const t_fields& a_fields);
-	XEMMAI__PORTABLE__EXPORT t_object* f_do_derive(const t_fields& a_fields);
+	XEMMAI__PUBLIC t_object* f_do_derive(const t_fields& a_fields);
 	t_object* (t_type::*v_derive)(const t_fields&) = nullptr;
 	t_object* f_derive(const t_fields& a_fields)
 	{
@@ -190,80 +190,80 @@ struct t_type_of<t_object>
 	}
 	void (*f_scan)(t_object*, t_scan) = f_do_scan;
 	void (*f_finalize)(t_object*, t_scan) = nullptr;
-	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PUBLIC t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 	t_pvalue (t_type::*v_construct)(t_pvalue*, size_t) = &t_type::f_do_construct;
 	t_pvalue f_construct(t_pvalue* a_stack, size_t a_n)
 	{
 		return (this->*v_construct)(a_stack, a_n);
 	}
-	XEMMAI__PORTABLE__EXPORT void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PUBLIC void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 	void (t_type::*v_instantiate)(t_pvalue*, size_t) = &t_type::f_do_instantiate;
-	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_get(t_object* a_this, t_object* a_key, size_t& a_index);
+	XEMMAI__PUBLIC t_pvalue f_do_get(t_object* a_this, t_object* a_key, size_t& a_index);
 	t_pvalue (t_type::*v_get)(t_object*, t_object*, size_t&) = &t_type::f_do_get;
 	t_pvalue f__get(const t_pvalue& a_this, t_object* a_key, size_t& a_index);
 	t_pvalue f_get(const t_pvalue& a_this, t_object* a_key, size_t& a_index);
 	void f_bind_class(auto&& a_this, size_t a_index, t_pvalue* a_stack);
 	void f__bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack);
 	void f_bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack);
-	XEMMAI__PORTABLE__EXPORT static void f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value);
+	XEMMAI__PUBLIC static void f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value);
 	void (*v_put)(t_object*, t_object*, const t_pvalue&) = f_do_put;
 	void f__put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value);
 	void f_put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value);
-	XEMMAI__PORTABLE__EXPORT bool f_do_has(t_object* a_this, t_object* a_key);
+	XEMMAI__PUBLIC bool f_do_has(t_object* a_this, t_object* a_key);
 	bool (t_type::*v_has)(t_object*, t_object*) = &t_type::f_do_has;
 	bool f_has(t_object* a_this, t_object* a_key, size_t& a_index);
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PUBLIC static size_t f_do_call(t_object* a_this, t_pvalue* a_stack, size_t a_n);
 	size_t (*f_call)(t_object*, t_pvalue*, size_t) = f_do_call;
 	void f_invoke_class(auto&& a_this, size_t a_index, t_pvalue* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT void f__invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PUBLIC void f__invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
 	void f_invoke(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t_pvalue* a_stack, size_t a_n);
-	XEMMAI__PORTABLE__EXPORT static void f_do_string(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static void f_do_string(t_object* a_this, t_pvalue* a_stack);
 	void (*f_string)(t_object*, t_pvalue*) = f_do_string;
-	XEMMAI__PORTABLE__EXPORT static void f_do_hash(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static void f_do_hash(t_object* a_this, t_pvalue* a_stack);
 	void (*f_hash)(t_object*, t_pvalue*) = f_do_hash;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_get_at)(t_object*, t_pvalue*) = f_do_get_at;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_set_at(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_set_at(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_set_at)(t_object*, t_pvalue*) = f_do_set_at;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_plus(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_plus(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_plus)(t_object*, t_pvalue*) = f_do_plus;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_minus(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_minus(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_minus)(t_object*, t_pvalue*) = f_do_minus;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_not(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_not(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_not)(t_object*, t_pvalue*) = f_do_not;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_complement(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_complement(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_complement)(t_object*, t_pvalue*) = f_do_complement;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_multiply(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_multiply(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_multiply)(t_object*, t_pvalue*) = f_do_multiply;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_divide(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_divide(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_divide)(t_object*, t_pvalue*) = f_do_divide;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_modulus(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_modulus(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_modulus)(t_object*, t_pvalue*) = f_do_modulus;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_add(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_add(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_add)(t_object*, t_pvalue*) = f_do_add;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_subtract(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_subtract(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_subtract)(t_object*, t_pvalue*) = f_do_subtract;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_left_shift(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_left_shift(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_left_shift)(t_object*, t_pvalue*) = f_do_left_shift;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_right_shift(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_right_shift(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_right_shift)(t_object*, t_pvalue*) = f_do_right_shift;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_less(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_less(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_less)(t_object*, t_pvalue*) = f_do_less;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_less_equal(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_less_equal(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_less_equal)(t_object*, t_pvalue*) = f_do_less_equal;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_greater(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_greater(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_greater)(t_object*, t_pvalue*) = f_do_greater;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_greater_equal(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_greater_equal(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_greater_equal)(t_object*, t_pvalue*) = f_do_greater_equal;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_equals(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_equals(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_equals)(t_object*, t_pvalue*) = f_do_equals;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_not_equals(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_not_equals(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_not_equals)(t_object*, t_pvalue*) = f_do_not_equals;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_and(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_and(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_and)(t_object*, t_pvalue*) = f_do_and;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_xor(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_xor(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_xor)(t_object*, t_pvalue*) = f_do_xor;
-	XEMMAI__PORTABLE__EXPORT static size_t f_do_or(t_object* a_this, t_pvalue* a_stack);
+	XEMMAI__PUBLIC static size_t f_do_or(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_or)(t_object*, t_pvalue*) = f_do_or;
 	template<typename T, typename U>
 	void f_override()
@@ -317,7 +317,7 @@ inline bool f_is(auto&& a_object)
 	return t_type_of<typename t_fundamental<T>::t_type>::template t_cast<T>::f_is(std::forward<decltype(a_object)>(a_object));
 }
 
-XEMMAI__PORTABLE__EXPORT void f_throw_type_error [[noreturn]] (const std::type_info& a_type, const wchar_t* a_name);
+XEMMAI__PUBLIC void f_throw_type_error [[noreturn]] (const std::type_info& a_type, const wchar_t* a_name);
 
 template<typename T>
 void f_throw_type_error [[noreturn]] (const wchar_t* a_name)

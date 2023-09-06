@@ -64,7 +64,7 @@ public:
 template<>
 struct t_type_of<t_tuple> : t_holds<t_tuple>
 {
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

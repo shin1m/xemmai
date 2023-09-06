@@ -17,12 +17,12 @@ struct t_module
 		virtual void f_scan(t_scan a_scan) = 0;
 	};
 
-	static t_object* f_load_script(std::wstring_view a_path);
-	static std::vector<std::pair<t_root, t_rvalue>> f_execute_script(t_object* a_code);
-	static t_object* f_load_library(std::wstring_view a_path);
-	static t_object* f_new(std::wstring_view a_name, t_object* a_body, const std::vector<std::pair<t_root, t_rvalue>>& a_fields);
-	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_name);
-	static void f_main();
+	XEMMAI__LOCAL static t_object* f_load_script(std::wstring_view a_path);
+	XEMMAI__LOCAL static std::vector<std::pair<t_root, t_rvalue>> f_execute_script(t_object* a_code);
+	XEMMAI__LOCAL static t_object* f_load_library(std::wstring_view a_path);
+	XEMMAI__LOCAL static t_object* f_new(std::wstring_view a_name, t_object* a_body, const std::vector<std::pair<t_root, t_rvalue>>& a_fields);
+	XEMMAI__PUBLIC static t_object* f_instantiate(std::wstring_view a_name);
+	XEMMAI__LOCAL static void f_main();
 
 	std::map<std::wstring, t_slot, std::less<>>::iterator v_entry;
 	t_slot v_body;
@@ -31,7 +31,7 @@ struct t_module
 	{
 		v_entry->second = t_object::f_of(this);
 	}
-	~t_module();
+	XEMMAI__LOCAL ~t_module();
 	void f_scan(t_scan a_scan)
 	{
 		a_scan(v_entry->second);
@@ -66,7 +66,7 @@ struct t_debug_script : t_script
 
 	using t_script::t_script;
 	virtual void f_scan(t_scan a_scan);
-	std::pair<size_t, size_t> f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new);
+	XEMMAI__LOCAL std::pair<size_t, size_t> f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new);
 	std::pair<size_t, size_t> f_set_break_point(size_t a_line, size_t a_column = 0)
 	{
 		return f_replace_break_point(a_line, a_column, e_instruction__SAFE_POINT, e_instruction__BREAK_POINT);
@@ -91,7 +91,7 @@ struct t_library : t_module::t_body
 	t_library(t_handle* a_handle) : v_handle(a_handle)
 	{
 	}
-	XEMMAI__PORTABLE__EXPORT virtual ~t_library();
+	XEMMAI__PUBLIC virtual ~t_library();
 	virtual std::vector<std::pair<t_root, t_rvalue>> f_define() = 0;
 };
 
@@ -121,7 +121,7 @@ inline t_object* f_new(auto* a_library, auto&&... a_xs)
 
 }
 
-#define XEMMAI__MODULE__FACTORY extern "C" XEMMAI__PORTABLE__DEFINE_EXPORT xemmai::t_object* f_factory
+#define XEMMAI__MODULE__FACTORY extern "C" XEMMAI__EXPORT xemmai::t_object* f_factory
 
 #define XEMMAI__LIBRARY__MEMBERS\
 	virtual void f_scan(t_scan a_scan);\

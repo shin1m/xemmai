@@ -22,12 +22,12 @@ struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 		}
 	};
 
-	XEMMAI__PORTABLE__EXPORT static t_object* f__string(bool a_self);
+	XEMMAI__PUBLIC static t_object* f__string(bool a_self);
 	static intptr_t f__hash(bool a_self)
 	{
 		return a_self ? 1 : 0;
 	}
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 };

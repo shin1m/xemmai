@@ -66,7 +66,7 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 	{
 		return std::wcstod(a_value, NULL);
 	}
-	XEMMAI__PORTABLE__EXPORT static t_object* f__string(double a_self);
+	XEMMAI__PUBLIC static t_object* f__string(double a_self);
 	static intptr_t f__hash(double a_self)
 	{
 		return std::hash<double>{}(a_self);
@@ -111,9 +111,9 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 	{
 		return a_self >= a_value;
 	}
-	static bool f__equals(double a_self, const t_pvalue& a_value);
-	static bool f__not_equals(double a_self, const t_pvalue& a_value);
-	static void f_define();
+	XEMMAI__LOCAL static bool f__equals(double a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f__not_equals(double a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);

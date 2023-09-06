@@ -17,7 +17,7 @@ class t_global : public t_library
 {
 	friend struct t_type_of<t_map>;
 	friend class t_engine;
-	friend XEMMAI__PORTABLE__EXPORT t_global* f_global();
+	friend XEMMAI__PUBLIC t_global* f_global();
 
 	static inline XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
@@ -235,7 +235,7 @@ XEMMAI__LIBRARY__TYPE_AS(t_global, t_lexer::t_error, lexer__error)
 XEMMAI__LIBRARY__TYPE_AS(t_global, t_parser::t_error, parser__error)
 
 #ifdef _WIN32
-XEMMAI__PORTABLE__EXPORT t_global* f_global();
+XEMMAI__PUBLIC t_global* f_global();
 #else
 inline t_global* f_global()
 {

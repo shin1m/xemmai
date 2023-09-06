@@ -9,7 +9,7 @@ namespace xemmai
 
 struct t_backtrace
 {
-	static void f_push(t_object* a_throwable, t_object* a_lambda, void** a_pc);
+	XEMMAI__LOCAL static void f_push(t_object* a_throwable, t_object* a_lambda, void** a_pc);
 
 	t_backtrace* v_next;
 	t_slot v_lambda;
@@ -18,7 +18,7 @@ struct t_backtrace
 	t_backtrace(t_backtrace* a_next, t_object* a_lambda, void** a_pc) : v_next(a_next), v_lambda(a_lambda), v_pc(a_pc)
 	{
 	}
-	void f_dump() const;
+	XEMMAI__LOCAL void f_dump() const;
 };
 
 class t_throwable
@@ -31,10 +31,10 @@ class t_throwable
 	std::wstring v_message;
 
 protected:
-	XEMMAI__PORTABLE__EXPORT virtual ~t_throwable();
+	XEMMAI__PUBLIC virtual ~t_throwable();
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(std::wstring_view a_message);
+	XEMMAI__PUBLIC static t_object* f_instantiate(std::wstring_view a_message);
 
 	t_throwable(std::wstring_view a_message) : v_message(a_message)
 	{
@@ -43,13 +43,13 @@ public:
 	{
 		return v_message;
 	}
-	XEMMAI__PORTABLE__EXPORT virtual void f_dump() const;
+	XEMMAI__PUBLIC virtual void f_dump() const;
 };
 
 template<>
 struct t_type_of<t_throwable> : t_derivable<t_holds<t_throwable>>
 {
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

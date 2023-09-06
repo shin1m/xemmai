@@ -13,7 +13,7 @@ struct t_type_of<std::nullptr_t> : t_uninstantiatable<t_bears<std::nullptr_t>>
 	{
 		return t_string::f_instantiate(L"null"sv);
 	}
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 };

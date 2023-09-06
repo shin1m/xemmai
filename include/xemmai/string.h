@@ -24,7 +24,7 @@ class t_string
 	}
 
 public:
-	XEMMAI__PORTABLE__EXPORT static t_object* f_instantiate(const wchar_t* a_p, size_t a_n);
+	XEMMAI__PUBLIC static t_object* f_instantiate(const wchar_t* a_p, size_t a_n);
 	static t_object* f_instantiate(std::wstring_view a_value)
 	{
 		return f_instantiate(a_value.data(), a_value.size());
@@ -144,7 +144,7 @@ struct t_type_of<t_string> : t_holds<t_string>
 		if (a_i >= a_self.f_size()) f_throw(L"out of range."sv);
 		return a_self[a_i];
 	}
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	void f_do_instantiate(t_pvalue* a_stack, size_t a_n);

@@ -19,10 +19,10 @@ class t_path
 	std::wstring v_path;
 
 public:
-	XEMMAI__PORTABLE__EXPORT t_path(std::wstring_view a_path);
+	XEMMAI__PUBLIC t_path(std::wstring_view a_path);
 	t_path(const t_path& a_path) = default;
 	t_path& operator=(const t_path& a_path) = default;
-	XEMMAI__PORTABLE__EXPORT t_path& operator/=(std::wstring_view a_path);
+	XEMMAI__PUBLIC t_path& operator/=(std::wstring_view a_path);
 	t_path operator/(std::wstring_view a_path) const
 	{
 		return t_path(*this) /= a_path;

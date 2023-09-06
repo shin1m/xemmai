@@ -77,8 +77,8 @@ public:
 			return n;
 		});
 	}
-	XEMMAI__PORTABLE__EXPORT size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
-	XEMMAI__PORTABLE__EXPORT void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
+	XEMMAI__PUBLIC size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
+	XEMMAI__PUBLIC void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	void f_flush()
 	{
 		f_owned_or_shared<t_shared_lock_with_safe_region>([&]
@@ -101,7 +101,7 @@ struct t_type_of<io::t_file> : t_derivable<t_holds<io::t_file, t_type_of<t_shara
 {
 	using t_library = t_io;
 
-	static void f_define(t_io* a_library);
+	XEMMAI__LOCAL static void f_define(t_io* a_library);
 
 	using t_base::t_base;
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);

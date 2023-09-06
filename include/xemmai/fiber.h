@@ -64,9 +64,9 @@ struct t_fiber
 		LPVOID v_handle;
 #endif
 
-		t_internal(size_t a_stack, size_t a_n);
-		t_internal(size_t a_stack, void* a_bottom);
-		t_internal(t_fiber* a_fiber, void(*a_f)());
+		XEMMAI__LOCAL t_internal(size_t a_stack, size_t a_n);
+		XEMMAI__LOCAL t_internal(size_t a_stack, void* a_bottom);
+		XEMMAI__LOCAL t_internal(t_fiber* a_fiber, void(*a_f)());
 #ifdef _WIN32
 		~t_internal()
 		{
@@ -81,9 +81,9 @@ struct t_fiber
 			t_object* dummy = nullptr;
 			v_stack_top = &dummy;
 		}
-		void f_epoch_copy();
-		void f_epoch_scan();
-		void f_epoch_decrement();
+		XEMMAI__LOCAL void f_epoch_copy();
+		XEMMAI__LOCAL void f_epoch_scan();
+		XEMMAI__LOCAL void f_epoch_decrement();
 	};
 
 #ifdef _WIN32
@@ -93,7 +93,7 @@ struct t_fiber
 #endif
 
 	static t_object* f_current();
-	static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
+	XEMMAI__LOCAL static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
 	template<typename T_context>
 	static intptr_t f_main(auto a_main);
 	template<typename T_context>
@@ -110,13 +110,13 @@ struct t_fiber
 	t_fiber(const t_pvalue& a_callable, size_t a_stack) : v_callable(a_callable), v_stack(a_stack)
 	{
 	}
-	void f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc = nullptr);
+	XEMMAI__LOCAL void f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc = nullptr);
 };
 
 template<>
 struct t_type_of<t_fiber> : t_holds<t_fiber>
 {
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
@@ -128,8 +128,8 @@ struct t_type_of<t_fiber> : t_holds<t_fiber>
 };
 
 #ifdef _WIN32
-XEMMAI__PORTABLE__EXPORT t_pvalue* f_stack();
-XEMMAI__PORTABLE__EXPORT void f_stack__(t_pvalue* a_p);
+XEMMAI__PUBLIC t_pvalue* f_stack();
+XEMMAI__PUBLIC void f_stack__(t_pvalue* a_p);
 #else
 inline t_pvalue* f_stack()
 {

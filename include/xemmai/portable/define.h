@@ -12,16 +12,19 @@
 #define XEMMAI__PORTABLE__ALWAYS_INLINE
 #define XEMMAI__PORTABLE__FORCE_INLINE __forceinline
 #endif
+
 #ifdef _WIN32
-#ifndef XEMMAI__PORTABLE__EXPORT
-#define XEMMAI__PORTABLE__EXPORT __declspec(dllimport)
+#ifndef XEMMAI__PUBLIC
+#define XEMMAI__PUBLIC __declspec(dllimport)
 #endif
-#define XEMMAI__PORTABLE__DEFINE_EXPORT __declspec(dllexport)
+#define XEMMAI__EXPORT __declspec(dllexport)
+#define XEMMAI__LOCAL
 #define NOMINMAX
 #include <windows.h>
 #else
-#define XEMMAI__PORTABLE__EXPORT
-#define XEMMAI__PORTABLE__DEFINE_EXPORT
+#define XEMMAI__PUBLIC __attribute__((visibility("default")))
+#define XEMMAI__EXPORT
+#define XEMMAI__LOCAL __attribute__((visibility("hidden")))
 #endif
 
 #ifdef __unix__

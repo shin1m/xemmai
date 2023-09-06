@@ -14,7 +14,7 @@ using namespace std::literals;
 template<typename> struct t_type_of;
 class t_object;
 class t_engine;
-XEMMAI__PORTABLE__EXPORT t_engine* f_engine();
+XEMMAI__PUBLIC t_engine* f_engine();
 
 using t_type = t_type_of<t_object>;
 
@@ -98,7 +98,7 @@ protected:
 #endif
 	{
 #ifdef _WIN32
-		static XEMMAI__PORTABLE__EXPORT void f_push(t_object* a_object);
+		XEMMAI__PUBLIC static void f_push(t_object* a_object);
 #endif
 		void f_flush()
 		{
@@ -117,7 +117,7 @@ protected:
 		t_object* volatile* v_last = this->v_objects;
 
 #ifdef _WIN32
-		static XEMMAI__PORTABLE__EXPORT void f_push(t_object* a_object);
+		XEMMAI__PUBLIC static void f_push(t_object* a_object);
 #endif
 		void f_flush()
 		{
@@ -225,7 +225,7 @@ public:
 	}
 };
 
-void XEMMAI__PORTABLE__EXPORT f_throw [[noreturn]] (std::wstring_view a_message);
+void XEMMAI__PUBLIC f_throw [[noreturn]] (std::wstring_view a_message);
 
 template<typename T_tag>
 class t_value : public T_tag

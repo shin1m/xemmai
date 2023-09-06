@@ -49,7 +49,7 @@ struct t_type_of<io::t_reader> : t_derivable<t_holds<io::t_reader>>
 {
 	using t_library = t_io;
 
-	static void f_define(t_io* a_library);
+	XEMMAI__LOCAL static void f_define(t_io* a_library);
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

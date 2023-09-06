@@ -59,7 +59,7 @@ class t_list : public t_sharable
 	}
 
 public:
-	static XEMMAI__PORTABLE__EXPORT t_object* f_instantiate();
+	XEMMAI__PUBLIC static t_object* f_instantiate();
 
 	void f_clear()
 	{
@@ -121,20 +121,20 @@ public:
 template<>
 struct t_type_of<t_list> : t_derivable<t_holds<t_list, t_type_of<t_sharable>>>
 {
-	static t_object* f__string(t_list& a_self);
-	static void f_clear(t_list& a_self);
-	static size_t f_size(t_list& a_self);
-	static t_pvalue f__get_at(t_list& a_self, intptr_t a_index);
-	static t_pvalue f__set_at(t_list& a_self, intptr_t a_index, const t_pvalue& a_value);
-	static void f_push(t_list& a_self, const t_pvalue& a_value);
-	static t_pvalue f_pop(t_list& a_self);
-	static void f_unshift(t_list& a_self, const t_pvalue& a_value);
-	static t_pvalue f_shift(t_list& a_self);
-	static void f_insert(t_list& a_self, intptr_t a_index, const t_pvalue& a_value);
-	static t_pvalue f_remove(t_list& a_self, intptr_t a_index);
-	static void f_each(t_list& a_self, const t_pvalue& a_callable);
-	static void f_sort(t_list& a_self, const t_pvalue& a_callable);
-	static void f_define();
+	XEMMAI__LOCAL static t_object* f__string(t_list& a_self);
+	XEMMAI__LOCAL static void f_clear(t_list& a_self);
+	XEMMAI__LOCAL static size_t f_size(t_list& a_self);
+	XEMMAI__LOCAL static t_pvalue f__get_at(t_list& a_self, intptr_t a_index);
+	XEMMAI__LOCAL static t_pvalue f__set_at(t_list& a_self, intptr_t a_index, const t_pvalue& a_value);
+	XEMMAI__LOCAL static void f_push(t_list& a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static t_pvalue f_pop(t_list& a_self);
+	XEMMAI__LOCAL static void f_unshift(t_list& a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static t_pvalue f_shift(t_list& a_self);
+	XEMMAI__LOCAL static void f_insert(t_list& a_self, intptr_t a_index, const t_pvalue& a_value);
+	XEMMAI__LOCAL static t_pvalue f_remove(t_list& a_self, intptr_t a_index);
+	XEMMAI__LOCAL static void f_each(t_list& a_self, const t_pvalue& a_callable);
+	XEMMAI__LOCAL static void f_sort(t_list& a_self, const t_pvalue& a_callable);
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
 	static void f_do_scan(t_object* a_this, t_scan a_scan)

@@ -62,7 +62,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 		std::swscanf(a_value, XEMMAI__MACRO__L("%" SCNiPTR), &value);
 		return value;
 	}
-	XEMMAI__PORTABLE__EXPORT static t_object* f__string(intptr_t a_self);
+	XEMMAI__PUBLIC static t_object* f__string(intptr_t a_self);
 	static intptr_t f__hash(intptr_t a_self)
 	{
 		return a_self;
@@ -79,14 +79,14 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 	{
 		return ~a_self;
 	}
-	static t_pvalue f__multiply(intptr_t a_self, const t_pvalue& a_value);
-	static t_pvalue f__divide(intptr_t a_self, const t_pvalue& a_value);
-	static intptr_t f__modulus(intptr_t a_self, intptr_t a_value)
+	XEMMAI__LOCAL static t_pvalue f__multiply(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static t_pvalue f__divide(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static intptr_t f__modulus(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self % a_value;
 	}
-	static t_pvalue f__add(intptr_t a_self, const t_pvalue& a_value);
-	static t_pvalue f__subtract(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static t_pvalue f__add(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static t_pvalue f__subtract(intptr_t a_self, const t_pvalue& a_value);
 	static intptr_t f__left_shift(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self << a_value;
@@ -95,12 +95,12 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 	{
 		return a_self >> a_value;
 	}
-	static bool f__less(intptr_t a_self, const t_pvalue& a_value);
-	static bool f__less_equal(intptr_t a_self, const t_pvalue& a_value);
-	static bool f__greater(intptr_t a_self, const t_pvalue& a_value);
-	static bool f__greater_equal(intptr_t a_self, const t_pvalue& a_value);
-	static bool f__equals(intptr_t a_self, const t_pvalue& a_value);
-	static bool f__not_equals(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f__less(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f__less_equal(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f__greater(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f__greater_equal(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f__equals(intptr_t a_self, const t_pvalue& a_value);
+	XEMMAI__LOCAL static bool f__not_equals(intptr_t a_self, const t_pvalue& a_value);
 	static intptr_t f__and(intptr_t a_self, intptr_t a_value)
 	{
 		return a_self & a_value;
@@ -113,10 +113,10 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 	{
 		return a_self | a_value;
 	}
-	static void f_define();
+	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
-	XEMMAI__PORTABLE__EXPORT t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
+	XEMMAI__PUBLIC t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
 
 }

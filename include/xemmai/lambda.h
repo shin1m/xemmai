@@ -41,8 +41,8 @@ protected:
 	}
 
 public:
-	static t_object* f_instantiate(t_object* a_scope, t_object* a_code);
-	static t_object* f_instantiate(t_object* a_scope, t_object* a_code, t_pvalue* a_stack);
+	XEMMAI__LOCAL static t_object* f_instantiate(t_object* a_scope, t_object* a_code);
+	XEMMAI__LOCAL static t_object* f_instantiate(t_object* a_scope, t_object* a_code, t_pvalue* a_stack);
 
 	const t_slot& f_code() const
 	{
