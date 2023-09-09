@@ -28,54 +28,17 @@ intptr_t t_tuple::f_hash() const
 	return n;
 }
 
-bool t_tuple::f_less(const t_tuple& a_other) const
+int t_tuple::f_compare(const t_tuple& a_other) const
 {
-	if (this == &a_other) return false;
+	if (this == &a_other) return 0;
 	size_t i = 0;
 	for (; i < v_size; ++i) {
-		if (i >= a_other.f_size()) return false;
+		if (i >= a_other.f_size()) return 1;
 		auto& x = (*this)[i];
 		auto& y = a_other[i];
-		if (!f_as<bool>(x.f_equals(y))) return f_as<bool>(x.f_less(y));
+		if (!f_as<bool>(x.f_equals(y))) return f_as<bool>(x.f_less(y)) ? -1 : 1;
 	}
-	return i < a_other.f_size();
-}
-
-bool t_tuple::f_less_equal(const t_tuple& a_other) const
-{
-	if (this == &a_other) return true;
-	for (size_t i = 0; i < v_size; ++i) {
-		if (i >= a_other.f_size()) return false;
-		auto& x = (*this)[i];
-		auto& y = a_other[i];
-		if (!f_as<bool>(x.f_equals(y))) return f_as<bool>(x.f_less(y));
-	}
-	return true;
-}
-
-bool t_tuple::f_greater(const t_tuple& a_other) const
-{
-	if (this == &a_other) return false;
-	for (size_t i = 0; i < v_size; ++i) {
-		if (i >= a_other.f_size()) return true;
-		auto& x = (*this)[i];
-		auto& y = a_other[i];
-		if (!f_as<bool>(x.f_equals(y))) return f_as<bool>(x.f_greater(y));
-	}
-	return false;
-}
-
-bool t_tuple::f_greater_equal(const t_tuple& a_other) const
-{
-	if (this == &a_other) return true;
-	size_t i = 0;
-	for (; i < v_size; ++i) {
-		if (i >= a_other.f_size()) return true;
-		auto& x = (*this)[i];
-		auto& y = a_other[i];
-		if (!f_as<bool>(x.f_equals(y))) return f_as<bool>(x.f_greater(y));
-	}
-	return i >= a_other.f_size();
+	return i < a_other.f_size() ? -1 : 0;
 }
 
 bool t_tuple::f_equals(const t_pvalue& a_other) const
@@ -83,7 +46,7 @@ bool t_tuple::f_equals(const t_pvalue& a_other) const
 	if (!f_is<t_tuple>(a_other)) return false;
 	auto& other = a_other->f_as<t_tuple>();
 	if (this == &other) return true;
-	if (v_size != other.f_size()) return false;
+	if (v_size != other.v_size) return false;
 	for (size_t i = 0; i < v_size; ++i) if (!f_as<bool>((*this)[i].f_equals(other[i]))) return false;
 	return true;
 }
@@ -134,28 +97,28 @@ size_t t_type_of<t_tuple>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)
 size_t t_type_of<t_tuple>::f_do_less(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_tuple>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_tuple>().f_less(a_stack[2]->f_as<t_tuple>());
+	a_stack[0] = a_this->f_as<t_tuple>().f_compare(a_stack[2]->f_as<t_tuple>()) < 0;
 	return -1;
 }
 
 size_t t_type_of<t_tuple>::f_do_less_equal(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_tuple>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_tuple>().f_less_equal(a_stack[2]->f_as<t_tuple>());
+	a_stack[0] = a_this->f_as<t_tuple>().f_compare(a_stack[2]->f_as<t_tuple>()) <= 0;
 	return -1;
 }
 
 size_t t_type_of<t_tuple>::f_do_greater(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_tuple>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_tuple>().f_greater(a_stack[2]->f_as<t_tuple>());
+	a_stack[0] = a_this->f_as<t_tuple>().f_compare(a_stack[2]->f_as<t_tuple>()) > 0;
 	return -1;
 }
 
 size_t t_type_of<t_tuple>::f_do_greater_equal(t_object* a_this, t_pvalue* a_stack)
 {
 	f_check<t_tuple>(a_stack[2], L"argument0");
-	a_stack[0] = a_this->f_as<t_tuple>().f_greater_equal(a_stack[2]->f_as<t_tuple>());
+	a_stack[0] = a_this->f_as<t_tuple>().f_compare(a_stack[2]->f_as<t_tuple>()) >= 0;
 	return -1;
 }
 
@@ -167,7 +130,7 @@ size_t t_type_of<t_tuple>::f_do_equals(t_object* a_this, t_pvalue* a_stack)
 
 size_t t_type_of<t_tuple>::f_do_not_equals(t_object* a_this, t_pvalue* a_stack)
 {
-	a_stack[0] = a_this->f_as<t_tuple>().f_not_equals(a_stack[2]);
+	a_stack[0] = !a_this->f_as<t_tuple>().f_equals(a_stack[2]);
 	return -1;
 }
 

@@ -49,15 +49,8 @@ public:
 	}
 	t_object* f_string() const;
 	intptr_t f_hash() const;
-	bool f_less(const t_tuple& a_other) const;
-	bool f_less_equal(const t_tuple& a_other) const;
-	bool f_greater(const t_tuple& a_other) const;
-	bool f_greater_equal(const t_tuple& a_other) const;
+	int f_compare(const t_tuple& a_other) const;
 	bool f_equals(const t_pvalue& a_other) const;
-	bool f_not_equals(const t_pvalue& a_other) const
-	{
-		return !f_equals(a_other);
-	}
 	void f_each(const t_pvalue& a_callable) const;
 };
 
