@@ -14,7 +14,7 @@ size_t t_reader::f_read(t_io* a_library)
 	std::copy(v_p, v_p + v_n, p);
 	v_p = p;
 	static size_t index;
-	auto n = t_pvalue(v_stream).f_invoke(a_library->f_symbol_read(), index, t_pvalue(v_buffer), f_global()->f_as(v_n), f_global()->f_as(buffer.f_size() - v_n));
+	auto n = t_pvalue(v_stream).f_invoke(a_library->f_symbol_read(), index, t_pvalue(v_buffer), v_n, buffer.f_size() - v_n);
 	f_check<size_t>(n, L"result of read");
 	v_n += f_as<size_t>(n);
 	return f_as<size_t>(n);

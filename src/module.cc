@@ -90,7 +90,7 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 	auto n = paths.f_invoke(f_global()->f_symbol_size(), index);
 	f_check<size_t>(n, L"size");
 	for (size_t i = 0; i < f_as<size_t>(n); ++i) {
-		auto x = paths.f_get_at(f_global()->f_as(i));
+		auto x = paths.f_get_at(i);
 		f_check<t_string>(x, L"path");
 		std::wstring path = portable::t_path(x->f_as<t_string>()) / a_name;
 		if (auto code = f_load_script(path + L".xm")) return f_new(a_name, code->f_as<t_code>().v_module, f_execute_script(code));

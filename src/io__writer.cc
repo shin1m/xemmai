@@ -12,7 +12,7 @@ void t_writer::f_write(t_io* a_library)
 	auto& buffer = v_buffer->f_as<t_bytes>();
 	auto p = reinterpret_cast<char*>(&buffer[0]);
 	static size_t index;
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_write(), index, t_pvalue(v_buffer), f_global()->f_as(0), f_global()->f_as(v_p - p));
+	t_pvalue(v_stream).f_invoke(a_library->f_symbol_write(), index, t_pvalue(v_buffer), 0, v_p - p);
 	v_p = p;
 	v_n = buffer.f_size();
 }
