@@ -8,9 +8,6 @@
 #include <unistd.h>
 #include <signal.h>
 #endif
-#ifdef _WIN32
-#include <io.h>
-#endif
 
 namespace
 {

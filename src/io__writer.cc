@@ -7,47 +7,76 @@ namespace xemmai
 namespace io
 {
 
-void t_writer::f_write(t_io* a_library)
+bool t_writer::f_write(t_io* a_library)
 {
 	auto& buffer = v_buffer->f_as<t_bytes>();
 	auto p = reinterpret_cast<char*>(&buffer[0]);
+	if (!v_remain) v_remain = p;
 	static size_t index;
-	t_pvalue(v_stream).f_invoke(a_library->f_symbol_write(), index, t_pvalue(v_buffer), 0, v_p - p);
-	v_p = p;
-	v_n = buffer.f_size();
+	auto n = t_pvalue(v_stream).f_invoke(a_library->f_symbol_write(), index, t_pvalue(v_buffer), v_remain - p, v_p1 - v_remain);
+	f_check<size_t>(n, L"result of write");
+	v_remain += f_as<size_t>(n);
+	if (v_remain < v_p1) return false;
+	v_p1 = p;
+	v_n1 = buffer.f_size();
+	v_remain = nullptr;
+	return true;
 }
 
-void t_writer::f_write(t_io* a_library, const wchar_t* a_p, size_t a_n)
+bool t_writer::f_write(t_io* a_library, char** a_p, size_t* a_n)
 {
-	auto p = const_cast<char*>(reinterpret_cast<const char*>(a_p));
-	size_t n = a_n * sizeof(wchar_t);
-	while (iconv(v_cd, &p, &n, &v_p, &v_n) == size_t(-1)) {
+	while (iconv(v_cd, a_p, a_n, &v_p1, &v_n1) == size_t(-1)) {
 		switch (errno) {
-		case EILSEQ:
-			f_throw(L"invalid character."sv);
 		case E2BIG:
-			f_write(a_library);
+			if (!f_write(a_library)) return false;
 		case EINTR:
 			break;
 		default:
 			throw std::system_error(errno, std::generic_category());
 		}
 	}
+	return true;
 }
 
-void t_writer::f_unshift(t_io* a_library)
+bool t_writer::f__write(t_io* a_library, const t_pvalue& a_value)
 {
-	while (iconv(v_cd, NULL, NULL, &v_p, &v_n) == size_t(-1)) {
-		switch (errno) {
-		case E2BIG:
-			f_write(a_library);
-		case EINTR:
-			break;
-		default:
-			throw std::system_error(errno, std::generic_category());
-		}
+	if (!v_stream) f_throw(L"already closed."sv);
+	if (v_remain) f_throw(L"resume required."sv);
+	auto x = a_value;
+	if (!f_is<t_string>(x)) {
+		x = x.f_string();
+		f_check<t_string>(x, L"value");
 	}
-	f_write(a_library);
+	auto& s = x->f_as<t_string>();
+	v_p0 = const_cast<char*>(reinterpret_cast<const char*>(static_cast<const wchar_t*>(s)));
+	v_n0 = s.f_size() * sizeof(wchar_t);
+	if (f_write(a_library, &v_p0, &v_n0)) return true;
+	v_value = x;
+	return false;
+}
+
+bool t_writer::f__resume(t_io* a_library)
+{
+	if (v_value) {
+		if (!f_write(a_library, &v_p0, &v_n0)) return false;
+		v_value = nullptr;
+	}
+	switch (v_step) {
+	case 4:
+		v_p0 = const_cast<char*>(reinterpret_cast<const char*>(L"\n"));
+		v_n0 = sizeof(wchar_t);
+		--v_step;
+	case 3:
+		if (!f_write(a_library, &v_p0, &v_n0)) return false;
+		--v_step;
+	case 2:
+		if (!f_write(a_library, NULL, NULL)) return false;
+		--v_step;
+	case 1:
+		if (!f_write(a_library)) return false;
+		--v_step;
+	}
+	return true;
 }
 
 t_object* t_writer::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding)
@@ -57,80 +86,62 @@ t_object* t_writer::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_
 
 t_writer::t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding) : v_cd(iconv_open(portable::f_convert(a_encoding).c_str(), "wchar_t"))
 {
-	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open."sv);
+	if (v_cd == iconv_t(-1)) throw std::system_error(errno, std::generic_category());
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(1024);
 	auto& buffer = v_buffer->f_as<t_bytes>();
-	v_p = reinterpret_cast<char*>(&buffer[0]);
-	v_n = buffer.f_size();
+	v_p1 = reinterpret_cast<char*>(&buffer[0]);
+	v_n1 = buffer.f_size();
 }
 
 void t_writer::f_close(t_io* a_library)
 {
-	f_owned_or_shared<t_lock_with_safe_region>([&]
+	return f_owned_or_shared<t_lock_with_safe_region>([&]
 	{
 		if (!v_stream) f_throw(L"already closed."sv);
-		f_unshift(a_library);
+		if (v_step < 2) v_step = 2;
+		f__resume(a_library);
 		static size_t index;
 		t_pvalue(v_stream).f_invoke(a_library->f_symbol_close(), index);
 		v_stream = nullptr;
 	});
 }
 
-void t_writer::f_write(t_io* a_library, const t_pvalue& a_value)
+bool t_writer::f_write(t_io* a_library, const t_pvalue& a_value)
 {
-	f_owned_or_shared<t_lock_with_safe_region>([&]
+	return f_owned_or_shared<t_lock_with_safe_region>([&]
 	{
-		if (!v_stream) f_throw(L"already closed."sv);
-		if (f_is<t_string>(a_value)) {
-			f_write(a_library, a_value->f_as<t_string>());
-		} else {
-			auto x = a_value.f_string();
-			f_check<t_string>(x, L"value");
-			f_write(a_library, x->f_as<t_string>());
-		}
+		return f__write(a_library, a_value);
 	});
 }
 
-void t_writer::f_write_line(t_io* a_library)
+bool t_writer::f_write_line(t_io* a_library, const t_pvalue& a_value)
 {
-	f_owned_or_shared<t_lock_with_safe_region>([&]
+	return f_owned_or_shared<t_lock_with_safe_region>([&]
 	{
-		if (!v_stream) f_throw(L"already closed."sv);
-		f_write(a_library, L"\n", 1);
-		f_unshift(a_library);
-		static size_t index;
-		t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush(), index);
+		auto b = f__write(a_library, a_value);
+		v_step = 4;
+		return b && f__resume(a_library);
 	});
 }
 
-void t_writer::f_write_line(t_io* a_library, const t_pvalue& a_value)
+bool t_writer::f_flush(t_io* a_library)
 {
-	f_owned_or_shared<t_lock_with_safe_region>([&]
+	return f_owned_or_shared<t_lock_with_safe_region>([&]
 	{
 		if (!v_stream) f_throw(L"already closed."sv);
-		if (f_is<t_string>(a_value)) {
-			f_write(a_library, a_value->f_as<t_string>());
-		} else {
-			auto x = a_value.f_string();
-			f_check<t_string>(x, L"value");
-			f_write(a_library, x->f_as<t_string>());
-		}
-		f_write(a_library, L"\n", 1);
-		f_unshift(a_library);
-		static size_t index;
-		t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush(), index);
+		if (v_remain) f_throw(L"resume required."sv);
+		v_step = 2;
+		return f__resume(a_library);
 	});
 }
 
-void t_writer::f_flush(t_io* a_library)
+bool t_writer::f_resume(t_io* a_library)
 {
-	f_owned_or_shared<t_lock_with_safe_region>([&]
+	return f_owned_or_shared<t_lock_with_safe_region>([&]
 	{
 		if (!v_stream) f_throw(L"already closed."sv);
-		f_unshift(a_library);
-		static size_t index;
-		t_pvalue(v_stream).f_invoke(a_library->f_symbol_flush(), index);
+		return f__resume(a_library);
 	});
 }
 
@@ -140,12 +151,10 @@ void t_type_of<io::t_writer>::f_define(t_io* a_library)
 {
 	t_define{a_library}
 		(a_library->f_symbol_close(), t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_close>())
-		(a_library->f_symbol_write(), t_member<void(io::t_writer::*)(t_io*, const t_pvalue&), &io::t_writer::f_write>())
-		(a_library->f_symbol_write_line(),
-			t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_write_line>(),
-			t_member<void(io::t_writer::*)(t_io*, const t_pvalue&), &io::t_writer::f_write_line>()
-		)
-		(a_library->f_symbol_flush(), t_member<void(io::t_writer::*)(t_io*), &io::t_writer::f_flush>())
+		(a_library->f_symbol_write(), t_member<bool(io::t_writer::*)(t_io*, const t_pvalue&), &io::t_writer::f_write>())
+		(a_library->f_symbol_write_line(), t_member<bool(io::t_writer::*)(t_io*, const t_pvalue&), &io::t_writer::f_write_line>())
+		(a_library->f_symbol_flush(), t_member<bool(io::t_writer::*)(t_io*), &io::t_writer::f_flush>())
+		(a_library->f_symbol_resume(), t_member<bool(io::t_writer::*)(t_io*), &io::t_writer::f_resume>())
 	.f_derive<io::t_writer, t_sharable>();
 }
 

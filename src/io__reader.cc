@@ -7,32 +7,29 @@ namespace xemmai
 namespace io
 {
 
-size_t t_reader::f_read(t_io* a_library)
+intptr_t t_reader::f_read(t_io* a_library)
 {
 	auto& buffer = v_buffer->f_as<t_bytes>();
 	auto p = reinterpret_cast<char*>(&buffer[0]);
-	std::copy(v_p, v_p + v_n, p);
-	v_p = p;
+	std::copy(v_p0, v_p0 + v_n0, p);
+	v_p0 = p;
 	static size_t index;
-	auto n = t_pvalue(v_stream).f_invoke(a_library->f_symbol_read(), index, t_pvalue(v_buffer), v_n, buffer.f_size() - v_n);
-	f_check<size_t>(n, L"result of read");
-	v_n += f_as<size_t>(n);
-	return f_as<size_t>(n);
+	auto n = t_pvalue(v_stream).f_invoke(a_library->f_symbol_read(), index, t_pvalue(v_buffer), v_n0, buffer.f_size() - v_n0);
+	f_check<intptr_t>(n, L"result of read");
+	v_read = f_as<intptr_t>(n);
+	if (v_read > 0) v_n0 += v_read;
+	return v_read;
 }
 
 wint_t t_reader::f_get(t_io* a_library)
 {
-	if (v_n <= 0 && f_read(a_library) <= 0) return WEOF;
-	wchar_t c;
-	auto p = reinterpret_cast<char*>(&c);
-	size_t n = sizeof(c);
+	if (v_n0 <= 0 && f_read(a_library) <= 0) return WEOF;
 	while (true) {
-		if (iconv(v_cd, &v_p, &v_n, &p, &n) == size_t(-1)) {
+		if (iconv(v_cd, &v_p0, &v_n0, &v_p1, &v_n1) == size_t(-1)) {
 			switch (errno) {
-			case EILSEQ:
-				f_throw(L"invalid sequence."sv);
 			case EINVAL:
-				if (f_read(a_library) <= 0) f_throw(L"incomplete sequence."sv);
+				if (f_read(a_library) < 0) return WEOF;
+				if (v_read == 0) f_throw(L"incomplete sequence."sv);
 			case EINTR:
 				continue;
 			case E2BIG:
@@ -42,10 +39,12 @@ wint_t t_reader::f_get(t_io* a_library)
 			}
 			break;
 		}
-		if (n <= 0) break;
+		if (v_n1 <= 0) break;
 		if (f_read(a_library) <= 0) return WEOF;
 	}
-	return c;
+	v_p1 = reinterpret_cast<char*>(&v_c);
+	v_n1 = sizeof(v_c);
+	return v_c;
 }
 
 t_object* t_reader::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer)
@@ -53,9 +52,9 @@ t_object* t_reader::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_
 	return f_new<t_reader>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), a_stream, a_encoding, a_buffer);
 }
 
-t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str())), v_n(0)
+t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str()))
 {
-	if (v_cd == iconv_t(-1)) f_throw(L"failed to iconv_open."sv);
+	if (v_cd == iconv_t(-1)) throw std::system_error(errno, std::generic_category());
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(std::max(a_buffer, size_t(1)));
 }
@@ -78,7 +77,7 @@ t_object* t_reader::f_read(t_io* a_library, size_t a_size)
 		if (!v_stream) f_throw(L"already closed."sv);
 		if (a_size <= 0) return f_global()->f_string_empty();
 		wint_t c = f_get(a_library);
-		if (c == WEOF) return f_global()->f_string_empty();
+		if (c == WEOF) return v_read < 0 ? nullptr : f_global()->f_string_empty();
 		return t_string::f_instantiate(a_size, [&](auto p)
 		{
 			for (auto q = p + a_size;;) {
@@ -97,13 +96,14 @@ t_object* t_reader::f_read_line(t_io* a_library)
 	return f_owned_or_shared<t_lock_with_safe_region>([&]
 	{
 		if (!v_stream) f_throw(L"already closed."sv);
+		wint_t c = f_get(a_library);
+		if (c == WEOF) return v_read < 0 ? nullptr : f_global()->f_string_empty();
 		t_stringer s;
-		while (true) {
-			wint_t c = f_get(a_library);
-			if (c == WEOF) break;
+		do {
 			s << c;
 			if (c == L'\n') break;
-		}
+			c = f_get(a_library);
+		} while (c != WEOF);
 		return static_cast<t_object*>(s);
 	});
 }

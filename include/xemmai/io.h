@@ -17,6 +17,7 @@ class t_io : public t_library
 	t_slot v_symbol_flush;
 	t_slot v_symbol_read_line;
 	t_slot v_symbol_write_line;
+	t_slot v_symbol_resume;
 	t_slot_of<t_type> v_type_file;
 	t_slot_of<t_type> v_type_reader;
 	t_slot_of<t_type> v_type_writer;
@@ -49,6 +50,10 @@ public:
 	t_object* f_symbol_write_line() const
 	{
 		return v_symbol_write_line;
+	}
+	t_object* f_symbol_resume() const
+	{
+		return v_symbol_resume;
 	}
 };
 

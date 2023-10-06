@@ -20,11 +20,15 @@ class t_reader : public t_sharable
 	iconv_t v_cd;
 	t_slot v_stream;
 	t_slot v_buffer;
-	char* v_p;
-	size_t v_n;
+	char* v_p0;
+	size_t v_n0 = 0;
+	intptr_t v_read;
+	wchar_t v_c;
+	char* v_p1 = reinterpret_cast<char*>(&v_c);
+	size_t v_n1 = sizeof(v_c);
 
-	size_t f_read(t_io* a_library);
-	wint_t f_get(t_io* a_library);
+	XEMMAI__LOCAL intptr_t f_read(t_io* a_library);
+	XEMMAI__LOCAL wint_t f_get(t_io* a_library);
 
 public:
 	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer);

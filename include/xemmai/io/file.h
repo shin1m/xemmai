@@ -4,6 +4,9 @@
 #include "../engine.h"
 #include "../bytes.h"
 #include "../sharable.h"
+#ifdef _WIN32
+#include <io.h>
+#endif
 
 namespace xemmai
 {
@@ -15,7 +18,6 @@ namespace io
 
 class t_FILE
 {
-protected:
 	std::FILE* v_stream;
 
 public:
@@ -32,61 +34,50 @@ public:
 	}
 };
 
-class t_file : public t_sharable, public t_FILE
+class t_file : public t_sharable
 {
 	friend struct t_type_of<t_file>;
 
-	bool v_own = false;
+	int v_fd;
+	bool v_own;
 
 public:
 	static t_object* f_instantiate(auto&&... a_xs);
 
-	using t_FILE::t_FILE;
 	t_file(std::wstring_view a_path, std::wstring_view a_mode);
-	t_file(int a_fd, std::wstring_view a_mode);
-	~t_file()
+	t_file(int a_fd, bool a_own) : v_fd(a_fd), v_own(a_own)
 	{
-		if (!v_own) v_stream = NULL;
 	}
-	void f_reopen(std::wstring_view a_path, std::wstring_view a_mode);
+	~t_file() noexcept(false)
+	{
+		if (v_fd >= 0 && v_own) while (close(v_fd) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+	}
+	int f_fd() const
+	{
+		return v_fd;
+	}
 	void f_close()
 	{
 		f_owned_or_shared<t_lock_with_safe_region>([&]
 		{
-			if (v_stream == NULL) f_throw(L"already closed."sv);
+			if (v_fd < 0) f_throw(L"already closed."sv);
 			if (!v_own) f_throw(L"can not close unown."sv);
-			std::fclose(v_stream);
-			v_stream = NULL;
+			while (close(v_fd) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+			v_fd = -1;
 		});
 	}
-	void f_seek(intptr_t a_offset, int a_whence)
-	{
-		f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-		{
-			if (v_stream == NULL) f_throw(L"already closed."sv);
-			if (std::fseek(v_stream, a_offset, a_whence) == -1) f_throw(L"failed to seek."sv);
-		});
-	}
-	intptr_t f_tell()
+	intptr_t f_seek(intptr_t a_offset, int a_whence)
 	{
 		return f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 		{
-			if (v_stream == NULL) f_throw(L"already closed."sv);
-			intptr_t n = std::ftell(v_stream);
-			if (n == -1) f_throw(L"failed to tell."sv);
+			if (v_fd < 0) f_throw(L"already closed."sv);
+			auto n = lseek(v_fd, a_offset, a_whence);
+			if (n == -1) throw std::system_error(errno, std::generic_category());
 			return n;
 		});
 	}
-	XEMMAI__PUBLIC size_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
-	XEMMAI__PUBLIC void f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
-	void f_flush()
-	{
-		f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-		{
-			if (v_stream == NULL) f_throw(L"already closed."sv);
-			std::fflush(v_stream);
-		});
-	}
+	XEMMAI__PUBLIC intptr_t f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size);
+	XEMMAI__PUBLIC size_t f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size);
 	bool f_tty();
 #ifdef __unix__
 	bool f_blocking();

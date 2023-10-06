@@ -12,6 +12,7 @@ void t_io::f_scan(t_scan a_scan)
 	a_scan(v_symbol_flush);
 	a_scan(v_symbol_read_line);
 	a_scan(v_symbol_write_line);
+	a_scan(v_symbol_resume);
 	a_scan(v_type_file);
 	a_scan(v_type_reader);
 	a_scan(v_type_writer);
@@ -25,6 +26,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_io::f_define()
 	v_symbol_flush = t_symbol::f_instantiate(L"flush"sv);
 	v_symbol_read_line = t_symbol::f_instantiate(L"read_line"sv);
 	v_symbol_write_line = t_symbol::f_instantiate(L"write_line"sv);
+	v_symbol_resume = t_symbol::f_instantiate(L"resume"sv);
 	t_type_of<io::t_file>::f_define(this);
 	v_type_file->v_builtin = true;
 	t_type_of<io::t_reader>::f_define(this);

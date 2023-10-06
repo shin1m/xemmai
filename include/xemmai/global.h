@@ -536,12 +536,10 @@ intptr_t t_fiber::f_main(auto a_main)
 			n = 0;
 		} catch (const t_rvalue& thrown) {
 			fiber.f_caught(thrown, nullptr);
-			if (auto p = f_string_or_null(thrown)) {
-				auto& s = p->f_as<t_string>();
-				std::fprintf(stderr, "caught: %.*ls\n", static_cast<int>(s.f_size()), static_cast<const wchar_t*>(s));
-			} else {
+			if (auto p = f_string_or_null(thrown))
+				std::fprintf(stderr, "caught: %ls\n", static_cast<const wchar_t*>(p->f_as<t_string>()));
+			else
 				std::fprintf(stderr, "caught: <unprintable>\n");
-			}
 			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/t_type::V_fields);
 		}
 	} catch (...) {

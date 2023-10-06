@@ -300,13 +300,13 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 		v_module_io = t_module::f_new(L"io"sv, io, io->f_as<t_io>().f_define());
 	}
 	{
-		auto file = io::t_file::f_instantiate(stdin);
+		auto file = io::t_file::f_instantiate(0, false);
 		system(L"raw_in"sv, file);
 		auto tty = file->f_as<io::t_file>().f_tty();
 		system(L"in"sv, io::t_reader::f_instantiate(file, L""sv, tty ? 1 : 1024));
 	}
 	{
-		auto file = io::t_file::f_instantiate(stdout);
+		auto file = io::t_file::f_instantiate(1, false);
 		file->f_as<io::t_file>().f_share();
 		system(L"raw_out"sv, file);
 		auto writer = io::t_writer::f_instantiate(file, L""sv);
@@ -314,7 +314,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 		system(L"out"sv, writer);
 	}
 	{
-		auto file = io::t_file::f_instantiate(stderr);
+		auto file = io::t_file::f_instantiate(2, false);
 		file->f_as<io::t_file>().f_share();
 		system(L"raw_error"sv, file);
 		auto writer = io::t_writer::f_instantiate(file, L""sv);

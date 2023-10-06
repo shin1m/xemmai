@@ -39,7 +39,7 @@ print(a
 assert(x == 5.0
 assert(a.size() == 3
 
-print(
+print(""
 
 b = [
 for i = 0; i < 5; i = i + 1: b.push(i.__string(

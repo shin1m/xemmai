@@ -1,12 +1,13 @@
 io = Module("io"
+assert = @(x) x || throw Throwable("Assertion failed."
 
 writer = io.Writer(io.File("text.xm.test", "w"), "utf-8"
 try
-	writer.write("Hello, "
-	writer.write_line("world!"
-	writer.write("This is shin."
-	writer.write_line(
-	writer.write_line("Good bye."
+	assert(writer.write("Hello, "
+	assert(writer.write_line("world!"
+	assert(writer.write("This is shin."
+	assert(writer.write_line(""
+	assert(writer.write_line("Good bye."
 finally
 	writer.close(
 

@@ -20,16 +20,18 @@ class t_writer : public t_sharable
 	iconv_t v_cd;
 	t_slot v_stream;
 	t_slot v_buffer;
-	char* v_p;
-	size_t v_n;
+	char* v_p0;
+	size_t v_n0;
+	char* v_p1;
+	size_t v_n1;
+	char* v_remain = nullptr;
+	t_slot v_value;
+	int v_step = 0;
 
-	void f_write(t_io* a_library);
-	void f_write(t_io* a_library, const wchar_t* a_p, size_t a_n);
-	void f_write(t_io* a_library, const t_string& a_text)
-	{
-		f_write(a_library, a_text, a_text.f_size());
-	}
-	void f_unshift(t_io* a_library);
+	XEMMAI__LOCAL bool f_write(t_io* a_library);
+	XEMMAI__LOCAL bool f_write(t_io* a_library, char** a_p, size_t* a_n);
+	XEMMAI__LOCAL bool f__write(t_io* a_library, const t_pvalue& a_value);
+	XEMMAI__LOCAL bool f__resume(t_io* a_library);
 
 public:
 	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding);
@@ -40,10 +42,10 @@ public:
 		iconv_close(v_cd);
 	}
 	void f_close(t_io* a_library);
-	void f_write(t_io* a_library, const t_pvalue& a_value);
-	void f_write_line(t_io* a_library);
-	void f_write_line(t_io* a_library, const t_pvalue& a_value);
-	void f_flush(t_io* a_library);
+	bool f_write(t_io* a_library, const t_pvalue& a_value);
+	bool f_write_line(t_io* a_library, const t_pvalue& a_value);
+	bool f_flush(t_io* a_library);
+	bool f_resume(t_io* a_library);
 };
 
 }
@@ -61,6 +63,7 @@ struct t_type_of<io::t_writer> : t_derivable<t_holds<io::t_writer>>
 		auto& p = a_this->f_as<io::t_writer>();
 		a_scan(p.v_stream);
 		a_scan(p.v_buffer);
+		a_scan(p.v_value);
 	}
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n);
 };
