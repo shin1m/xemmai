@@ -1,8 +1,5 @@
 #include <xemmai/io.h>
 #include <xemmai/convert.h>
-#ifdef __unix__
-#include <unistd.h>
-#endif
 #include <fcntl.h>
 
 namespace xemmai

@@ -5,7 +5,6 @@
 #include <clocale>
 #include <cstring>
 #ifdef __unix__
-#include <unistd.h>
 #include <signal.h>
 #endif
 
