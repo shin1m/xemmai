@@ -120,7 +120,7 @@ private:
 	}
 	void f_epoch_wait()
 	{
-		while (sem_wait(&v_epoch__received) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+		while (sem_wait(&v_epoch__received) == -1) if (errno != EINTR) portable::f_throw_system_error();
 	}
 #endif
 	void f_epoch_increment(t_object**& a_p0, t_object**& a_p1, t_object** a_q1, t_object**& a_decrements)

@@ -23,7 +23,7 @@ struct t_fiber
 		{
 #ifdef __unix__
 			rlimit limit;
-			if (getrlimit(RLIMIT_STACK, &limit) == -1) throw std::system_error(errno, std::generic_category());
+			if (getrlimit(RLIMIT_STACK, &limit) == -1) portable::f_throw_system_error();
 			return limit.rlim_cur;
 #endif
 #ifdef _WIN32

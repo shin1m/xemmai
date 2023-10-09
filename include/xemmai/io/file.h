@@ -32,7 +32,7 @@ public:
 	}
 	~t_file() noexcept(false)
 	{
-		if (v_fd >= 0 && v_own) while (close(v_fd) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+		if (v_fd >= 0 && v_own) while (close(v_fd) == -1) if (errno != EINTR) portable::f_throw_system_error();
 	}
 	int f_fd() const
 	{
@@ -44,7 +44,7 @@ public:
 		{
 			if (v_fd < 0) f_throw(L"already closed."sv);
 			if (!v_own) f_throw(L"can not close unown."sv);
-			while (close(v_fd) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+			while (close(v_fd) == -1) if (errno != EINTR) portable::f_throw_system_error();
 			v_fd = -1;
 		});
 	}
@@ -54,7 +54,7 @@ public:
 		{
 			if (v_fd < 0) f_throw(L"already closed."sv);
 			auto n = lseek(v_fd, a_offset, a_whence);
-			if (n == -1) throw std::system_error(errno, std::generic_category());
+			if (n == -1) portable::f_throw_system_error();
 			return n;
 		});
 	}

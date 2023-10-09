@@ -32,7 +32,7 @@ bool t_writer::f_write(t_io* a_library, char** a_p, size_t* a_n)
 		case EINTR:
 			break;
 		default:
-			throw std::system_error(errno, std::generic_category());
+			portable::f_throw_system_error();
 		}
 	}
 	return true;
@@ -86,7 +86,7 @@ t_object* t_writer::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_
 
 t_writer::t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding) : v_cd(iconv_open(portable::f_convert(a_encoding).c_str(), "wchar_t"))
 {
-	if (v_cd == iconv_t(-1)) throw std::system_error(errno, std::generic_category());
+	if (v_cd == iconv_t(-1)) portable::f_throw_system_error();
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(1024);
 	auto& buffer = v_buffer->f_as<t_bytes>();

@@ -42,7 +42,7 @@ t_file::t_file(std::wstring_view a_path, std::wstring_view a_mode) : v_fd(-1), v
 		v_fd = open(portable::f_convert(a_path).c_str(), flags, S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
 		if (v_fd != -1) break;
-		if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+		if (errno != EINTR) portable::f_throw_system_error();
 	}
 }
 
@@ -56,7 +56,7 @@ intptr_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 			auto n = read(v_fd, p, a_size);
 			if (n == -1) {
 				if (errno == EINTR) continue;
-				if (errno != EAGAIN && errno != EWOULDBLOCK) throw std::system_error(errno, std::generic_category());
+				if (errno != EAGAIN && errno != EWOULDBLOCK) portable::f_throw_system_error();
 			}
 			return n;
 		}
@@ -75,7 +75,7 @@ size_t t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 			if (n == -1) {
 				if (errno == EINTR) continue;
 				if (errno == EAGAIN || errno == EWOULDBLOCK) break;
-				throw std::system_error(errno, std::generic_category());
+				portable::f_throw_system_error();
 			}
 			size -= n;
 			if (size <= 0) break;
@@ -101,7 +101,7 @@ bool t_file::f_blocking()
 	{
 		if (v_fd < 0) f_throw(L"already closed."sv);
 		int flags = fcntl(v_fd, F_GETFL);
-		if (flags == -1) throw std::system_error(errno, std::generic_category());
+		if (flags == -1) portable::f_throw_system_error();
 		return !(flags & O_NONBLOCK);
 	});
 }
@@ -112,12 +112,12 @@ void t_file::f_blocking__(bool a_value)
 	{
 		if (v_fd < 0) f_throw(L"already closed."sv);
 		int flags = fcntl(v_fd, F_GETFL);
-		if (flags == -1) throw std::system_error(errno, std::generic_category());
+		if (flags == -1) portable::f_throw_system_error();
 		if (a_value)
 			flags &= ~O_NONBLOCK;
 		else
 			flags |= O_NONBLOCK;
-		if (fcntl(v_fd, F_SETFL, flags) == -1) throw std::system_error(errno, std::generic_category());
+		if (fcntl(v_fd, F_SETFL, flags) == -1) portable::f_throw_system_error();
 	});
 }
 #endif

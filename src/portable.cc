@@ -8,6 +8,11 @@
 namespace xemmai::portable
 {
 
+void f_throw_system_error()
+{
+	throw std::system_error(errno, std::generic_category());
+}
+
 #ifdef __unix__
 t_path::t_path(std::wstring_view a_path)
 {
@@ -90,7 +95,7 @@ std::wstring f_executable_path()
 #ifdef __unix__
 	char cs[PATH_MAX];
 	auto n = readlink("/proc/self/exe", cs, sizeof(cs));
-	if (n == -1) throw std::system_error(errno, std::generic_category());
+	if (n == -1) f_throw_system_error();
 	return portable::f_convert({cs, static_cast<size_t>(n)});
 #endif
 #ifdef _WIN32

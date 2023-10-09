@@ -38,4 +38,11 @@
 
 #include <system_error>
 
+namespace xemmai::portable
+{
+
+XEMMAI__PUBLIC void f_throw_system_error [[noreturn]] ();
+
+}
+
 #endif

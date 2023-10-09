@@ -35,7 +35,7 @@ wint_t t_reader::f_get(t_io* a_library)
 			case E2BIG:
 				break;
 			default:
-				throw std::system_error(errno, std::generic_category());
+				portable::f_throw_system_error();
 			}
 			break;
 		}
@@ -54,7 +54,7 @@ t_object* t_reader::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_
 
 t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str()))
 {
-	if (v_cd == iconv_t(-1)) throw std::system_error(errno, std::generic_category());
+	if (v_cd == iconv_t(-1)) portable::f_throw_system_error();
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(std::max(a_buffer, size_t(1)));
 }

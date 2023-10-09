@@ -130,7 +130,7 @@ struct t_child : t_sharable
 	void f_wait(int a_options)
 	{
 		if (!v_pid) return;
-		while (waitpid(v_pid, &v_status, a_options) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+		while (waitpid(v_pid, &v_status, a_options) == -1) if (errno != EINTR) portable::f_throw_system_error();
 		v_pid = 0;
 	}
 
@@ -240,7 +240,7 @@ struct t_type_of<t_child> : t_derivable<t_holds<t_child>>
 		std::vector<int> closes[2];
 		t_defer defer1([&]
 		{
-			for (auto xs : closes) for (auto x : xs) while (close(x) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+			for (auto xs : closes) for (auto x : xs) while (close(x) == -1) if (errno != EINTR) portable::f_throw_system_error();
 		});
 		t_object* pipes;
 		{
@@ -255,7 +255,7 @@ struct t_type_of<t_child> : t_derivable<t_holds<t_child>>
 					check(posix_spawn_file_actions_adddup2(&actions, x->f_as<io::t_file>().f_fd(), i));
 				} else if (f_is<int>(x)) {
 					int fds[2];
-					if (pipe(fds) != 0) throw std::system_error(errno, std::generic_category());
+					if (pipe(fds) != 0) portable::f_throw_system_error();
 					auto [parent, child] = f_as<int>(x) > 0 ? std::make_tuple(fds[0], fds[1]) : std::make_tuple(fds[1], fds[0]);
 					closes[0].push_back(parent);
 					closes[1].push_back(child);
@@ -384,7 +384,7 @@ void f_sleep(intptr_t a_miliseconds)
 	struct timespec nano;
 	nano.tv_sec = a_miliseconds / 1000;
 	nano.tv_nsec = a_miliseconds % 1000 * 1000000;
-	while (nanosleep(&nano, &nano) == -1) if (errno != EINTR) throw std::system_error(errno, std::generic_category());
+	while (nanosleep(&nano, &nano) == -1) if (errno != EINTR) portable::f_throw_system_error();
 #endif
 #ifdef _WIN32
 	Sleep(a_miliseconds);
@@ -395,7 +395,7 @@ void f_sleep(intptr_t a_miliseconds)
 t_object* f_pipe()
 {
 	int fds[2];
-	if (pipe(fds) != 0) throw std::system_error(errno, std::generic_category());
+	if (pipe(fds) != 0) portable::f_throw_system_error();
 	return f_tuple(fds[0], fds[1]);
 }
 #endif
