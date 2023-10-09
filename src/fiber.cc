@@ -1,5 +1,4 @@
 #include <xemmai/convert.h>
-#include <xemmai/io/file.h>
 #include <cstring>
 
 namespace xemmai
@@ -7,7 +6,9 @@ namespace xemmai
 
 void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column)
 {
-	io::t_FILE file(std::fopen(portable::f_convert(a_path).c_str(), "r"));
+	auto file = std::fopen(portable::f_convert(a_path).c_str(), "r");
+	if (!file) throw std::system_error(errno, std::generic_category());
+	std::unique_ptr<std::FILE, int(*)(std::FILE*)> close(file, std::fclose);
 	std::fseek(file, a_position, SEEK_SET);
 	std::putc('\t', a_out);
 	while (true) {

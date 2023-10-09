@@ -1,14 +1,14 @@
 #include <xemmai/portable/path.h>
 #include <xemmai/convert.h>
-#include <xemmai/io/file.h>
 
 namespace xemmai
 {
 
 t_object* t_module::f_load_script(std::wstring_view a_path)
 {
-	io::t_FILE stream(std::fopen(portable::f_convert(a_path).c_str(), "r"));
+	auto stream = std::fopen(portable::f_convert(a_path).c_str(), "r");
 	if (!stream) return nullptr;
+	std::unique_ptr<std::FILE, int(*)(std::FILE*)> close(stream, std::fclose);
 	ast::t_scope scope(nullptr);
 	if (f_engine()->v_debugger) {
 		auto body = f_global()->f_type<t_module::t_body>()->f_new<t_debug_script>(a_path);

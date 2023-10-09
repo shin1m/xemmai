@@ -16,24 +16,6 @@ class t_io;
 namespace io
 {
 
-class t_FILE
-{
-	std::FILE* v_stream;
-
-public:
-	t_FILE(std::FILE* a_stream) : v_stream(a_stream)
-	{
-	}
-	~t_FILE()
-	{
-		if (v_stream != NULL) std::fclose(v_stream);
-	}
-	operator std::FILE*() const
-	{
-		return v_stream;
-	}
-};
-
 class t_file : public t_sharable
 {
 	friend struct t_type_of<t_file>;

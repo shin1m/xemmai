@@ -1,11 +1,13 @@
 #include <xemmai/portable/path.h>
 #include <xemmai/global.h>
-#include <xemmai/io/file.h>
 #include <thread>
 #include <clocale>
 #include <cstring>
 #ifdef __unix__
 #include <signal.h>
+#endif
+#ifdef _WIN32
+#include <io.h>
 #endif
 
 namespace
@@ -494,12 +496,13 @@ int main(int argc, char* argv[])
 	if (!debug) return static_cast<int>(engine.f_run(nullptr));
 	auto fd = debug[0] ? creat(debug, S_IREAD | S_IWRITE) : dup(2);
 	if (fd == -1) throw std::system_error(errno, std::generic_category());
-	io::t_FILE out(fdopen(fd, "w"));
+	auto out = fdopen(fd, "w");
 #else
 	if (debug < 0) return static_cast<int>(engine.f_run(nullptr));
-	io::t_FILE out(fdopen(debug == 2 ? dup(2) : debug, "w"));
+	auto out = fdopen(debug == 2 ? dup(2) : debug, "w");
 #endif
-	if (!out) f_throw(L"failed to open."sv);
+	if (!out) throw std::system_error(errno, std::generic_category());
+	std::unique_ptr<std::FILE, int(*)(std::FILE*)> close(out, std::fclose);
 	std::setbuf(out, NULL);
 	::t_debugger debugger(engine, out);
 	return static_cast<int>(engine.f_run(&debugger));
