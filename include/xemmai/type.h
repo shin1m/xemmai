@@ -100,7 +100,7 @@ struct t_type_of<t_object>
 		{
 			return a_object;
 		}
-		static bool f_is(auto&& a_object)
+		static bool f_is(t_object* a_object)
 		{
 			return true;
 		}
@@ -312,9 +312,9 @@ inline decltype(auto) f_as(auto&& a_object)
 }
 
 template<typename T>
-inline bool f_is(auto&& a_object)
+inline bool f_is(t_object* a_object)
 {
-	return t_type_of<typename t_fundamental<T>::t_type>::template t_cast<T>::f_is(std::forward<decltype(a_object)>(a_object));
+	return t_type_of<typename t_fundamental<T>::t_type>::template t_cast<T>::f_is(a_object);
 }
 
 XEMMAI__PUBLIC void f_throw_type_error [[noreturn]] (const std::type_info& a_type, const wchar_t* a_name);
@@ -325,8 +325,8 @@ void f_throw_type_error [[noreturn]] (const wchar_t* a_name)
 	f_throw_type_error(typeid(typename t_fundamental<T>::t_type), a_name);
 }
 
-template<typename T, typename T_tag>
-inline void f_check(const t_value<T_tag>& a_object, const wchar_t* a_name)
+template<typename T>
+inline void f_check(t_object* a_object, const wchar_t* a_name)
 {
 	if (!f_is<T>(a_object)) [[unlikely]] f_throw_type_error<T>(a_name);
 }

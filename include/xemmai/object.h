@@ -334,11 +334,10 @@ struct t_type::t_cast
 	{
 		return static_cast<t_object*>(a_object)->f_as<typename t_fundamental<T>::t_type>();
 	}
-	static bool f_is(auto&& a_object)
+	static bool f_is(t_object* a_object)
 	{
 		if constexpr (std::is_same_v<typename t_fundamental<T>::t_type, t_object>) return true;
-		auto p = static_cast<t_object*>(a_object);
-		return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+		return reinterpret_cast<uintptr_t>(a_object) >= e_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
 	}
 };
 
@@ -352,10 +351,9 @@ struct t_type::t_cast<T*>
 		auto p = static_cast<t_object*>(a_object);
 		return p ? &p->f_as<T>() : nullptr;
 	}
-	static bool f_is(auto&& a_object)
+	static bool f_is(t_object* a_object)
 	{
-		auto p = static_cast<t_object*>(a_object);
-		switch (reinterpret_cast<uintptr_t>(p)) {
+		switch (reinterpret_cast<uintptr_t>(a_object)) {
 		case e_tag__NULL:
 			return true;
 		case e_tag__BOOLEAN:
@@ -363,7 +361,7 @@ struct t_type::t_cast<T*>
 		case e_tag__FLOAT:
 			return false;
 		default:
-			return p->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+			return a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
 		}
 	}
 };

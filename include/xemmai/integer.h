@@ -31,11 +31,10 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 		{
 			return static_cast<t_type>(a_object->f_as<intptr_t>());
 		}
-		static bool f_is(auto&& a_object)
+		static bool f_is(t_object* a_object)
 		{
-			auto p = static_cast<t_object*>(a_object);
-			if (!std::is_same_v<typename t_fundamental<T>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_type()->f_derives<typename t_fundamental<T>::t_type>();
-			switch (reinterpret_cast<uintptr_t>(p)) {
+			if (!std::is_same_v<typename t_fundamental<T>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(a_object) >= e_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+			switch (reinterpret_cast<uintptr_t>(a_object)) {
 			case e_tag__INTEGER:
 				return true;
 			case e_tag__NULL:
@@ -43,7 +42,7 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 			case e_tag__FLOAT:
 				return false;
 			default:
-				return p->f_type()->f_derives<intptr_t>();
+				return a_object->f_type()->f_derives<intptr_t>();
 			}
 		}
 	};

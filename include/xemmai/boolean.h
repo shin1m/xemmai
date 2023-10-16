@@ -16,9 +16,9 @@ struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 		{
 			return a_object.f_boolean();
 		}
-		static bool f_is(auto&& a_object)
+		static bool f_is(t_object* a_object)
 		{
-			return reinterpret_cast<uintptr_t>(static_cast<t_object*>(a_object)) == e_tag__BOOLEAN;
+			return reinterpret_cast<uintptr_t>(a_object) == e_tag__BOOLEAN;
 		}
 	};
 
