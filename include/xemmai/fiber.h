@@ -5,7 +5,6 @@
 #include <memory>
 #include <cassert>
 #ifdef __unix__
-#include <sys/resource.h>
 #include <ucontext.h>
 #endif
 
@@ -19,26 +18,12 @@ struct t_fiber
 {
 	struct t_internal
 	{
-		static size_t f_limit()
-		{
-#ifdef __unix__
-			rlimit limit;
-			if (getrlimit(RLIMIT_STACK, &limit) == -1) portable::f_throw_system_error();
-			return limit.rlim_cur;
-#endif
-#ifdef _WIN32
-			ULONG_PTR low;
-			ULONG_PTR high;
-			GetCurrentThreadStackLimits(&low, &high);
-			return high - low;
-#endif
-		}
 #ifdef _WIN32
 		static void CALLBACK f_start(PVOID a_f)
 		{
-			t_object* dummy = nullptr;
-			v_current->v_stack_bottom = &dummy;
-			reinterpret_cast<void (*)()>(a_f)();
+			t_object* bottom = nullptr;
+			v_current->v_stack_bottom = &bottom;
+			reinterpret_cast<void(*)()>(a_f)();
 		}
 #endif
 

@@ -1,5 +1,8 @@
 #include <xemmai/convert.h>
 #include <cstring>
+#ifdef __unix__
+#include <sys/resource.h>
+#endif
 
 namespace xemmai
 {
@@ -31,7 +34,17 @@ t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_thread(t_thread:
 {
 	v_next = t_thread::v_current->v_fibers;
 	t_thread::v_current->v_fibers = this;
-	auto limit = f_limit() / sizeof(t_object*);
+#ifdef __unix__
+	rlimit rm;
+	if (getrlimit(RLIMIT_STACK, &rm) == -1) portable::f_throw_system_error();
+	auto limit = rm.rlim_cur / sizeof(t_object*);
+#endif
+#ifdef _WIN32
+	ULONG_PTR low;
+	ULONG_PTR high;
+	GetCurrentThreadStackLimits(&low, &high);
+	auto limit = (high - low) / sizeof(t_object*);
+#endif
 	v_estack_buffer.reset(new t_object*[a_stack * 2 + limit * a_n]);
 	v_estack_last_head = v_estack_last_used = v_estack_buffer.get() + a_stack;
 	auto p = v_estack_last_head + a_stack + limit;
@@ -41,7 +54,7 @@ t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_thread(t_thread:
 
 t_fiber::t_internal::t_internal(size_t a_stack, void* a_bottom) : t_internal(a_stack, 2)
 {
-	v_stack_bottom = reinterpret_cast<t_object**>(a_bottom);
+	v_stack_bottom = static_cast<t_object**>(a_bottom);
 #ifdef _WIN32
 	v_handle = ConvertThreadToFiber(NULL);
 #endif
