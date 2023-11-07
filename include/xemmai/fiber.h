@@ -18,15 +18,6 @@ struct t_fiber
 {
 	struct t_internal
 	{
-#ifdef _WIN32
-		static void CALLBACK f_start(PVOID a_f)
-		{
-			t_object* bottom = nullptr;
-			v_current->v_stack_bottom = &bottom;
-			reinterpret_cast<void(*)()>(a_f)();
-		}
-#endif
-
 		t_internal* v_next;
 		void* v_thread;
 		t_fiber* v_fiber;

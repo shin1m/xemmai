@@ -77,7 +77,12 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber->v_stack, 2)
 {
 	v_fiber = a_fiber;
-	v_handle = CreateFiber(0, f_start, a_f);
+	v_handle = CreateFiber(0, [](PVOID a_f)
+	{
+		t_object* bottom = nullptr;
+		v_current->v_stack_bottom = &bottom;
+		reinterpret_cast<void(*)()>(a_f)();
+	}, a_f);
 }
 #endif
 
