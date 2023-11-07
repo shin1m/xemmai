@@ -41,7 +41,7 @@ target_compile_definitions(xemmai PRIVATE
 	"$<$<PLATFORM_ID:Windows>:XEMMAI__PUBLIC=__declspec(dllexport)>"
 	PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:_ITERATOR_DEBUG_LEVEL=0>"
 	)
-target_link_libraries(xemmai PRIVATE $<$<NOT:$<PLATFORM_ID:Windows>>:dl> Iconv::Iconv Threads::Threads)
+target_link_libraries(xemmai PUBLIC $<$<NOT:$<PLATFORM_ID:Windows>>:dl> Iconv::Iconv Threads::Threads)
 target_link_options(xemmai PRIVATE
 	$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Debug>>:/STACK:0x01000000>
 	$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/STACK:0x800000>
