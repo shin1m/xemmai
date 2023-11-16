@@ -131,6 +131,7 @@ void t_type_of<io::t_file>::f_define(t_io* a_library)
 		(L"seek"sv, t_member<intptr_t(io::t_file::*)(intptr_t, int), &io::t_file::f_seek>())
 		(a_library->f_symbol_read(), t_member<intptr_t(io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_read>())
 		(a_library->f_symbol_write(), t_member<size_t(io::t_file::*)(t_bytes&, size_t, size_t), &io::t_file::f_write>())
+		(L"fd"sv, t_member<int(io::t_file::*)() const, &io::t_file::f_fd>())
 		(L"tty"sv, t_member<bool(io::t_file::*)(), &io::t_file::f_tty>())
 #ifdef __unix__
 		(L"blocking"sv, t_member<bool(io::t_file::*)(), &io::t_file::f_blocking>())
