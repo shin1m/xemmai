@@ -130,7 +130,12 @@ struct t_child : t_sharable
 	void f_wait(int a_options)
 	{
 		if (!v_pid) return;
-		while (waitpid(v_pid, &v_status, a_options) == -1) if (errno != EINTR) portable::f_throw_system_error();
+		while (true) {
+			auto pid = waitpid(v_pid, &v_status, a_options);
+			if (pid == v_pid) break;
+			if (pid != -1) return;
+			if (errno != EINTR) portable::f_throw_system_error();
+		}
 		v_pid = 0;
 	}
 
@@ -162,7 +167,7 @@ struct t_child : t_sharable
 		return f_owned_or_shared<std::lock_guard>([&]
 		{
 			f_wait(WNOHANG);
-			return WIFEXITED(v_status) ? t_pvalue(WEXITSTATUS(v_status)) : nullptr;
+			return v_pid == 0 && WIFEXITED(v_status) ? t_pvalue(WEXITSTATUS(v_status)) : nullptr;
 		});
 	}
 	t_pvalue f_signaled()
@@ -170,7 +175,7 @@ struct t_child : t_sharable
 		return f_owned_or_shared<std::lock_guard>([&]
 		{
 			f_wait(WNOHANG);
-			return WIFSIGNALED(v_status) ? t_pvalue(WTERMSIG(v_status)) : nullptr;
+			return v_pid == 0 && WIFSIGNALED(v_status) ? t_pvalue(WTERMSIG(v_status)) : nullptr;
 		});
 	}
 };
