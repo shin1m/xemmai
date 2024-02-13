@@ -198,6 +198,7 @@ struct t_type_of<t_object>
 	}
 	XEMMAI__PUBLIC void f_do_instantiate(t_pvalue* a_stack, size_t a_n);
 	void (t_type::*v_instantiate)(t_pvalue*, size_t) = &t_type::f_do_instantiate;
+	static void f_throw_undefined_field [[noreturn]] (t_object* a_key);
 	XEMMAI__PUBLIC t_pvalue f_do_get(t_object* a_this, t_object* a_key, size_t& a_index);
 	t_pvalue (t_type::*v_get)(t_object*, t_object*, size_t&) = &t_type::f_do_get;
 	t_pvalue f__get(const t_pvalue& a_this, t_object* a_key, size_t& a_index);

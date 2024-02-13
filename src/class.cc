@@ -15,7 +15,7 @@ t_pvalue t_class::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 	auto i = a_index;
 	if (i < type.v_instance_fields || i >= type.v_fields || type.f_fields()[i].first != a_key) {
 		i = type.f_index(a_key);
-		if (i < type.v_instance_fields || i >= type.v_fields) f_throw(a_key->f_as<t_symbol>().f_string());
+		if (i < type.v_instance_fields || i >= type.v_fields) f_throw_undefined_field(a_key);
 		a_index = i;
 	}
 	return type.f_fields()[i].second;
@@ -57,6 +57,7 @@ t_pvalue t_type_of<t_builder>::f_do_get(t_object* a_this, t_object* a_key, size_
 	auto& builder = a_this->f_as<t_builder>();
 	builder.f_owned_or_throw();
 	if (!builder.v_fields) f_throw(L"already disposed."sv);
+	f_check<t_symbol>(a_key, L"key");
 	builder.v_fields->v_instance.push_back(a_key);
 	return {};
 }
@@ -66,6 +67,7 @@ void t_type_of<t_builder>::f_do_put(t_object* a_this, t_object* a_key, const t_p
 	auto& builder = a_this->f_as<t_builder>();
 	builder.f_owned_or_throw();
 	if (!builder.v_fields) f_throw(L"already disposed."sv);
+	f_check<t_symbol>(a_key, L"key");
 	builder.v_fields->v_class.emplace_back(a_key, a_value);
 }
 

@@ -130,9 +130,15 @@ void t_type::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 	a_stack[0] = value;
 }
 
+void t_type::f_throw_undefined_field(t_object* a_key)
+{
+	f_check<t_symbol>(a_key, L"key");
+	f_throw(L"undefined field: "s + a_key->f_as<t_symbol>().f_string());
+}
+
 t_pvalue t_type::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)
 {
-	f_throw(a_key->f_as<t_symbol>().f_string());
+	f_throw_undefined_field(a_key);
 }
 
 t_pvalue t_type::f__get(const t_pvalue& a_this, t_object* a_key, size_t& a_index)
@@ -168,7 +174,7 @@ void t_type::f__bind(const t_pvalue& a_this, t_object* a_key, size_t& a_index, t
 
 void t_type::f_do_put(t_object* a_this, t_object* a_key, const t_pvalue& a_value)
 {
-	f_throw(a_key->f_as<t_symbol>().f_string());
+	f_throw_undefined_field(a_key);
 }
 
 void t_type::f__put(t_object* a_this, t_object* a_key, size_t& a_index, const t_pvalue& a_value)
