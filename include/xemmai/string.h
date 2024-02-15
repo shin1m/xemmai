@@ -55,10 +55,6 @@ public:
 	{
 		return v_size == a_x.v_size && std::char_traits<wchar_t>::compare(*this, a_x, v_size) == 0;
 	}
-	bool operator!=(const t_string& a_x) const
-	{
-		return !(*this == a_x);
-	}
 	int f_compare(const t_string& a_x) const
 	{
 		int n = std::char_traits<wchar_t>::compare(*this, a_x, std::min(v_size, a_x.v_size));

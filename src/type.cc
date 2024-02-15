@@ -75,7 +75,7 @@ std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>>
 	std::vector<std::pair<t_root, t_rvalue>> fields{f_fields(), f_fields() + v_instance_fields};
 	std::map<t_object*, size_t> key2index{f_key2index(), f_key2index() + v_fields};
 	for (auto& x : a_fields.v_instance) {
-		if (key2index.find(x) != key2index.end()) f_throw(x->f_as<t_symbol>().f_string());
+		if (key2index.contains(x)) f_throw(x->f_as<t_symbol>().f_string());
 		key2index.emplace(x, fields.size());
 		fields.emplace_back(x, nullptr);
 	}

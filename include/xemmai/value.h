@@ -299,10 +299,6 @@ public:
 			return true;
 		}
 	}
-	bool operator!=(const t_value<t_pointer>& a_value) const
-	{
-		return !operator==(a_value);
-	}
 	uintptr_t f_tag() const
 	{
 		return reinterpret_cast<uintptr_t>(static_cast<t_object*>(*this));
