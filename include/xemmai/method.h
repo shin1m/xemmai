@@ -19,12 +19,6 @@ class t_method
 	{
 	}
 	~t_method() = default;
-
-public:
-	t_object* f_function() const
-	{
-		return v_function;
-	}
 };
 
 template<>
@@ -42,11 +36,6 @@ struct t_type_of<t_method> : t_uninstantiatable<t_holds<t_method>>
 		auto& p = a_this->f_as<t_method>();
 		a_stack[1] = p.v_self;
 		return p.v_function->f_call_without_loop(a_stack, a_n);
-	}
-	static size_t f_do_get_at(t_object* a_this, t_pvalue* a_stack)
-	{
-		a_stack[0] = a_this->f_type()->f_new<t_method>(a_this->f_as<t_method>().v_function, a_stack[2]);
-		return -1;
 	}
 };
 

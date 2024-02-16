@@ -319,10 +319,7 @@ size_t t_code::f_loop(t_context* a_context)
 				++pc;
 				auto p = static_cast<t_object*>(stack[0]);
 				if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
-				if (p->f_type() == f_global()->f_type<t_method>())
-					stack[0] = p->f_as<t_method>().f_function();
-				else if (!f_is_bindable(p))
-					f_method_bind(stack);
+				if (!p->f_type()->v_bindable) f_method_bind(stack);
 			}
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(GLOBAL_GET)
