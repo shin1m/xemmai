@@ -45,13 +45,9 @@ struct t_signature
 {
 	static const size_t V_N = sizeof...(T_an);
 
-	static constexpr const wchar_t* f_error()
-	{
-		return t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>();
-	}
 	static void f_check(size_t a_n)
 	{
-		if (a_n != sizeof...(T_an)) [[unlikely]] f_throw(f_error());
+		if (a_n != sizeof...(T_an)) [[unlikely]] f_throw((t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>()).v);
 	}
 	template<size_t A_i>
 	static void f_check__(t_pvalue* a_stack)
@@ -118,7 +114,7 @@ struct t_call_construct<t_pvalue(*)(t_type*, T_an...), A_function>
 	}
 	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, size_t a_n)
 	{
-		if (a_n != sizeof...(T_an)) [[unlikely]] f_throw(t_signature<T_an...>::f_error());
+		t_signature<T_an...>::f_check(a_n);
 		t_signature<T_an...>::f_check(a_stack);
 		return f__do<T_an...>(a_class, a_stack + 1);
 	}
@@ -152,6 +148,19 @@ struct t_construct_with
 	using t_bind = t_call_construct<T_function, A_function>;
 };
 
+template<typename T_library, typename T_r, typename... T_an>
+t_pvalue f_call_as(T_r a_do(T_an...), T_library* a_library, auto&&... a_xs)
+{
+	return a_library->f_as(a_do(a_library, std::forward<decltype(a_xs)>(a_xs)...));
+}
+
+template<typename T_library, typename... T_an>
+t_pvalue f_call_as(void a_do(T_an...), T_library* a_library, auto&&... a_xs)
+{
+	a_do(a_library, std::forward<decltype(a_xs)>(a_xs)...);
+	return {};
+}
+
 template<typename T_self, typename... T_an>
 struct t_call_member_base
 {
@@ -166,20 +175,9 @@ template<typename T_library, typename T_self, typename T_r, typename... T_an>
 struct t_call_member<T_library, T_r(T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
 {
 	template<T_r(T_self::*A_function)(T_an...) const>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
 	{
-		return static_cast<T_library*>(a_library)->f_as((f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename T_self, typename... T_an>
-struct t_call_member<T_library, void(T_self::*)(T_an...) const> : t_call_member_base<T_self, T_an...>
-{
-	template<void(T_self::*A_function)(T_an...) const>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
-	{
-		(f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
-		return {};
+		return (f_as<const T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -187,20 +185,9 @@ template<typename T_library, typename T_self, typename T_r, typename... T_an>
 struct t_call_member<T_library, T_r(T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
 {
 	template<T_r(T_self::*A_function)(T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
 	{
-		return static_cast<T_library*>(a_library)->f_as((f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename T_self, typename... T_an>
-struct t_call_member<T_library, void(T_self::*)(T_an...)> : t_call_member_base<T_self, T_an...>
-{
-	template<void(T_self::*A_function)(T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
-	{
-		(f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
-		return {};
+		return (f_as<T_self&>(a_self).*A_function)(std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -208,21 +195,9 @@ template<typename T_library, typename T_self, typename T_r, typename... T_an>
 struct t_call_member<T_library, T_r(T_self::*)(T_library*, T_an...) const> : t_call_member_base<T_self, T_an...>
 {
 	template<T_r(T_self::*A_function)(T_library*, T_an...) const>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
 	{
-		auto library = static_cast<T_library*>(a_library);
-		return library->f_as((f_as<const T_self&>(a_self).*A_function)(library, std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename T_self, typename... T_an>
-struct t_call_member<T_library, void(T_self::*)(T_library*, T_an...) const> : t_call_member_base<T_self, T_an...>
-{
-	template<void(T_self::*A_function)(T_library*, T_an...) const>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
-	{
-		(f_as<const T_self&>(a_self).*A_function)(static_cast<T_library*>(a_library), std::forward<T_an>(a_n)...);
-		return {};
+		return (f_as<const T_self&>(a_self).*A_function)(a_library, std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -230,21 +205,9 @@ template<typename T_library, typename T_self, typename T_r, typename... T_an>
 struct t_call_member<T_library, T_r(T_self::*)(T_library*, T_an...)> : t_call_member_base<T_self, T_an...>
 {
 	template<T_r(T_self::*A_function)(T_library*, T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
 	{
-		auto library = static_cast<T_library*>(a_library);
-		return library->f_as((f_as<T_self&>(a_self).*A_function)(library, std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename T_self, typename... T_an>
-struct t_call_member<T_library, void(T_self::*)(T_library*, T_an...)> : t_call_member_base<T_self, T_an...>
-{
-	template<void(T_self::*A_function)(T_library*, T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
-	{
-		(f_as<T_self&>(a_self).*A_function)(static_cast<T_library*>(a_library), std::forward<T_an>(a_n)...);
-		return {};
+		return (f_as<T_self&>(a_self).*A_function)(a_library, std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -252,20 +215,9 @@ template<typename T_library, typename T_r, typename T_self, typename... T_an>
 struct t_call_member<T_library, T_r(*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
 {
 	template<T_r(*A_function)(T_self, T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
 	{
-		return static_cast<T_library*>(a_library)->f_as(A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename T_self, typename... T_an>
-struct t_call_member<T_library, void(*)(T_self, T_an...)> : t_call_member_base<T_self, T_an...>
-{
-	template<void(*A_function)(T_self, T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
-	{
-		A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
-		return {};
+		return A_function(f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -273,21 +225,9 @@ template<typename T_library, typename T_r, typename T_self, typename... T_an>
 struct t_call_member<T_library, T_r(*)(T_library*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
 {
 	template<T_r(*A_function)(T_library*, T_self, T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
 	{
-		auto library = static_cast<T_library*>(a_library);
-		return library->f_as(A_function(library, f_as<T_self>(a_self), std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename T_self, typename... T_an>
-struct t_call_member<T_library, void(*)(T_library*, T_self, T_an...)> : t_call_member_base<T_self, T_an...>
-{
-	template<void(*A_function)(T_library*, T_self, T_an...)>
-	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, T_an&&... a_n)
-	{
-		A_function(static_cast<T_library*>(a_library), f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
-		return {};
+		return A_function(a_library, f_as<T_self>(a_self), std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -302,7 +242,7 @@ struct t_member
 
 		static t_pvalue f_function(t_library* a_library, const t_pvalue& a_self, auto&&... a_xs)
 		{
-			return t_call_member<T_library, T_function>::template f_call<A_function>(a_library, a_self, std::forward<decltype(a_xs)>(a_xs)...);
+			return f_call_as<T_library>(t_call_member<T_library, T_function>::template f_call<A_function>, static_cast<T_library*>(a_library), a_self, std::forward<decltype(a_xs)>(a_xs)...);
 		}
 		static void f_call(t_library* a_library, t_pvalue* a_stack, size_t a_n)
 		{
@@ -331,22 +271,9 @@ struct t_call_static<T_library, T_r(*)(T_an...)>
 	using t_signature = xemmai::t_signature<T_an...>;
 
 	template<T_r(*A_function)(T_an...)>
-	static t_pvalue f_call(T_library* a_library, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, T_an&&... a_n)
 	{
-		return static_cast<T_library*>(a_library)->f_as(A_function(std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename... T_an>
-struct t_call_static<T_library, void(*)(T_an...)>
-{
-	using t_signature = xemmai::t_signature<T_an...>;
-
-	template<void(*A_function)(T_an...)>
-	static t_pvalue f_call(T_library* a_library, T_an&&... a_n)
-	{
-		A_function(std::forward<T_an>(a_n)...);
-		return {};
+		return A_function(std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -356,22 +283,9 @@ struct t_call_static<T_library, T_r(*)(T_library*, T_an...)>
 	using t_signature = xemmai::t_signature<T_an...>;
 
 	template<T_r(*A_function)(T_library*, T_an...)>
-	static t_pvalue f_call(T_library* a_library, T_an&&... a_n)
+	static T_r f_call(T_library* a_library, T_an&&... a_n)
 	{
-		return static_cast<T_library*>(a_library)->f_as(A_function(a_library, std::forward<T_an>(a_n)...));
-	}
-};
-
-template<typename T_library, typename... T_an>
-struct t_call_static<T_library, void(*)(T_library*, T_an...)>
-{
-	using t_signature = xemmai::t_signature<T_an...>;
-
-	template<void(*A_function)(T_library*, T_an...)>
-	static t_pvalue f_call(T_library* a_library, T_an&&... a_n)
-	{
-		A_function(a_library, std::forward<T_an>(a_n)...);
-		return {};
+		return A_function(a_library, std::forward<T_an>(a_n)...);
 	}
 };
 
@@ -385,7 +299,7 @@ struct t_static
 
 		static t_pvalue f_function(t_library* a_library, const t_pvalue& a_self, auto&&... a_xs)
 		{
-			return t_call_static<T_library, T_function>::template f_call<A_function>(static_cast<T_library*>(a_library), std::forward<decltype(a_xs)>(a_xs)...);
+			return f_call_as<T_library>(t_call_static<T_library, T_function>::template f_call<A_function>, static_cast<T_library*>(a_library), std::forward<decltype(a_xs)>(a_xs)...);
 		}
 		static void f_call(t_library* a_library, t_pvalue* a_stack, size_t a_n)
 		{
