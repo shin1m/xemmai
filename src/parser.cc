@@ -594,9 +594,8 @@ std::unique_ptr<ast::t_node> t_parser::f_and_also(bool a_assignable)
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::e_token__AND_ALSO) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		auto branch = std::make_unique<ast::t_if>(at, std::move(node));
+		auto branch = std::make_unique<ast::t_if>(at, std::move(node), true);
 		branch->v_true.push_back(f_or(false));
-		branch->v_false.emplace_back(new ast::t_literal<bool>(at, false));
 		node = std::move(branch);
 	}
 	return node;
@@ -608,8 +607,7 @@ std::unique_ptr<ast::t_node> t_parser::f_or_else(bool a_assignable)
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::e_token__OR_ELSE) {
 		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		auto branch = std::make_unique<ast::t_if>(at, std::move(node));
-		branch->v_true.emplace_back(new ast::t_literal<bool>(at, true));
+		auto branch = std::make_unique<ast::t_if>(at, std::move(node), true);
 		branch->v_false.push_back(f_and_also(false));
 		node = std::move(branch);
 	}

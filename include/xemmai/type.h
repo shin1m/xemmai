@@ -109,7 +109,7 @@ struct t_type_of<t_object>
 
 	static XEMMAI__TYPE__IDS_MODIFIER std::array<t_type_id, 1> V_ids{f_type_id<t_object>()};
 	static constexpr size_t V_native = 0;
-	static constexpr size_t V_fields = 26;
+	static constexpr size_t V_fields = 25;
 
 	static t_pvalue f_transfer(auto* a_library, auto&& a_value)
 	{
@@ -230,8 +230,6 @@ struct t_type_of<t_object>
 	size_t (*f_plus)(t_object*, t_pvalue*) = f_do_plus;
 	XEMMAI__PUBLIC static size_t f_do_minus(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_minus)(t_object*, t_pvalue*) = f_do_minus;
-	XEMMAI__PUBLIC static size_t f_do_not(t_object* a_this, t_pvalue* a_stack);
-	size_t (*f_not)(t_object*, t_pvalue*) = f_do_not;
 	XEMMAI__PUBLIC static size_t f_do_complement(t_object* a_this, t_pvalue* a_stack);
 	size_t (*f_complement)(t_object*, t_pvalue*) = f_do_complement;
 	XEMMAI__PUBLIC static size_t f_do_multiply(t_object* a_this, t_pvalue* a_stack);
@@ -279,7 +277,6 @@ struct t_type_of<t_object>
 		if (T::f_do_set_at != U::f_do_set_at) f_set_at = T::f_do_set_at;
 		if (T::f_do_plus != U::f_do_plus) f_plus = T::f_do_plus;
 		if (T::f_do_minus != U::f_do_minus) f_minus = T::f_do_minus;
-		if (T::f_do_not != U::f_do_not) f_not = T::f_do_not;
 		if (T::f_do_complement != U::f_do_complement) f_complement = T::f_do_complement;
 		if (T::f_do_multiply != U::f_do_multiply) f_multiply = T::f_do_multiply;
 		if (T::f_do_divide != U::f_do_divide) f_divide = T::f_do_divide;
@@ -400,7 +397,6 @@ struct t_derived : T
 		this->f_set_at = t_type::f_do_set_at;
 		this->f_plus = t_type::f_do_plus;
 		this->f_minus = t_type::f_do_minus;
-		this->f_not = t_type::f_do_not;
 		this->f_complement = t_type::f_do_complement;
 		this->f_multiply = t_type::f_do_multiply;
 		this->f_divide = t_type::f_do_divide;

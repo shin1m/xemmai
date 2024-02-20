@@ -1,7 +1,7 @@
 #ifndef XEMMAI__BOOLEAN_H
 #define XEMMAI__BOOLEAN_H
 
-#include "object.h"
+#include "string.h"
 
 namespace xemmai
 {
@@ -14,15 +14,18 @@ struct t_type_of<bool> : t_uninstantiatable<t_bears<bool>>
 	{
 		static bool f_as(auto&& a_object)
 		{
-			return a_object.f_boolean();
+			return a_object && (a_object.f_tag() != e_tag__BOOLEAN || a_object.f_boolean());
 		}
 		static bool f_is(t_object* a_object)
 		{
-			return reinterpret_cast<uintptr_t>(a_object) == e_tag__BOOLEAN;
+			return true;
 		}
 	};
 
-	XEMMAI__PUBLIC static t_object* f__string(bool a_self);
+	static t_object* f__string(bool a_self)
+	{
+		return t_string::f_instantiate(a_self ? L"true"sv : L"false"sv);
+	}
 	static intptr_t f__hash(bool a_self)
 	{
 		return a_self ? 1 : 0;

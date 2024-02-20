@@ -280,22 +280,6 @@ XEMMAI__VALUE__UNARY_ARITHMETIC(plus, )
 XEMMAI__VALUE__UNARY_ARITHMETIC(minus, -)
 
 template<typename T_tag>
-inline t_pvalue t_value<T_tag>::f_not() const
-{
-	auto p = static_cast<t_object*>(*this);
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__BOOLEAN:
-		return !v_boolean;
-	case e_tag__NULL:
-	case e_tag__INTEGER:
-	case e_tag__FLOAT:
-		f_throw(L"not supported."sv);
-	default:
-		XEMMAI__VALUE__UNARY(f_not)
-	}
-}
-
-template<typename T_tag>
 inline t_pvalue t_value<T_tag>::f_complement() const
 {
 	auto p = static_cast<t_object*>(*this);

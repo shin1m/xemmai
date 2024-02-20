@@ -342,7 +342,17 @@ public:
 	t_value<t_pointer> f_set_at(const t_value<t_pointer>& a_index, const t_value<t_pointer>& a_value) const;
 	t_value<t_pointer> f_plus() const;
 	t_value<t_pointer> f_minus() const;
-	t_value<t_pointer> f_not() const;
+	t_value<t_pointer> f_not() const
+	{
+		switch (reinterpret_cast<uintptr_t>(f_tag())) {
+		case e_tag__NULL:
+			return true;
+		case e_tag__BOOLEAN:
+			return !v_boolean;
+		default:
+			return false;
+		}
+	}
 	t_value<t_pointer> f_complement() const;
 	t_value<t_pointer> f_multiply(const t_value<t_pointer>& a_value) const;
 	t_value<t_pointer> f_divide(const t_value<t_pointer>& a_value) const;

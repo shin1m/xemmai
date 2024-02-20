@@ -6,7 +6,6 @@ Foo = Object + @
 	$__set_at = @(x, y) "a[" + x + "] = " + y
 	$__plus = @ "+a"
 	$__minus = @ "-a"
-	$__not = @ "!a"
 	$__complement = @ "~a"
 	$__multiply = @(x) "a * " + x
 	$__divide = @(x) "a / " + x
@@ -31,7 +30,7 @@ assert(a["x"] == "a[x]"
 assert((a["x"] = "y") == "a[x] = y"
 assert(+a == "+a"
 assert(-a == "-a"
-assert(!a == "!a"
+assert(!a === false
 assert(~a == "~a"
 assert(a * "x" == "a * x"
 assert(a / "x" == "a / x"

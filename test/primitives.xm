@@ -125,7 +125,7 @@ foo = "foo"
 assert((false && foo) === false
 assert((true && foo) === foo
 assert((false || foo) === foo
-assert((true || foo) === true
+assert((foo || "bar") === foo
 
 print("+(0 + 1) = " + +(0 + 1)
 assert(+(0 + 1) == 1
@@ -219,6 +219,7 @@ assert(Bar(1.0).__equals(1.0)
 print("Bar(1.0).__equals(2.0) = " + Bar(1.0).__equals(2.0)
 assert(!Bar(1.0).__equals(2.0)
 
+assert(!"" === false
 assert("" === ""
 assert("" + "" === ""
 assert(foo + "" === foo

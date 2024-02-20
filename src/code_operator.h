@@ -47,9 +47,7 @@
 		XEMMAI__CODE__UNARY_ARITHMETIC(PLUS, , f_plus)
 		XEMMAI__CODE__UNARY_ARITHMETIC(MINUS, -, f_minus)
 		XEMMAI__CODE__CASE_BEGIN(NOT)
-				if (a0.f_tag() == e_tag__BOOLEAN) {
-					XEMMAI__CODE__PRIMITIVE_CALL(!a0.v_boolean)
-				} else XEMMAI__CODE__OBJECT_OR_THROW(f_not)
+				XEMMAI__CODE__PRIMITIVE_CALL(!f_as<bool>(a0))
 		XEMMAI__CODE__CASE_END
 		XEMMAI__CODE__CASE_BEGIN(COMPLEMENT)
 				if (a0.f_tag() == e_tag__INTEGER) {

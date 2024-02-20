@@ -16,6 +16,8 @@ This page explains literals.
 
     boolean: 'true' | 'false' ;
 
+`null` and `false` are falsy. The other values are all truthy.
+
 ## Integer Literals
 
     integer: digit+ ;

@@ -163,6 +163,7 @@ struct t_lambda : t_node, t_scope
 struct t_if : t_node
 {
 	std::unique_ptr<t_node> v_condition;
+	bool v_preserve;
 	std::vector<std::unique_ptr<t_node>> v_true;
 	std::vector<std::unique_ptr<t_node>> v_false;
 	t_block v_block_true;
@@ -170,7 +171,7 @@ struct t_if : t_node
 	t_block v_junction;
 	t_block v_block_exit;
 
-	t_if(const t_at& a_at, std::unique_ptr<t_node>&& a_condition) : t_node(a_at), v_condition(std::move(a_condition))
+	t_if(const t_at& a_at, std::unique_ptr<t_node>&& a_condition, bool a_preserve = false) : t_node(a_at), v_condition(std::move(a_condition)), v_preserve(a_preserve)
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -618,9 +619,9 @@ struct XEMMAI__LOCAL t_emit
 	{
 		v_code->v_ats.push_back({a_node->v_at, f_last()});
 	}
-	void f_emit_null()
+	t_emit& f_emit_null()
 	{
-		(*this << e_instruction__NUL << v_stack).f_push();
+		return (*this << e_instruction__NUL << v_stack).f_push();
 	}
 	void f_emit_safe_point(ast::t_node* a_node)
 	{

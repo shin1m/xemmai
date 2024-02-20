@@ -15,7 +15,7 @@ struct t_type_of<t_type> : t_uninstantiatable<t_bears<t_type>>
 		f_finalize = f_do_scan;
 		v_get = static_cast<t_pvalue (t_type::*)(t_object*, t_object*, size_t&)>(&t_type_of::f_do_get);
 		f_string = f_hash = f_not_supported0;
-		f_get_at = f_set_at = f_plus = f_minus = f_not = f_complement = f_multiply = f_divide = f_modulus = f_subtract = f_left_shift = f_right_shift = f_less = f_less_equal = f_greater = f_greater_equal = f_equals = f_not_equals = f_and = f_xor = f_or = f_not_supported1;
+		f_get_at = f_set_at = f_plus = f_minus = f_complement = f_multiply = f_divide = f_modulus = f_subtract = f_left_shift = f_right_shift = f_less = f_less_equal = f_greater = f_greater_equal = f_equals = f_not_equals = f_and = f_xor = f_or = f_not_supported1;
 	}
 	static void f_do_scan(t_object* a_this, t_scan a_scan);
 	XEMMAI__PUBLIC t_pvalue f_do_get(t_object* a_this, t_object* a_key, size_t& a_index);

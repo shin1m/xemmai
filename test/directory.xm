@@ -5,7 +5,7 @@ assert = @(x) x || throw Throwable("Assertion failed."
 
 directory = os.Directory("" + os.Path(system.script) / ".."
 try
-	while (entry = directory.read()) !== null
+	while entry = directory.read()
 		special = entry.permissions >> 9
 		owner = entry.permissions >> 6 & 7
 		group = entry.permissions >> 3 & 7

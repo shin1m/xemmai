@@ -43,7 +43,6 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_set_at);
 	a_scan(v_symbol_plus);
 	a_scan(v_symbol_minus);
-	a_scan(v_symbol_not);
 	a_scan(v_symbol_complement);
 	a_scan(v_symbol_multiply);
 	a_scan(v_symbol_divide);
@@ -80,7 +79,6 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_symbol_set_at = t_symbol::f_instantiate(L"__set_at"sv);
 	v_symbol_plus = t_symbol::f_instantiate(L"__plus"sv);
 	v_symbol_minus = t_symbol::f_instantiate(L"__minus"sv);
-	v_symbol_not = t_symbol::f_instantiate(L"__not"sv);
 	v_symbol_complement = t_symbol::f_instantiate(L"__complement"sv);
 	v_symbol_multiply = t_symbol::f_instantiate(L"__multiply"sv);
 	v_symbol_divide = t_symbol::f_instantiate(L"__divide"sv);

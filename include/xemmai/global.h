@@ -59,7 +59,6 @@ class t_global : public t_library
 	t_slot v_symbol_set_at;
 	t_slot v_symbol_plus;
 	t_slot v_symbol_minus;
-	t_slot v_symbol_not;
 	t_slot v_symbol_complement;
 	t_slot v_symbol_multiply;
 	t_slot v_symbol_divide;
@@ -120,10 +119,6 @@ public:
 	t_object* f_symbol_minus() const
 	{
 		return v_symbol_minus;
-	}
-	t_object* f_symbol_not() const
-	{
-		return v_symbol_not;
 	}
 	t_object* f_symbol_complement() const
 	{
@@ -373,8 +368,8 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__BOOLEAN:\
-		f_check<bool>(a_value, L"argument0");\
-		return static_cast<bool>(v_boolean a_operator f_as<bool>(a_value));\
+		if (a_value.f_tag() != e_tag__BOOLEAN) [[unlikely]] f_throw_type_error<bool>(L"argument0");\
+		return v_boolean a_operator a_value.v_boolean;\
 	case e_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return v_integer a_operator f_as<intptr_t>(a_value);\

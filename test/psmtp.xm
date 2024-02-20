@@ -11,11 +11,11 @@ server = @(co, log)
 			x = co("250 Hello " + hostname + "\n"
 			continue
 		if x.substring(0, 11) == "MAIL FROM: "
-			if sender === null
+			if sender
+				x = co("503 Sender already specified\n"
+			else
 				sender = x.substring(11
 				x = co("250 Sender " + sender + "\n"
-			else
-				x = co("503 Sender already specified\n"
 			continue
 		if x.substring(0, 9) == "RCPT TO: "
 			recipient = x.substring(9
@@ -23,12 +23,12 @@ server = @(co, log)
 			x = co("250 Recipient " + recipient + "\n"
 			continue
 		if x == "DATA"
-			if sender === null
+			if !sender
 				x = co("503 Sender not specified\n"
 			else if recipients == ""
 				x = co("503 Recipients not specified\n"
 			else
-				mail = hostname === null ? "" : "\tReceived: from " + hostname + "\n"
+				mail = hostname ? "\tReceived: from " + hostname + "\n" : ""
 				mail = mail + "\tFrom: " + sender + "\n"
 				mail = mail + recipients
 				mail = mail + "\t\n"

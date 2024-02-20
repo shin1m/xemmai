@@ -9,12 +9,12 @@ namespace ast
 namespace
 {
 
-void f_emit_block(t_emit& a_emit, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail, bool a_clear)
+void f_emit_block(t_emit& a_emit, const std::vector<std::unique_ptr<t_node>>& a_nodes, bool a_tail, bool a_clear, bool a_preserve = false)
 {
 	auto i = a_nodes.begin();
 	auto j = a_nodes.end();
 	if (i == j) {
-		if (!a_clear) a_emit.f_emit_null();
+		if (!a_clear) a_preserve ? a_emit.f_push() : a_emit.f_emit_null();
 	} else {
 		for (--j; i != j; ++i) (*i)->f_emit(a_emit, false, false, true);
 		(*i)->f_emit(a_emit, a_tail, false, a_clear);
@@ -214,14 +214,14 @@ t_operand t_if::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear
 	a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
 	auto privates = *a_emit.v_privates;
 	auto stack = a_emit.v_stack;
-	f_emit_block(a_emit, v_true, a_tail, a_clear);
+	f_emit_block(a_emit, v_true, a_tail, a_clear, v_preserve);
 	a_emit.f_join(v_junction);
 	auto& label1 = a_emit.f_label();
 	a_emit << e_instruction__JUMP << label1;
 	a_emit.f_target(label0);
 	*a_emit.v_privates = privates;
 	a_emit.v_stack = stack;
-	f_emit_block(a_emit, v_false, a_tail, a_clear);
+	f_emit_block(a_emit, v_false, a_tail, a_clear, v_preserve);
 	a_emit.f_join(v_junction);
 	a_emit.f_target(label1);
 	a_emit.f_merge(v_junction);
@@ -832,10 +832,12 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 			return t_literal<intptr_t>(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
 			return t_literal<intptr_t>(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
+		case e_instruction__NOT_T:
+			return t_literal<bool>(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__COMPLEMENT_T:
 			return t_literal<intptr_t>(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
-			f_throw(L"not supported."sv);
+			assert(false);
 		}
 	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
 		a_emit.f_pop();
@@ -844,6 +846,8 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 			return t_literal<double>(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 		case e_instruction__MINUS_T:
 			return t_literal<double>(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
+		case e_instruction__NOT_T:
+			return t_literal<bool>(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			f_throw(L"not supported."sv);
 		}
@@ -928,7 +932,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case e_instruction__OR_TT:
 				return t_literal<intptr_t>(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported."sv);
+				assert(false);
 			}
 		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
 			a_emit.f_pop();

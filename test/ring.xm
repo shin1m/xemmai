@@ -11,20 +11,20 @@ Ring = Object + @
 	$__initialize = @
 		$ring = null
 	$__string = @
-		if $ring === null
-			return "()"
-		else
+		if $ring
 			return "(" + $string($ring.next) + ")"
+		else
+			return "()"
 	$string = @(cell)
 		cell === $ring && return cell.value.__string(
 		return cell.value.__string() + " " + $string(cell.next)
 	$push = @(value)
 		cell = Cell(value
-		if $ring === null
-			cell.next = cell
-		else
+		if $ring
 			cell.next = $ring.next
 			$ring.next = cell
+		else
+			cell.next = cell
 		$ring = cell
 	$pop = @
 		cell = $ring.next

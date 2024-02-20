@@ -4,12 +4,12 @@ Pair = Object + @
 	$__initialize = @(first, second)
 		$first = first
 		$second = second
-	$__string = @ $second === null ? $first.__string() : $first.__string() + " " + $second
+	$__string = @ $second ? $first.__string() + " " + $second : $first.__string()
 
 List = Object + @
 	$list
 	$__initialize = @ $list = null
-	$__string = @ $list === null ? "()" : "(" + $list + ")"
+	$__string = @ $list ? "(" + $list + ")" : "()"
 	$push = @(value) $list = Pair(value, $list
 	$pop = @
 		value = $list.first
