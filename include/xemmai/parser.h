@@ -30,7 +30,7 @@ class XEMMAI__LOCAL t_parser
 	{
 		f_throw(a_message, v_lexer.f_at());
 	}
-	t_svalue& f_symbol() const
+	t_object* f_symbol() const
 	{
 		return v_module.f_slot(t_symbol::f_instantiate(v_lexer.f_value()));
 	}

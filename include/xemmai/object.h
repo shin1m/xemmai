@@ -356,7 +356,8 @@ struct t_type::t_cast<T*>
 		switch (reinterpret_cast<uintptr_t>(a_object)) {
 		case e_tag__NULL:
 			return true;
-		case e_tag__BOOLEAN:
+		case e_tag__FALSE:
+		case e_tag__TRUE:
 		case e_tag__INTEGER:
 		case e_tag__FLOAT:
 			return false;

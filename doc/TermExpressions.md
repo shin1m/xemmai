@@ -42,7 +42,7 @@ Relational, equality, and identity operators return either `true` or `false`.
 
     and: identity ('&' identity)* ;
 
-Bitwise operators (`&`, `^`, and `|`) do bitwise operations if both the operands are integers, do boolean operations if both the operands are booleans, throws an exception otherwise.
+Bitwise operators (`&`, `^`, and `|`) do bitwise operations if both the operands are integers, do boolean operations if the left operand is boolean, throws an exception otherwise.
 
 ## Xor Expressions
 

@@ -21,7 +21,8 @@ using t_type = t_type_of<t_object>;
 enum t_tag
 {
 	e_tag__NULL,
-	e_tag__BOOLEAN,
+	e_tag__FALSE,
+	e_tag__TRUE,
 	e_tag__INTEGER,
 	e_tag__FLOAT,
 	e_tag__OBJECT
@@ -236,7 +237,6 @@ class t_value : public T_tag
 
 	union
 	{
-		bool v_boolean;
 		intptr_t v_integer;
 		double v_float;
 	};
@@ -251,7 +251,7 @@ class t_value : public T_tag
 
 public:
 	using T_tag::T_tag;
-	t_value(bool a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__BOOLEAN)), v_boolean(a_value)
+	t_value(bool a_value) : T_tag(reinterpret_cast<t_object*>(a_value ? e_tag__TRUE : e_tag__FALSE))
 	{
 	}
 	template<typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
@@ -289,8 +289,6 @@ public:
 		auto p = f_tag();
 		if (p != a_value.f_tag()) return false;
 		switch (p) {
-		case e_tag__BOOLEAN:
-			return v_boolean == a_value.v_boolean;
 		case e_tag__INTEGER:
 			return v_integer == a_value.v_integer;
 		case e_tag__FLOAT:
@@ -305,7 +303,7 @@ public:
 	}
 	bool f_boolean() const
 	{
-		return v_boolean;
+		return f_tag() >= e_tag__TRUE;
 	}
 	intptr_t f_integer() const;
 	double f_float() const;
@@ -344,14 +342,7 @@ public:
 	t_value<t_pointer> f_minus() const;
 	t_value<t_pointer> f_not() const
 	{
-		switch (reinterpret_cast<uintptr_t>(f_tag())) {
-		case e_tag__NULL:
-			return true;
-		case e_tag__BOOLEAN:
-			return !v_boolean;
-		default:
-			return false;
-		}
+		return f_tag() < e_tag__TRUE;
 	}
 	t_value<t_pointer> f_complement() const;
 	t_value<t_pointer> f_multiply(const t_value<t_pointer>& a_value) const;

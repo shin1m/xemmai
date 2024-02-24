@@ -485,7 +485,7 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(INSTANCE)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
-				auto& value = *static_cast<const t_pvalue*>(*++pc);
+				auto value = static_cast<t_object*>(*++pc);
 				++pc;
 				stack[0] = value;
 			}
@@ -506,7 +506,7 @@ size_t t_code::f_loop(t_context* a_context)
 			}
 			return -1;
 		XEMMAI__CODE__CASE(RETURN_INSTANCE)
-			a_context->f_return(*static_cast<const t_pvalue*>(*++pc));
+			a_context->f_return(static_cast<t_object*>(*++pc));
 			return -1;
 		XEMMAI__CODE__CASE(RETURN_V)
 			a_context->f_return(base[reinterpret_cast<size_t>(*++pc)]);
@@ -579,7 +579,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto& a0 = stack[1];
 #define XEMMAI__CODE__PREPARE()
 #define XEMMAI__CODE__FETCH_L()\
-				auto& a0 = *static_cast<const t_pvalue*>(*++pc);
+				t_pvalue a0 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__PREPARE_L()
 #define XEMMAI__CODE__FETCH_V()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];
@@ -589,7 +589,7 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__PREPARE_A1()\
 						stack[2] = a1;
 #define XEMMAI__CODE__FETCH_LI()\
-				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
+				t_pvalue a0 = static_cast<t_object*>(*++pc);\
 				auto a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PREPARE_LI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VI()\
@@ -601,7 +601,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PREPARE_TI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_LF()\
-				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
+				t_pvalue a0 = static_cast<t_object*>(*++pc);\
 				XEMMAI__CODE__FLOAT(a1, v1)
 #define XEMMAI__CODE__PREPARE_LF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VF()\
@@ -614,21 +614,21 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__PREPARE_TF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IL()\
 				auto a0 = reinterpret_cast<intptr_t>(*++pc);\
-				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
+				t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__FETCH_FL()\
 				XEMMAI__CODE__FLOAT(a0, v0)\
-				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
+				t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__FETCH_LL()\
-				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
-				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
+				t_pvalue a0 = static_cast<t_object*>(*++pc);\
+				t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__PREPARE_LL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VL()\
 				auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
-				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
+				t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__PREPARE_VL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TL()\
 				auto& a0 = stack[1];\
-				auto& a1 = *static_cast<const t_pvalue*>(*++pc);
+				t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__PREPARE_TL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IV()\
 				auto a0 = reinterpret_cast<intptr_t>(*++pc);\
@@ -637,7 +637,7 @@ size_t t_code::f_loop(t_context* a_context)
 				XEMMAI__CODE__FLOAT(a0, v0)\
 				auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__FETCH_LV()\
-				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
+				t_pvalue a0 = static_cast<t_object*>(*++pc);\
 				auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__PREPARE_LV() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VV()\
@@ -655,7 +655,7 @@ size_t t_code::f_loop(t_context* a_context)
 				XEMMAI__CODE__FLOAT(a0, v0)\
 				auto& a1 = stack[1];
 #define XEMMAI__CODE__FETCH_LT()\
-				auto& a0 = *static_cast<const t_pvalue*>(*++pc);\
+				t_pvalue a0 = static_cast<t_object*>(*++pc);\
 				auto& a1 = stack[1];
 #define XEMMAI__CODE__PREPARE_LT() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VT()\

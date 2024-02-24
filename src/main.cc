@@ -189,8 +189,11 @@ class t_debugger : public xemmai::t_debugger
 		case e_tag__NULL:
 			std::fputs("null", v_out);
 			break;
-		case e_tag__BOOLEAN:
-			std::fputs(f_as<bool>(a_value) ? "true" : "false", v_out);
+		case e_tag__FALSE:
+			std::fputs("false", v_out);
+			break;
+		case e_tag__TRUE:
+			std::fputs("true", v_out);
 			break;
 		case e_tag__INTEGER:
 			std::fprintf(v_out, "%" PRIdPTR, f_as<intptr_t>(a_value));

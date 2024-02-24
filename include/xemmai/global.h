@@ -245,7 +245,8 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 	switch (reinterpret_cast<uintptr_t>(p)) {
 	case e_tag__NULL:
 		return f_global()->f_type<std::nullptr_t>();
-	case e_tag__BOOLEAN:
+	case e_tag__FALSE:
+	case e_tag__TRUE:
 		return f_global()->f_type<bool>();
 	case e_tag__INTEGER:
 		return f_global()->f_type<intptr_t>();
@@ -282,8 +283,9 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__NULL:\
 		return t_type_of<std::nullptr_t>::f__##a_name(*this);\
-	case e_tag__BOOLEAN:\
-		return t_type_of<bool>::f__##a_name(v_boolean);\
+	case e_tag__FALSE:\
+	case e_tag__TRUE:\
+		return t_type_of<bool>::f__##a_name(*this);\
 	case e_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer);\
 	case e_tag__FLOAT:\
@@ -315,7 +317,8 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__NULL:\
-	case e_tag__BOOLEAN:\
+	case e_tag__FALSE:\
+	case e_tag__TRUE:\
 		f_throw(L"not supported."sv);\
 	case e_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
@@ -336,7 +339,8 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return static_cast<uintptr_t>(v_integer) a_operator f_as<intptr_t>(a_value);\
 	case e_tag__NULL:\
-	case e_tag__BOOLEAN:\
+	case e_tag__FALSE:\
+	case e_tag__TRUE:\
 	case e_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
 	default:\
@@ -350,9 +354,9 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
 	case e_tag__NULL:\
+	case e_tag__FALSE:\
+	case e_tag__TRUE:\
 		return a_operator(p == a_value.v_p);\
-	case e_tag__BOOLEAN:\
-		return a_operator(p == a_value.v_p && v_boolean == a_value.v_boolean);\
 	case e_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
 	case e_tag__FLOAT:\
@@ -367,9 +371,9 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case e_tag__BOOLEAN:\
-		if (a_value.f_tag() != e_tag__BOOLEAN) [[unlikely]] f_throw_type_error<bool>(L"argument0");\
-		return v_boolean a_operator a_value.v_boolean;\
+	case e_tag__FALSE:\
+	case e_tag__TRUE:\
+		return static_cast<bool>(f_as<bool>(*this) a_operator f_as<bool>(a_value));\
 	case e_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return v_integer a_operator f_as<intptr_t>(a_value);\

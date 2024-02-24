@@ -42,20 +42,19 @@ struct t_module
 struct t_script : t_module::t_body
 {
 	std::wstring v_path;
-	std::deque<t_svalue> v_slots;
+	std::deque<t_slot> v_slots;
 	std::mutex v_mutex;
 
 	t_script(std::wstring_view a_path) : v_path(a_path)
 	{
 	}
 	virtual void f_scan(t_scan a_scan);
-	t_svalue& f_slot(t_object* a_p)
+	t_object* f_slot(t_object* a_p)
 	{
 		v_mutex.lock();
 		auto& p = v_slots.emplace_back();
 		v_mutex.unlock();
-		p = a_p;
-		return p;
+		return p = a_p;
 	}
 };
 

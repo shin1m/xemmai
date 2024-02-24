@@ -72,23 +72,16 @@ struct t_operand
 		e_tag__TEMPORARY
 	};
 
-	static inline const t_pvalue v_null{};
-	static inline const t_pvalue v_true{true};
-	static inline const t_pvalue v_false{false};
-
 	t_tag v_tag;
 	union
 	{
 		intptr_t v_integer;
 		double v_float;
-		const t_pvalue* v_value;
+		t_object* v_value;
 		size_t v_index;
 	};
 
-	t_operand(nullptr_t) : v_tag(e_tag__LITERAL), v_value(&v_null)
-	{
-	}
-	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(a_value ? &v_true : &v_false)
+	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(reinterpret_cast<t_object*>(a_value ? e_tag__TRUE : e_tag__FALSE))
 	{
 	}
 	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_integer(a_value)
@@ -97,7 +90,7 @@ struct t_operand
 	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_float(a_value)
 	{
 	}
-	t_operand(t_svalue& a_value) : v_tag(e_tag__LITERAL), v_value(reinterpret_cast<const t_pvalue*>(&a_value))
+	t_operand(t_object* a_value) : v_tag(e_tag__LITERAL), v_value(a_value)
 	{
 	}
 	t_operand() : v_tag(e_tag__TEMPORARY)
@@ -571,8 +564,7 @@ struct XEMMAI__LOCAL t_emit
 	}
 	t_emit& operator<<(bool a_operand)
 	{
-		v_code->v_instructions.push_back(reinterpret_cast<void*>(a_operand ? 1 : 0));
-		return *this;
+		return *this << (a_operand ? 1 : 0);
 	}
 	t_emit& operator<<(double a_operand)
 	{
@@ -585,14 +577,9 @@ struct XEMMAI__LOCAL t_emit
 		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_code->v_instructions.push_back(v1[i]);
 		return *this;
 	}
-	t_emit& operator<<(const t_pvalue& a_operand)
+	t_emit& operator<<(t_object* a_operand)
 	{
-		v_code->v_instructions.push_back(const_cast<t_pvalue*>(&a_operand));
-		return *this;
-	}
-	t_emit& operator<<(t_svalue& a_operand)
-	{
-		v_code->v_instructions.push_back(&a_operand);
+		v_code->v_instructions.push_back(a_operand);
 		return *this;
 	}
 	t_emit& operator<<(t_label& a_label)
@@ -663,7 +650,7 @@ t_operand t_literal<T>::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	if (a_clear) return {};
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
-		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + e_instruction__RETURN_BOOLEAN - e_instruction__BOOLEAN) << v_value;
+		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + e_instruction__RETURN_NUL - e_instruction__NUL) << v_value;
 	} else {
 		a_emit << t_emit::f_instruction_of<T>() << a_emit.v_stack << v_value;
 	}

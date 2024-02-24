@@ -36,7 +36,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			switch (v_lexer.f_token()) {
 			case t_lexer::e_token__SYMBOL:
 				{
-					t_object* symbol = f_symbol();
+					auto symbol = f_symbol();
 					v_lexer.f_next();
 					if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 						if (!a_assignable) f_throw(L"can not assign to expression."sv);
@@ -58,7 +58,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					v_lexer.f_next();
 					if (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::e_token__SYMBOL) {
 						t_at at = v_lexer.f_at();
-						t_object* key = f_symbol();
+						auto key = f_symbol();
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 							if (!a_assignable) f_throw(L"can not assign to expression."sv);
@@ -78,15 +78,15 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		switch (v_lexer.f_token()) {
 		case t_lexer::e_token__SYMBOL:
 			{
-				auto& symbol = f_symbol();
+				auto symbol = f_symbol();
 				v_lexer.f_next();
-				return std::make_unique<ast::t_literal<t_svalue&>>(at, symbol);
+				return std::make_unique<ast::t_literal<t_object*>>(at, symbol);
 			}
 		case t_lexer::e_token__LEFT_PARENTHESIS:
 			{
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
-				auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_svalue&>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))));
+				auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))));
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_PARENTHESIS) call->v_expand = f_expressions(indent, call->v_arguments);
 				if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_PARENTHESIS) v_lexer.f_next();
 				return call;
@@ -193,7 +193,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_svalue&>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_list>()))));
+			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_list>()))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACKET) call->v_expand = f_expressions(indent, call->v_arguments);
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::e_token__RIGHT_BRACKET) v_lexer.f_next();
 			return call;
@@ -202,7 +202,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_svalue&>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_map>()))));
+			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_map>()))));
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::e_token__RIGHT_BRACE)
 				while (true) {
 					call->v_arguments.push_back(f_expression());
@@ -244,7 +244,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			auto value = v_lexer.f_string();
 			v_lexer.f_next();
-			return std::make_unique<ast::t_literal<t_svalue&>>(at, v_module.f_slot(value));
+			return std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(value));
 		}
 	case t_lexer::e_token__BREAK:
 		{
@@ -314,7 +314,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					}
 				case t_lexer::e_token__SYMBOL:
 					{
-						t_object* key = f_symbol();
+						auto key = f_symbol();
 						v_lexer.f_next();
 						if (v_lexer.f_token() == t_lexer::e_token__EQUAL) {
 							if (!a_assignable) f_throw(L"can not assign to expression."sv);
@@ -346,7 +346,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 						}
 					case t_lexer::e_token__SYMBOL:
 						{
-							t_object* key = f_symbol();
+							auto key = f_symbol();
 							v_lexer.f_next();
 							a_target.reset(new ast::t_object_has(at, std::move(a_target), key));
 							continue;
@@ -709,7 +709,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 					v_lexer.f_next();
 					auto expression = f_expression();
 					if (v_lexer.f_token() != t_lexer::e_token__SYMBOL) f_throw(L"expecting symbol."sv);
-					t_object* symbol = f_symbol();
+					auto symbol = f_symbol();
 					v_lexer.f_next();
 					auto c = std::make_unique<ast::t_try::t_catch>(std::move(expression), f_variable(v_scope, symbol));
 					f_block_or_expression(indent, c->v_block);
