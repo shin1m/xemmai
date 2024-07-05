@@ -409,13 +409,13 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 			{
 				auto value = v_lexer.f_integer();
 				v_lexer.f_next();
-				return f_action(indent, new ast::t_literal<intptr_t>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
+				return f_action(indent, new ast::t_literal(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		case t_lexer::e_token__FLOAT:
 			{
 				auto value = v_lexer.f_float();
 				v_lexer.f_next();
-				return f_action(indent, new ast::t_literal<double>(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
+				return f_action(indent, new ast::t_literal(at, instruction == e_instruction__MINUS_T ? -value : value), a_assignable);
 			}
 		}
 		break;
@@ -423,7 +423,7 @@ std::unique_ptr<ast::t_node> t_parser::f_unary(bool a_assignable)
 		if (v_lexer.f_token() == t_lexer::e_token__INTEGER) {
 			auto value = v_lexer.f_integer();
 			v_lexer.f_next();
-			return f_action(indent, new ast::t_literal<intptr_t>(at, ~value), a_assignable);
+			return f_action(indent, new ast::t_literal(at, ~value), a_assignable);
 		}
 		break;
 	}

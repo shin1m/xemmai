@@ -88,12 +88,10 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 			&&label__CLASS,
 			&&label__SUPER,
 			&&label__NUL,
-			&&label__BOOLEAN,
 			&&label__INTEGER,
 			&&label__FLOAT,
 			&&label__INSTANCE,
 			&&label__RETURN_NUL,
-			&&label__RETURN_BOOLEAN,
 			&&label__RETURN_INTEGER,
 			&&label__RETURN_FLOAT,
 			&&label__RETURN_INSTANCE,
@@ -451,14 +449,6 @@ size_t t_code::f_loop(t_context* a_context)
 				stack[0] = nullptr;
 			}
 			XEMMAI__CODE__BREAK
-		XEMMAI__CODE__CASE(BOOLEAN)
-			{
-				auto stack = base + reinterpret_cast<size_t>(*++pc);
-				auto value = reinterpret_cast<intptr_t>(*++pc) != 0;
-				++pc;
-				stack[0] = value;
-			}
-			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(INTEGER)
 			{
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
@@ -492,9 +482,6 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(RETURN_NUL)
 			a_context->f_return(nullptr);
-			return -1;
-		XEMMAI__CODE__CASE(RETURN_BOOLEAN)
-			a_context->f_return(reinterpret_cast<intptr_t>(*++pc) != 0);
 			return -1;
 		XEMMAI__CODE__CASE(RETURN_INTEGER)
 			a_context->f_return(reinterpret_cast<intptr_t>(*++pc));
