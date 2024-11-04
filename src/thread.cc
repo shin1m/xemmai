@@ -19,7 +19,7 @@ void t_thread::t_internal::f_initialize(size_t a_stack, void* a_bottom)
 #endif
 #ifdef _WIN32
 	t_fiber::v_current = v_active;
-	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &v_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
+	if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &v_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) throw std::system_error(GetLastError(), std::system_category());
 #endif
 	v_done = 0;
 }

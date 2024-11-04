@@ -331,17 +331,17 @@ t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields)
 inline void t_thread::t_internal::f_epoch_suspend()
 {
 #ifdef __unix__
-	pthread_kill(v_handle, XEMMAI__SIGNAL_SUSPEND);
+	if (auto error = pthread_kill(v_handle, XEMMAI__SIGNAL_SUSPEND)) throw std::system_error(error, std::generic_category());
 	f_engine()->f_epoch_wait();
 #endif
 #ifdef _WIN32
-	SuspendThread(v_handle);
-	v_context.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
-	GetThreadContext(v_handle, &v_context);
+	if (SuspendThread(v_handle) == -1) throw std::system_error(GetLastError(), std::system_category());
+	v_context.ContextFlags = CONTEXT_FULL;
+	if (!GetThreadContext(v_handle, &v_context)) throw std::system_error(GetLastError(), std::system_category());
 	auto sp = reinterpret_cast<t_object**>(v_context.Rsp);
 	MEMORY_BASIC_INFORMATION mbi;
 	for (auto p = sp;;) {
-		VirtualQuery(p, &mbi, sizeof(mbi));
+		if (VirtualQuery(p, &mbi, sizeof(mbi)) == 0) throw std::system_error(GetLastError(), std::system_category());
 		p = reinterpret_cast<t_object**>(static_cast<char*>(mbi.BaseAddress) + mbi.RegionSize);
 		if (mbi.Protect & PAGE_GUARD) {
 			sp = p;
@@ -358,10 +358,10 @@ inline void t_thread::t_internal::f_epoch_suspend()
 inline void t_thread::t_internal::f_epoch_resume()
 {
 #ifdef __unix__
-	pthread_kill(v_handle, XEMMAI__SIGNAL_RESUME);
+	if (auto error = pthread_kill(v_handle, XEMMAI__SIGNAL_RESUME)) throw std::system_error(error, std::generic_category());
 #endif
 #ifdef _WIN32
-	ResumeThread(v_handle);
+	if (!ResumeThread(v_handle)) throw std::system_error(GetLastError(), std::system_category());
 #endif
 }
 
