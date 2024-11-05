@@ -43,7 +43,7 @@ struct t_n2s
 template<typename... T_an>
 struct t_signature
 {
-	static const size_t V_N = sizeof...(T_an);
+//	static const size_t c_N = sizeof...(T_an);
 
 	static void f_check(size_t a_n)
 	{

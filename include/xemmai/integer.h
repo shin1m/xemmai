@@ -33,14 +33,14 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 		}
 		static bool f_is(t_object* a_object)
 		{
-			if (!std::is_same_v<typename t_fundamental<T>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(a_object) >= e_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+			if (!std::is_same_v<typename t_fundamental<T>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
 			switch (reinterpret_cast<uintptr_t>(a_object)) {
-			case e_tag__INTEGER:
+			case c_tag__INTEGER:
 				return true;
-			case e_tag__NULL:
-			case e_tag__FALSE:
-			case e_tag__TRUE:
-			case e_tag__FLOAT:
+			case c_tag__NULL:
+			case c_tag__FALSE:
+			case c_tag__TRUE:
+			case c_tag__FLOAT:
 				return false;
 			default:
 				return a_object->f_type()->f_derives<intptr_t>();

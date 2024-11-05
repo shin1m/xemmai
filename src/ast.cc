@@ -157,17 +157,17 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions1;
 	a_emit.v_safe_positions = &safe_positions1;
 	if (v_self_shared) a_emit
-		<< e_instruction__SELF << a_emit.v_stack
-		<< e_instruction__SCOPE_PUT0 << a_emit.v_stack << 0;
+		<< c_instruction__SELF << a_emit.v_stack
+		<< c_instruction__SCOPE_PUT0 << a_emit.v_stack << 0;
 	for (size_t i = 0; i < v_arguments; ++i)
 		if (v_privates[i]->v_shared) a_emit
-			<< e_instruction__STACK_GET << a_emit.v_stack << i
-			<< e_instruction__SCOPE_PUT0 << a_emit.v_stack << v_privates[i]->v_index;
+			<< c_instruction__STACK_GET << a_emit.v_stack << i
+			<< c_instruction__SCOPE_PUT0 << a_emit.v_stack << v_privates[i]->v_index;
 	f_emit_block(a_emit, v_block, true, false);
 	a_emit.f_pop();
 	a_emit.f_target(return0);
 	assert(a_emit.v_stack == v_privates.size());
-	a_emit << e_instruction__RETURN_T;
+	a_emit << c_instruction__RETURN_T;
 	a_emit.f_resolve();
 	a_emit.v_scope = scope0;
 	a_emit.v_code = code0;
@@ -182,9 +182,9 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	if (v_variadic || v_defaults.size() > 0) {
 		for (size_t i = 0; i < v_defaults.size(); ++i) v_defaults[i]->f_emit(a_emit, false, false);
 		for (size_t i = 0; i < v_defaults.size(); ++i) a_emit.f_pop();
-		a_emit << e_instruction__ADVANCED_LAMBDA;
+		a_emit << c_instruction__ADVANCED_LAMBDA;
 	} else {
-		a_emit << e_instruction__LAMBDA;
+		a_emit << c_instruction__LAMBDA;
 	}
 	(a_emit << a_emit.v_stack << code).f_push();
 	if (a_clear) a_emit.f_pop();
@@ -211,13 +211,13 @@ t_operand t_if::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear
 	v_condition->f_emit(a_emit, false, false);
 	auto& label0 = a_emit.f_label();
 	a_emit.f_pop();
-	a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
+	a_emit << c_instruction__BRANCH << a_emit.v_stack << label0;
 	auto privates = *a_emit.v_privates;
 	auto stack = a_emit.v_stack;
 	f_emit_block(a_emit, v_true, a_tail, a_clear, v_preserve);
 	a_emit.f_join(v_junction);
 	auto& label1 = a_emit.f_label();
-	a_emit << e_instruction__JUMP << label1;
+	a_emit << c_instruction__JUMP << label1;
 	a_emit.f_target(label0);
 	*a_emit.v_privates = privates;
 	a_emit.v_stack = stack;
@@ -256,14 +256,14 @@ t_operand t_while::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	v_condition->f_emit(a_emit, false, false);
 	auto& label0 = a_emit.f_label();
 	a_emit.f_pop();
-	a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
+	a_emit << c_instruction__BRANCH << a_emit.v_stack << label0;
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
 	t_emit::t_targets targets1{&break0, &v_junction_exit, a_emit.v_stack, a_tail, a_clear, &loop, &v_junction_condition, targets0->v_return, targets0->v_return_junction, targets0->v_return_stack, targets0->v_return_is_tail};
 	a_emit.v_targets = &targets1;
 	f_emit_block_without_value(a_emit, v_block);
 	a_emit.v_targets = targets0;
-	a_emit << e_instruction__JUMP << loop;
+	a_emit << c_instruction__JUMP << loop;
 	a_emit.f_target(label0);
 	a_emit.f_join(v_junction_exit);
 	if (!a_clear) a_emit.f_emit_null();
@@ -308,7 +308,7 @@ t_operand t_for::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	if (v_condition) {
 		v_condition->f_emit(a_emit, false, false);
 		a_emit.f_pop();
-		a_emit << e_instruction__BRANCH << a_emit.v_stack << label0;
+		a_emit << c_instruction__BRANCH << a_emit.v_stack << label0;
 	}
 	auto targets0 = a_emit.v_targets;
 	auto& break0 = a_emit.f_label();
@@ -320,7 +320,7 @@ t_operand t_for::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		a_emit.f_target(continue0);
 		f_emit_block_without_value(a_emit, v_next);
 	}
-	a_emit << e_instruction__JUMP << loop;
+	a_emit << c_instruction__JUMP << loop;
 	a_emit.f_target(label0);
 	a_emit.f_join(v_junction_exit);
 	if (!a_clear) a_emit.f_emit_null();
@@ -346,7 +346,7 @@ t_operand t_break::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	a_emit.v_stack = stack;
 	if (!a_clear) a_emit.f_push();
 	a_emit.f_join(*a_emit.v_targets->v_break_junction);
-	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_break;
+	a_emit << c_instruction__JUMP << *a_emit.v_targets->v_break;
 	return {};
 }
 
@@ -358,7 +358,7 @@ void t_continue::f_flow(t_flow& a_flow)
 t_operand t_continue::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
 	if (!a_clear) a_emit.f_push();
-	a_emit << e_instruction__JUMP << *a_emit.v_targets->v_continue;
+	a_emit << c_instruction__JUMP << *a_emit.v_targets->v_continue;
 	return {};
 }
 
@@ -378,10 +378,10 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		t_null(v_at).f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false, false);
 	if (a_emit.v_targets->v_return_is_tail) {
 		assert(a_emit.v_stack == a_emit.v_scope->v_privates.size() + 1);
-		a_emit << e_instruction__RETURN_T;
+		a_emit << c_instruction__RETURN_T;
 	} else {
 		a_emit.f_join(*a_emit.v_targets->v_return_junction);
-		a_emit << e_instruction__JUMP << *a_emit.v_targets->v_return;
+		a_emit << c_instruction__JUMP << *a_emit.v_targets->v_return;
 	}
 	a_emit.v_stack = stack;
 	if (!a_clear) a_emit.f_push();
@@ -432,7 +432,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	auto stack = a_emit.v_stack;
 	auto& catch0 = a_emit.f_label();
 	auto& finally0 = a_emit.f_label();
-	a_emit << e_instruction__TRY << stack << catch0 << finally0;
+	a_emit << c_instruction__TRY << stack << catch0 << finally0;
 	auto targets0 = a_emit.v_targets;
 	{
 		auto& break0 = a_emit.f_label();
@@ -441,24 +441,24 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		t_emit::t_targets targets1{targets0->v_break ? &break0 : nullptr, &v_junction_finally, stack, false, targets0->v_break_must_clear, targets0->v_continue ? &continue0 : nullptr, &v_junction_finally, targets0->v_return ? &return0 : nullptr, &v_junction_finally, stack, false};
 		a_emit.v_targets = &targets1;
 		f_emit_block(a_emit, v_block, false, a_clear);
-		a_emit << e_instruction__FINALLY << t_code::e_try__STEP;
+		a_emit << c_instruction__FINALLY << t_code::c_try__STEP;
 		a_emit.f_target(catch0);
 		for (auto& p : v_catches) {
 			if (!a_clear) a_emit.f_pop();
 			p->v_expression->f_emit(a_emit, false, false);
 			auto& label0 = a_emit.f_label();
-			a_emit.f_pop() << e_instruction__CATCH << label0 << (p->v_variable.v_shared ? ~p->v_variable.v_index : p->v_variable.v_index);
+			a_emit.f_pop() << c_instruction__CATCH << label0 << (p->v_variable.v_shared ? ~p->v_variable.v_index : p->v_variable.v_index);
 			f_emit_block(a_emit, p->v_block, false, a_clear);
-			a_emit << e_instruction__FINALLY << t_code::e_try__STEP;
+			a_emit << c_instruction__FINALLY << t_code::c_try__STEP;
 			a_emit.f_target(label0);
 		}
-		a_emit << e_instruction__FINALLY << t_code::e_try__THROW;
+		a_emit << c_instruction__FINALLY << t_code::c_try__THROW;
 		a_emit.f_target(break0);
-		a_emit << e_instruction__FINALLY << t_code::e_try__BREAK;
+		a_emit << c_instruction__FINALLY << t_code::c_try__BREAK;
 		a_emit.f_target(continue0);
-		a_emit << e_instruction__FINALLY << t_code::e_try__CONTINUE;
+		a_emit << c_instruction__FINALLY << t_code::c_try__CONTINUE;
 		a_emit.f_target(return0);
-		a_emit << e_instruction__FINALLY << t_code::e_try__RETURN;
+		a_emit << c_instruction__FINALLY << t_code::c_try__RETURN;
 	}
 	a_emit.f_target(finally0);
 	{
@@ -468,7 +468,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		f_emit_block_without_value(a_emit, v_finally);
 		if (a_clear) a_emit.f_pop();
 	}
-	a_emit << e_instruction__YRT;
+	a_emit << c_instruction__YRT;
 	auto operand = [&](t_emit::t_label* a_label, t_block* a_junction, size_t a_stack) -> t_emit::t_label*
 	{
 		if (!a_label) {
@@ -495,14 +495,14 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 	auto continue0 = operand(targets0->v_continue, targets0->v_continue_junction, stack);
 	auto return0 = operand(targets0->v_return, targets0->v_return_junction, targets0->v_return_stack);
 	auto step = break0 || continue0 || return0 ? &a_emit.f_label() : nullptr;
-	if (step) a_emit << e_instruction__JUMP << *step;
+	if (step) a_emit << c_instruction__JUMP << *step;
 	auto join = [&](t_emit::t_label* a_label0, t_emit::t_label* a_label1, t_block* a_junction, size_t a_stack)
 	{
 		if (!a_label0) return;
 		a_emit.f_target(*a_label0);
-		if (stack > a_stack) a_emit << e_instruction__STACK_GET << a_stack << stack;
+		if (stack > a_stack) a_emit << c_instruction__STACK_GET << a_stack << stack;
 		a_emit.f_join(*a_junction);
-		a_emit << e_instruction__JUMP << *a_label1;
+		a_emit << c_instruction__JUMP << *a_label1;
 	};
 	join(break0, targets0->v_break, targets0->v_break_junction, break_stack);
 	join(continue0, targets0->v_continue, targets0->v_continue_junction, stack);
@@ -522,7 +522,7 @@ t_operand t_throw::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	v_expression->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit.f_pop();
-	a_emit << e_instruction__THROW << a_emit.v_stack;
+	a_emit << c_instruction__THROW << a_emit.v_stack;
 	if (!a_clear) a_emit.f_push();
 	a_emit.f_at(this);
 	return {};
@@ -537,7 +537,7 @@ t_operand t_object_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0;
+	a_emit << c_instruction__OBJECT_GET << a_emit.v_stack - 1 << v_key << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return {};
@@ -548,7 +548,7 @@ void t_object_get::f_method(t_emit& a_emit)
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit.f_pop();
-	a_emit << e_instruction__METHOD_GET << a_emit.v_stack << v_key << 0;
+	a_emit << c_instruction__METHOD_GET << a_emit.v_stack << v_key << 0;
 	a_emit.f_push().f_push();
 	a_emit.f_at(this);
 }
@@ -564,7 +564,7 @@ t_operand t_object_get_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_target->f_emit(a_emit, false, false);
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_GET_INDIRECT << a_emit.v_stack - 2 << 0;
+	a_emit << c_instruction__OBJECT_GET_INDIRECT << a_emit.v_stack - 2 << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -582,7 +582,7 @@ t_operand t_object_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	v_target->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_PUT << a_emit.v_stack - 2 << v_key << 0;
+	a_emit << c_instruction__OBJECT_PUT << a_emit.v_stack - 2 << v_key << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -602,7 +602,7 @@ t_operand t_object_put_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_key->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_PUT_INDIRECT << a_emit.v_stack - 3 << 0;
+	a_emit << c_instruction__OBJECT_PUT_INDIRECT << a_emit.v_stack - 3 << 0;
 	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -618,7 +618,7 @@ t_operand t_object_has::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_HAS << a_emit.v_stack - 1 << v_key << 0;
+	a_emit << c_instruction__OBJECT_HAS << a_emit.v_stack - 1 << v_key << 0;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return {};
@@ -635,7 +635,7 @@ t_operand t_object_has_indirect::f_emit(t_emit& a_emit, bool a_tail, bool a_oper
 	v_target->f_emit(a_emit, false, false);
 	v_key->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__OBJECT_HAS_INDIRECT << a_emit.v_stack - 2 << 0;
+	a_emit << c_instruction__OBJECT_HAS_INDIRECT << a_emit.v_stack - 2 << 0;
 	a_emit.f_pop();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
@@ -662,29 +662,29 @@ t_operand t_symbol_get::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 {
 	if (!v_variable) {
 		if (a_tail) a_emit.f_emit_safe_point(this);
-		a_emit << e_instruction__GLOBAL_GET << a_emit.v_stack << v_symbol << 0;
+		a_emit << c_instruction__GLOBAL_GET << a_emit.v_stack << v_symbol << 0;
 		a_emit.f_push();
 		a_emit.f_at(this);
 		if (a_clear) a_emit.f_pop();
 		return {};
 	}
 	if (v_variable->v_shared) {
-		size_t instruction = e_instruction__SCOPE_GET0 + (v_resolved < 3 ? v_resolved : 3);
+		size_t instruction = c_instruction__SCOPE_GET0 + (v_resolved < 3 ? v_resolved : 3);
 		if (a_tail) a_emit.f_emit_safe_point(this);
 		a_emit << static_cast<t_instruction>(instruction) << a_emit.v_stack;
 		if (v_resolved >= 3) a_emit << v_resolved;
 	} else {
 		int i = v_variable->v_index - a_emit.v_arguments;
 		if (i >= 0 && !(*a_emit.v_privates)[i]) {
-			a_emit << e_instruction__NUL << a_emit.v_arguments + i;
+			a_emit << c_instruction__NUL << a_emit.v_arguments + i;
 			(*a_emit.v_privates)[i] = true;
 		}
-		if (a_operand) return t_operand(t_operand::e_tag__VARIABLE, v_variable->v_index);
+		if (a_operand) return t_operand(t_operand::c_tag__VARIABLE, v_variable->v_index);
 		if (a_tail) {
 			a_emit.f_emit_safe_point(this);
-			a_emit << e_instruction__RETURN_V;
+			a_emit << c_instruction__RETURN_V;
 		} else {
-			a_emit << e_instruction__STACK_GET << a_emit.v_stack;
+			a_emit << c_instruction__STACK_GET << a_emit.v_stack;
 		}
 	}
 	a_emit << v_variable->v_index;
@@ -710,23 +710,23 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 		int i = v_variable.v_index - a_emit.v_arguments;
 		if (i >= 0) (*a_emit.v_privates)[i] = true;
 		switch (operand.v_tag) {
-		case t_operand::e_tag__INTEGER:
-			a_emit << e_instruction__INTEGER << v_variable.v_index << operand.v_integer;
+		case t_operand::c_tag__INTEGER:
+			a_emit << c_instruction__INTEGER << v_variable.v_index << operand.v_integer;
 			break;
-		case t_operand::e_tag__FLOAT:
-			a_emit << e_instruction__FLOAT << v_variable.v_index << operand.v_float;
+		case t_operand::c_tag__FLOAT:
+			a_emit << c_instruction__FLOAT << v_variable.v_index << operand.v_float;
 			break;
-		case t_operand::e_tag__LITERAL:
+		case t_operand::c_tag__LITERAL:
 			if (operand.v_value)
-				a_emit << e_instruction__INSTANCE << v_variable.v_index << operand.v_value;
+				a_emit << c_instruction__INSTANCE << v_variable.v_index << operand.v_value;
 			else
-				a_emit << e_instruction__NUL << v_variable.v_index;
+				a_emit << c_instruction__NUL << v_variable.v_index;
 			break;
-		case t_operand::e_tag__VARIABLE:
-			a_emit << e_instruction__STACK_PUT << operand.v_index << v_variable.v_index;
+		case t_operand::c_tag__VARIABLE:
+			a_emit << c_instruction__STACK_PUT << operand.v_index << v_variable.v_index;
 			break;
 		default:
-			a_emit << e_instruction__STACK_PUT << a_emit.v_stack - 1 << v_variable.v_index;
+			a_emit << c_instruction__STACK_PUT << a_emit.v_stack - 1 << v_variable.v_index;
 			a_emit.f_pop();
 		}
 		a_emit.f_at(this);
@@ -736,13 +736,13 @@ t_operand t_scope_put::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool 
 	a_emit.f_emit_safe_point(this);
 	if (v_variable.v_shared) {
 		if (v_outer > 0)
-			a_emit << e_instruction__SCOPE_PUT << a_emit.v_stack - 1 << v_outer;
+			a_emit << c_instruction__SCOPE_PUT << a_emit.v_stack - 1 << v_outer;
 		else
-			a_emit << e_instruction__SCOPE_PUT0 << a_emit.v_stack - 1;
+			a_emit << c_instruction__SCOPE_PUT0 << a_emit.v_stack - 1;
 	} else {
 		int i = v_variable.v_index - a_emit.v_arguments;
 		if (i >= 0) (*a_emit.v_privates)[i] = true;
-		a_emit << e_instruction__STACK_PUT << a_emit.v_stack - 1;
+		a_emit << c_instruction__STACK_PUT << a_emit.v_stack - 1;
 	}
 	a_emit << v_variable.v_index;
 	a_emit.f_at(this);
@@ -755,11 +755,11 @@ t_operand t_self::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	if (a_clear) return {};
 	if (a_tail) a_emit.f_emit_safe_point(this);
 	if (v_outer > 0) {
-		a_emit << static_cast<t_instruction>(e_instruction__SCOPE_GET0 + (v_outer < 3 ? v_outer : 3)) << a_emit.v_stack;
+		a_emit << static_cast<t_instruction>(c_instruction__SCOPE_GET0 + (v_outer < 3 ? v_outer : 3)) << a_emit.v_stack;
 		if (v_outer >= 3) a_emit << v_outer;
 		a_emit << 0;
 	} else {
-		a_emit << e_instruction__SELF << a_emit.v_stack;
+		a_emit << c_instruction__SELF << a_emit.v_stack;
 	}
 	a_emit.f_push();
 	a_emit.f_at(this);
@@ -775,7 +775,7 @@ t_operand t_class::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 {
 	v_target->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__CLASS << a_emit.v_stack - 1;
+	a_emit << c_instruction__CLASS << a_emit.v_stack - 1;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return {};
@@ -790,7 +790,7 @@ t_operand t_super::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 {
 	v_target->f_emit(a_emit, false, false);
 	if (a_tail) a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__SUPER << a_emit.v_stack - 1;
+	a_emit << c_instruction__SUPER << a_emit.v_stack - 1;
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();
 	return {};
@@ -802,7 +802,7 @@ t_operand t_null::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	if (a_clear) return {};
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
-		(a_emit << e_instruction__RETURN_NUL).f_push();
+		(a_emit << c_instruction__RETURN_NUL).f_push();
 	} else {
 		a_emit.f_emit_null();
 	}
@@ -819,54 +819,54 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 {
 	a_emit.f_push();
 	auto operand = v_expression->f_emit(a_emit, false, true);
-	if (operand.v_tag == t_operand::e_tag__INTEGER) {
+	if (operand.v_tag == t_operand::c_tag__INTEGER) {
 		a_emit.f_pop();
 		switch (v_instruction) {
-		case e_instruction__PLUS_T:
+		case c_instruction__PLUS_T:
 			return t_literal(v_at, operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-		case e_instruction__MINUS_T:
+		case c_instruction__MINUS_T:
 			return t_literal(v_at, -operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-		case e_instruction__NOT_T:
+		case c_instruction__NOT_T:
 			return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
-		case e_instruction__COMPLEMENT_T:
+		case c_instruction__COMPLEMENT_T:
 			return t_literal(v_at, ~operand.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			assert(false);
 		}
-	} else if (operand.v_tag == t_operand::e_tag__FLOAT) {
+	} else if (operand.v_tag == t_operand::c_tag__FLOAT) {
 		a_emit.f_pop();
 		switch (v_instruction) {
-		case e_instruction__PLUS_T:
+		case c_instruction__PLUS_T:
 			return t_literal(v_at, operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-		case e_instruction__MINUS_T:
+		case c_instruction__MINUS_T:
 			return t_literal(v_at, -operand.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-		case e_instruction__NOT_T:
+		case c_instruction__NOT_T:
 			return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
 			f_throw(L"not supported."sv);
 		}
 	}
 	size_t instruction = v_instruction;
-	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
+	if (a_tail) instruction += c_instruction__CALL_TAIL - c_instruction__CALL;
 	switch (operand.v_tag) {
-	case t_operand::e_tag__LITERAL:
-		instruction += e_instruction__PLUS_L - e_instruction__PLUS_T;
+	case t_operand::c_tag__LITERAL:
+		instruction += c_instruction__PLUS_L - c_instruction__PLUS_T;
 		break;
-	case t_operand::e_tag__VARIABLE:
-		instruction += e_instruction__PLUS_V - e_instruction__PLUS_T;
+	case t_operand::c_tag__VARIABLE:
+		instruction += c_instruction__PLUS_V - c_instruction__PLUS_T;
 		break;
 	}
 	a_emit.f_emit_safe_point(this);
-	if (operand.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push();
+	if (operand.v_tag != t_operand::c_tag__TEMPORARY) a_emit.f_push();
 	a_emit.f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
 	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
 	if (!a_tail) a_emit << a_emit.v_stack;
 	switch (operand.v_tag) {
-	case t_operand::e_tag__LITERAL:
+	case t_operand::c_tag__LITERAL:
 		a_emit << operand.v_value;
 		break;
-	case t_operand::e_tag__VARIABLE:
+	case t_operand::c_tag__VARIABLE:
 		a_emit << operand.v_index;
 		break;
 	}
@@ -887,133 +887,133 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.f_push();
 	auto left = v_left->f_emit(a_emit, false, true);
 	auto right = v_right->f_emit(a_emit, false, true);
-	if (left.v_tag == t_operand::e_tag__INTEGER) {
-		if (right.v_tag == t_operand::e_tag__INTEGER) {
+	if (left.v_tag == t_operand::c_tag__INTEGER) {
+		if (right.v_tag == t_operand::c_tag__INTEGER) {
 			a_emit.f_pop();
 			switch (v_instruction) {
-			case e_instruction__MULTIPLY_TT:
+			case c_instruction__MULTIPLY_TT:
 				return t_literal(v_at, left.v_integer * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__DIVIDE_TT:
+			case c_instruction__DIVIDE_TT:
 				return t_literal(v_at, left.v_integer / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__MODULUS_TT:
+			case c_instruction__MODULUS_TT:
 				return t_literal(v_at, left.v_integer % right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__ADD_TT:
+			case c_instruction__ADD_TT:
 				return t_literal(v_at, left.v_integer + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__SUBTRACT_TT:
+			case c_instruction__SUBTRACT_TT:
 				return t_literal(v_at, left.v_integer - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LEFT_SHIFT_TT:
+			case c_instruction__LEFT_SHIFT_TT:
 				return t_literal(v_at, left.v_integer << right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__RIGHT_SHIFT_TT:
+			case c_instruction__RIGHT_SHIFT_TT:
 				return t_literal<intptr_t>(v_at, static_cast<uintptr_t>(left.v_integer) >> right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_TT:
+			case c_instruction__LESS_TT:
 				return t_literal(v_at, left.v_integer < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_EQUAL_TT:
+			case c_instruction__LESS_EQUAL_TT:
 				return t_literal(v_at, left.v_integer <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_TT:
+			case c_instruction__GREATER_TT:
 				return t_literal(v_at, left.v_integer > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_EQUAL_TT:
+			case c_instruction__GREATER_EQUAL_TT:
 				return t_literal(v_at, left.v_integer >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__EQUALS_TT:
-			case e_instruction__IDENTICAL_TT:
+			case c_instruction__EQUALS_TT:
+			case c_instruction__IDENTICAL_TT:
 				return t_literal(v_at, left.v_integer == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__NOT_EQUALS_TT:
-			case e_instruction__NOT_IDENTICAL_TT:
+			case c_instruction__NOT_EQUALS_TT:
+			case c_instruction__NOT_IDENTICAL_TT:
 				return t_literal(v_at, left.v_integer != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__AND_TT:
+			case c_instruction__AND_TT:
 				return t_literal(v_at, left.v_integer & right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__XOR_TT:
+			case c_instruction__XOR_TT:
 				return t_literal(v_at, left.v_integer ^ right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__OR_TT:
+			case c_instruction__OR_TT:
 				return t_literal(v_at, left.v_integer | right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				assert(false);
 			}
-		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
+		} else if (right.v_tag == t_operand::c_tag__FLOAT) {
 			a_emit.f_pop();
 			switch (v_instruction) {
-			case e_instruction__MULTIPLY_TT:
+			case c_instruction__MULTIPLY_TT:
 				return t_literal(v_at, left.v_integer * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__DIVIDE_TT:
+			case c_instruction__DIVIDE_TT:
 				return t_literal(v_at, left.v_integer / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__ADD_TT:
+			case c_instruction__ADD_TT:
 				return t_literal(v_at, left.v_integer + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__SUBTRACT_TT:
+			case c_instruction__SUBTRACT_TT:
 				return t_literal(v_at, left.v_integer - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_TT:
+			case c_instruction__LESS_TT:
 				return t_literal(v_at, left.v_integer < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_EQUAL_TT:
+			case c_instruction__LESS_EQUAL_TT:
 				return t_literal(v_at, left.v_integer <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_TT:
+			case c_instruction__GREATER_TT:
 				return t_literal(v_at, left.v_integer > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_EQUAL_TT:
+			case c_instruction__GREATER_EQUAL_TT:
 				return t_literal(v_at, left.v_integer >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__EQUALS_TT:
+			case c_instruction__EQUALS_TT:
 				return t_literal(v_at, left.v_integer == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__NOT_EQUALS_TT:
+			case c_instruction__NOT_EQUALS_TT:
 				return t_literal(v_at, left.v_integer != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__IDENTICAL_TT:
+			case c_instruction__IDENTICAL_TT:
 				return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__NOT_IDENTICAL_TT:
+			case c_instruction__NOT_IDENTICAL_TT:
 				return t_literal(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				f_throw(L"not supported."sv);
 			}
 		}
-	} else if (left.v_tag == t_operand::e_tag__FLOAT) {
-		if (right.v_tag == t_operand::e_tag__INTEGER) {
+	} else if (left.v_tag == t_operand::c_tag__FLOAT) {
+		if (right.v_tag == t_operand::c_tag__INTEGER) {
 			a_emit.f_pop();
 			switch (v_instruction) {
-			case e_instruction__MULTIPLY_TT:
+			case c_instruction__MULTIPLY_TT:
 				return t_literal(v_at, left.v_float * right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__DIVIDE_TT:
+			case c_instruction__DIVIDE_TT:
 				return t_literal(v_at, left.v_float / right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__ADD_TT:
+			case c_instruction__ADD_TT:
 				return t_literal(v_at, left.v_float + right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__SUBTRACT_TT:
+			case c_instruction__SUBTRACT_TT:
 				return t_literal(v_at, left.v_float - right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_TT:
+			case c_instruction__LESS_TT:
 				return t_literal(v_at, left.v_float < right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_EQUAL_TT:
+			case c_instruction__LESS_EQUAL_TT:
 				return t_literal(v_at, left.v_float <= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_TT:
+			case c_instruction__GREATER_TT:
 				return t_literal(v_at, left.v_float > right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_EQUAL_TT:
+			case c_instruction__GREATER_EQUAL_TT:
 				return t_literal(v_at, left.v_float >= right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__EQUALS_TT:
+			case c_instruction__EQUALS_TT:
 				return t_literal(v_at, left.v_float == right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__NOT_EQUALS_TT:
+			case c_instruction__NOT_EQUALS_TT:
 				return t_literal(v_at, left.v_float != right.v_integer).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__IDENTICAL_TT:
+			case c_instruction__IDENTICAL_TT:
 				return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__NOT_IDENTICAL_TT:
+			case c_instruction__NOT_IDENTICAL_TT:
 				return t_literal(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				f_throw(L"not supported."sv);
 			}
-		} else if (right.v_tag == t_operand::e_tag__FLOAT) {
+		} else if (right.v_tag == t_operand::c_tag__FLOAT) {
 			a_emit.f_pop();
 			switch (v_instruction) {
-			case e_instruction__MULTIPLY_TT:
+			case c_instruction__MULTIPLY_TT:
 				return t_literal(v_at, left.v_float * right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__DIVIDE_TT:
+			case c_instruction__DIVIDE_TT:
 				return t_literal(v_at, left.v_float / right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__ADD_TT:
+			case c_instruction__ADD_TT:
 				return t_literal(v_at, left.v_float + right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__SUBTRACT_TT:
+			case c_instruction__SUBTRACT_TT:
 				return t_literal(v_at, left.v_float - right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_TT:
+			case c_instruction__LESS_TT:
 				return t_literal(v_at, left.v_float < right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__LESS_EQUAL_TT:
+			case c_instruction__LESS_EQUAL_TT:
 				return t_literal(v_at, left.v_float <= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_TT:
+			case c_instruction__GREATER_TT:
 				return t_literal(v_at, left.v_float > right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__GREATER_EQUAL_TT:
+			case c_instruction__GREATER_EQUAL_TT:
 				return t_literal(v_at, left.v_float >= right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__EQUALS_TT:
-			case e_instruction__IDENTICAL_TT:
+			case c_instruction__EQUALS_TT:
+			case c_instruction__IDENTICAL_TT:
 				return t_literal(v_at, left.v_float == right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
-			case e_instruction__NOT_EQUALS_TT:
-			case e_instruction__NOT_IDENTICAL_TT:
+			case c_instruction__NOT_EQUALS_TT:
+			case c_instruction__NOT_IDENTICAL_TT:
 				return t_literal(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
 				f_throw(L"not supported."sv);
@@ -1021,67 +1021,67 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 		}
 	}
 	size_t instruction = v_instruction;
-	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
+	if (a_tail) instruction += c_instruction__CALL_TAIL - c_instruction__CALL;
 	switch (left.v_tag) {
-	case t_operand::e_tag__INTEGER:
-		instruction += e_instruction__MULTIPLY_IT - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__INTEGER:
+		instruction += c_instruction__MULTIPLY_IT - c_instruction__MULTIPLY_TT;
 		break;
-	case t_operand::e_tag__FLOAT:
-		instruction += e_instruction__MULTIPLY_FT - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__FLOAT:
+		instruction += c_instruction__MULTIPLY_FT - c_instruction__MULTIPLY_TT;
 		break;
-	case t_operand::e_tag__LITERAL:
-		instruction += e_instruction__MULTIPLY_LT - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__LITERAL:
+		instruction += c_instruction__MULTIPLY_LT - c_instruction__MULTIPLY_TT;
 		break;
-	case t_operand::e_tag__VARIABLE:
-		instruction += e_instruction__MULTIPLY_VT - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__VARIABLE:
+		instruction += c_instruction__MULTIPLY_VT - c_instruction__MULTIPLY_TT;
 		break;
 	}
 	switch (right.v_tag) {
-	case t_operand::e_tag__INTEGER:
-		instruction += e_instruction__MULTIPLY_TI - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__INTEGER:
+		instruction += c_instruction__MULTIPLY_TI - c_instruction__MULTIPLY_TT;
 		break;
-	case t_operand::e_tag__FLOAT:
-		instruction += e_instruction__MULTIPLY_TF - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__FLOAT:
+		instruction += c_instruction__MULTIPLY_TF - c_instruction__MULTIPLY_TT;
 		break;
-	case t_operand::e_tag__LITERAL:
-		instruction += e_instruction__MULTIPLY_TL - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__LITERAL:
+		instruction += c_instruction__MULTIPLY_TL - c_instruction__MULTIPLY_TT;
 		break;
-	case t_operand::e_tag__VARIABLE:
-		instruction += e_instruction__MULTIPLY_TV - e_instruction__MULTIPLY_TT;
+	case t_operand::c_tag__VARIABLE:
+		instruction += c_instruction__MULTIPLY_TV - c_instruction__MULTIPLY_TT;
 		break;
 	}
 	a_emit.f_emit_safe_point(this);
-	if (left.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push();
-	if (right.v_tag != t_operand::e_tag__TEMPORARY) a_emit.f_push();
+	if (left.v_tag != t_operand::c_tag__TEMPORARY) a_emit.f_push();
+	if (right.v_tag != t_operand::c_tag__TEMPORARY) a_emit.f_push();
 	a_emit.f_pop().f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
 	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
 	if (!a_tail) a_emit << a_emit.v_stack;
 	switch (left.v_tag) {
-	case t_operand::e_tag__INTEGER:
+	case t_operand::c_tag__INTEGER:
 		a_emit << left.v_integer;
 		break;
-	case t_operand::e_tag__FLOAT:
+	case t_operand::c_tag__FLOAT:
 		a_emit << left.v_float;
 		break;
-	case t_operand::e_tag__LITERAL:
+	case t_operand::c_tag__LITERAL:
 		a_emit << left.v_value;
 		break;
-	case t_operand::e_tag__VARIABLE:
+	case t_operand::c_tag__VARIABLE:
 		a_emit << left.v_index;
 		break;
 	}
 	switch (right.v_tag) {
-	case t_operand::e_tag__INTEGER:
+	case t_operand::c_tag__INTEGER:
 		a_emit << right.v_integer;
 		break;
-	case t_operand::e_tag__FLOAT:
+	case t_operand::c_tag__FLOAT:
 		a_emit << right.v_float;
 		break;
-	case t_operand::e_tag__LITERAL:
+	case t_operand::c_tag__LITERAL:
 		a_emit << right.v_value;
 		break;
-	case t_operand::e_tag__VARIABLE:
+	case t_operand::c_tag__VARIABLE:
 		a_emit << right.v_index;
 		break;
 	}
@@ -1099,14 +1099,14 @@ void t_call::f_flow(t_flow& a_flow)
 
 t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	size_t instruction = v_expand ? e_instruction__CALL_WITH_EXPANSION : e_instruction__CALL;
+	size_t instruction = v_expand ? c_instruction__CALL_WITH_EXPANSION : c_instruction__CALL;
 	t_symbol_get* get = nullptr;
 	if (!v_expand) {
 		auto p = dynamic_cast<t_symbol_get*>(v_target.get());
 		if (p && p->v_variable && (!p->v_variable->v_shared || p->v_resolved < 3 && !p->v_variable->v_varies)) get = p;
 	}
 	if (get) {
-		instruction = get->v_variable->v_shared ? e_instruction__SCOPE_CALL0 + get->v_resolved : e_instruction__STACK_CALL;
+		instruction = get->v_variable->v_shared ? c_instruction__SCOPE_CALL0 + get->v_resolved : c_instruction__STACK_CALL;
 		a_emit.f_push().f_push();
 	} else if (auto p = dynamic_cast<t_object_get*>(v_target.get())) {
 		p->f_method(a_emit);
@@ -1119,7 +1119,7 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	for (auto& p : v_arguments) p->f_emit(a_emit, false, false);
 	for (size_t i = 0; i < v_arguments.size(); ++i) a_emit.f_pop();
 	a_emit.f_pop().f_pop();
-	if (a_tail) instruction += e_instruction__CALL_TAIL - e_instruction__CALL;
+	if (a_tail) instruction += c_instruction__CALL_TAIL - c_instruction__CALL;
 	a_emit.f_emit_safe_point(this);
 	a_emit << static_cast<t_instruction>(instruction);
 	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
@@ -1144,7 +1144,7 @@ t_operand t_get_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	v_target->f_emit(a_emit, false, false);
 	v_index->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << (a_tail ? e_instruction__GET_AT_TAIL : e_instruction__GET_AT);
+	a_emit << (a_tail ? c_instruction__GET_AT_TAIL : c_instruction__GET_AT);
 	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size() + 3);
 	if (!a_tail) a_emit << a_emit.v_stack - 3;
 	a_emit.f_pop().f_pop();
@@ -1158,7 +1158,7 @@ void t_get_at::f_bind(t_emit& a_emit)
 	v_target->f_emit(a_emit, false, false);
 	v_index->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << e_instruction__METHOD_BIND << a_emit.v_stack - 2;
+	a_emit << c_instruction__METHOD_BIND << a_emit.v_stack - 2;
 	a_emit.f_at(this);
 }
 
@@ -1176,7 +1176,7 @@ t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	v_index->f_emit(a_emit, false, false);
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit << (a_tail ? e_instruction__SET_AT_TAIL : e_instruction__SET_AT);
+	a_emit << (a_tail ? c_instruction__SET_AT_TAIL : c_instruction__SET_AT);
 	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size() + 4);
 	if (!a_tail) a_emit << a_emit.v_stack - 4;
 	a_emit.f_pop().f_pop().f_pop();
@@ -1204,10 +1204,10 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 	std::vector<std::tuple<size_t, size_t, size_t>> safe_positions;
 	v_safe_positions = &safe_positions;
 	if (a_scope.v_self_shared) *this
-		<< e_instruction__STACK_GET << v_stack << 0
-		<< e_instruction__SCOPE_PUT0 << v_stack << 0;
+		<< c_instruction__STACK_GET << v_stack << 0
+		<< c_instruction__SCOPE_PUT0 << v_stack << 0;
 	ast::f_emit_block_without_value(*this, a_scope.v_block);
-	*this << e_instruction__RETURN_NUL;
+	*this << c_instruction__RETURN_NUL;
 	f_resolve();
 	if (v_safe_points) {
 		t_code::t_variable self;
@@ -1225,7 +1225,7 @@ void t_emit::f_join(const ast::t_block& a_junction)
 	for (size_t i = 0; i < a_junction.v_privates.size(); ++i) {
 		if ((*v_privates)[i]) continue;
 		auto& x = a_junction.v_privates[i];
-		if (x.v_use && x.v_in) *this << e_instruction__NUL << v_arguments + i;
+		if (x.v_use && x.v_in) *this << c_instruction__NUL << v_arguments + i;
 	}
 }
 

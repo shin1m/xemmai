@@ -10,87 +10,87 @@ struct t_context;
 
 enum t_instruction
 {
-	e_instruction__JUMP,
-	e_instruction__BRANCH,
-	e_instruction__TRY,
-	e_instruction__CATCH,
-	e_instruction__FINALLY,
-	e_instruction__YRT,
-	e_instruction__THROW,
-	e_instruction__OBJECT_GET,
-	e_instruction__OBJECT_GET_INDIRECT,
-	e_instruction__OBJECT_PUT,
-	e_instruction__OBJECT_PUT_INDIRECT,
-	e_instruction__OBJECT_HAS,
-	e_instruction__OBJECT_HAS_INDIRECT,
-	e_instruction__METHOD_GET,
-	e_instruction__METHOD_BIND,
-	e_instruction__GLOBAL_GET,
-	e_instruction__STACK_GET,
-	e_instruction__STACK_PUT,
-	e_instruction__SCOPE_GET0,
-	e_instruction__SCOPE_GET1,
-	e_instruction__SCOPE_GET2,
-	e_instruction__SCOPE_GET,
-	e_instruction__SCOPE_PUT0,
-	e_instruction__SCOPE_PUT,
-	e_instruction__LAMBDA,
-	e_instruction__ADVANCED_LAMBDA,
-	e_instruction__SELF,
-	e_instruction__CLASS,
-	e_instruction__SUPER,
-	e_instruction__NUL,
-	e_instruction__INTEGER,
-	e_instruction__FLOAT,
-	e_instruction__INSTANCE,
-	e_instruction__RETURN_NUL,
-	e_instruction__RETURN_INTEGER,
-	e_instruction__RETURN_FLOAT,
-	e_instruction__RETURN_INSTANCE,
-	e_instruction__RETURN_V,
-	e_instruction__RETURN_T,
-	e_instruction__CALL,
-	e_instruction__CALL_WITH_EXPANSION,
-	e_instruction__STACK_CALL,
-	e_instruction__SCOPE_CALL0,
-	e_instruction__SCOPE_CALL1,
-	e_instruction__SCOPE_CALL2,
-	e_instruction__GET_AT,
-	e_instruction__SET_AT,
+	c_instruction__JUMP,
+	c_instruction__BRANCH,
+	c_instruction__TRY,
+	c_instruction__CATCH,
+	c_instruction__FINALLY,
+	c_instruction__YRT,
+	c_instruction__THROW,
+	c_instruction__OBJECT_GET,
+	c_instruction__OBJECT_GET_INDIRECT,
+	c_instruction__OBJECT_PUT,
+	c_instruction__OBJECT_PUT_INDIRECT,
+	c_instruction__OBJECT_HAS,
+	c_instruction__OBJECT_HAS_INDIRECT,
+	c_instruction__METHOD_GET,
+	c_instruction__METHOD_BIND,
+	c_instruction__GLOBAL_GET,
+	c_instruction__STACK_GET,
+	c_instruction__STACK_PUT,
+	c_instruction__SCOPE_GET0,
+	c_instruction__SCOPE_GET1,
+	c_instruction__SCOPE_GET2,
+	c_instruction__SCOPE_GET,
+	c_instruction__SCOPE_PUT0,
+	c_instruction__SCOPE_PUT,
+	c_instruction__LAMBDA,
+	c_instruction__ADVANCED_LAMBDA,
+	c_instruction__SELF,
+	c_instruction__CLASS,
+	c_instruction__SUPER,
+	c_instruction__NUL,
+	c_instruction__INTEGER,
+	c_instruction__FLOAT,
+	c_instruction__INSTANCE,
+	c_instruction__RETURN_NUL,
+	c_instruction__RETURN_INTEGER,
+	c_instruction__RETURN_FLOAT,
+	c_instruction__RETURN_INSTANCE,
+	c_instruction__RETURN_V,
+	c_instruction__RETURN_T,
+	c_instruction__CALL,
+	c_instruction__CALL_WITH_EXPANSION,
+	c_instruction__STACK_CALL,
+	c_instruction__SCOPE_CALL0,
+	c_instruction__SCOPE_CALL1,
+	c_instruction__SCOPE_CALL2,
+	c_instruction__GET_AT,
+	c_instruction__SET_AT,
 #define XEMMAI__CODE__INSTRUCTION_UNARY(a_name)\
-	e_instruction__##a_name##_L,\
-	e_instruction__##a_name##_V,\
-	e_instruction__##a_name##_T,
+	c_instruction__##a_name##_L,\
+	c_instruction__##a_name##_V,\
+	c_instruction__##a_name##_T,
 	XEMMAI__CODE__INSTRUCTION_UNARY(PLUS)
 	XEMMAI__CODE__INSTRUCTION_UNARY(MINUS)
 	XEMMAI__CODE__INSTRUCTION_UNARY(NOT)
 	XEMMAI__CODE__INSTRUCTION_UNARY(COMPLEMENT)
 #define XEMMAI__CODE__INSTRUCTION_BINARY(a_name)\
-	e_instruction__##a_name##_II,\
-	e_instruction__##a_name##_FI,\
-	e_instruction__##a_name##_LI,\
-	e_instruction__##a_name##_VI,\
-	e_instruction__##a_name##_TI,\
-	e_instruction__##a_name##_IF,\
-	e_instruction__##a_name##_FF,\
-	e_instruction__##a_name##_LF,\
-	e_instruction__##a_name##_VF,\
-	e_instruction__##a_name##_TF,\
-	e_instruction__##a_name##_IL,\
-	e_instruction__##a_name##_FL,\
-	e_instruction__##a_name##_LL,\
-	e_instruction__##a_name##_VL,\
-	e_instruction__##a_name##_TL,\
-	e_instruction__##a_name##_IV,\
-	e_instruction__##a_name##_FV,\
-	e_instruction__##a_name##_LV,\
-	e_instruction__##a_name##_VV,\
-	e_instruction__##a_name##_TV,\
-	e_instruction__##a_name##_IT,\
-	e_instruction__##a_name##_FT,\
-	e_instruction__##a_name##_LT,\
-	e_instruction__##a_name##_VT,\
-	e_instruction__##a_name##_TT,
+	c_instruction__##a_name##_II,\
+	c_instruction__##a_name##_FI,\
+	c_instruction__##a_name##_LI,\
+	c_instruction__##a_name##_VI,\
+	c_instruction__##a_name##_TI,\
+	c_instruction__##a_name##_IF,\
+	c_instruction__##a_name##_FF,\
+	c_instruction__##a_name##_LF,\
+	c_instruction__##a_name##_VF,\
+	c_instruction__##a_name##_TF,\
+	c_instruction__##a_name##_IL,\
+	c_instruction__##a_name##_FL,\
+	c_instruction__##a_name##_LL,\
+	c_instruction__##a_name##_VL,\
+	c_instruction__##a_name##_TL,\
+	c_instruction__##a_name##_IV,\
+	c_instruction__##a_name##_FV,\
+	c_instruction__##a_name##_LV,\
+	c_instruction__##a_name##_VV,\
+	c_instruction__##a_name##_TV,\
+	c_instruction__##a_name##_IT,\
+	c_instruction__##a_name##_FT,\
+	c_instruction__##a_name##_LT,\
+	c_instruction__##a_name##_VT,\
+	c_instruction__##a_name##_TT,
 	XEMMAI__CODE__INSTRUCTION_BINARY(MULTIPLY)
 	XEMMAI__CODE__INSTRUCTION_BINARY(DIVIDE)
 	XEMMAI__CODE__INSTRUCTION_BINARY(MODULUS)
@@ -109,14 +109,14 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_BINARY(AND)
 	XEMMAI__CODE__INSTRUCTION_BINARY(XOR)
 	XEMMAI__CODE__INSTRUCTION_BINARY(OR)
-	e_instruction__CALL_TAIL,
-	e_instruction__CALL_WITH_EXPANSION_TAIL,
-	e_instruction__STACK_CALL_TAIL,
-	e_instruction__SCOPE_CALL0_TAIL,
-	e_instruction__SCOPE_CALL1_TAIL,
-	e_instruction__SCOPE_CALL2_TAIL,
-	e_instruction__GET_AT_TAIL,
-	e_instruction__SET_AT_TAIL,
+	c_instruction__CALL_TAIL,
+	c_instruction__CALL_WITH_EXPANSION_TAIL,
+	c_instruction__STACK_CALL_TAIL,
+	c_instruction__SCOPE_CALL0_TAIL,
+	c_instruction__SCOPE_CALL1_TAIL,
+	c_instruction__SCOPE_CALL2_TAIL,
+	c_instruction__GET_AT_TAIL,
+	c_instruction__SET_AT_TAIL,
 	XEMMAI__CODE__INSTRUCTION_UNARY(PLUS_TAIL)
 	XEMMAI__CODE__INSTRUCTION_UNARY(MINUS_TAIL)
 	XEMMAI__CODE__INSTRUCTION_UNARY(NOT_TAIL)
@@ -139,8 +139,8 @@ enum t_instruction
 	XEMMAI__CODE__INSTRUCTION_BINARY(AND_TAIL)
 	XEMMAI__CODE__INSTRUCTION_BINARY(XOR_TAIL)
 	XEMMAI__CODE__INSTRUCTION_BINARY(OR_TAIL)
-	e_instruction__SAFE_POINT,
-	e_instruction__BREAK_POINT
+	c_instruction__SAFE_POINT,
+	c_instruction__BREAK_POINT
 };
 
 struct t_at
@@ -169,12 +169,12 @@ struct XEMMAI__LOCAL t_code
 	};
 	enum t_try
 	{
-		e_try__CATCH,
-		e_try__STEP,
-		e_try__BREAK,
-		e_try__CONTINUE,
-		e_try__RETURN,
-		e_try__THROW
+		c_try__CATCH,
+		c_try__STEP,
+		c_try__BREAK,
+		c_try__CONTINUE,
+		c_try__RETURN,
+		c_try__THROW
 	};
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO

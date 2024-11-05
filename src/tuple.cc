@@ -55,7 +55,7 @@ void t_tuple::f_each(const t_pvalue& a_callable) const
 {
 //	for (size_t i = 0; i < v_size; ++i) a_callable((*this)[i]);
 	auto p = static_cast<t_object*>(a_callable);
-	if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) f_throw(L"not supported."sv);
+	if (reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT) f_throw(L"not supported."sv);
 	t_scoped_stack stack(3);
 	for (size_t i = 0; i < v_size; ++i) {
 		stack[1] = nullptr;

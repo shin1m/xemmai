@@ -20,7 +20,7 @@ class XEMMAI__LOCAL t_parser
 
 	bool f_single_colon() const
 	{
-		return v_lexer.f_token() == t_lexer::e_token__COLON && v_lexer.f_integer() == 1;
+		return v_lexer.f_token() == t_lexer::c_token__COLON && v_lexer.f_integer() == 1;
 	}
 	void f_throw [[noreturn]] (std::wstring_view a_message, const t_at& a_at)
 	{
@@ -59,7 +59,7 @@ class XEMMAI__LOCAL t_parser
 	{
 		while (true) {
 			a_nodes.push_back(f_expression());
-			if (v_lexer.f_token() != t_lexer::e_token__COMMA) break;
+			if (v_lexer.f_token() != t_lexer::c_token__COMMA) break;
 			v_lexer.f_next();
 		}
 	}
@@ -67,13 +67,13 @@ class XEMMAI__LOCAL t_parser
 	{
 		if (v_lexer.f_newline()) return true;
 		switch (v_lexer.f_token()) {
-		case t_lexer::e_token__IF:
-		case t_lexer::e_token__ELSE:
-		case t_lexer::e_token__WHILE:
-		case t_lexer::e_token__FOR:
-		case t_lexer::e_token__TRY:
-		case t_lexer::e_token__CATCH:
-		case t_lexer::e_token__FINALLY:
+		case t_lexer::c_token__IF:
+		case t_lexer::c_token__ELSE:
+		case t_lexer::c_token__WHILE:
+		case t_lexer::c_token__FOR:
+		case t_lexer::c_token__TRY:
+		case t_lexer::c_token__CATCH:
+		case t_lexer::c_token__FINALLY:
 			return true;
 		default:
 			return false;

@@ -25,9 +25,9 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 		{
 			auto p = static_cast<t_object*>(a_object);
 			switch (reinterpret_cast<uintptr_t>(p)) {
-			case e_tag__INTEGER:
+			case c_tag__INTEGER:
 				return a_object.f_integer();
-			case e_tag__FLOAT:
+			case c_tag__FLOAT:
 				return a_object.f_float();
 			default:
 				return p->f_as<double>();
@@ -39,14 +39,14 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 		}
 		static bool f_is(t_object* a_object)
 		{
-			if (!std::is_same_v<typename t_fundamental<T>::t_type, double>) return reinterpret_cast<uintptr_t>(a_object) >= e_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+			if (!std::is_same_v<typename t_fundamental<T>::t_type, double>) return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
 			switch (reinterpret_cast<uintptr_t>(a_object)) {
-			case e_tag__NULL:
-			case e_tag__FALSE:
-			case e_tag__TRUE:
+			case c_tag__NULL:
+			case c_tag__FALSE:
+			case c_tag__TRUE:
 				return false;
-			case e_tag__INTEGER:
-			case e_tag__FLOAT:
+			case c_tag__INTEGER:
+			case c_tag__FLOAT:
 				return true;
 			default:
 				return a_object->f_type()->f_derives<double>();

@@ -243,14 +243,14 @@ XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 {
 	auto p = static_cast<t_object*>(*this);
 	switch (reinterpret_cast<uintptr_t>(p)) {
-	case e_tag__NULL:
+	case c_tag__NULL:
 		return f_global()->f_type<std::nullptr_t>();
-	case e_tag__FALSE:
-	case e_tag__TRUE:
+	case c_tag__FALSE:
+	case c_tag__TRUE:
 		return f_global()->f_type<bool>();
-	case e_tag__INTEGER:
+	case c_tag__INTEGER:
 		return f_global()->f_type<intptr_t>();
-	case e_tag__FLOAT:
+	case c_tag__FLOAT:
 		return f_global()->f_type<double>();
 	default:
 		[[likely]] return p->f_type();
@@ -281,14 +281,14 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case e_tag__NULL:\
+	case c_tag__NULL:\
 		return t_type_of<std::nullptr_t>::f__##a_name(*this);\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
+	case c_tag__FALSE:\
+	case c_tag__TRUE:\
 		return t_type_of<bool>::f__##a_name(*this);\
-	case e_tag__INTEGER:\
+	case c_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer);\
-	case e_tag__FLOAT:\
+	case c_tag__FLOAT:\
 		return t_type_of<double>::f__##a_name(v_float);\
 	default:\
 		{\
@@ -316,13 +316,13 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case e_tag__NULL:\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
+	case c_tag__NULL:\
+	case c_tag__FALSE:\
+	case c_tag__TRUE:\
 		f_throw(L"not supported."sv);\
-	case e_tag__INTEGER:\
+	case c_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
-	case e_tag__FLOAT:\
+	case c_tag__FLOAT:\
 		f_check<double>(a_value, L"argument0");\
 		return v_float a_operator f_as<double>(a_value);\
 	default:\
@@ -335,13 +335,13 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case e_tag__INTEGER:\
+	case c_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return static_cast<uintptr_t>(v_integer) a_operator f_as<intptr_t>(a_value);\
-	case e_tag__NULL:\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
-	case e_tag__FLOAT:\
+	case c_tag__NULL:\
+	case c_tag__FALSE:\
+	case c_tag__TRUE:\
+	case c_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
 	default:\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
@@ -353,13 +353,13 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case e_tag__NULL:\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
+	case c_tag__NULL:\
+	case c_tag__FALSE:\
+	case c_tag__TRUE:\
 		return a_operator(p == a_value.v_p);\
-	case e_tag__INTEGER:\
+	case c_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
-	case e_tag__FLOAT:\
+	case c_tag__FLOAT:\
 		return t_type_of<double>::f__##a_name(v_float, a_value);\
 	default:\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
@@ -371,14 +371,14 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 {\
 	auto p = static_cast<t_object*>(*this);\
 	switch (reinterpret_cast<uintptr_t>(p)) {\
-	case e_tag__FALSE:\
-	case e_tag__TRUE:\
+	case c_tag__FALSE:\
+	case c_tag__TRUE:\
 		return static_cast<bool>(f_as<bool>(*this) a_operator f_as<bool>(a_value));\
-	case e_tag__INTEGER:\
+	case c_tag__INTEGER:\
 		f_check<intptr_t>(a_value, L"argument0");\
 		return v_integer a_operator f_as<intptr_t>(a_value);\
-	case e_tag__NULL:\
-	case e_tag__FLOAT:\
+	case c_tag__NULL:\
+	case c_tag__FLOAT:\
 		f_throw(L"not supported."sv);\
 	default:\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
@@ -419,7 +419,7 @@ inline t_object* t_type::f_new(auto&&... a_xs)
 
 inline bool f_is_bindable(t_object* a_p)
 {
-	return reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT && a_p->f_type()->v_bindable;
+	return reinterpret_cast<uintptr_t>(a_p) >= c_tag__OBJECT && a_p->f_type()->v_bindable;
 }
 
 inline t_pvalue t_type::f_get(const t_pvalue& a_this, t_object* a_key, size_t& a_index)
@@ -539,7 +539,7 @@ intptr_t t_fiber::f_main(auto a_main)
 				std::fprintf(stderr, "caught: %ls\n", static_cast<const wchar_t*>(p->f_as<t_string>()));
 			else
 				std::fprintf(stderr, "caught: <unprintable>\n");
-			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/t_type::V_fields);
+			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/t_type::c_FIELDS);
 		}
 	} catch (...) {
 		std::fprintf(stderr, "caught: <unexpected>\n");

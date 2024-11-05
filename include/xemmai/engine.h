@@ -106,7 +106,7 @@ private:
 	}
 	t_object* f_object__find(void* a_p)
 	{
-		if (reinterpret_cast<uintptr_t>(a_p) & t_heap<t_object>::V_UNIT - 1) return nullptr;
+		if (reinterpret_cast<uintptr_t>(a_p) & t_heap<t_object>::c_UNIT - 1) return nullptr;
 		auto p = v_object__heap.f_find(a_p);
 		return p && p->v_type ? p : nullptr;
 	}
@@ -173,7 +173,7 @@ public:
 	t_object* f_new_type_on_boot(size_t a_fields, t_type* a_super, t_object* a_module)
 	{
 		auto p = f_allocate_for_type<t_type_of<T>>(a_fields);
-		std::uninitialized_default_construct_n((new(p->f_data()) t_type_of<T>(t_type_of<T>::V_ids, a_super, a_module, t_type_of<T>::V_native, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{}))->f_fields(), a_fields);
+		std::uninitialized_default_construct_n((new(p->f_data()) t_type_of<T>(t_type_of<T>::c_IDS, a_super, a_module, t_type_of<T>::c_NATIVE, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{}))->f_fields(), a_fields);
 		p->f_be(v_type_type);
 		return p;
 	}
@@ -292,15 +292,15 @@ template<size_t A_SIZE>
 void t_slot::t_queue<A_SIZE>::f_next() noexcept
 {
 	f_engine()->f_tick();
-	if (v_head < v_objects + V_SIZE - 1) {
+	if (v_head < v_objects + c_SIZE - 1) {
 		++v_head;
 		while (v_tail == v_head) f_engine()->f_wait();
 		auto tail = v_tail;
-		v_next = std::min(tail < v_head ? v_objects + V_SIZE - 1 : tail - 1, v_head + V_SIZE / 8);
+		v_next = std::min(tail < v_head ? v_objects + c_SIZE - 1 : tail - 1, v_head + c_SIZE / 8);
 	} else {
 		v_head = v_objects;
 		while (v_tail == v_head) f_engine()->f_wait();
-		v_next = std::min(v_tail - 1, v_head + V_SIZE / 8);
+		v_next = std::min(v_tail - 1, v_head + c_SIZE / 8);
 	}
 }
 
@@ -323,7 +323,7 @@ t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields)
 {
 	auto [fields, key2index] = f_merge(a_fields);
 	auto p = f_engine()->f_allocate_for_type<T>(fields.size());
-	new(p->f_data()) T(T::V_ids, this, a_module, T::V_native, v_instance_fields + a_fields.v_instance.size(), fields, key2index);
+	new(p->f_data()) T(T::c_IDS, this, a_module, T::c_NATIVE, v_instance_fields + a_fields.v_instance.size(), fields, key2index);
 	p->f_be(t_object::f_of(this)->v_type);
 	return p;
 }

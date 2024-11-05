@@ -186,19 +186,19 @@ class t_debugger : public xemmai::t_debugger
 	void f_print_value(const t_pvalue& a_value, size_t a_depth)
 	{
 		switch (a_value.f_tag()) {
-		case e_tag__NULL:
+		case c_tag__NULL:
 			std::fputs("null", v_out);
 			break;
-		case e_tag__FALSE:
+		case c_tag__FALSE:
 			std::fputs("false", v_out);
 			break;
-		case e_tag__TRUE:
+		case c_tag__TRUE:
 			std::fputs("true", v_out);
 			break;
-		case e_tag__INTEGER:
+		case c_tag__INTEGER:
 			std::fprintf(v_out, "%" PRIdPTR, f_as<intptr_t>(a_value));
 			break;
-		case e_tag__FLOAT:
+		case c_tag__FLOAT:
 			std::fprintf(v_out, "%g", f_as<double>(a_value));
 			break;
 		default:

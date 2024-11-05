@@ -20,12 +20,12 @@ using t_type = t_type_of<t_object>;
 
 enum t_tag
 {
-	e_tag__NULL,
-	e_tag__FALSE,
-	e_tag__TRUE,
-	e_tag__INTEGER,
-	e_tag__FLOAT,
-	e_tag__OBJECT
+	c_tag__NULL,
+	c_tag__FALSE,
+	c_tag__TRUE,
+	c_tag__INTEGER,
+	c_tag__FLOAT,
+	c_tag__OBJECT
 };
 
 class t_slot
@@ -40,7 +40,7 @@ protected:
 	template<size_t A_SIZE>
 	struct t_queue
 	{
-		static constexpr size_t V_SIZE = A_SIZE;
+		static constexpr size_t c_SIZE = A_SIZE;
 
 		static inline XEMMAI__PORTABLE__THREAD t_queue* v_instance;
 #ifdef _WIN32
@@ -64,14 +64,14 @@ protected:
 				[[likely]] v_head = p + 1;
 		}
 
-		t_object* volatile v_objects[V_SIZE];
+		t_object* volatile v_objects[c_SIZE];
 		std::atomic<t_object* volatile*> v_epoch;
-		t_object* volatile* v_tail{v_objects + V_SIZE - 1};
+		t_object* volatile* v_tail{v_objects + c_SIZE - 1};
 
 		void f_next() noexcept;
 		void f__flush(t_object* volatile* a_epoch, auto a_do)
 		{
-			auto end = v_objects + V_SIZE - 1;
+			auto end = v_objects + c_SIZE - 1;
 			if (a_epoch > v_objects)
 				--a_epoch;
 			else
@@ -135,7 +135,7 @@ protected:
 public:
 	t_slot(t_object* a_p = nullptr) : v_p(a_p)
 	{
-		if (reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT) t_increments::f_push(a_p);
+		if (reinterpret_cast<uintptr_t>(a_p) >= c_tag__OBJECT) t_increments::f_push(a_p);
 	}
 	t_slot(t_object& a_p) : v_p(&a_p)
 	{
@@ -146,16 +146,16 @@ public:
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_object* a_p)
 	{
-		if (reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT) t_increments::f_push(a_p);
+		if (reinterpret_cast<uintptr_t>(a_p) >= c_tag__OBJECT) t_increments::f_push(a_p);
 		auto p = v_p.exchange(a_p, std::memory_order_relaxed);
-		if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) t_decrements::f_push(p);
+		if (reinterpret_cast<uintptr_t>(p) >= c_tag__OBJECT) t_decrements::f_push(p);
 		return *this;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(t_object& a_p)
 	{
 		t_increments::f_push(&a_p);
 		auto p = v_p.exchange(&a_p, std::memory_order_relaxed);
-		if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) t_decrements::f_push(p);
+		if (reinterpret_cast<uintptr_t>(p) >= c_tag__OBJECT) t_decrements::f_push(p);
 		return *this;
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE t_slot& operator=(const t_slot& a_value)
@@ -181,7 +181,7 @@ struct t_root : t_slot
 	~t_root()
 	{
 		auto p = v_p.load(std::memory_order_relaxed);
-		if (reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT) t_decrements::f_push(p);
+		if (reinterpret_cast<uintptr_t>(p) >= c_tag__OBJECT) t_decrements::f_push(p);
 	}
 	using t_slot::operator=;
 	t_root& operator=(const t_root& a_value)
@@ -251,14 +251,14 @@ class t_value : public T_tag
 
 public:
 	using T_tag::T_tag;
-	t_value(bool a_value) : T_tag(reinterpret_cast<t_object*>(a_value ? e_tag__TRUE : e_tag__FALSE))
+	t_value(bool a_value) : T_tag(reinterpret_cast<t_object*>(a_value ? c_tag__TRUE : c_tag__FALSE))
 	{
 	}
 	template<typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
-	t_value(T a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__INTEGER)), v_integer(a_value)
+	t_value(T a_value) : T_tag(reinterpret_cast<t_object*>(c_tag__INTEGER)), v_integer(a_value)
 	{
 	}
-	t_value(double a_value) : T_tag(reinterpret_cast<t_object*>(e_tag__FLOAT)), v_float(a_value)
+	t_value(double a_value) : T_tag(reinterpret_cast<t_object*>(c_tag__FLOAT)), v_float(a_value)
 	{
 	}
 	t_value(const t_value& a_value) : T_tag(a_value)
@@ -289,9 +289,9 @@ public:
 		auto p = f_tag();
 		if (p != a_value.f_tag()) return false;
 		switch (p) {
-		case e_tag__INTEGER:
+		case c_tag__INTEGER:
 			return v_integer == a_value.v_integer;
-		case e_tag__FLOAT:
+		case c_tag__FLOAT:
 			return v_float == a_value.v_float;
 		default:
 			return true;
@@ -303,7 +303,7 @@ public:
 	}
 	bool f_boolean() const
 	{
-		return f_tag() >= e_tag__TRUE;
+		return f_tag() >= c_tag__TRUE;
 	}
 	intptr_t f_integer() const;
 	double f_float() const;
@@ -317,7 +317,7 @@ public:
 	t_object* f_object_or_throw() const
 	{
 		auto p = static_cast<t_object*>(*this);
-		if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) f_throw(L"not supported."sv);
+		if (reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT) f_throw(L"not supported."sv);
 		return p;
 	}
 	void f_put(t_object* a_key, size_t& a_index, const t_value<t_pointer>& a_value) const
@@ -342,7 +342,7 @@ public:
 	t_value<t_pointer> f_minus() const;
 	t_value<t_pointer> f_not() const
 	{
-		return f_tag() < e_tag__TRUE;
+		return f_tag() < c_tag__TRUE;
 	}
 	t_value<t_pointer> f_complement() const;
 	t_value<t_pointer> f_multiply(const t_value<t_pointer>& a_value) const;

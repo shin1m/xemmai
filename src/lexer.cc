@@ -68,11 +68,11 @@ void t_lexer::f_next()
 	};
 	switch (v_c) {
 	case WEOF:
-		return set(e_token__EOF);
+		return set(c_token__EOF);
 	case L'!':
-		if (get() != L'=') return set(e_token__EXCLAMATION);
-		if (get() != L'=') return set(e_token__NOT_EQUALS);
-		return next(e_token__NOT_IDENTICAL);
+		if (get() != L'=') return set(c_token__EXCLAMATION);
+		if (get() != L'=') return set(c_token__NOT_EQUALS);
+		return next(c_token__NOT_IDENTICAL);
 	case L'"':
 		for (t_stringer s;;)
 			switch (get()) {
@@ -80,7 +80,7 @@ void t_lexer::f_next()
 				f_throw();
 			case L'"':
 				v_string = s;
-				return next(e_token__STRING);
+				return next(c_token__STRING);
 			case L'\\':
 				switch (get()) {
 				case L'"':
@@ -126,75 +126,75 @@ void t_lexer::f_next()
 			v_value << v_c;
 			f_get();
 		}
-		return set(e_token__SELF);
+		return set(c_token__SELF);
 	case L'%':
-		return next(e_token__PERCENT);
+		return next(c_token__PERCENT);
 	case L'&':
-		if (get() == L'&') return next(e_token__AND_ALSO);
-		return set(e_token__AMPERSAND);
+		if (get() == L'&') return next(c_token__AND_ALSO);
+		return set(c_token__AMPERSAND);
 	case L'\'':
-		return next(e_token__APOSTROPHE);
+		return next(c_token__APOSTROPHE);
 	case L'(':
-		return next(e_token__LEFT_PARENTHESIS);
+		return next(c_token__LEFT_PARENTHESIS);
 	case L')':
-		return next(e_token__RIGHT_PARENTHESIS);
+		return next(c_token__RIGHT_PARENTHESIS);
 	case L'*':
-		return next(e_token__ASTERISK);
+		return next(c_token__ASTERISK);
 	case L'+':
-		return next(e_token__PLUS);
+		return next(c_token__PLUS);
 	case L',':
-		return next( e_token__COMMA);
+		return next(c_token__COMMA);
 	case L'-':
-		return next(e_token__HYPHEN);
+		return next(c_token__HYPHEN);
 	case L'.':
-		return next(e_token__DOT);
+		return next(c_token__DOT);
 	case L'/':
-		return next(e_token__SLASH);
+		return next(c_token__SLASH);
 	case L':':
 		v_integer = 1;
 		while (get() == L':') ++v_integer;
-		return set(e_token__COLON);
+		return set(c_token__COLON);
 	case L';':
-		return next(e_token__SEMICOLON);
+		return next(c_token__SEMICOLON);
 	case L'<':
 		switch (get()) {
 		case L'<':
-			return next(e_token__LEFT_SHIFT);
+			return next(c_token__LEFT_SHIFT);
 		case L'=':
-			return next(e_token__LESS_EQUAL);
+			return next(c_token__LESS_EQUAL);
 		}
-		return set(e_token__LESS);
+		return set(c_token__LESS);
 	case L'=':
-		if (get() != L'=') return set(e_token__EQUAL);
-		if (get() != L'=') return set(e_token__EQUALS);
-		return next(e_token__IDENTICAL);
+		if (get() != L'=') return set(c_token__EQUAL);
+		if (get() != L'=') return set(c_token__EQUALS);
+		return next(c_token__IDENTICAL);
 	case L'>':
 		switch (get()) {
 		case L'=':
-			return next(e_token__GREATER_EQUAL);
+			return next(c_token__GREATER_EQUAL);
 		case L'>':
-			return next(e_token__RIGHT_SHIFT);
+			return next(c_token__RIGHT_SHIFT);
 		}
-		return set(e_token__GREATER);
+		return set(c_token__GREATER);
 	case L'?':
-		return next(e_token__QUESTION);
+		return next(c_token__QUESTION);
 	case L'@':
-		return next(e_token__ATMARK);
+		return next(c_token__ATMARK);
 	case L'[':
-		return next(e_token__LEFT_BRACKET);
+		return next(c_token__LEFT_BRACKET);
 	case L']':
-		return next(e_token__RIGHT_BRACKET);
+		return next(c_token__RIGHT_BRACKET);
 	case L'^':
-		return next(e_token__HAT);
+		return next(c_token__HAT);
 	case L'{':
-		return next(e_token__LEFT_BRACE);
+		return next(c_token__LEFT_BRACE);
 	case L'|':
-		if (get() == L'|') return next(e_token__OR_ELSE);
-		return set(e_token__BAR);
+		if (get() == L'|') return next(c_token__OR_ELSE);
+		return set(c_token__BAR);
 	case L'}':
-		return next(e_token__RIGHT_BRACE);
+		return next(c_token__RIGHT_BRACE);
 	case L'~':
-		return next(e_token__TILDE);
+		return next(c_token__TILDE);
 	default:
 		if (std::iswalpha(v_c) || v_c == L'_') {
 			v_value.f_rewind(0);
@@ -216,59 +216,59 @@ void t_lexer::f_next()
 			};
 			switch (v_c) {
 			case L'b':
-				if (match(L"break"sv, 1, e_token__BREAK)) return;
+				if (match(L"break"sv, 1, c_token__BREAK)) return;
 				break;
 			case L'c':
 				switch (get()) {
 				case L'a':
-					if (match(L"catch"sv, 2, e_token__CATCH)) return;
+					if (match(L"catch"sv, 2, c_token__CATCH)) return;
 					break;
 				case L'o':
-					if (match(L"continue"sv, 2, e_token__CONTINUE)) return;
+					if (match(L"continue"sv, 2, c_token__CONTINUE)) return;
 					break;
 				default:
 					v_value << L'c';
 				}
 				break;
 			case L'e':
-				if (match(L"else"sv, 1, e_token__ELSE)) return;
+				if (match(L"else"sv, 1, c_token__ELSE)) return;
 				break;
 			case L'f':
 				switch (get()) {
 				case L'a':
-					if (match(L"false"sv, 2, e_token__FALSE)) return;
+					if (match(L"false"sv, 2, c_token__FALSE)) return;
 					break;
 				case L'i':
-					if (match(L"finally"sv, 2, e_token__FINALLY)) return;
+					if (match(L"finally"sv, 2, c_token__FINALLY)) return;
 					break;
 				case L'o':
-					if (match(L"for"sv, 2, e_token__FOR)) return;
+					if (match(L"for"sv, 2, c_token__FOR)) return;
 					break;
 				default:
 					v_value << L'f';
 				}
 				break;
 			case L'i':
-				if (match(L"if"sv, 1, e_token__IF)) return;
+				if (match(L"if"sv, 1, c_token__IF)) return;
 				break;
 			case L'n':
-				if (match(L"null"sv, 1, e_token__NULL)) return;
+				if (match(L"null"sv, 1, c_token__NULL)) return;
 				break;
 			case L'r':
-				if (match(L"return"sv, 1, e_token__RETURN)) return;
+				if (match(L"return"sv, 1, c_token__RETURN)) return;
 				break;
 			case L't':
 				switch (get()) {
 				case L'h':
-					if (match(L"throw"sv, 2, e_token__THROW)) return;
+					if (match(L"throw"sv, 2, c_token__THROW)) return;
 					break;
 				case L'r':
 					switch (get()) {
 					case L'u':
-						if (match(L"true"sv, 3, e_token__TRUE)) return;
+						if (match(L"true"sv, 3, c_token__TRUE)) return;
 						break;
 					case L'y':
-						if (match(L"try"sv, 3, e_token__TRY)) return;
+						if (match(L"try"sv, 3, c_token__TRY)) return;
 						break;
 					default:
 						v_value << L't' << L'r';
@@ -279,14 +279,14 @@ void t_lexer::f_next()
 				}
 				break;
 			case L'w':
-				if (match(L"while"sv, 1, e_token__WHILE)) return;
+				if (match(L"while"sv, 1, c_token__WHILE)) return;
 				break;
 			}
 			while (f_is_symbol(v_c)) {
 				v_value << v_c;
 				f_get();
 			}
-			v_token = e_token__SYMBOL;
+			v_token = c_token__SYMBOL;
 		} else if (std::iswdigit(v_c)) {
 			if (v_c == L'0' && get() != L'.') {
 				v_integer = 0;
@@ -304,7 +304,7 @@ void t_lexer::f_next()
 					}
 				}
 				v_integer &= ~uintptr_t{} >> 1;
-				return set(e_token__INTEGER);
+				return set(c_token__INTEGER);
 			}
 			char cs[32];
 			auto p = cs;
@@ -318,7 +318,7 @@ void t_lexer::f_next()
 				f_get();
 			}
 			if (v_c == L'.') {
-				v_token = e_token__FLOAT;
+				v_token = c_token__FLOAT;
 				do push(); while (std::iswdigit(get()));
 				if (v_c == L'E' || v_c == L'e') {
 					push();
@@ -332,7 +332,7 @@ void t_lexer::f_next()
 				}
 				if (std::from_chars(cs, p, v_float).ec != std::errc()) f_throw();
 			} else {
-				v_token = e_token__INTEGER;
+				v_token = c_token__INTEGER;
 				if (std::from_chars(cs, p, v_integer).ec != std::errc()) f_throw();
 			}
 		} else {

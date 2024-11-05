@@ -68,11 +68,11 @@ struct t_debug_script : t_script
 	XEMMAI__LOCAL std::pair<size_t, size_t> f_replace_break_point(size_t a_line, size_t a_column, t_instruction a_old, t_instruction a_new);
 	std::pair<size_t, size_t> f_set_break_point(size_t a_line, size_t a_column = 0)
 	{
-		return f_replace_break_point(a_line, a_column, e_instruction__SAFE_POINT, e_instruction__BREAK_POINT);
+		return f_replace_break_point(a_line, a_column, c_instruction__SAFE_POINT, c_instruction__BREAK_POINT);
 	}
 	std::pair<size_t, size_t> f_reset_break_point(size_t a_line, size_t a_column = 0)
 	{
-		return f_replace_break_point(a_line, a_column, e_instruction__BREAK_POINT, e_instruction__SAFE_POINT);
+		return f_replace_break_point(a_line, a_column, c_instruction__BREAK_POINT, c_instruction__SAFE_POINT);
 	}
 };
 

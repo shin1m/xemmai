@@ -8,10 +8,10 @@ void t_thread::t_internal::f_initialize(size_t a_stack, void* a_bottom)
 	v_current = this;
 	t_slot::t_increments::v_instance = &v_increments;
 	v_increments.v_head = v_increments.v_objects;
-	t_slot::t_increments::v_next = v_increments.v_objects + t_slot::t_increments::V_SIZE / 8;
+	t_slot::t_increments::v_next = v_increments.v_objects + t_slot::t_increments::c_SIZE / 8;
 	t_slot::t_decrements::v_instance = &v_decrements;
 	v_decrements.v_head = v_decrements.v_objects;
-	t_slot::t_decrements::v_next = v_decrements.v_objects + t_slot::t_decrements::V_SIZE / 8;
+	t_slot::t_decrements::v_next = v_decrements.v_objects + t_slot::t_decrements::c_SIZE / 8;
 	v_active = new t_fiber::t_internal(a_stack, a_bottom);
 #ifdef __unix__
 	f_stack__(v_active->v_estack_used);

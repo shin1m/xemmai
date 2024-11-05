@@ -65,11 +65,11 @@ struct t_operand
 {
 	enum t_tag
 	{
-		e_tag__INTEGER,
-		e_tag__FLOAT,
-		e_tag__LITERAL,
-		e_tag__VARIABLE,
-		e_tag__TEMPORARY
+		c_tag__INTEGER,
+		c_tag__FLOAT,
+		c_tag__LITERAL,
+		c_tag__VARIABLE,
+		c_tag__TEMPORARY
 	};
 
 	t_tag v_tag;
@@ -81,19 +81,19 @@ struct t_operand
 		size_t v_index;
 	};
 
-	t_operand(bool a_value) : v_tag(e_tag__LITERAL), v_value(reinterpret_cast<t_object*>(a_value ? e_tag__TRUE : e_tag__FALSE))
+	t_operand(bool a_value) : v_tag(c_tag__LITERAL), v_value(reinterpret_cast<t_object*>(a_value ? c_tag__TRUE : c_tag__FALSE))
 	{
 	}
-	t_operand(intptr_t a_value) : v_tag(e_tag__INTEGER), v_integer(a_value)
+	t_operand(intptr_t a_value) : v_tag(c_tag__INTEGER), v_integer(a_value)
 	{
 	}
-	t_operand(double a_value) : v_tag(e_tag__FLOAT), v_float(a_value)
+	t_operand(double a_value) : v_tag(c_tag__FLOAT), v_float(a_value)
 	{
 	}
-	t_operand(t_object* a_value) : v_tag(e_tag__LITERAL), v_value(a_value)
+	t_operand(t_object* a_value) : v_tag(c_tag__LITERAL), v_value(a_value)
 	{
 	}
-	t_operand() : v_tag(e_tag__TEMPORARY)
+	t_operand() : v_tag(c_tag__TEMPORARY)
 	{
 	}
 	t_operand(t_tag a_tag, size_t a_value) : v_tag(a_tag), v_index(a_value)
@@ -431,7 +431,7 @@ struct t_literal : t_node
 template<>
 struct t_literal<bool> : t_literal<t_object*>
 {
-	t_literal(const t_at& a_at, bool a_value) : t_literal<t_object*>(a_at, reinterpret_cast<t_object*>(a_value ? e_tag__TRUE : e_tag__FALSE))
+	t_literal(const t_at& a_at, bool a_value) : t_literal<t_object*>(a_at, reinterpret_cast<t_object*>(a_value ? c_tag__TRUE : c_tag__FALSE))
 	{
 	}
 };
@@ -528,7 +528,7 @@ struct XEMMAI__LOCAL t_emit
 	template<typename T>
 	static constexpr t_instruction f_instruction_of()
 	{
-		return e_instruction__INSTANCE;
+		return c_instruction__INSTANCE;
 	}
 
 	t_object* v_module;
@@ -616,13 +616,13 @@ struct XEMMAI__LOCAL t_emit
 	}
 	t_emit& f_emit_null()
 	{
-		return (*this << e_instruction__NUL << v_stack).f_push();
+		return (*this << c_instruction__NUL << v_stack).f_push();
 	}
 	void f_emit_safe_point(ast::t_node* a_node)
 	{
 		if (!v_safe_points) return;
 		v_safe_positions->emplace_back(a_node->v_at.v_line, f_last(), a_node->v_at.v_column);
-		*this << e_instruction__SAFE_POINT;
+		*this << c_instruction__SAFE_POINT;
 		f_at(a_node);
 	}
 	void f_join(const ast::t_block& a_junction);
@@ -635,12 +635,12 @@ struct XEMMAI__LOCAL t_emit
 template<>
 constexpr t_instruction t_emit::f_instruction_of<intptr_t>()
 {
-	return e_instruction__INTEGER;
+	return c_instruction__INTEGER;
 }
 template<>
 constexpr t_instruction t_emit::f_instruction_of<double>()
 {
-	return e_instruction__FLOAT;
+	return c_instruction__FLOAT;
 }
 
 namespace ast
@@ -653,7 +653,7 @@ t_operand t_literal<T>::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	if (a_clear) return {};
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
-		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + e_instruction__RETURN_NUL - e_instruction__NUL) << v_value;
+		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + c_instruction__RETURN_NUL - c_instruction__NUL) << v_value;
 	} else {
 		a_emit << t_emit::f_instruction_of<T>() << a_emit.v_stack << v_value;
 	}

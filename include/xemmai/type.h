@@ -107,9 +107,9 @@ struct t_type_of<t_object>
 	};
 	using t_library = t_global;
 
-	static XEMMAI__TYPE__IDS_MODIFIER std::array<t_type_id, 1> V_ids{f_type_id<t_object>()};
-	static constexpr size_t V_native = 0;
-	static constexpr size_t V_fields = 25;
+	static XEMMAI__TYPE__IDS_MODIFIER std::array<t_type_id, 1> c_IDS{f_type_id<t_object>()};
+	static constexpr size_t c_NATIVE = 0;
+	static constexpr size_t c_FIELDS = 25;
 
 	static t_pvalue f_transfer(auto* a_library, auto&& a_value)
 	{
@@ -172,7 +172,7 @@ struct t_type_of<t_object>
 	template<typename T>
 	bool f_derives() const
 	{
-		size_t i = t_type_of<T>::V_ids.size() - 1;
+		size_t i = t_type_of<T>::c_IDS.size() - 1;
 		return i <= v_depth && v_ids[i] == f_type_id<T>();
 	}
 	XEMMAI__PUBLIC std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> f_merge(const t_fields& a_fields);
@@ -335,7 +335,7 @@ struct t_derives : T_base
 	using t_what = T;
 	using t_base = t_derives;
 
-	static constexpr size_t V_native = sizeof(T);
+	static constexpr size_t c_NATIVE = sizeof(T);
 
 	t_derives(auto&&... a_xs) : T_base(std::forward<decltype(a_xs)>(a_xs)...)
 	{
@@ -348,7 +348,7 @@ struct t_bears : t_derives<T, T_base>
 {
 	using t_base = t_bears;
 
-	static XEMMAI__TYPE__IDS_MODIFIER std::array<t_type_id, T_base::V_ids.size() + 1> V_ids = f_append(T_base::V_ids, std::make_index_sequence<T_base::V_ids.size()>(), f_type_id<T>());
+	static XEMMAI__TYPE__IDS_MODIFIER std::array<t_type_id, T_base::c_IDS.size() + 1> c_IDS = f_append(T_base::c_IDS, std::make_index_sequence<T_base::c_IDS.size()>(), f_type_id<T>());
 
 	using t_derives<T, T_base>::t_derives;
 };

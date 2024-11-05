@@ -10,13 +10,13 @@ namespace xemmai
 
 enum t_color
 {
-	e_color__BLACK,
-	e_color__PURPLE,
-	e_color__GRAY,
-	e_color__WHITING,
-	e_color__WHITE,
-	e_color__ORANGE,
-	e_color__RED
+	c_color__BLACK,
+	c_color__PURPLE,
+	c_color__GRAY,
+	c_color__WHITING,
+	c_color__WHITE,
+	c_color__ORANGE,
+	c_color__RED
 };
 
 class t_object
@@ -59,7 +59,7 @@ class t_object
 	template<void (t_object::*A_push)()>
 	static void f_push(t_object* a_p)
 	{
-		if (reinterpret_cast<uintptr_t>(a_p) >= e_tag__OBJECT) (a_p->*A_push)();
+		if (reinterpret_cast<uintptr_t>(a_p) >= c_tag__OBJECT) (a_p->*A_push)();
 	}
 
 	t_object* v_next;
@@ -100,13 +100,13 @@ class t_object
 	XEMMAI__PORTABLE__FORCE_INLINE void f_increment()
 	{
 		++v_count;
-		v_color = e_color__BLACK;
+		v_color = c_color__BLACK;
 	}
 	void f_decrement_push()
 	{
 		assert(v_count > 0);
 		if (--v_count > 0) {
-			v_color = e_color__PURPLE;
+			v_color = c_color__PURPLE;
 			if (!v_next) f_append(this);
 		} else {
 			f_push(this);
@@ -117,7 +117,7 @@ class t_object
 	{
 		assert(v_count > 0);
 		if (--v_count > 0) {
-			v_color = e_color__PURPLE;
+			v_color = c_color__PURPLE;
 			if (!v_next) f_append(this);
 		} else {
 			f_loop<&t_object::f_decrement_step>();
@@ -125,8 +125,8 @@ class t_object
 	}
 	void f_mark_gray_push()
 	{
-		if (v_color != e_color__GRAY) {
-			v_color = e_color__GRAY;
+		if (v_color != c_color__GRAY) {
+			v_color = c_color__GRAY;
 			v_cyclic = v_count;
 			f_push(this);
 		}
@@ -134,42 +134,42 @@ class t_object
 	}
 	void f_mark_gray()
 	{
-		v_color = e_color__GRAY;
+		v_color = c_color__GRAY;
 		v_cyclic = v_count;
 		f_loop<&t_object::f_step<&t_object::f_mark_gray_push>>();
 	}
 	void f_scan_black_push()
 	{
-		if (v_color == e_color__BLACK) return;
-		v_color = e_color__BLACK;
+		if (v_color == c_color__BLACK) return;
+		v_color = c_color__BLACK;
 		f_push(this);
 	}
 	void f_scan_gray_scan_black_push()
 	{
-		if (v_color == e_color__BLACK) return;
-		if (v_color != e_color__WHITING) f_push(this);
-		v_color = e_color__BLACK;
+		if (v_color == c_color__BLACK) return;
+		if (v_color != c_color__WHITING) f_push(this);
+		v_color = c_color__BLACK;
 	}
 	void f_scan_gray_push()
 	{
-		if (v_color != e_color__GRAY) return;
-		v_color = v_cyclic > 0 ? e_color__BLACK : e_color__WHITING;
+		if (v_color != c_color__GRAY) return;
+		v_color = v_cyclic > 0 ? c_color__BLACK : c_color__WHITING;
 		f_push(this);
 	}
 	void f_scan_gray_step()
 	{
-		if (v_color == e_color__BLACK) {
+		if (v_color == c_color__BLACK) {
 			f_step<&t_object::f_scan_gray_scan_black_push>();
 		} else {
-			v_color = e_color__WHITE;
+			v_color = c_color__WHITE;
 			f_step<&t_object::f_scan_gray_push>();
 		}
 	}
 	void f_scan_gray()
 	{
-		if (v_color != e_color__GRAY) return;
+		if (v_color != c_color__GRAY) return;
 		if (v_cyclic > 0) {
-			v_color = e_color__BLACK;
+			v_color = c_color__BLACK;
 			f_loop<&t_object::f_step<&t_object::f_scan_black_push>>();
 		} else {
 			f_loop<&t_object::f_scan_gray_step>();
@@ -177,8 +177,8 @@ class t_object
 	}
 	void f_collect_white_push()
 	{
-		if (v_color != e_color__WHITE) return;
-		v_color = e_color__RED;
+		if (v_color != c_color__WHITE) return;
+		v_color = c_color__RED;
 		v_cyclic = v_count;
 		v_next = v_cycle->v_next;
 		v_cycle->v_next = this;
@@ -187,7 +187,7 @@ class t_object
 	}
 	void f_collect_white()
 	{
-		v_color = e_color__RED;
+		v_color = c_color__RED;
 		v_cyclic = v_count;
 		v_cycle = v_next = this;
 		v_previous = nullptr;
@@ -195,12 +195,12 @@ class t_object
 	}
 	void f_scan_red()
 	{
-		if (v_color == e_color__RED && v_cyclic > 0) --v_cyclic;
+		if (v_color == c_color__RED && v_cyclic > 0) --v_cyclic;
 	}
 	void f_cyclic_decrement_push()
 	{
-		if (v_color == e_color__RED) return;
-		if (v_color == e_color__ORANGE) {
+		if (v_color == c_color__RED) return;
+		if (v_color == c_color__ORANGE) {
 			--v_count;
 			--v_cyclic;
 		} else {
@@ -303,21 +303,21 @@ template<typename T_tag>
 inline intptr_t t_value<T_tag>::f_integer() const
 {
 	auto p = static_cast<t_object*>(*this);
-	return reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT ? v_integer : p->f_as<intptr_t>();
+	return reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT ? v_integer : p->f_as<intptr_t>();
 }
 
 template<typename T_tag>
 inline double t_value<T_tag>::f_float() const
 {
 	auto p = static_cast<t_object*>(*this);
-	return reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT ? v_float : p->f_as<double>();
+	return reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT ? v_float : p->f_as<double>();
 }
 
 template<typename T_tag>
 inline bool t_value<T_tag>::f_has(t_object* a_key, size_t& a_index) const
 {
 	auto p = static_cast<t_object*>(*this);
-	return reinterpret_cast<uintptr_t>(p) >= e_tag__OBJECT && p->f_has(a_key, a_index);
+	return reinterpret_cast<uintptr_t>(p) >= c_tag__OBJECT && p->f_has(a_key, a_index);
 }
 
 template<typename T>
@@ -337,7 +337,7 @@ struct t_type::t_cast
 	static bool f_is(t_object* a_object)
 	{
 		if constexpr (std::is_same_v<typename t_fundamental<T>::t_type, t_object>) return true;
-		return reinterpret_cast<uintptr_t>(a_object) >= e_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+		return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
 	}
 };
 
@@ -354,12 +354,12 @@ struct t_type::t_cast<T*>
 	static bool f_is(t_object* a_object)
 	{
 		switch (reinterpret_cast<uintptr_t>(a_object)) {
-		case e_tag__NULL:
+		case c_tag__NULL:
 			return true;
-		case e_tag__FALSE:
-		case e_tag__TRUE:
-		case e_tag__INTEGER:
-		case e_tag__FLOAT:
+		case c_tag__FALSE:
+		case c_tag__TRUE:
+		case c_tag__INTEGER:
+		case c_tag__FLOAT:
 			return false;
 		default:
 			return a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
@@ -367,7 +367,7 @@ struct t_type::t_cast<T*>
 	}
 };
 
-inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(V_ids.size() - 1), v_ids(V_ids.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
+inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(c_IDS.size() - 1), v_ids(c_IDS.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
 {
 }
 

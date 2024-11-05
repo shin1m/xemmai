@@ -4,7 +4,7 @@ using namespace xemmai;
 
 enum t_number
 {
-	e_number__ZERO, e_number__ONE
+	c_number__ZERO, c_number__ONE
 };
 
 struct t_enum : t_library
@@ -29,8 +29,8 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 		return t_base::f_define(a_library, [](auto a_fields)
 		{
 			a_fields
-			(L"ZERO"sv, e_number__ZERO)
-			(L"ONE"sv, e_number__ONE)
+			(L"ZERO"sv, c_number__ZERO)
+			(L"ONE"sv, c_number__ONE)
 			;
 		});
 	}

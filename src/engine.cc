@@ -30,7 +30,7 @@ void t_engine::f_collector()
 					q->f_epoch();
 					std::lock_guard lock(v_object__reviving__mutex);
 					if (q->v_reviving) {
-						size_t n = t_slot::t_increments::V_SIZE;
+						size_t n = t_slot::t_increments::c_SIZE;
 						size_t epoch = (q->v_increments.v_tail + n - tail) % n;
 						size_t reviving = (q->v_reviving + n - tail) % n;
 						if (epoch < reviving)
@@ -57,7 +57,7 @@ void t_engine::f_collector()
 			while (true) {
 				auto q = p->v_next;
 				if (q->v_type) {
-					if (q->v_color != e_color__ORANGE || q->v_cyclic > 0 || v_object__reviving && q->v_type->v_revive) failed = true;
+					if (q->v_color != c_color__ORANGE || q->v_cyclic > 0 || v_object__reviving && q->v_type->v_revive) failed = true;
 					p = q;
 					if (p == cycle) break;
 				} else {
@@ -72,22 +72,22 @@ void t_engine::f_collector()
 			if (!cycle) continue;
 			if (failed) {
 				p = cycle;
-				if (p->v_color == e_color__ORANGE) p->v_color = e_color__PURPLE;
+				if (p->v_color == c_color__ORANGE) p->v_color = c_color__PURPLE;
 				do {
 					auto q = p->v_next;
 					if (p->v_count <= 0) {
 						p->v_next = garbage;
 						garbage = p;
-					} else if (p->v_color == e_color__PURPLE) {
+					} else if (p->v_color == c_color__PURPLE) {
 						t_object::f_append(p);
 					} else {
-						p->v_color = e_color__BLACK;
+						p->v_color = c_color__BLACK;
 						p->v_next = nullptr;
 					}
 					p = q;
 				} while (p != cycle);
 			} else {
-				do p->v_color = e_color__RED; while ((p = p->v_next) != cycle);
+				do p->v_color = c_color__RED; while ((p = p->v_next) != cycle);
 				do p->f_cyclic_decrement(); while ((p = p->v_next) != cycle);
 				do {
 					auto q = p->v_next;
@@ -119,7 +119,7 @@ void t_engine::f_collector()
 					auto q = p->v_next;
 					do {
 						assert(q->v_count > 0);
-						if (q->v_color == e_color__PURPLE) {
+						if (q->v_color == c_color__PURPLE) {
 							q->f_mark_gray();
 							p = q;
 						} else {
@@ -137,12 +137,12 @@ void t_engine::f_collector()
 					do {
 						auto p = roots->v_next;
 						roots->v_next = p->v_next;
-						if (p->v_color == e_color__WHITE) {
+						if (p->v_color == c_color__WHITE) {
 							p->f_collect_white();
 							auto cycle = t_object::v_cycle;
 							auto q = cycle;
 							do q->f_step<&t_object::f_scan_red>(); while ((q = q->v_next) != cycle);
-							do q->v_color = e_color__ORANGE; while ((q = q->v_next) != cycle);
+							do q->v_color = c_color__ORANGE; while ((q = q->v_next) != cycle);
 							cycle->v_next_cycle = v_cycles;
 							v_cycles = cycle;
 						} else {
@@ -236,16 +236,16 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 #endif
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	std::thread(&t_engine::f_collector, this).detach();
-	auto type_object = f_allocate_for_type<t_type>(t_type::V_fields);
+	auto type_object = f_allocate_for_type<t_type>(t_type::c_FIELDS);
 	auto type = new(type_object->f_data()) t_type;
 	type->v_derive = &t_type::f_do_derive;
-	std::uninitialized_default_construct_n(type->f_fields(), t_type::V_fields);
+	std::uninitialized_default_construct_n(type->f_fields(), t_type::c_FIELDS);
 	auto type_type = f_allocate_for_type<t_class>(0);
-	v_type_type = new(type_type->f_data()) t_class(t_class::V_ids, type);
+	v_type_type = new(type_type->f_data()) t_class(t_class::c_IDS, type);
 	type_object->f_be(v_type_type);
 	type_type->f_be(v_type_type);
 	{
-		auto type_module__body = f_new_type_on_boot<t_module::t_body>(t_type::V_fields, type, nullptr);
+		auto type_module__body = f_new_type_on_boot<t_module::t_body>(t_type::c_FIELDS, type, nullptr);
 		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_type, type_module__body);
 		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}

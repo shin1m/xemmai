@@ -204,7 +204,7 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__BREAK goto **pc;
 	XEMMAI__CODE__BREAK
 #else
-#define XEMMAI__CODE__CASE(a_name) case XEMMAI__MACRO__CONCATENATE(e_instruction__, a_name):
+#define XEMMAI__CODE__CASE(a_name) case XEMMAI__MACRO__CONCATENATE(c_instruction__, a_name):
 #define XEMMAI__CODE__BREAK break;
 	while (true) {
 		switch (static_cast<t_instruction>(reinterpret_cast<intptr_t>(*pc))) {
@@ -226,7 +226,7 @@ size_t t_code::f_loop(t_context* a_context)
 			f_try(a_context);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CATCH)
-			return e_try__CATCH;
+			return c_try__CATCH;
 		XEMMAI__CODE__CASE(FINALLY)
 			return static_cast<t_try>(reinterpret_cast<intptr_t>(*++pc));
 		XEMMAI__CODE__CASE(YRT)
@@ -316,7 +316,7 @@ size_t t_code::f_loop(t_context* a_context)
 				auto stack = base + reinterpret_cast<size_t>(*++pc);
 				++pc;
 				auto p = static_cast<t_object*>(stack[0]);
-				if (reinterpret_cast<uintptr_t>(p) < e_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
+				if (reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
 				if (!p->f_type()->v_bindable) f_method_bind(stack);
 			}
 			XEMMAI__CODE__BREAK
@@ -1001,7 +1001,7 @@ void t_code::f_try(t_context* a_context)
 			try {
 				try {
 					try0 = static_cast<t_try>(f_loop(a_context));
-					if (try0 != e_try__CATCH) break;
+					if (try0 != c_try__CATCH) break;
 					++pc;
 					auto type = stack[0];
 					f_check<t_type>(type, L"type");
@@ -1028,7 +1028,7 @@ void t_code::f_try(t_context* a_context)
 				throw thrown;
 			}
 		}
-		if (try0 == e_try__THROW) {
+		if (try0 == c_try__THROW) {
 			pc = finally0;
 			f_loop(a_context);
 			p.v_caught = caught;
@@ -1041,13 +1041,13 @@ void t_code::f_try(t_context* a_context)
 	auto continue0 = static_cast<void**>(*++pc);
 	auto return0 = static_cast<void**>(*++pc);
 	switch (try0) {
-	case e_try__BREAK:
+	case c_try__BREAK:
 		pc = break0;
 		break;
-	case e_try__CONTINUE:
+	case c_try__CONTINUE:
 		pc = continue0;
 		break;
-	case e_try__RETURN:
+	case c_try__RETURN:
 		pc = return0;
 		break;
 	default:
