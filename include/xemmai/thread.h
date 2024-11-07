@@ -25,10 +25,7 @@ struct t_thread
 		HANDLE v_handle = NULL;
 		CONTEXT v_context_last{};
 		CONTEXT v_context;
-#endif
-		t_object* volatile* v_reviving = nullptr;
 
-#ifdef _WIN32
 		~t_internal()
 		{
 			if (v_handle != NULL) CloseHandle(v_handle);
@@ -44,10 +41,6 @@ struct t_thread
 		void f_epoch_suspend();
 		void f_epoch_resume();
 		XEMMAI__LOCAL void f_epoch();
-		void f_revive()
-		{
-			v_reviving = v_increments.v_head;
-		}
 	};
 
 	static inline XEMMAI__PORTABLE__THREAD t_internal* v_current;

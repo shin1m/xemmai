@@ -8,7 +8,7 @@
 namespace xemmai
 {
 
-enum t_color
+enum t_color : char
 {
 	c_color__BLACK,
 	c_color__PURPLE,
@@ -25,7 +25,9 @@ class t_object
 	friend class t_slot;
 	friend struct t_type_of<t_object>;
 	friend struct t_type_of<t_type>;
+	friend struct t_module;
 	friend struct t_fiber;
+	friend class t_symbol;
 	friend struct t_code;
 	friend class t_engine;
 	friend class t_with_lock_for_read;
@@ -66,6 +68,7 @@ class t_object
 	t_object* v_previous;
 	t_object* v_scan;
 	t_color v_color;
+	bool v_reviving;
 	size_t v_count = 1;
 	size_t v_cyclic;
 	size_t v_rank;

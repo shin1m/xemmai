@@ -58,7 +58,6 @@ private:
 	t_object* v_cycles = nullptr;
 	t_heap<t_object> v_object__heap;
 	size_t v_object__lower = 0;
-	bool v_object__reviving = false;
 	std::mutex v_object__reviving__mutex;
 	size_t v_object__release = 0;
 	size_t v_object__collect = 0;

@@ -18,27 +18,10 @@ void t_engine::f_collector()
 		if (v_collector__quitting) break;
 		++v_collector__epoch;
 		{
-			std::lock_guard lock(v_object__reviving__mutex);
-			v_object__reviving = false;
-		}
-		{
 			std::lock_guard lock(v_thread__mutex);
 			for (auto p = &v_thread__internals; *p;) {
 				auto q = *p;
-				if (q->v_done >= 0) {
-					auto tail = q->v_increments.v_tail;
-					q->f_epoch();
-					std::lock_guard lock(v_object__reviving__mutex);
-					if (q->v_reviving) {
-						size_t n = t_slot::t_increments::c_SIZE;
-						size_t epoch = (q->v_increments.v_tail + n - tail) % n;
-						size_t reviving = (q->v_reviving + n - tail) % n;
-						if (epoch < reviving)
-							v_object__reviving = true;
-						else
-							q->v_reviving = nullptr;
-					}
-				}
+				if (q->v_done >= 0) q->f_epoch();
 				if (q->v_done < 3) {
 					p = &q->v_next;
 				} else {
@@ -57,7 +40,8 @@ void t_engine::f_collector()
 			while (true) {
 				auto q = p->v_next;
 				if (q->v_type) {
-					if (q->v_color != c_color__ORANGE || q->v_cyclic > 0 || v_object__reviving && q->v_type->v_revive) failed = true;
+					if (q->v_color != c_color__ORANGE || q->v_cyclic > 0 || q->v_reviving) failed = true;
+					q->v_reviving = false;
 					p = q;
 					if (p == cycle) break;
 				} else {
@@ -334,7 +318,7 @@ t_engine::~t_engine()
 	v_thread = nullptr;
 	f_finalize(internal);
 	v_options.v_collector__threshold = 0;
-	for (size_t i = 0; i < 4; ++i) f_wait();
+	for (size_t i = 0; i < 5; ++i) f_wait();
 	v_collector__quitting = true;
 	if (!v_collector__running.test_and_set(std::memory_order_release)) v_collector__running.notify_one();
 	v_collector__running.wait(true, std::memory_order_relaxed);

@@ -76,8 +76,7 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 		auto& instances = f_engine()->v_module__instances;
 		auto i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
-			f_engine()->v_object__reviving = true;
-			t_thread::v_current->f_revive();
+			i->second->v_reviving = true;
 			f_engine()->v_module__mutex.unlock();
 			f_engine()->v_object__reviving__mutex.unlock();
 			return i->second;
