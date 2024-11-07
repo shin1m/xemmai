@@ -72,7 +72,6 @@ private:
 	std::condition_variable v_thread__condition;
 	t_type* v_type_type;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
-	std::mutex v_module__mutex;
 	std::recursive_mutex v_module__instantiate__mutex;
 	t_library::t_handle* v_library__handle__finalizing = nullptr;
 	std::map<std::wstring, t_slot, std::less<>> v_symbol__instances;

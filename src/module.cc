@@ -55,7 +55,7 @@ t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std:
 	auto type = f_global()->f_type<t_module>()->f_derive<t_type_of<t_module>>(t_object::f_of(f_global()), fields);
 	decltype(f_engine()->v_module__instances)::iterator i;
 	{
-		std::lock_guard lock(f_engine()->v_module__mutex);
+		std::lock_guard lock(f_engine()->v_object__reviving__mutex);
 		i = f_engine()->v_module__instances.emplace(a_name, nullptr).first;
 	}
 	auto n = type->f_as<t_type>().v_instance_fields;
@@ -71,18 +71,15 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 {
 	t_lock_with_safe_region lock(f_engine()->v_module__instantiate__mutex);
 	f_engine()->v_object__reviving__mutex.lock();
-	f_engine()->v_module__mutex.lock();
 	{
 		auto& instances = f_engine()->v_module__instances;
 		auto i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
 			i->second->v_reviving = true;
-			f_engine()->v_module__mutex.unlock();
 			f_engine()->v_object__reviving__mutex.unlock();
 			return i->second;
 		}
 	}
-	f_engine()->v_module__mutex.unlock();
 	f_engine()->v_object__reviving__mutex.unlock();
 	auto& paths = f_engine()->f_module_system()->f_fields()[/*path*/0];
 	static size_t index;
@@ -109,7 +106,6 @@ void t_module::f_main()
 
 t_module::~t_module()
 {
-	std::lock_guard lock(f_engine()->v_module__mutex);
 	f_engine()->v_module__instances.erase(v_entry);
 }
 
