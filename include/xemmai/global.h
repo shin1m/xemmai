@@ -15,12 +15,14 @@ namespace xemmai
 
 class t_global : public t_library
 {
+	template<typename> friend class t_value;
 	friend struct t_type_of<t_map>;
 	friend class t_engine;
 	friend XEMMAI__PUBLIC t_global* f_global();
 
 	static inline XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
+	t_type* v_tag_types[c_tag__OBJECT];
 	t_slot_of<t_type> v_type_object;
 	t_slot_of<t_type> v_type_sharable;
 	t_slot_of<t_type> v_type_type;
@@ -242,19 +244,8 @@ template<typename T_tag>
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 {
 	auto p = static_cast<t_object*>(*this);
-	if (reinterpret_cast<uintptr_t>(p) >= c_tag__OBJECT) [[likely]] return p->f_type();
-	auto global = f_global();
-	switch (reinterpret_cast<uintptr_t>(p)) {
-	case c_tag__NULL:
-		return global->f_type<std::nullptr_t>();
-	case c_tag__FALSE:
-	case c_tag__TRUE:
-		return global->f_type<bool>();
-	case c_tag__INTEGER:
-		return global->f_type<intptr_t>();
-	default:
-		return global->f_type<double>();
-	}
+	if (auto t = reinterpret_cast<uintptr_t>(p); t < c_tag__OBJECT) return f_global()->v_tag_types[t];
+	[[likely]] return p->f_type();
 }
 
 template<typename T_tag>

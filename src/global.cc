@@ -154,6 +154,10 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_type_lexer__error->v_builtin = true;
 	t_define(this).f_derive<t_parser::t_error, t_throwable>();
 	v_type_parser__error->v_builtin = true;
+	v_tag_types[c_tag__NULL] = v_type_null;
+	v_tag_types[c_tag__FALSE] = v_tag_types[c_tag__TRUE] = v_type_boolean;
+	v_tag_types[c_tag__INTEGER] = v_type_integer;
+	v_tag_types[c_tag__FLOAT] = v_type_float;
 	return t_define(this)
 		(L"Object"sv, static_cast<t_object*>(v_type_object))
 		(L"Class"sv, static_cast<t_object*>(v_type_type))
