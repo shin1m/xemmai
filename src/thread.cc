@@ -7,11 +7,7 @@ void t_thread::t_internal::f_initialize(size_t a_stack, void* a_bottom)
 {
 	v_current = this;
 	t_slot::t_increments::v_instance = &v_increments;
-	v_increments.v_head = v_increments.v_objects;
-	t_slot::t_increments::v_next = v_increments.v_objects + t_slot::t_increments::c_SIZE / 8;
 	t_slot::t_decrements::v_instance = &v_decrements;
-	v_decrements.v_head = v_decrements.v_objects;
-	t_slot::t_decrements::v_next = v_decrements.v_objects + t_slot::t_decrements::c_SIZE / 8;
 	v_active = new t_fiber::t_internal(a_stack, a_bottom);
 #ifdef __unix__
 	f_stack__(v_active->v_estack_used);
@@ -49,10 +45,11 @@ void t_thread::t_internal::f_epoch()
 #ifdef _WIN32
 	auto decrements = reinterpret_cast<t_object**>(&v_context);
 	{
-		std::lock_guard lock(f_engine()->v_object__heap.f_mutex());
+		auto engine = f_engine();
+		std::lock_guard lock(engine->v_object__heap.f_mutex());
 		auto p0 = decrements;
 		auto p1 = reinterpret_cast<t_object**>(&v_context_last);
-		f_engine()->f_epoch_increment(p0, p1, reinterpret_cast<t_object**>(&v_context_last + 1), decrements);
+		engine->f_epoch_increment(p0, p1, reinterpret_cast<t_object**>(&v_context_last + 1), decrements);
 	}
 #endif
 	v_increments.f_flush();
@@ -80,10 +77,11 @@ t_object* t_thread::f_instantiate(const t_pvalue& a_callable, size_t a_stack)
 void t_thread::f_join()
 {
 	if (v_internal == v_current) f_throw(L"current thread can not be joined."sv);
-	if (this == &f_engine()->v_thread->f_as<t_thread>()) f_throw(L"engine thread can not be joined."sv);
+	auto engine = f_engine();
+	if (this == &engine->v_thread->f_as<t_thread>()) f_throw(L"engine thread can not be joined."sv);
 	t_safe_region region;
-	std::unique_lock lock(f_engine()->v_thread__mutex);
-	while (v_internal) f_engine()->v_thread__condition.wait(lock);
+	std::unique_lock lock(engine->v_thread__mutex);
+	while (v_internal) engine->v_thread__condition.wait(lock);
 }
 
 void t_type_of<t_thread>::f_define()

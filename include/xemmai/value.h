@@ -13,8 +13,6 @@ using namespace std::literals;
 
 template<typename> struct t_type_of;
 class t_object;
-class t_engine;
-XEMMAI__PUBLIC t_engine* f_engine();
 
 using t_type = t_type_of<t_object>;
 
@@ -40,38 +38,33 @@ protected:
 	template<size_t A_SIZE>
 	struct t_queue
 	{
-		static constexpr size_t c_SIZE = A_SIZE;
-
 		static inline XEMMAI__PORTABLE__THREAD t_queue* v_instance;
-#ifdef _WIN32
-		t_object* volatile* v_head;
-#else
-		static inline XEMMAI__PORTABLE__THREAD t_object* volatile* v_head;
-#endif
-		static inline XEMMAI__PORTABLE__THREAD t_object* volatile* v_next;
 
-#ifdef _WIN32
-		void f__push(t_object* a_object)
-#else
+#ifndef _WIN32
 		XEMMAI__PORTABLE__ALWAYS_INLINE static void f_push(t_object* a_object)
-#endif
 		{
-			auto p = v_head;
-			*p = a_object;
-			if (p == v_next)
-				v_instance->f_next();
-			else
-				[[likely]] v_head = p + 1;
+			v_instance->f__push(a_object);
 		}
+#endif
 
-		t_object* volatile v_objects[c_SIZE];
+		t_object* volatile* v_head = v_objects;
+		t_object* volatile* v_next = v_objects + A_SIZE / 8;
+		t_object* volatile v_objects[A_SIZE];
 		std::atomic<t_object* volatile*> v_epoch;
-		t_object* volatile* v_tail{v_objects + c_SIZE - 1};
+		t_object* volatile* v_tail = v_objects + A_SIZE - 1;
 
 		void f_next() noexcept;
+		XEMMAI__PORTABLE__ALWAYS_INLINE void f__push(t_object* a_object)
+		{
+			*v_head = a_object;
+			if (v_head == v_next)
+				f_next();
+			else
+				[[likely]] ++v_head;
+		}
 		void f__flush(t_object* volatile* a_epoch, auto a_do)
 		{
-			auto end = v_objects + c_SIZE - 1;
+			auto end = v_objects + A_SIZE - 1;
 			if (a_epoch > v_objects)
 				--a_epoch;
 			else

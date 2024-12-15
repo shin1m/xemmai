@@ -10,12 +10,12 @@ t_object* t_module::f_load_script(std::wstring_view a_path)
 	if (!stream) return nullptr;
 	std::unique_ptr<std::FILE, int(*)(std::FILE*)> close(stream, std::fclose);
 	ast::t_scope scope(nullptr);
-	if (f_engine()->v_debugger) {
+	if (auto engine = f_engine(); engine->v_debugger) {
 		auto body = f_global()->f_type<t_module::t_body>()->f_new<t_debug_script>(a_path);
 		auto& script = body->f_as<t_debug_script>();
 		t_parser(script, stream)(scope);
 		script.v_code = t_emit(body, &script.v_safe_points)(scope);
-		f_engine()->f_debug_script_loaded(script);
+		engine->f_debug_script_loaded(script);
 		return script.v_code;
 	} else {
 		auto body = f_global()->f_type<t_module::t_body>()->f_new<t_script>(a_path);
@@ -52,14 +52,16 @@ t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std:
 {
 	t_fields fields;
 	for (auto& x : a_fields) fields.v_instance.push_back(x.first);
-	auto type = f_global()->f_type<t_module>()->f_derive<t_type_of<t_module>>(t_object::f_of(f_global()), fields);
-	decltype(f_engine()->v_module__instances)::iterator i;
+	auto global = f_global();
+	auto type = global->f_type<t_module>()->f_derive<t_type_of<t_module>>(t_object::f_of(global), fields);
+	auto engine = f_engine();
+	decltype(engine->v_module__instances)::iterator i;
 	{
-		std::lock_guard lock(f_engine()->v_object__reviving__mutex);
-		i = f_engine()->v_module__instances.emplace(a_name, nullptr).first;
+		std::lock_guard lock(engine->v_object__reviving__mutex);
+		i = engine->v_module__instances.emplace(a_name, nullptr).first;
 	}
 	auto n = type->f_as<t_type>().v_instance_fields;
-	auto p = f_engine()->f_allocate(t_object::f_align_for_fields(sizeof(t_module)) + sizeof(t_svalue) * n);
+	auto p = engine->f_allocate(t_object::f_align_for_fields(sizeof(t_module)) + sizeof(t_svalue) * n);
 	auto q = p->f_fields(sizeof(t_module));
 	for (size_t i = 0; i < n; ++i) new(q + i) t_svalue(a_fields[i].second);
 	new(p->f_data()) t_module(i, a_body);
@@ -69,19 +71,20 @@ t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std:
 
 t_object* t_module::f_instantiate(std::wstring_view a_name)
 {
-	t_lock_with_safe_region lock(f_engine()->v_module__instantiate__mutex);
-	f_engine()->v_object__reviving__mutex.lock();
+	auto engine = f_engine();
+	t_lock_with_safe_region lock(engine->v_module__instantiate__mutex);
+	engine->v_object__reviving__mutex.lock();
 	{
-		auto& instances = f_engine()->v_module__instances;
+		auto& instances = engine->v_module__instances;
 		auto i = instances.lower_bound(a_name);
 		if (i != instances.end() && i->first == a_name) {
 			i->second->v_reviving = true;
-			f_engine()->v_object__reviving__mutex.unlock();
+			engine->v_object__reviving__mutex.unlock();
 			return i->second;
 		}
 	}
-	f_engine()->v_object__reviving__mutex.unlock();
-	auto& paths = f_engine()->f_module_system()->f_fields()[/*path*/0];
+	engine->v_object__reviving__mutex.unlock();
+	auto& paths = engine->f_module_system()->f_fields()[/*path*/0];
 	static size_t index;
 	auto n = paths.f_invoke(f_global()->f_symbol_size(), index);
 	f_check<size_t>(n, L"size");
@@ -140,8 +143,9 @@ std::pair<size_t, size_t> t_debug_script::f_replace_break_point(size_t a_line, s
 t_library::~t_library()
 {
 	if (!v_handle) return;
-	v_handle->v_next = f_engine()->v_library__handle__finalizing;
-	f_engine()->v_library__handle__finalizing = v_handle;
+	auto engine = f_engine();
+	v_handle->v_next = engine->v_library__handle__finalizing;
+	engine->v_library__handle__finalizing = v_handle;
 }
 
 void t_type_of<t_module>::f_do_scan(t_object* a_this, t_scan a_scan)

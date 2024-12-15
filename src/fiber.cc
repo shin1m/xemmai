@@ -108,14 +108,15 @@ void t_fiber::t_internal::f_epoch_scan()
 	auto top1 = v_stack_last_bottom - n;
 	auto top2 = v_stack_last_top;
 	v_stack_last_top = top1;
-	std::lock_guard lock(f_engine()->v_object__heap.f_mutex());
+	auto engine = f_engine();
+	std::lock_guard lock(engine->v_object__heap.f_mutex());
 	auto p0 = v_estack_decrements = v_estack_buffer.get();
 	auto p1 = v_estack_last_head;
-	f_engine()->f_epoch_increment(p0, p1, std::min(used1, used2), v_estack_decrements);
+	engine->f_epoch_increment(p0, p1, std::min(used1, used2), v_estack_decrements);
 	auto increment = [&](auto& p0, auto& p1, auto p2)
 	{
 		do {
-			auto p = f_engine()->f_object__find(*p0++);
+			auto p = engine->f_object__find(*p0++);
 			if (p) p->f_increment();
 			*p1++ = p;
 		} while (p1 < p2);
@@ -129,7 +130,7 @@ void t_fiber::t_internal::f_epoch_scan()
 		increment(top0, top1, top2);
 	else
 		for (; top2 < top1; ++top2) if (*top2) *v_stack_decrements++ = *top2;
-	f_engine()->f_epoch_increment(top0, top1, v_stack_last_bottom, v_stack_decrements);
+	engine->f_epoch_increment(top0, top1, v_stack_last_bottom, v_stack_decrements);
 }
 
 void t_fiber::t_internal::f_epoch_decrement()

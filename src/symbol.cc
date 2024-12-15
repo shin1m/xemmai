@@ -10,17 +10,18 @@ t_symbol::~t_symbol()
 
 t_object* t_symbol::f_instantiate(std::wstring_view a_value)
 {
-	std::lock_guard lock(f_engine()->v_symbol__instantiate__mutex);
-	f_engine()->v_object__reviving__mutex.lock();
-	auto& instances = f_engine()->v_symbol__instances;
+	auto engine = f_engine();
+	std::lock_guard lock(engine->v_symbol__instantiate__mutex);
+	engine->v_object__reviving__mutex.lock();
+	auto& instances = engine->v_symbol__instances;
 	auto i = instances.lower_bound(a_value);
 	if (i == instances.end() || i->first != a_value) {
 		i = instances.emplace_hint(i, a_value, nullptr);
-		f_engine()->v_object__reviving__mutex.unlock();
+		engine->v_object__reviving__mutex.unlock();
 		return f_new<t_symbol>(f_global(), i);
 	} else {
 		i->second->v_reviving = true;
-		f_engine()->v_object__reviving__mutex.unlock();
+		engine->v_object__reviving__mutex.unlock();
 		return i->second;
 	}
 }
@@ -28,8 +29,9 @@ t_object* t_symbol::f_instantiate(std::wstring_view a_value)
 void t_type_of<t_symbol>::f_define()
 {
 	v_builtin = v_revive = true;
-	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
+	auto global = f_global();
+	t_define{global}
+		(global->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
 	.f_derive<t_object>(t_object::f_of(this));
 }
 

@@ -56,7 +56,8 @@ void t_map::f_rehash(const t_table::t_rank& a_rank)
 
 t_object* t_map::f_instantiate()
 {
-	return f_new<t_map>(f_global(), f_global()->f_type<t_map::t_table>());
+	auto global = f_global();
+	return f_new<t_map>(global, global->f_type<t_map::t_table>());
 }
 
 t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
@@ -209,13 +210,14 @@ void t_type_of<t_map>::f_each(t_map& a_self, const t_pvalue& a_callable)
 
 void t_type_of<t_map>::f_define()
 {
-	t_define{f_global()}.f_derive<t_map::t_table, t_object>();
-	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_map&), f__string>())
+	auto global = f_global();
+	t_define{global}.f_derive<t_map::t_table, t_object>();
+	t_define{global}
+		(global->f_symbol_string(), t_member<t_object*(*)(t_map&), f__string>())
 		(L"clear"sv, t_member<void(*)(t_map&), f_clear>())
-		(f_global()->f_symbol_size(), t_member<size_t(*)(t_map&), f_size>())
-		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), f__get_at>())
-		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), f__set_at>())
+		(global->f_symbol_size(), t_member<size_t(*)(t_map&), f_size>())
+		(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), f__get_at>())
+		(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), f__set_at>())
 		(L"has"sv, t_member<bool(*)(t_map&, const t_pvalue&), f_has>())
 		(L"remove"sv, t_member<t_pvalue(*)(t_map&, const t_pvalue&), f_remove>())
 		(L"each"sv, t_member<void(*)(t_map&, const t_pvalue&), f_each>())

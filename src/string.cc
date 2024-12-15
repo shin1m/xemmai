@@ -10,10 +10,11 @@ t_object* t_string::f_instantiate(const wchar_t* a_p, size_t a_n)
 
 void t_type_of<t_string>::f_define()
 {
-	t_define{f_global()}
+	auto global = f_global();
+	t_define{global}
 		(L"from_code"sv, t_static<t_object*(*)(t_global*, intptr_t), f_from_code>())
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
-		(f_global()->f_symbol_size(), t_member<size_t(t_string::*)() const, &t_string::f_size>())
+		(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
+		(global->f_symbol_size(), t_member<size_t(t_string::*)() const, &t_string::f_size>())
 		(L"substring"sv,
 			t_member<t_object*(*)(t_global*, const t_string&, size_t), f_substring>(),
 			t_member<t_object*(*)(t_global*, const t_string&, size_t, size_t), f_substring>()

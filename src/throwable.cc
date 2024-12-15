@@ -47,8 +47,9 @@ void t_throwable::f_dump() const
 
 void t_type_of<t_throwable>::f_define()
 {
-	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<const std::wstring&(t_throwable::*)() const, &t_throwable::f_string>())
+	auto global = f_global();
+	t_define{global}
+		(global->f_symbol_string(), t_member<const std::wstring&(t_throwable::*)() const, &t_throwable::f_string>())
 		(L"dump"sv, t_member<void(t_throwable::*)() const, &t_throwable::f_dump>())
 	.f_derive<t_throwable, t_object>();
 }

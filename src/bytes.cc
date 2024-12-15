@@ -25,8 +25,9 @@ t_object* t_bytes::f_string() const
 
 void t_type_of<t_bytes>::f_define()
 {
-	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(t_bytes::*)() const, &t_bytes::f_string>())
+	auto global = f_global();
+	t_define{global}
+		(global->f_symbol_string(), t_member<t_object*(t_bytes::*)() const, &t_bytes::f_string>())
 		(L"size"sv, t_member<size_t(t_bytes::*)() const, &t_bytes::f_size>())
 		(L"copy"sv, t_member<void(t_bytes::*)(intptr_t, size_t, t_bytes&, intptr_t) const, &t_bytes::f_copy>())
 	.f_derive<t_bytes, t_object>();

@@ -280,12 +280,13 @@ void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
 
 void t_type_of<t_list>::f_define()
 {
-	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(t_list&), f__string>())
+	auto global = f_global();
+	t_define{global}
+		(global->f_symbol_string(), t_member<t_object*(*)(t_list&), f__string>())
 		(L"clear"sv, t_member<void(*)(t_list&), f_clear>())
-		(f_global()->f_symbol_size(), t_member<size_t(*)(t_list&), f_size>())
-		(f_global()->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), f__get_at>())
-		(f_global()->f_symbol_set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), f__set_at>())
+		(global->f_symbol_size(), t_member<size_t(*)(t_list&), f_size>())
+		(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), f__get_at>())
+		(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), f__set_at>())
 		(L"push"sv, t_member<void(*)(t_list&, const t_pvalue&), f_push>())
 		(L"pop"sv, t_member<t_pvalue(*)(t_list&), f_pop>())
 		(L"unshift"sv, t_member<void(*)(t_list&, const t_pvalue&), f_unshift>())

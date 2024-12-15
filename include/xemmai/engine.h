@@ -242,7 +242,9 @@ void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, auto a_
 	f_debug_wait_and_leave(a_lock);
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+XEMMAI__PUBLIC t_engine* f_engine();
+#else
 inline t_engine* f_engine()
 {
 	return t_engine::v_instance;
@@ -253,11 +255,11 @@ struct t_safe_region
 {
 	t_safe_region()
 	{
-		if (f_engine()->v_debugger) f_engine()->f_debug_safe_region_enter();
+		if (auto p = f_engine(); p->v_debugger) p->f_debug_safe_region_enter();
 	}
 	~t_safe_region()
 	{
-		if (f_engine()->v_debugger) f_engine()->f_debug_safe_region_leave();
+		if (auto p = f_engine(); p->v_debugger) p->f_debug_safe_region_leave();
 	}
 };
 
@@ -289,16 +291,17 @@ struct t_shared_lock_with_safe_region : std::shared_lock<T>
 template<size_t A_SIZE>
 void t_slot::t_queue<A_SIZE>::f_next() noexcept
 {
-	f_engine()->f_tick();
-	if (v_head < v_objects + c_SIZE - 1) {
+	auto engine = f_engine();
+	engine->f_tick();
+	if (v_head < v_objects + A_SIZE - 1) {
 		++v_head;
-		while (v_tail == v_head) f_engine()->f_wait();
+		while (v_tail == v_head) engine->f_wait();
 		auto tail = v_tail;
-		v_next = std::min(tail < v_head ? v_objects + c_SIZE - 1 : tail - 1, v_head + c_SIZE / 8);
+		v_next = std::min(tail < v_head ? v_objects + A_SIZE - 1 : tail - 1, v_head + A_SIZE / 8);
 	} else {
 		v_head = v_objects;
-		while (v_tail == v_head) f_engine()->f_wait();
-		v_next = std::min(v_tail - 1, v_head + c_SIZE / 8);
+		while (v_tail == v_head) engine->f_wait();
+		v_next = std::min(v_tail - 1, v_head + A_SIZE / 8);
 	}
 }
 

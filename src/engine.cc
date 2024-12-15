@@ -235,7 +235,8 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	}
 	v_fiber_exit = f_allocate(0);
 	v_fiber_exit->f_be(type);
-	v_thread = f_new<t_thread>(f_global(), v_thread__internals, f_new<t_fiber>(f_global(), nullptr, v_options.v_stack_size));
+	auto global = f_global();
+	v_thread = f_new<t_thread>(global, v_thread__internals, f_new<t_fiber>(global, nullptr, v_options.v_stack_size));
 	v_thread__internals->f_initialize(&v_thread->f_as<t_thread>());
 	auto path = t_list::f_instantiate();
 	path->f_as<t_list>().v_owner = nullptr;
@@ -254,10 +255,10 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 			size_t j = sv.find(L';', i);
 #endif
 			if (j == std::wstring_view::npos) break;
-			if (i < j) path->f_as<t_list>().f_push(f_global()->f_as(sv.substr(i, j - i)));
+			if (i < j) path->f_as<t_list>().f_push(global->f_as(sv.substr(i, j - i)));
 			i = j + 1;
 		}
-		if (i < sv.size()) path->f_as<t_list>().f_push(f_global()->f_as(sv.substr(i)));
+		if (i < sv.size()) path->f_as<t_list>().f_push(global->f_as(sv.substr(i)));
 	}
 	std::wstring executable;
 	portable::t_path script({});
@@ -265,22 +266,22 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	if (a_count > 0) {
 		executable = portable::f_convert(a_arguments[0]);
 #ifdef XEMMAI_MODULE_PATH
-		path->f_as<t_list>().f_push(f_global()->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
+		path->f_as<t_list>().f_push(global->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
 #endif
 		if (a_count > 1) {
 			script = {portable::f_convert(a_arguments[1])};
-			path->f_as<t_list>().f_push(f_global()->f_as(static_cast<const std::wstring&>(script / L".."sv)));
+			path->f_as<t_list>().f_push(global->f_as(static_cast<const std::wstring&>(script / L".."sv)));
 			auto& as = arguments->f_as<t_list>();
-			for (size_t i = 2; i < a_count; ++i) as.f_push(f_global()->f_as(portable::f_convert(a_arguments[i])));
+			for (size_t i = 2; i < a_count; ++i) as.f_push(global->f_as(portable::f_convert(a_arguments[i])));
 		}
 	}
-	t_define system(f_global());
+	t_define system(global);
 	system(L"path"sv, path);
 	system(L"executable"sv, executable);
 	system(L"script"sv, static_cast<const std::wstring&>(script));
 	system(L"arguments"sv, arguments);
 	{
-		auto io = f_global()->f_type<t_module::t_body>()->f_new<t_io>();
+		auto io = global->f_type<t_module::t_body>()->f_new<t_io>();
 		v_module_io = t_module::f_new(L"io"sv, io, io->f_as<t_io>().f_define());
 	}
 	{
@@ -403,10 +404,11 @@ namespace
 template<typename T_context>
 void f_initialize_calls()
 {
-	f_global()->f_type<t_lambda>()->f_call = t_type_of<t_lambda>::f__do_call<t_lambda, T_context>;
-	f_global()->f_type<t_lambda_shared>()->f_call = t_type_of<t_lambda>::f__do_call<t_lambda_shared, T_context>;
-	f_global()->f_type<t_advanced_lambda<t_lambda>>()->f_call = t_type_of<t_advanced_lambda<t_lambda>>::f__do_call<T_context>;
-	f_global()->f_type<t_advanced_lambda<t_lambda_shared>>()->f_call = t_type_of<t_advanced_lambda<t_lambda_shared>>::f__do_call<T_context>;
+	auto global = f_global();
+	global->f_type<t_lambda>()->f_call = t_type_of<t_lambda>::f__do_call<t_lambda, T_context>;
+	global->f_type<t_lambda_shared>()->f_call = t_type_of<t_lambda>::f__do_call<t_lambda_shared, T_context>;
+	global->f_type<t_advanced_lambda<t_lambda>>()->f_call = t_type_of<t_advanced_lambda<t_lambda>>::f__do_call<T_context>;
+	global->f_type<t_advanced_lambda<t_lambda_shared>>()->f_call = t_type_of<t_advanced_lambda<t_lambda_shared>>::f__do_call<T_context>;
 }
 
 }

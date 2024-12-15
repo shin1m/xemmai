@@ -242,18 +242,18 @@ template<typename T_tag>
 XEMMAI__PORTABLE__ALWAYS_INLINE inline t_type* t_value<T_tag>::f_type() const
 {
 	auto p = static_cast<t_object*>(*this);
+	if (reinterpret_cast<uintptr_t>(p) >= c_tag__OBJECT) [[likely]] return p->f_type();
+	auto global = f_global();
 	switch (reinterpret_cast<uintptr_t>(p)) {
 	case c_tag__NULL:
-		return f_global()->f_type<std::nullptr_t>();
+		return global->f_type<std::nullptr_t>();
 	case c_tag__FALSE:
 	case c_tag__TRUE:
-		return f_global()->f_type<bool>();
+		return global->f_type<bool>();
 	case c_tag__INTEGER:
-		return f_global()->f_type<intptr_t>();
-	case c_tag__FLOAT:
-		return f_global()->f_type<double>();
+		return global->f_type<intptr_t>();
 	default:
-		[[likely]] return p->f_type();
+		return global->f_type<double>();
 	}
 }
 

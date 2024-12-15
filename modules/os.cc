@@ -314,9 +314,10 @@ XEMMAI__LIBRARY__TYPE(t_os, child)
 
 void t_type_of<portable::t_path>::f_define(t_os* a_library)
 {
+	auto global = f_global();
 	t_define{a_library}
-		(f_global()->f_symbol_string(), t_member<const std::wstring&(portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
-		(f_global()->f_symbol_divide(), t_member<portable::t_path(*)(const portable::t_path&, std::wstring_view), f__divide>())
+		(global->f_symbol_string(), t_member<const std::wstring&(portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
+		(global->f_symbol_divide(), t_member<portable::t_path(*)(const portable::t_path&, std::wstring_view), f__divide>())
 	.f_derive<portable::t_path, t_object>();
 }
 

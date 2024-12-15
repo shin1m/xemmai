@@ -22,21 +22,22 @@ bool t_type_of<double>::f__not_equals(double a_self, const t_pvalue& a_value)
 
 void t_type_of<double>::f_define()
 {
-	t_define{f_global()}
-		(f_global()->f_symbol_string(), t_member<t_object*(*)(double), f__string>())
-		(f_global()->f_symbol_hash(), t_member<intptr_t(*)(double), f__hash>())
-		(f_global()->f_symbol_plus(), t_member<double(*)(double), f__plus>())
-		(f_global()->f_symbol_minus(), t_member<double(*)(double), f__minus>())
-		(f_global()->f_symbol_multiply(), t_member<double(*)(double, double), f__multiply>())
-		(f_global()->f_symbol_divide(), t_member<double(*)(double, double), f__divide>())
-		(f_global()->f_symbol_add(), t_member<double(*)(double, double), f__add>())
-		(f_global()->f_symbol_subtract(), t_member<double(*)(double, double), f__subtract>())
-		(f_global()->f_symbol_less(), t_member<bool(*)(double, double), f__less>())
-		(f_global()->f_symbol_less_equal(), t_member<bool(*)(double, double), f__less_equal>())
-		(f_global()->f_symbol_greater(), t_member<bool(*)(double, double), f__greater>())
-		(f_global()->f_symbol_greater_equal(), t_member<bool(*)(double, double), f__greater_equal>())
-		(f_global()->f_symbol_equals(), t_member<bool(*)(double, const t_pvalue&), f__equals>())
-		(f_global()->f_symbol_not_equals(), t_member<bool(*)(double, const t_pvalue&), f__not_equals>())
+	auto global = f_global();
+	t_define{global}
+		(global->f_symbol_string(), t_member<t_object*(*)(double), f__string>())
+		(global->f_symbol_hash(), t_member<intptr_t(*)(double), f__hash>())
+		(global->f_symbol_plus(), t_member<double(*)(double), f__plus>())
+		(global->f_symbol_minus(), t_member<double(*)(double), f__minus>())
+		(global->f_symbol_multiply(), t_member<double(*)(double, double), f__multiply>())
+		(global->f_symbol_divide(), t_member<double(*)(double, double), f__divide>())
+		(global->f_symbol_add(), t_member<double(*)(double, double), f__add>())
+		(global->f_symbol_subtract(), t_member<double(*)(double, double), f__subtract>())
+		(global->f_symbol_less(), t_member<bool(*)(double, double), f__less>())
+		(global->f_symbol_less_equal(), t_member<bool(*)(double, double), f__less_equal>())
+		(global->f_symbol_greater(), t_member<bool(*)(double, double), f__greater>())
+		(global->f_symbol_greater_equal(), t_member<bool(*)(double, double), f__greater_equal>())
+		(global->f_symbol_equals(), t_member<bool(*)(double, const t_pvalue&), f__equals>())
+		(global->f_symbol_not_equals(), t_member<bool(*)(double, const t_pvalue&), f__not_equals>())
 	.f_derive<double, t_object>();
 }
 
