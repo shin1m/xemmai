@@ -3,7 +3,7 @@
 
 #ifdef __GNUC__
 #define XEMMAI__PORTABLE__THREAD __thread
-#define XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
+#define XEMMAI__PORTABLE__MUSTTAIL [[clang::musttail]]
 #define XEMMAI__PORTABLE__ALWAYS_INLINE __attribute__((always_inline))
 #define XEMMAI__PORTABLE__FORCE_INLINE
 #endif
