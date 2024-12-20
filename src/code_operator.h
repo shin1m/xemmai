@@ -1,12 +1,12 @@
 #define XEMMAI__CODE__CASE_NA(a_name)\
 		XEMMAI__CODE__CASE_NAME(a_name)\
-			goto label__THROW_NOT_SUPPORTED;\
+			f_throw_not_supported(pc);\
 			XEMMAI__CODE__CLOSE
 #define XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
 			if (a0.f_tag() >= c_tag__OBJECT) {\
 				XEMMAI__CODE__OBJECT_CALL(a_method)\
 			} else {\
-				goto label__THROW_NOT_SUPPORTED;\
+				f_throw_not_supported(pc);\
 			}
 #define XEMMAI__CODE__OBJECT_OR_FALSE(a_operator, a_method)\
 			if (a0.f_tag() >= c_tag__OBJECT) {\
@@ -76,7 +76,7 @@
 				if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<t_fundamental<a_type>::t_type>()) {\
 					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0 a_field, a1->f_as<a_type>()))\
 				} else {\
-					goto label__THROW_NOT_SUPPORTED;\
+					f_throw_not_supported(pc);\
 				}
 #define XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, a_type, a_field)\
 				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<a_type>() && a0 a_field == a1->f_as<a_type>()))
@@ -116,9 +116,9 @@
 				XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, double, .v_float)
 #else
 #define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
-				XEMMAI__CODE__PRIMITIVE_CALL(f_binary_arithmetic<a_operator>(a0.v_float, a1))
+				XEMMAI__CODE__TRY(XEMMAI__CODE__PRIMITIVE_CALL(f_binary_arithmetic<a_operator>(a0.v_float, a1)))
 #define XEMMAI__CODE__BINARY_INTEGRAL_INTEGER(a_operator)\
-				XEMMAI__CODE__PRIMITIVE_CALL(f_binary_integral<a_operator>(a0.v_integer, a1))
+				XEMMAI__CODE__TRY(XEMMAI__CODE__PRIMITIVE_CALL(f_binary_integral<a_operator>(a0.v_integer, a1)))
 #define XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)\
 				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(f_binary_equality(a0.v_integer, a1)))
 #define XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)\
@@ -241,10 +241,10 @@
 #define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
 			XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator, )
 #define XEMMAI__CODE__BINARY_INTEGRAL_INTEGER(a_operator)\
-			XEMMAI__CODE__PRIMITIVE_CALL(f_binary_integral<a_operator>(a0, a1))
+			XEMMAI__CODE__TRY(XEMMAI__CODE__PRIMITIVE_CALL(f_binary_integral<a_operator>(a0, a1)))
 #elif defined(XEMMAI__CODE__BINARY_FX)
 #define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
-			XEMMAI__CODE__PRIMITIVE_CALL(f_binary_arithmetic<a_operator>(a0, a1))
+			XEMMAI__CODE__TRY(XEMMAI__CODE__PRIMITIVE_CALL(f_binary_arithmetic<a_operator>(a0, a1)))
 #else
 #define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
 			XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, XEMMAI__CODE__BINARY_TYPE, )

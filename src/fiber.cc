@@ -295,6 +295,13 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 	throw t_rvalue(*q->v_return);
 }
 
+size_t t_context::f_tail(t_pvalue* a_stack, size_t a_n)
+{
+	std::copy(a_stack, a_stack + a_n + 2, v_base - 2);
+	f_stack__(std::max(v_previous, v_base + a_n));
+	return a_n;
+}
+
 void t_context::f_backtrace(t_object* a_value, void** a_pc)
 {
 	if (!f_is<t_throwable>(a_value)) return;
