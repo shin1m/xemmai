@@ -143,21 +143,25 @@ struct XEMMAI__LOCAL t_context
 		f_stack__(std::max(v_previous, v_base + a_n));
 	}
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-	size_t f_tail(t_object* a_this)
+	void f_call(t_object* a_this, t_pvalue* a_stack, void** a_pc);
+	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
+	size_t f_tail(t_object* a_this, void** a_pc);
+	size_t f__loop()
 	{
-		auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
-		auto n = (a_this->f_type()->*A_function)(a_this, stack);
-		if (n == size_t(-1))
-			f_return(stack[0]);
-		else
-			f_tail(stack, n);
-		return n;
+#if defined(XEMMAI__PORTABLE__MUSTTAIL) && defined(NDEBUG)
+		return reinterpret_cast<size_t(*)(t_context*, void**, t_pvalue*)>(*v_pc)(this, v_pc, v_base);
+#else
+		while (true) {
+			auto n = reinterpret_cast<size_t(*)(t_context*, void**, t_pvalue*)>(*v_pc)(this, v_pc, v_base);
+			if (n != size_t(-2)) return n;
+		}
+#endif
 	}
 	void f_backtrace(t_object* a_value, void** a_pc);
 	size_t f_loop()
 	{
 		try {
-			return t_code::f_loop(this);
+			return f__loop();
 		} catch (const std::pair<t_rvalue, void**>& pair) {
 			f_backtrace(pair.first, pair.second);
 			f_stack__(v_previous);
@@ -166,6 +170,35 @@ struct XEMMAI__LOCAL t_context
 	}
 	const t_pvalue* f_variable(std::wstring_view a_name) const;
 };
+
+template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
+void t_context::f_call(t_object* a_this, t_pvalue* a_stack, void** a_pc)
+{
+	try {
+		v_pc = a_pc;
+		auto n = (a_this->f_type()->*A_function)(a_this, a_stack);
+		if (n != size_t(-1)) xemmai::f_loop(a_stack, n);
+	} catch (...) {
+		t_code::f_rethrow(a_pc);
+	}
+}
+
+template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
+size_t t_context::f_tail(t_object* a_this, void** a_pc)
+{
+	try {
+		v_pc = a_pc;
+		auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
+		size_t n = (a_this->f_type()->*A_function)(a_this, stack);
+		if (n == size_t(-1))
+			f_return(stack[0]);
+		else
+			f_tail(stack, n);
+		return n;
+	} catch (...) {
+		t_code::f_rethrow(a_pc);
+	}
+}
 
 struct XEMMAI__LOCAL t_debug_context : t_context
 {
