@@ -1,12 +1,12 @@
 #define XEMMAI__CODE__CASE_NA(a_name)\
 		XEMMAI__CODE__CASE_NAME(a_name)\
-			goto label__THROW_NOT_SUPPORTED;\
+			f_throw_not_supported(pc);\
 			XEMMAI__CODE__CLOSE
 #define XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
 			if (a0.f_tag() >= c_tag__OBJECT) {\
 				XEMMAI__CODE__OBJECT_CALL(a_method)\
 			} else {\
-				goto label__THROW_NOT_SUPPORTED;\
+				f_throw_not_supported(pc);\
 			}
 #define XEMMAI__CODE__OBJECT_OR_FALSE(a_operator, a_method)\
 			if (a0.f_tag() >= c_tag__OBJECT) {\
@@ -29,7 +29,7 @@
 			case c_tag__NULL:\
 			case c_tag__FALSE:\
 			case c_tag__TRUE:\
-				goto label__THROW_NOT_SUPPORTED;\
+				f_throw_not_supported(pc);\
 			case c_tag__INTEGER:\
 				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_integer))\
 				break;\
@@ -81,10 +81,10 @@
 					if (a1->f_type()->f_derives<a_type>()) {\
 						XEMMAI__CODE__PRIMITIVE_CALL(a_cast(a0 a_field) a_operator a1->f_as<a_type>())\
 					} else {\
-						goto label__THROW_NOT_SUPPORTED;\
+						f_throw_not_supported(pc);\
 					}\
 				} else {\
-					goto label__THROW_NOT_SUPPORTED;\
+					f_throw_not_supported(pc);\
 				}
 #define XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, a_type, a_field)\
 				if (a1.f_tag() >= c_tag__OBJECT) {\
@@ -148,7 +148,7 @@
 			case c_tag__NULL:\
 			case c_tag__FALSE:\
 			case c_tag__TRUE:\
-				goto label__THROW_NOT_SUPPORTED;\
+				f_throw_not_supported(pc);\
 			case c_tag__INTEGER:\
 				XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)\
 				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, , .v_integer)\
