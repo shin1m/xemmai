@@ -42,8 +42,4 @@ target_compile_definitions(xemmai PRIVATE
 	PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:_ITERATOR_DEBUG_LEVEL=0>"
 	)
 target_link_libraries(xemmai PUBLIC $<$<NOT:$<PLATFORM_ID:Windows>>:dl> Iconv::Iconv Threads::Threads)
-target_link_options(xemmai PRIVATE
-	$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Debug>>:/STACK:0x01000000>
-	$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/STACK:0x1000000>
-	)
 set_property(TARGET xemmai PROPERTY ENABLE_EXPORTS 1)

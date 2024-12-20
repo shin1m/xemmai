@@ -150,19 +150,8 @@ struct XEMMAI__LOCAL t_code
 		c_try__THROW
 	};
 
-#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-	XEMMAI__PUBLIC static size_t f_loop(t_context* a_context, const void*** a_labels = nullptr);
-	static const void** f_labels()
-	{
-		const void** labels;
-		f_loop(nullptr, &labels);
-		return labels;
-	}
-
-	static inline const void** v_labels = f_labels();
-#else
-	XEMMAI__PUBLIC static size_t f_loop(t_context* a_context);
-#endif
+	template<t_instruction> static size_t f_do(t_context*, void**, t_pvalue*);
+	static size_t(*v_dos[])(t_context*, void**, t_pvalue*);
 	static void f_rethrow [[noreturn]] (void** a_pc);
 	static void f_try(t_context* a_context);
 	static t_object* f_instantiate(t_object* a_module, bool a_shared, bool a_variadic, size_t a_privates, size_t a_shareds, size_t a_arguments, size_t a_minimum);
@@ -185,11 +174,7 @@ struct XEMMAI__LOCAL t_code
 	const t_at* f_at(void** a_address) const;
 	void* f_p(t_instruction a_instruction) const
 	{
-#ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
-		return const_cast<void*>(v_labels[a_instruction]);
-#else
-		return reinterpret_cast<void*>(a_instruction);
-#endif
+		return reinterpret_cast<void*>(v_dos[a_instruction]);
 	}
 };
 
