@@ -67,7 +67,7 @@ private:
 	struct sigaction v_epoch__old_signal_suspend;
 	struct sigaction v_epoch__old_signal_resume;
 #endif
-	t_thread::t_internal* v_thread__internals = new t_thread::t_internal{nullptr};
+	t_thread::t_internal* v_thread__internals;
 	std::mutex v_thread__mutex;
 	std::condition_variable v_thread__condition;
 	t_type* v_type_type;

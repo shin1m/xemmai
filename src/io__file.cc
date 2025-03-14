@@ -8,7 +8,7 @@ namespace xemmai
 namespace io
 {
 
-t_file::t_file(std::wstring_view a_path, std::wstring_view a_mode) : v_fd(-1), v_own(true)
+t_file::t_file(std::wstring_view a_path, std::wstring_view a_mode) : v_own(true)
 {
 	auto flags = [&]
 	{

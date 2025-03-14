@@ -218,6 +218,7 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 	sigaddset(&sa.sa_mask, XEMMAI__SIGNAL_RESUME);
 	if (sigaction(XEMMAI__SIGNAL_SUSPEND, &sa, &v_epoch__old_signal_suspend) == -1) portable::f_throw_system_error();
 #endif
+	v_thread__internals = new t_thread::t_internal{nullptr};
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	std::thread(&t_engine::f_collector, this).detach();
 	auto type_object = f_allocate_for_type<t_type>(t_type::c_FIELDS);

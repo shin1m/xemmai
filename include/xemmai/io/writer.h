@@ -3,7 +3,6 @@
 
 #include "../sharable.h"
 #include "../string.h"
-#include <iconv.h>
 
 namespace xemmai
 {
@@ -13,11 +12,10 @@ class t_io;
 namespace io
 {
 
-class t_writer : public t_sharable
+class t_writer : public t_sharable, portable::t_iconv
 {
 	friend struct t_type_of<t_writer>;
 
-	iconv_t v_cd;
 	t_slot v_stream;
 	t_slot v_buffer;
 	char* v_p0;
@@ -37,10 +35,6 @@ public:
 	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding);
 
 	t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding);
-	~t_writer()
-	{
-		iconv_close(v_cd);
-	}
 	void f_close(t_io* a_library);
 	bool f_write(t_io* a_library, const t_pvalue& a_value);
 	bool f_write_line(t_io* a_library, const t_pvalue& a_value);

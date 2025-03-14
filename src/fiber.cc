@@ -30,10 +30,8 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 	std::putc('\n', a_out);
 }
 
-t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_thread(t_thread::v_current), v_estack(new t_pvalue[a_stack]), v_estack_used(v_estack.get())
+t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_next(t_thread::v_current->v_fibers), v_thread(t_thread::v_current), v_estack(new t_pvalue[a_stack]), v_estack_used(v_estack.get())
 {
-	v_next = t_thread::v_current->v_fibers;
-	t_thread::v_current->v_fibers = this;
 #ifdef __unix__
 	rlimit rm;
 	if (getrlimit(RLIMIT_STACK, &rm) == -1) portable::f_throw_system_error();
@@ -57,7 +55,9 @@ t_fiber::t_internal::t_internal(size_t a_stack, void* a_bottom) : t_internal(a_s
 	v_stack_bottom = static_cast<t_object**>(a_bottom);
 #ifdef _WIN32
 	v_handle = ConvertThreadToFiber(NULL);
+	if (v_handle == NULL) throw std::system_error(GetLastError(), std::system_category());
 #endif
+	t_thread::v_current->v_fibers = this;
 }
 
 #ifdef __unix__
@@ -71,7 +71,6 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 	v_context.uc_stack.ss_sp = v_stack_copy;
 	v_context.uc_stack.ss_size = n * sizeof(t_object*);
 	makecontext(&v_context, a_f, 0);
-}
 #endif
 #ifdef _WIN32
 t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber->v_stack, 2)
@@ -83,8 +82,10 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 		v_current->v_stack_bottom = &bottom;
 		reinterpret_cast<void(*)()>(a_f)();
 	}, a_f);
-}
+	if (v_handle == NULL) throw std::system_error(GetLastError(), std::system_category());
 #endif
+	t_thread::v_current->v_fibers = this;
+}
 
 void t_fiber::t_internal::f_epoch_copy()
 {

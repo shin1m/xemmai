@@ -52,9 +52,8 @@ t_object* t_reader::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_
 	return f_new<t_reader>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), a_stream, a_encoding, a_buffer);
 }
 
-t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer) : v_cd(iconv_open("wchar_t", portable::f_convert(a_encoding).c_str()))
+t_reader::t_reader(const t_pvalue& a_stream, std::wstring_view a_encoding, size_t a_buffer) : t_iconv("wchar_t", portable::f_convert(a_encoding).c_str())
 {
-	if (v_cd == iconv_t(-1)) portable::f_throw_system_error();
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(std::max(a_buffer, size_t(1)));
 }
