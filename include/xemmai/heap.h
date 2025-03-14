@@ -20,11 +20,14 @@ class t_heap
 	static void* f_map(size_t a_n)
 	{
 #ifdef __unix__
-		return mmap(NULL, a_n, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+		auto p = mmap(NULL, a_n, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+		if (p == MAP_FAILED) portable::f_throw_system_error();
 #endif
 #ifdef _WIN32
-		return VirtualAlloc(NULL, a_n, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		auto p = VirtualAlloc(NULL, a_n, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		if (p == NULL) throw std::system_error(GetLastError(), std::system_category());
 #endif
+		return p;
 	}
 	static void f_unmap(void* a_p, size_t a_n)
 	{

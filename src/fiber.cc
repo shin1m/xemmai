@@ -57,6 +57,7 @@ t_fiber::t_internal::t_internal(size_t a_stack, void* a_bottom) : t_internal(a_s
 	v_stack_bottom = static_cast<t_object**>(a_bottom);
 #ifdef _WIN32
 	v_handle = ConvertThreadToFiber(NULL);
+	if (v_handle == NULL) throw std::system_error(GetLastError(), std::system_category());
 #endif
 }
 
@@ -83,6 +84,7 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 		v_current->v_stack_bottom = &bottom;
 		reinterpret_cast<void(*)()>(a_f)();
 	}, a_f);
+	if (v_handle == NULL) throw std::system_error(GetLastError(), std::system_category());
 }
 #endif
 

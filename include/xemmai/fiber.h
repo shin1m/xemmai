@@ -46,7 +46,7 @@ struct t_fiber
 #ifdef _WIN32
 		~t_internal()
 		{
-			if (v_handle != NULL) DeleteFiber(v_handle);
+			DeleteFiber(v_handle);
 		}
 #endif
 		void f_epoch_get()

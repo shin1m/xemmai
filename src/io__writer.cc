@@ -84,9 +84,8 @@ t_object* t_writer::f_instantiate(const t_pvalue& a_stream, std::wstring_view a_
 	return f_new<t_writer>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), a_stream, a_encoding);
 }
 
-t_writer::t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding) : v_cd(iconv_open(portable::f_convert(a_encoding).c_str(), "wchar_t"))
+t_writer::t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding) : t_iconv(portable::f_convert(a_encoding).c_str(), "wchar_t")
 {
-	if (v_cd == iconv_t(-1)) portable::f_throw_system_error();
 	v_stream = a_stream;
 	v_buffer = t_bytes::f_instantiate(1024);
 	auto& buffer = v_buffer->f_as<t_bytes>();
