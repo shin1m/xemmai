@@ -86,7 +86,7 @@ protected:
 		}
 	};
 #ifdef NDEBUG
-	struct t_increments : t_queue<16384>
+	struct t_increments : t_queue<1024 * 16>
 #else
 	struct t_increments : t_queue<128>
 #endif
@@ -103,7 +103,7 @@ protected:
 		}
 	};
 #ifdef NDEBUG
-	struct t_decrements : t_queue<32768>
+	struct t_decrements : t_queue<1024 * 32>
 #else
 	struct t_decrements : t_queue<256>
 #endif
@@ -241,6 +241,19 @@ class t_value : public T_tag
 		else
 			v_integer = a_value.v_integer;
 	}
+	bool f_equal(const auto& a_value) const
+	{
+		auto p = f_tag();
+		if (p != a_value.f_tag()) return false;
+		switch (p) {
+		case c_tag__INTEGER:
+			return v_integer == a_value.v_integer;
+		case c_tag__FLOAT:
+			return v_float == a_value.v_float;
+		default:
+			return true;
+		}
+	}
 
 public:
 	using T_tag::T_tag;
@@ -277,18 +290,14 @@ public:
 		f_copy(a_value);
 		return *this;
 	}
-	bool operator==(const t_value<t_pointer>& a_value) const
+	bool operator==(const t_value& a_value) const
 	{
-		auto p = f_tag();
-		if (p != a_value.f_tag()) return false;
-		switch (p) {
-		case c_tag__INTEGER:
-			return v_integer == a_value.v_integer;
-		case c_tag__FLOAT:
-			return v_float == a_value.v_float;
-		default:
-			return true;
-		}
+		return f_equal(a_value);
+	}
+	template<typename T>
+	bool operator==(const t_value<T>& a_value) const
+	{
+		return f_equal(a_value);
 	}
 	uintptr_t f_tag() const
 	{
