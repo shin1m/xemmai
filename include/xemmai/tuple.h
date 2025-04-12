@@ -75,21 +75,17 @@ struct t_type_of<t_tuple> : t_holds<t_tuple>
 	static size_t f_do_not_equals(t_object* a_this, t_pvalue* a_stack);
 };
 
-inline void f__construct(t_svalue* a_p)
+template<size_t... A_i>
+inline void f__construct(t_svalue* a_p, std::index_sequence<A_i...>, auto&&... a_xs)
 {
-}
-
-inline void f__construct(t_svalue* a_p, auto&& a_x, auto&&... a_xs)
-{
-	new(a_p) t_svalue(std::forward<decltype(a_x)>(a_x));
-	f__construct(++a_p, std::forward<decltype(a_xs)>(a_xs)...);
+	(new(a_p + A_i) t_svalue(std::forward<decltype(a_xs)>(a_xs)), ...);
 }
 
 inline t_object* f_tuple(auto&&... a_xs)
 {
 	return t_tuple::f_instantiate(sizeof...(a_xs), [&](auto& tuple)
 	{
-		f__construct(&tuple[0], std::forward<decltype(a_xs)>(a_xs)...);
+		f__construct(&tuple[0], std::make_index_sequence<sizeof...(a_xs)>(), std::forward<decltype(a_xs)>(a_xs)...);
 	});
 }
 

@@ -371,7 +371,7 @@ inline t_object* f_new_value(t_type* a_type, auto&&... a_xs)
 	assert(a_type->v_fields_offset == t_object::f_fields_offset(0));
 	assert(a_type->v_instance_fields == sizeof...(a_xs));
 	auto p = f_engine()->f_allocate(sizeof(t_svalue) * sizeof...(a_xs));
-	f__construct(p->f_fields(0), std::forward<decltype(a_xs)>(a_xs)...);
+	f__construct(p->f_fields(0), std::make_index_sequence<sizeof...(a_xs)>(), std::forward<decltype(a_xs)>(a_xs)...);
 	p->f_be(a_type);
 	return p;
 }

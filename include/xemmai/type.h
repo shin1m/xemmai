@@ -34,10 +34,10 @@ struct t_fundamental<t_value<T_tag>>
 	using t_type = t_object;
 };
 
-template<typename T, size_t... A_Is>
-static constexpr std::array<T, sizeof...(A_Is) + 1> f_append(const std::array<T, sizeof...(A_Is)>& a_xs, std::index_sequence<A_Is...>, T a_x)
+template<typename T, size_t... A_i>
+static constexpr std::array<T, sizeof...(A_i) + 1> f_append(const std::array<T, sizeof...(A_i)>& a_xs, std::index_sequence<A_i...>, T a_x)
 {
-	return {a_xs[A_Is]..., a_x};
+	return {a_xs[A_i]..., a_x};
 }
 
 #ifdef _WIN32

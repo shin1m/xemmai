@@ -43,84 +43,60 @@ struct t_n2s
 template<typename... T_an>
 struct t_signature
 {
-//	static const size_t c_N = sizeof...(T_an);
-
 	static void f_check(size_t a_n)
 	{
 		if (a_n != sizeof...(T_an)) [[unlikely]] f_throw((t_cs<L'm', L'u', L's', L't', L' ', L'b', L'e', L' ', L'c', L'a', L'l', L'l', L'e', L'd', L' ', L'w', L'i', L't', L'h', L' '>() + typename t_n2s<sizeof...(T_an)>::t() + t_cs<L' ', L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't', L'(', L's', L')', L'.'>()).v);
 	}
-	template<size_t A_i>
-	static void f_check__(t_pvalue* a_stack)
+	template<size_t... A_i>
+	static void f_check(t_pvalue* a_stack, std::index_sequence<A_i...>)
 	{
-	}
-	template<size_t A_i, typename T_a0, typename... T_am>
-	static void f_check__(t_pvalue* a_stack)
-	{
-		xemmai::f_check<T_a0>(*++a_stack, t_cs<L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't'>() + typename t_n2s<A_i>::t());
-		f_check__<A_i + 1, T_am...>(a_stack);
+		(xemmai::f_check<T_an>(a_stack[A_i], t_cs<L'a', L'r', L'g', L'u', L'm', L'e', L'n', L't'>() + typename t_n2s<A_i>::t()), ...);
 	}
 	static void f_check(t_pvalue* a_stack)
 	{
-		f_check__<0, T_an...>(a_stack + 1);
+		f_check(a_stack + 2, std::index_sequence_for<T_an...>());
 	}
-	template<t_pvalue(*A_function)(t_library*, const t_pvalue&, T_an&&...)>
-	static t_pvalue f__call(t_library* a_library, const t_pvalue& a_self, t_pvalue* a_stack, T_an&&... a_n)
+	template<t_pvalue(*A_function)(t_library*, const t_pvalue&, T_an&&...), size_t... A_i>
+	static t_pvalue f_call(t_library* a_library, const t_pvalue& a_self, t_pvalue* a_stack, std::index_sequence<A_i...>)
 	{
-		return A_function(a_library, a_self, std::forward<T_an>(a_n)...);
-	}
-	template<t_pvalue(*A_function)(t_library*, const t_pvalue&, T_an&&...), typename T_a0, typename... T_am>
-	static t_pvalue f__call(t_library* a_library, const t_pvalue& a_self, t_pvalue* a_stack, auto&&... a_k)
-	{
-		++a_stack;
-		return f__call<A_function, T_am...>(a_library, a_self, a_stack, std::forward<decltype(a_k)>(a_k)..., f_as<T_a0>(*a_stack));
+		return A_function(a_library, a_self, f_as<T_an>(a_stack[A_i])...);
 	}
 	template<t_pvalue(*A_function)(t_library*, const t_pvalue&, T_an&&...)>
 	static void f_call(t_library* a_library, const t_pvalue& a_self, t_pvalue* a_stack)
 	{
-		a_stack[0] = f__call<A_function, T_an...>(a_library, a_self, a_stack + 1);
+		a_stack[0] = f_call<A_function>(a_library, a_self, a_stack + 2, std::index_sequence_for<T_an...>());
 	}
-	template<bool>
-	static bool f__match(t_pvalue* a_stack)
+	template<size_t... A_i>
+	static bool f_match(t_pvalue* a_stack, std::index_sequence<A_i...>)
 	{
-		return true;
-	}
-	template<bool, typename T_a0, typename... T_am>
-	static bool f__match(t_pvalue* a_stack)
-	{
-		return f_is<T_a0>(*++a_stack) && f__match<false, T_am...>(a_stack);
+		return (f_is<T_an>(a_stack[A_i]) && ...);
 	}
 	static bool f_match(t_pvalue* a_stack, size_t a_n)
 	{
-		return a_n == sizeof...(T_an) && f__match<false, T_an...>(a_stack + 1);
+		return a_n == sizeof...(T_an) && f_match(a_stack + 2, std::index_sequence_for<T_an...>());
 	}
 };
 
 template<typename T_function, T_function A_function>
 struct t_call_construct;
 
-template<typename... T_an, t_pvalue(*A_function)(t_type*, T_an...)>
-struct t_call_construct<t_pvalue(*)(t_type*, T_an...), A_function>
+template<typename T_r, typename... T_an, T_r(*A_function)(t_type*, T_an...)>
+struct t_call_construct<T_r(*)(t_type*, T_an...), A_function>
 {
-	template<typename...>
-	static t_pvalue f__do(t_type* a_class, t_pvalue* a_stack, T_an&&... a_n)
+	template<size_t... A_i>
+	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, std::index_sequence<A_i...>)
 	{
-		return A_function(a_class, std::forward<T_an>(a_n)...);
-	}
-	template<typename T_a0, typename... T_am>
-	static t_pvalue f__do(t_type* a_class, t_pvalue* a_stack, auto&&... a_k)
-	{
-		++a_stack;
-		return f__do<T_am...>(a_class, a_stack, std::forward<decltype(a_k)>(a_k)..., f_as<T_a0>(*a_stack));
+		return {A_function(a_class, f_as<T_an>(a_stack[A_i])...)};
 	}
 	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, size_t a_n)
 	{
 		t_signature<T_an...>::f_check(a_n);
 		t_signature<T_an...>::f_check(a_stack);
-		return f__do<T_an...>(a_class, a_stack + 1);
+		return f_do(a_class, a_stack + 2, std::index_sequence_for<T_an...>());
 	}
 	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack)
 	{
-		return f__do<T_an...>(a_class, a_stack + 1);
+		return f_do(a_class, a_stack + 2, std::index_sequence_for<T_an...>());
 	}
 	static bool f_match(t_pvalue* a_stack, size_t a_n)
 	{
@@ -132,13 +108,13 @@ template<typename... T_an>
 struct t_construct
 {
 	template<typename T_self>
-	static t_pvalue f_default(t_type* a_class, T_an&&... a_an)
+	static t_object* f_default(t_type* a_class, T_an&&... a_an)
 	{
 		return a_class->f_new<T_self>(std::forward<T_an>(a_an)...);
 	}
 
 	template<typename T_self>
-	using t_bind = t_call_construct<t_pvalue(*)(t_type*, T_an&&...), f_default<T_self>>;
+	using t_bind = t_call_construct<t_object*(*)(t_type*, T_an&&...), f_default<T_self>>;
 };
 
 template<typename T_function, T_function A_function>
@@ -318,8 +294,7 @@ struct t_static
 	};
 };
 
-template<typename... T>
-struct t_overload;
+template<typename...> struct t_overload;
 
 template<>
 struct t_overload<>
@@ -438,20 +413,14 @@ public:
 	{
 		return (*this)(a_name, t_member<T_function, A_function>::template t_bind<T_library>::f_call);
 	}
-	template<typename T_function, T_function A_function, typename T_overload0, typename... T_overloadn>
-	t_define& operator()(t_object* a_name, const t_member<T_function, A_function>&, const T_overload0&, const T_overloadn&...)
-	{
-		return (*this)(a_name, t_overload<t_member<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T_library>::f_call);
-	}
 	template<typename T_function, T_function A_function>
 	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&)
 	{
 		return (*this)(a_name, t_static<T_function, A_function>::template t_bind<T_library>::f_call);
 	}
-	template<typename T_function, T_function A_function, typename T_overload0, typename... T_overloadn>
-	t_define& operator()(t_object* a_name, const t_static<T_function, A_function>&, const T_overload0&, const T_overloadn&...)
+	t_define& operator()(t_object* a_name, auto&& a_overload0, auto&& a_overload1, auto&&... a_overloadn)
 	{
-		return (*this)(a_name, t_overload<t_static<T_function, A_function>, T_overload0, T_overloadn...>::template t_bind<T_library>::f_call);
+		return (*this)(a_name, t_overload<std::decay_t<decltype(a_overload0)>, std::decay_t<decltype(a_overload1)>, std::decay_t<decltype(a_overloadn)>...>::template t_bind<T_library>::f_call);
 	}
 	t_define& operator()(std::wstring_view a_name, auto&&... a_xs)
 	{
