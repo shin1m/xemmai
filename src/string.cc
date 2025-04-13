@@ -25,7 +25,7 @@ void t_type_of<t_string>::f_define()
 
 void t_type_of<t_string>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 {
-	a_stack[0] = t_construct_with<t_pvalue(*)(t_type*, const t_string&), f__construct>::t_bind<t_string>::f_do(this, a_stack, a_n);
+	a_stack[0] = t_construct_with<t_object*(*)(t_type*, const t_string&), f__construct>::f_do(this, a_stack, a_n);
 }
 
 void t_type_of<t_string>::f_do_hash(t_object* a_this, t_pvalue* a_stack)

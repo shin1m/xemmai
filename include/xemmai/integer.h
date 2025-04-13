@@ -48,14 +48,6 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 		}
 	};
 
-	static t_pvalue f_construct(t_type* a_class, intptr_t a_value)
-	{
-		return a_value;
-	}
-	static t_pvalue f_construct(t_type* a_class, double a_value)
-	{
-		return static_cast<intptr_t>(a_value);
-	}
 	static t_pvalue f_construct(t_type* a_class, const t_string& a_value)
 	{
 		intptr_t value;

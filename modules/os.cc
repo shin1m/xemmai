@@ -21,10 +21,6 @@ struct t_type_of<portable::t_path> : t_derivable<t_holds<portable::t_path>>
 	{
 		return xemmai::f_new<portable::t_path>(a_library, std::forward<decltype(a_value)>(a_value));
 	}
-	static t_pvalue f_construct(t_type* a_class, std::wstring_view a_value)
-	{
-		return a_class->f_new<portable::t_path>(a_value);
-	}
 	static portable::t_path f__divide(const portable::t_path& a_self, std::wstring_view a_value)
 	{
 		return a_self / a_value;
@@ -323,7 +319,10 @@ void t_type_of<portable::t_path>::f_define(t_os* a_library)
 
 t_pvalue t_type_of<portable::t_path>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_construct_with<t_pvalue(*)(t_type*, std::wstring_view), f_construct>::t_bind<portable::t_path>::f_do(this, a_stack, a_n);
+	return t_construct_with<t_object*(*)(t_type*, std::wstring_view), [](auto a_class, auto a_value)
+	{
+		return a_class->template f_new<portable::t_path>(a_value);
+	}>::f_do(this, a_stack, a_n);
 }
 
 size_t t_type_of<portable::t_path>::f_do_divide(t_object* a_this, t_pvalue* a_stack)

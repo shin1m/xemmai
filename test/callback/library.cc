@@ -31,6 +31,7 @@ struct t_type_of<t_client> : t_derivable<t_bears<t_client>>
 		}
 	};
 
+	static t_pvalue f_transfer(t_library* a_library, t_client* a_value);
 	static void f_define(t_callback_library* a_library);
 
 	t_type_of(auto&&... a_xs) : t_base(std::forward<decltype(a_xs)>(a_xs)...)
@@ -66,7 +67,6 @@ struct t_callback_library : t_library
 
 	using t_library::t_library;
 	XEMMAI__LIBRARY__MEMBERS
-	t_pvalue f_as(t_client* a_value) const;
 };
 
 XEMMAI__LIBRARY__BASE(t_callback_library, t_global, f_global())
@@ -75,17 +75,11 @@ XEMMAI__LIBRARY__TYPE(t_callback_library, server)
 
 class t_client_wrapper : public t_client
 {
-	friend struct t_callback_library;
+	friend struct t_type_of<t_client>;
 
 	t_object* v_self;
 
 public:
-	static t_pvalue f_construct(t_type* a_class)
-	{
-		auto object = a_class->f_new<t_client*>(new t_client_wrapper);
-		object->f_as<t_client_wrapper*>()->v_self = object;
-		return object;
-	}
 	static void f_super__on_message(t_client* a_self, std::wstring_view a_message)
 	{
 		if (dynamic_cast<t_client_wrapper*>(a_self))
@@ -105,6 +99,12 @@ public:
 namespace xemmai
 {
 
+t_pvalue t_type_of<t_client>::f_transfer(t_library* a_library, t_client* a_value)
+{
+	auto p = dynamic_cast<t_client_wrapper*>(a_value);
+	return p ? p->v_self : a_library->f_type<t_client>()->f_new<t_client*>(a_value);
+}
+
 void t_type_of<t_client>::f_define(t_callback_library* a_library)
 {
 	t_define{a_library}
@@ -115,7 +115,12 @@ void t_type_of<t_client>::f_define(t_callback_library* a_library)
 
 t_pvalue t_type_of<t_client>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_construct_with<t_pvalue(*)(t_type*), t_client_wrapper::f_construct>::t_bind<t_client>::f_do(this, a_stack, a_n);
+	return t_construct_with<t_object*(*)(t_type*), [](auto a_class)
+	{
+		auto object = a_class->template f_new<t_client*>(new t_client_wrapper);
+		object->template f_as<t_client_wrapper*>()->v_self = object;
+		return object;
+	}>::f_do(this, a_stack, a_n);
 }
 
 void t_type_of<t_client>::f_do_finalize(t_object* a_this, t_scan a_scan)
@@ -155,12 +160,6 @@ std::vector<std::pair<t_root, t_rvalue>> t_callback_library::f_define()
 		(L"Client"sv, static_cast<t_object*>(v_type_client))
 		(L"Server"sv, static_cast<t_object*>(v_type_server))
 	;
-}
-
-t_pvalue t_callback_library::f_as(t_client* a_value) const
-{
-	auto p = dynamic_cast<t_client_wrapper*>(a_value);
-	return p ? p->v_self : v_type_client->f_new<t_client*>(a_value);
 }
 
 XEMMAI__MODULE__FACTORY(xemmai::t_library::t_handle* a_handle)

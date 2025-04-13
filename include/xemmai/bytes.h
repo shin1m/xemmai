@@ -77,7 +77,7 @@ public:
 template<>
 struct t_type_of<t_bytes> : t_holds<t_bytes>
 {
-	static t_pvalue f__construct(t_type* a_class, size_t a_size);
+	static t_object* f__construct(t_type* a_class, size_t a_size);
 	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;

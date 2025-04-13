@@ -633,7 +633,7 @@ inline t_stringer::t_stringer() : v_p(f_global()->f_string_empty()), v_i(const_c
 {
 }
 
-inline t_pvalue t_type_of<t_bytes>::f__construct(t_type* a_class, size_t a_size)
+inline t_object* t_type_of<t_bytes>::f__construct(t_type* a_class, size_t a_size)
 {
 	auto p = f_engine()->f_allocate(sizeof(t_bytes) + a_size);
 	new(p->f_data()) t_bytes(a_size);

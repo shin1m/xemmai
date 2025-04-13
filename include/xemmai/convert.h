@@ -78,15 +78,15 @@ struct t_signature
 };
 
 template<typename T_function, T_function A_function>
-struct t_call_construct;
+struct t_construct_with;
 
 template<typename T_r, typename... T_an, T_r(*A_function)(t_type*, T_an...)>
-struct t_call_construct<T_r(*)(t_type*, T_an...), A_function>
+struct t_construct_with<T_r(*)(t_type*, T_an...), A_function>
 {
 	template<size_t... A_i>
-	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, std::index_sequence<A_i...>)
+	static T_r f_do(t_type* a_class, t_pvalue* a_stack, std::index_sequence<A_i...>)
 	{
-		return {A_function(a_class, f_as<T_an>(a_stack[A_i])...)};
+		return A_function(a_class, f_as<T_an>(a_stack[A_i])...);
 	}
 	static t_pvalue f_do(t_type* a_class, t_pvalue* a_stack, size_t a_n)
 	{
@@ -102,26 +102,18 @@ struct t_call_construct<T_r(*)(t_type*, T_an...), A_function>
 	{
 		return t_signature<T_an...>::f_match(a_stack, a_n);
 	}
+
+	template<typename> using t_bind = t_construct_with;
 };
 
 template<typename... T_an>
 struct t_construct
 {
 	template<typename T_self>
-	static t_object* f_default(t_type* a_class, T_an&&... a_an)
+	using t_bind = t_construct_with<t_object*(*)(t_type*, T_an&&...), [](auto a_class, auto... a_an)
 	{
-		return a_class->f_new<T_self>(std::forward<T_an>(a_an)...);
-	}
-
-	template<typename T_self>
-	using t_bind = t_call_construct<t_object*(*)(t_type*, T_an&&...), f_default<T_self>>;
-};
-
-template<typename T_function, T_function A_function>
-struct t_construct_with
-{
-	template<typename T_self>
-	using t_bind = t_call_construct<T_function, A_function>;
+		return a_class->template f_new<T_self>(std::forward<T_an>(a_an)...);
+	}>;
 };
 
 template<typename T_library, typename T_r, typename... T_an>

@@ -35,7 +35,7 @@ void t_type_of<t_bytes>::f_define()
 
 void t_type_of<t_bytes>::f_do_instantiate(t_pvalue* a_stack, size_t a_n)
 {
-	a_stack[0] = t_construct_with<t_pvalue(*)(t_type*, size_t), f__construct>::t_bind<t_bytes>::f_do(this, a_stack, a_n);
+	a_stack[0] = t_construct_with<t_object*(*)(t_type*, size_t), f__construct>::f_do(this, a_stack, a_n);
 }
 
 size_t t_type_of<t_bytes>::f_do_get_at(t_object* a_this, t_pvalue* a_stack)

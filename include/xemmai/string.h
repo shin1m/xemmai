@@ -85,7 +85,7 @@ struct t_type_of<t_string> : t_holds<t_string>
 		*std::copy_n(a_p, a_n, (new(object->f_data()) t_string(a_n))->f_entries()) = L'\0';
 		return object;
 	}
-	static t_pvalue f__construct(t_type* a_class, const t_string& a_value)
+	static t_object* f__construct(t_type* a_class, const t_string& a_value)
 	{
 		return f__construct(a_class, static_cast<const wchar_t*>(a_value), a_value.v_size);
 	}
