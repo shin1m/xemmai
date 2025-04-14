@@ -112,115 +112,99 @@ t_pvalue t_map::f_remove(const t_pvalue& a_key)
 	return value;
 }
 
-t_object* t_type_of<t_map>::f__string(t_map& a_self)
-{
-	t_stringer s;
-	s << L'{';
-	t_map::t_iterator i(a_self);
-	t_pvalue x;
-	t_pvalue y;
-	auto get = [&]
-	{
-		if (!i.f_entry()) return false;
-		x = i.f_entry()->f_key();
-		y = i.f_entry()->v_value;
-		return true;
-	};
-	if (a_self.f_owned_or_shared<t_shared_lock_with_safe_region>(get)) while (true) {
-		x = x.f_string();
-		f_check<t_string>(x, L"key");
-		y = y.f_string();
-		f_check<t_string>(y, L"value");
-		s << x->f_as<t_string>() << L':' << L' ' << y->f_as<t_string>();
-		if (!a_self.f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-		{
-			i.f_next();
-			return get();
-		})) break;
-		s << L',' << L' ';
-	}
-	return s << L'}';
-}
-
-void t_type_of<t_map>::f_clear(t_map& a_self)
-{
-	a_self.f_owned_or_shared<t_lock_with_safe_region>([&]
-	{
-		a_self.f_clear();
-	});
-}
-
-size_t t_type_of<t_map>::f_size(t_map& a_self)
-{
-	return a_self.f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-	{
-		return a_self.f_size();
-	});
-}
-
-t_pvalue t_type_of<t_map>::f__get_at(t_map& a_self, const t_pvalue& a_key)
-{
-	return a_self.f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-	{
-		return t_pvalue(a_self.f_get(a_key));
-	});
-}
-
-t_pvalue t_type_of<t_map>::f__set_at(t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
-{
-	return a_self.f_owned_or_shared<t_lock_with_safe_region>([&]
-	{
-		return a_self.f_put(a_key, a_value);
-	});
-}
-
-bool t_type_of<t_map>::f_has(t_map& a_self, const t_pvalue& a_key)
-{
-	return a_self.f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-	{
-		return a_self.f_has(a_key);
-	});
-}
-
-t_pvalue t_type_of<t_map>::f_remove(t_map& a_self, const t_pvalue& a_key)
-{
-	return a_self.f_owned_or_shared<t_lock_with_safe_region>([&]
-	{
-		return a_self.f_remove(a_key);
-	});
-}
-
-void t_type_of<t_map>::f_each(t_map& a_self, const t_pvalue& a_callable)
-{
-	t_map::t_iterator i(a_self);
-	while (true) {
-		t_pvalue key;
-		t_pvalue value;
-		if (!a_self.f_owned_or_shared<t_shared_lock_with_safe_region>([&]
-		{
-			if (!i.f_entry()) return false;
-			key = i.f_entry()->f_key();
-			value = i.f_entry()->v_value;
-			i.f_next();
-			return true;
-		})) break;
-		a_callable(key, value);
-	}
-}
-
 void t_type_of<t_map>::f_define()
 {
 	auto global = f_global();
 	t_define{global}.f_derive<t_map::t_table, t_object>();
 	t_define{global}
-		(global->f_symbol_string(), t_member<t_object*(*)(t_map&), f__string>())
-		(L"clear"sv, t_member<void(*)(t_map&), f_clear>())
-		(global->f_symbol_size(), t_member<size_t(*)(t_map&), f_size>())
-		(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), f__get_at>())
-		(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), f__set_at>())
-		(L"has"sv, t_member<bool(*)(t_map&, const t_pvalue&), f_has>())
-		(L"remove"sv, t_member<t_pvalue(*)(t_map&, const t_pvalue&), f_remove>())
-		(L"each"sv, t_member<void(*)(t_map&, const t_pvalue&), f_each>())
+	(global->f_symbol_string(), t_member<t_object*(*)(t_map&), [](auto a_self) -> t_object*
+	{
+		t_stringer s;
+		s << L'{';
+		t_map::t_iterator i(a_self);
+		t_pvalue x;
+		t_pvalue y;
+		auto get = [&]
+		{
+			if (!i.f_entry()) return false;
+			x = i.f_entry()->f_key();
+			y = i.f_entry()->v_value;
+			return true;
+		};
+		if (a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>(get)) while (true) {
+			x = x.f_string();
+			f_check<t_string>(x, L"key");
+			y = y.f_string();
+			f_check<t_string>(y, L"value");
+			s << x->f_as<t_string>() << L':' << L' ' << y->f_as<t_string>();
+			if (!a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+			{
+				i.f_next();
+				return get();
+			})) break;
+			s << L',' << L' ';
+		}
+		return s << L'}';
+	}>())
+	(L"clear"sv, t_member<void(*)(t_map&), [](auto a_self)
+	{
+		a_self.template f_owned_or_shared<t_lock_with_safe_region>([&]
+		{
+			a_self.f_clear();
+		});
+	}>())
+	(global->f_symbol_size(), t_member<size_t(*)(t_map&), [](auto a_self)
+	{
+		return a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+		{
+			return a_self.f_size();
+		});
+	}>())
+	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_key)
+	{
+		return a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+		{
+			return t_pvalue(a_self.f_get(a_key));
+		});
+	}>())
+	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), [](auto a_self, auto a_key, auto a_value)
+	{
+		return a_self.template f_owned_or_shared<t_lock_with_safe_region>([&]
+		{
+			return a_self.f_put(a_key, a_value);
+		});
+	}>())
+	(L"has"sv, t_member<bool(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_key)
+	{
+		return a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+		{
+			return a_self.f_has(a_key);
+		});
+	}>())
+	(L"remove"sv, t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_key)
+	{
+		return a_self.template f_owned_or_shared<t_lock_with_safe_region>([&]
+		{
+			return a_self.f_remove(a_key);
+		});
+	}>())
+	(L"each"sv, t_member<void(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_callable)
+	{
+		t_map::t_iterator i(a_self);
+		while (true) {
+			t_pvalue key;
+			t_pvalue value;
+			if (!a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
+			{
+				if (!i.f_entry()) return false;
+				key = i.f_entry()->f_key();
+				value = i.f_entry()->v_value;
+				i.f_next();
+				return true;
+			})) break;
+			a_callable(key, value);
+		}
+	}>())
 	.f_derive<t_map, t_sharable>();
 }
 

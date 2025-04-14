@@ -3,21 +3,14 @@
 namespace xemmai
 {
 
-void t_type::f_initialize(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
+namespace
 {
-	a_stack[0] = nullptr;
-}
 
-void t_type::f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
+void f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
 {
 	f_throw(L"not supported."sv);
 }
 
-t_object* t_type::f__string(const t_pvalue& a_self)
-{
-	wchar_t cs[13 + sizeof(t_object*) * 2];
-	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
-	return t_string::f_instantiate(cs, n);
 }
 
 void t_type::f_define()
@@ -25,31 +18,39 @@ void t_type::f_define()
 	v_builtin = true;
 	auto global = f_global();
 	t_define{global}
-		(global->f_symbol_initialize(), f_initialize)
-		(global->f_symbol_call(), f_not_supported)
-		(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f__string>())
-		(global->f_symbol_hash(), t_member<intptr_t(*)(const t_pvalue&), f__hash>())
-		(global->f_symbol_get_at(), f_not_supported)
-		(global->f_symbol_set_at(), f_not_supported)
-		(global->f_symbol_plus(), f_not_supported)
-		(global->f_symbol_minus(), f_not_supported)
-		(global->f_symbol_complement(), f_not_supported)
-		(global->f_symbol_multiply(), f_not_supported)
-		(global->f_symbol_divide(), f_not_supported)
-		(global->f_symbol_modulus(), f_not_supported)
-		(global->f_symbol_add(), f_not_supported)
-		(global->f_symbol_subtract(), f_not_supported)
-		(global->f_symbol_left_shift(), f_not_supported)
-		(global->f_symbol_right_shift(), f_not_supported)
-		(global->f_symbol_less(), f_not_supported)
-		(global->f_symbol_less_equal(), f_not_supported)
-		(global->f_symbol_greater(), f_not_supported)
-		(global->f_symbol_greater_equal(), f_not_supported)
-		(global->f_symbol_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__equals>())
-		(global->f_symbol_not_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__not_equals>())
-		(global->f_symbol_and(), f_not_supported)
-		(global->f_symbol_xor(), f_not_supported)
-		(global->f_symbol_or(), f_not_supported)
+	(global->f_symbol_initialize(), +[](xemmai::t_library* a_library, t_pvalue* a_stack, size_t)
+	{
+		a_stack[0] = nullptr;
+	})
+	(global->f_symbol_call(), f_not_supported)
+	(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), [](auto a_self)
+	{
+		wchar_t cs[13 + sizeof(t_object*) * 2];
+		size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
+		return t_string::f_instantiate(cs, n);
+	}>())
+	(global->f_symbol_hash(), t_member<intptr_t(*)(const t_pvalue&), f__hash>())
+	(global->f_symbol_get_at(), f_not_supported)
+	(global->f_symbol_set_at(), f_not_supported)
+	(global->f_symbol_plus(), f_not_supported)
+	(global->f_symbol_minus(), f_not_supported)
+	(global->f_symbol_complement(), f_not_supported)
+	(global->f_symbol_multiply(), f_not_supported)
+	(global->f_symbol_divide(), f_not_supported)
+	(global->f_symbol_modulus(), f_not_supported)
+	(global->f_symbol_add(), f_not_supported)
+	(global->f_symbol_subtract(), f_not_supported)
+	(global->f_symbol_left_shift(), f_not_supported)
+	(global->f_symbol_right_shift(), f_not_supported)
+	(global->f_symbol_less(), f_not_supported)
+	(global->f_symbol_less_equal(), f_not_supported)
+	(global->f_symbol_greater(), f_not_supported)
+	(global->f_symbol_greater_equal(), f_not_supported)
+	(global->f_symbol_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__equals>())
+	(global->f_symbol_not_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__not_equals>())
+	(global->f_symbol_and(), f_not_supported)
+	(global->f_symbol_xor(), f_not_supported)
+	(global->f_symbol_or(), f_not_supported)
 	.f_derive<t_object>(t_object::f_of(this));
 }
 

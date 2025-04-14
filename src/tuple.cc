@@ -69,9 +69,9 @@ void t_type_of<t_tuple>::f_define()
 {
 	auto global = f_global();
 	t_define{global}
-		(global->f_symbol_string(), t_member<t_object*(t_tuple::*)() const, &t_tuple::f_string>())
-		(global->f_symbol_size(), t_member<size_t(t_tuple::*)() const, &t_tuple::f_size>())
-		(L"each"sv, t_member<void(t_tuple::*)(const t_pvalue&) const, &t_tuple::f_each>())
+	(global->f_symbol_string(), t_member<t_object*(t_tuple::*)() const, &t_tuple::f_string>())
+	(global->f_symbol_size(), t_member<size_t(t_tuple::*)() const, &t_tuple::f_size>())
+	(L"each"sv, t_member<void(t_tuple::*)(const t_pvalue&) const, &t_tuple::f_each>())
 	.f_derive<t_tuple, t_object>();
 }
 

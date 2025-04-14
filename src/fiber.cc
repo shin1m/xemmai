@@ -193,7 +193,7 @@ void t_fiber::f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
 void t_type_of<t_fiber>::f_define()
 {
 	t_define{f_global()}
-		(L"current"sv, t_static<t_object*(*)(), t_fiber::f_current>())
+	(L"current"sv, t_static<t_object*(*)(), t_fiber::f_current>())
 	.f_derive<t_fiber, t_object>();
 }
 

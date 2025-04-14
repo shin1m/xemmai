@@ -117,184 +117,158 @@ t_pvalue t_list::f_remove(intptr_t a_index)
 	return q;
 }
 
-t_object* t_type_of<t_list>::f__string(t_list& a_self)
-{
-	t_stringer s;
-	s << L'[';
-	t_pvalue x;
-	if (a_self.f_owned_or_shared<std::shared_lock>([&]
-	{
-		if (a_self.f_size() <= 0) return false;
-		x = a_self[0];
-		return true;
-	})) for (size_t i = 0;;) {
-		x = x.f_string();
-		f_check<t_string>(x, L"value");
-		s << x->f_as<t_string>();
-		++i;
-		if (!a_self.f_owned_or_shared<std::shared_lock>([&]
-		{
-			if (i >= a_self.f_size()) return false;
-			x = a_self[i];
-			return true;
-		})) break;
-		s << L',' << L' ';
-	}
-	return s << L']';
-}
-
-void t_type_of<t_list>::f_clear(t_list& a_self)
-{
-	a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		a_self.f_clear();
-	});
-}
-
-size_t t_type_of<t_list>::f_size(t_list& a_self)
-{
-	return a_self.f_owned_or_shared<std::shared_lock>([&]
-	{
-		return a_self.f_size();
-	});
-}
-
-t_pvalue t_type_of<t_list>::f__get_at(t_list& a_self, intptr_t a_index)
-{
-	return a_self.f_owned_or_shared<std::shared_lock>([&]
-	{
-		return t_pvalue(a_self[a_index]);
-	});
-}
-
-t_pvalue t_type_of<t_list>::f__set_at(t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
-{
-	return a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		return t_pvalue(a_self[a_index] = a_value);
-	});
-}
-
-void t_type_of<t_list>::f_push(t_list& a_self, const t_pvalue& a_value)
-{
-	a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		a_self.f_push(std::move(a_value));
-	});
-}
-
-t_pvalue t_type_of<t_list>::f_pop(t_list& a_self)
-{
-	return a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		return a_self.f_pop();
-	});
-}
-
-void t_type_of<t_list>::f_unshift(t_list& a_self, const t_pvalue& a_value)
-{
-	a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		a_self.f_unshift(a_value);
-	});
-}
-
-t_pvalue t_type_of<t_list>::f_shift(t_list& a_self)
-{
-	return a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		return a_self.f_shift();
-	});
-}
-
-void t_type_of<t_list>::f_insert(t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
-{
-	a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		a_self.f_insert(a_index, a_value);
-	});
-}
-
-t_pvalue t_type_of<t_list>::f_remove(t_list& a_self, intptr_t a_index)
-{
-	return a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		return a_self.f_remove(a_index);
-	});
-}
-
-void t_type_of<t_list>::f_each(t_list& a_self, const t_pvalue& a_callable)
-{
-	size_t i = 0;
-	while (true) {
-		t_pvalue x;
-		if (!a_self.f_owned_or_shared<std::shared_lock>([&]
-		{
-			if (i >= a_self.f_size()) return false;
-			x = a_self[i];
-			return true;
-		})) break;
-		a_callable(x);
-		++i;
-	}
-}
-
-void t_type_of<t_list>::f_sort(t_list& a_self, const t_pvalue& a_callable)
-{
-	t_object* object;
-	size_t head = 0;
-	size_t size = 0;
-	size_t grow = 0;
-	size_t shrink = 0;
-	a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		object = a_self.v_tuple;
-		a_self.v_tuple = nullptr;
-		std::swap(a_self.v_head, head);
-		std::swap(a_self.v_size, size);
-		std::swap(a_self.v_grow, grow);
-		std::swap(a_self.v_shrink, shrink);
-	});
-	if (!object) return;
-	auto& tuple = object->f_as<t_tuple>();
-	auto p = reinterpret_cast<t_rvalue*>(&tuple[0]);
-	if (head + size > tuple.f_size()) {
-		std::rotate(p, p + head, p + tuple.f_size());
-		head = 0;
-	} else {
-		p += head;
-	}
-	std::sort(p, p + size, [&](const auto& x, const auto& y)
-	{
-		return f_as<bool>(a_callable(x, y));
-	});
-	a_self.f_owned_or_shared<std::lock_guard>([&]
-	{
-		a_self.v_tuple = object;
-		a_self.v_head = head;
-		a_self.v_size = size;
-		a_self.v_grow = grow;
-		a_self.v_shrink = shrink;
-	});
-}
-
 void t_type_of<t_list>::f_define()
 {
 	auto global = f_global();
 	t_define{global}
-		(global->f_symbol_string(), t_member<t_object*(*)(t_list&), f__string>())
-		(L"clear"sv, t_member<void(*)(t_list&), f_clear>())
-		(global->f_symbol_size(), t_member<size_t(*)(t_list&), f_size>())
-		(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), f__get_at>())
-		(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), f__set_at>())
-		(L"push"sv, t_member<void(*)(t_list&, const t_pvalue&), f_push>())
-		(L"pop"sv, t_member<t_pvalue(*)(t_list&), f_pop>())
-		(L"unshift"sv, t_member<void(*)(t_list&, const t_pvalue&), f_unshift>())
-		(L"shift"sv, t_member<t_pvalue(*)(t_list&), f_shift>())
-		(L"insert"sv, t_member<void(*)(t_list&, intptr_t, const t_pvalue&), f_insert>())
-		(L"remove"sv, t_member<t_pvalue(*)(t_list&, intptr_t), f_remove>())
-		(L"each"sv, t_member<void(*)(t_list&, const t_pvalue&), f_each>())
-		(L"sort"sv, t_member<void(*)(t_list&, const t_pvalue&), f_sort>())
+	(global->f_symbol_string(), t_member<t_object*(*)(t_list&), [](auto a_self) -> t_object*
+	{
+		t_stringer s;
+		s << L'[';
+		t_pvalue x;
+		if (a_self.template f_owned_or_shared<std::shared_lock>([&]
+		{
+			if (a_self.f_size() <= 0) return false;
+			x = a_self[0];
+			return true;
+		})) for (size_t i = 0;;) {
+			x = x.f_string();
+			f_check<t_string>(x, L"value");
+			s << x->f_as<t_string>();
+			++i;
+			if (!a_self.template f_owned_or_shared<std::shared_lock>([&]
+			{
+				if (i >= a_self.f_size()) return false;
+				x = a_self[i];
+				return true;
+			})) break;
+			s << L',' << L' ';
+		}
+		return s << L']';
+	}>())
+	(L"clear"sv, t_member<void(*)(t_list&), [](auto a_self)
+	{
+		a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			a_self.f_clear();
+		});
+	}>())
+	(global->f_symbol_size(), t_member<size_t(*)(t_list&), [](auto a_self)
+	{
+		return a_self.template f_owned_or_shared<std::shared_lock>([&]
+		{
+			return a_self.f_size();
+		});
+	}>())
+	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), [](auto a_self, auto a_index)
+	{
+		return a_self.template f_owned_or_shared<std::shared_lock>([&]
+		{
+			return t_pvalue(a_self[a_index]);
+		});
+	}>())
+	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), [](auto a_self, auto a_index, auto a_value)
+	{
+		return a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			return t_pvalue(a_self[a_index] = a_value);
+		});
+	}>())
+	(L"push"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_value)
+	{
+		a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			a_self.f_push(a_value);
+		});
+	}>())
+	(L"pop"sv, t_member<t_pvalue(*)(t_list&), [](auto a_self)
+	{
+		return a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			return a_self.f_pop();
+		});
+	}>())
+	(L"unshift"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_value)
+	{
+		a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			a_self.f_unshift(a_value);
+		});
+	}>())
+	(L"shift"sv, t_member<t_pvalue(*)(t_list&), [](auto a_self)
+	{
+		return a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			return a_self.f_shift();
+		});
+	}>())
+	(L"insert"sv, t_member<void(*)(t_list&, intptr_t, const t_pvalue&), [](auto a_self, auto a_index, auto a_value)
+	{
+		a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			a_self.f_insert(a_index, a_value);
+		});
+	}>())
+	(L"remove"sv, t_member<t_pvalue(*)(t_list&, intptr_t), [](auto a_self, auto a_index)
+	{
+		return a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			return a_self.f_remove(a_index);
+		});
+	}>())
+	(L"each"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_callable)
+	{
+		size_t i = 0;
+		while (true) {
+			t_pvalue x;
+			if (!a_self.template f_owned_or_shared<std::shared_lock>([&]
+			{
+				if (i >= a_self.f_size()) return false;
+				x = a_self[i];
+				return true;
+			})) break;
+			a_callable(x);
+			++i;
+		}
+	}>())
+	(L"sort"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_less)
+	{
+		t_object* object;
+		size_t head = 0;
+		size_t size = 0;
+		size_t grow = 0;
+		size_t shrink = 0;
+		a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			object = a_self.v_tuple;
+			a_self.v_tuple = nullptr;
+			std::swap(a_self.v_head, head);
+			std::swap(a_self.v_size, size);
+			std::swap(a_self.v_grow, grow);
+			std::swap(a_self.v_shrink, shrink);
+		});
+		if (!object) return;
+		auto& tuple = object->f_as<t_tuple>();
+		auto p = reinterpret_cast<t_rvalue*>(&tuple[0]);
+		if ((head + size > tuple.f_size())) {
+			std::rotate(p, p + head, p + tuple.f_size());
+			head = 0;
+		} else {
+			p += head;
+		}
+		std::sort(p, p + size, [&](const auto& x, const auto& y)
+		{
+			return f_as<bool>(a_less(x, y));
+		});
+		a_self.template f_owned_or_shared<std::lock_guard>([&]
+		{
+			a_self.v_tuple = object;
+			a_self.v_head = head;
+			a_self.v_size = size;
+			a_self.v_grow = grow;
+			a_self.v_shrink = shrink;
+		});
+	}>())
 	.f_derive<t_list, t_sharable>();
 }
 

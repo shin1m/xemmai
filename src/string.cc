@@ -12,14 +12,33 @@ void t_type_of<t_string>::f_define()
 {
 	auto global = f_global();
 	t_define{global}
-		(L"from_code"sv, t_static<t_object*(*)(t_global*, intptr_t), f_from_code>())
-		(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), f_string>())
-		(global->f_symbol_size(), t_member<size_t(t_string::*)() const, &t_string::f_size>())
-		(L"substring"sv,
-			t_member<t_object*(*)(t_global*, const t_string&, size_t), f_substring>(),
-			t_member<t_object*(*)(t_global*, const t_string&, size_t, size_t), f_substring>()
-		)
-		(L"code_at"sv, t_member<intptr_t(*)(const t_string&, size_t), f_code_at>())
+	(L"from_code"sv, t_static<t_object*(*)(t_global*, intptr_t), [](auto a_library, auto a_code)
+	{
+		wchar_t c = a_code;
+		return f__construct(a_library->template f_type<t_string>(), &c, 1);
+	}>())
+	(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), [](auto a_self) -> t_object*
+	{
+		return a_self;
+	}>())
+	(global->f_symbol_size(), t_member<size_t(t_string::*)() const, &t_string::f_size>())
+	(L"substring"sv,
+		t_member<t_object*(*)(t_global*, const t_string&, size_t), [](auto a_library, auto a_self, auto a_i)
+		{
+			if ((a_i > a_self.f_size())) f_throw(L"out of range."sv);
+			return f__substring(a_library, a_self, a_i, a_self.f_size() - a_i);
+		}>(),
+		t_member<t_object*(*)(t_global*, const t_string&, size_t, size_t), [](auto a_library, auto a_self, auto a_i, auto a_n)
+		{
+			if ((a_i > a_self.f_size())) f_throw(L"out of range."sv);
+			return f__substring(a_library, a_self, a_i, std::min(a_n, a_self.f_size() - a_i));
+		}>()
+	)
+	(L"code_at"sv, t_member<intptr_t(*)(const t_string&, size_t), [](auto a_self, auto a_i) -> intptr_t
+	{
+		if (a_i >= a_self.f_size()) f_throw(L"out of range."sv);
+		return a_self[a_i];
+	}>())
 	.f_derive<t_string, t_object>();
 }
 

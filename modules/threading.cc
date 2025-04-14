@@ -10,8 +10,6 @@ struct t_type_of<std::mutex> : t_holds<std::mutex>
 {
 	using t_library = t_threading;
 
-	static void f_acquire(std::mutex& a_self);
-	static void f_release(std::mutex& a_self);
 	static void f_define(t_threading* a_library);
 
 	using t_base::t_base;
@@ -23,10 +21,6 @@ struct t_type_of<std::condition_variable> : t_holds<std::condition_variable>
 {
 	using t_library = t_threading;
 
-	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex);
-	static void f_wait(std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds);
-	static void f_signal(std::condition_variable& a_self);
-	static void f_broadcast(std::condition_variable& a_self);
 	static void f_define(t_threading* a_library);
 
 	using t_base::t_base;
@@ -46,22 +40,15 @@ XEMMAI__LIBRARY__BASE(t_threading, t_global, f_global())
 XEMMAI__LIBRARY__TYPE_AS(t_threading, std::mutex, mutex)
 XEMMAI__LIBRARY__TYPE_AS(t_threading, std::condition_variable, condition)
 
-void t_type_of<std::mutex>::f_acquire(std::mutex& a_self)
-{
-	t_safe_region region;
-	a_self.lock();
-}
-
-void t_type_of<std::mutex>::f_release(std::mutex& a_self)
-{
-	a_self.unlock();
-}
-
 void t_type_of<std::mutex>::f_define(t_threading* a_library)
 {
 	t_define{a_library}
-		(L"acquire"sv, t_member<void(*)(std::mutex&), f_acquire>())
-		(L"release"sv, t_member<void(*)(std::mutex&), f_release>())
+	(L"acquire"sv, t_member<void(*)(std::mutex&), [](auto a_self)
+	{
+		t_safe_region region;
+		a_self.lock();
+	}>())
+	(L"release"sv, t_member<void(std::mutex::*)(), &std::mutex::unlock>())
 	.f_derive<std::mutex, t_object>();
 }
 
@@ -70,39 +57,25 @@ t_pvalue t_type_of<std::mutex>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 	return t_construct<>::t_bind<std::mutex>::f_do(this, a_stack, a_n);
 }
 
-void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex)
-{
-	t_safe_region region;
-	std::unique_lock lock(a_mutex, std::defer_lock);
-	a_self.wait(lock);
-}
-
-void t_type_of<std::condition_variable>::f_wait(std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds)
-{
-	t_safe_region region;
-	std::unique_lock lock(a_mutex, std::defer_lock);
-	a_self.wait_for(lock, std::chrono::milliseconds(a_milliseconds));
-}
-
-void t_type_of<std::condition_variable>::f_signal(std::condition_variable& a_self)
-{
-	a_self.notify_one();
-}
-
-void t_type_of<std::condition_variable>::f_broadcast(std::condition_variable& a_self)
-{
-	a_self.notify_all();
-}
-
 void t_type_of<std::condition_variable>::f_define(t_threading* a_library)
 {
 	t_define{a_library}
-		(L"wait"sv,
-			t_member<void(*)(std::condition_variable&, std::mutex&), f_wait>(),
-			t_member<void(*)(std::condition_variable&, std::mutex&, size_t), f_wait>()
-		)
-		(L"signal"sv, t_member<void(*)(std::condition_variable&), f_signal>())
-		(L"broadcast"sv, t_member<void(*)(std::condition_variable&), f_broadcast>())
+	(L"wait"sv,
+		t_member<void(*)(std::condition_variable&, std::mutex&), [](auto a_self, auto a_mutex)
+		{
+			t_safe_region region;
+			std::unique_lock lock(a_mutex, std::defer_lock);
+			a_self.wait(lock);
+		}>(),
+		t_member<void(*)(std::condition_variable&, std::mutex&, size_t), [](auto a_self, auto a_mutex, auto a_milliseconds)
+		{
+			t_safe_region region;
+			std::unique_lock lock(a_mutex, std::defer_lock);
+			a_self.wait_for(lock, std::chrono::milliseconds(a_milliseconds));
+		}>()
+	)
+	(L"signal"sv, t_member<void(std::condition_variable::*)(), &std::condition_variable::notify_one>())
+	(L"broadcast"sv, t_member<void(std::condition_variable::*)(), &std::condition_variable::notify_all>())
 	.f_derive<std::condition_variable, t_object>();
 }
 
@@ -122,8 +95,8 @@ std::vector<std::pair<t_root, t_rvalue>> t_threading::f_define()
 	t_type_of<std::mutex>::f_define(this);
 	t_type_of<std::condition_variable>::f_define(this);
 	return t_define(this)
-		(L"Mutex"sv, static_cast<t_object*>(v_type_mutex))
-		(L"Condition"sv, static_cast<t_object*>(v_type_condition))
+	(L"Mutex"sv, static_cast<t_object*>(v_type_mutex))
+	(L"Condition"sv, static_cast<t_object*>(v_type_condition))
 	;
 }
 

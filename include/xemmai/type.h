@@ -115,9 +115,6 @@ struct t_type_of<t_object>
 	{
 		return std::forward<decltype(a_value)>(a_value);
 	}
-	XEMMAI__LOCAL static void f_initialize(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
-	XEMMAI__LOCAL static void f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n);
-	XEMMAI__LOCAL static t_object* f__string(const t_pvalue& a_self);
 	static intptr_t f__hash(const t_pvalue& a_self)
 	{
 		return a_self.f_tag();

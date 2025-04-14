@@ -34,9 +34,9 @@ std::vector<std::pair<t_root, t_rvalue>> t_io::f_define()
 	t_type_of<io::t_writer>::f_define(this);
 	v_type_writer->v_builtin = true;
 	return t_define(this)
-		(L"File"sv, static_cast<t_object*>(v_type_file))
-		(L"Reader"sv, static_cast<t_object*>(v_type_reader))
-		(L"Writer"sv, static_cast<t_object*>(v_type_writer))
+	(L"File"sv, static_cast<t_object*>(v_type_file))
+	(L"Reader"sv, static_cast<t_object*>(v_type_reader))
+	(L"Writer"sv, static_cast<t_object*>(v_type_writer))
 	;
 }
 

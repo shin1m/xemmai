@@ -16,10 +16,10 @@ t_object* t_type_of<t_pair>::f_define(t_container* a_library)
 void t_type_of<t_queue>::f_define(t_container* a_library)
 {
 	t_define{a_library}
-		(f_global()->f_symbol_string(), t_member<t_object*(t_queue::*)(), &t_queue::f_string>())
-		(L"empty"sv, t_member<bool(t_queue::*)(), &t_queue::f_empty>())
-		(L"push"sv, t_member<void(t_queue::*)(t_container*, const t_pvalue&), &t_queue::f_push>())
-		(L"pop"sv, t_member<t_pvalue(t_queue::*)(), &t_queue::f_pop>())
+	(f_global()->f_symbol_string(), t_member<t_object*(t_queue::*)(), &t_queue::f_string>())
+	(L"empty"sv, t_member<bool(t_queue::*)(), &t_queue::f_empty>())
+	(L"push"sv, t_member<void(t_queue::*)(t_container*, const t_pvalue&), &t_queue::f_push>())
+	(L"pop"sv, t_member<t_pvalue(t_queue::*)(), &t_queue::f_pop>())
 	.f_derive<t_queue, t_sharable>();
 }
 
@@ -44,7 +44,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_container::f_define()
 	v_type_pair.f_construct(t_type_of<t_pair>::f_define(this));
 	t_type_of<t_queue>::f_define(this);
 	return t_define(this)
-		(L"Queue"sv, static_cast<t_object*>(v_type_queue))
+	(L"Queue"sv, static_cast<t_object*>(v_type_queue))
 	;
 }
 

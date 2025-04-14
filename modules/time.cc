@@ -46,16 +46,6 @@ double f_now()
 #endif
 }
 
-intptr_t f_tick(t_time* a_library)
-{
-#ifdef __unix__
-	return (f_now() - a_library->v_tick_base) * 1000.0;
-#endif
-#ifdef _WIN32
-	return GetTickCount();
-#endif
-}
-
 inline intptr_t f_item(const t_tuple& a_tuple, size_t a_index)
 {
 	auto& a = a_tuple[a_index];
@@ -76,51 +66,6 @@ const intptr_t v_epoch_days = 1969 * 365 + 1969 / 4 - 1969 / 100 + 1969 / 400;
 const size_t v_month_base_days[] = {
 	0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
 };
-
-double f_compose(const t_tuple& a_value)
-{
-	size_t n = a_value.f_size();
-	if (n < 3) f_throw(L"must have at least 3 items."sv);
-	intptr_t year = f_item(a_value, 0);
-	intptr_t month = f_item(a_value, 1) - 1;
-	year += month / 12;
-	month %= 12;
-	if (month < 0) {
-		--year;
-		month += 12;
-	}
-	intptr_t days = v_month_base_days[month];
-	if (month > 1 && year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ++days;
-	--year;
-	days += year * 365 + year / 4 - year / 100 + year / 400;
-	double t = days + f_item(a_value, 2) - 1 - v_epoch_days;
-	t *= 24.0;
-	if (n >= 4) t += f_item(a_value, 3);
-	t *= 60.0;
-	if (n >= 5) t += f_item(a_value, 4);
-	t *= 60.0;
-	if (n >= 6) t += f_item_with_fraction(a_value, 5);
-	return t;
-}
-
-t_object* f_decompose(double a_value)
-{
-	auto t0 = static_cast<std::time_t>(std::floor(a_value));
-	double fraction = a_value - t0;
-	std::tm* t1 = std::gmtime(&t0);
-	return f_tuple(t1->tm_year + 1900, t1->tm_mon + 1, t1->tm_mday, t1->tm_hour, t1->tm_min, t1->tm_sec + fraction, t1->tm_wday, t1->tm_yday + 1);
-}
-
-intptr_t f_offset()
-{
-	tzset();
-#ifdef __unix__
-	return -timezone;
-#endif
-#ifdef _WIN32
-	return -_timezone;
-#endif
-}
 
 intptr_t f_month_name_to_number(const wchar_t* a_name)
 {
@@ -398,129 +343,6 @@ const wchar_t* v_rfc2822_months[] = {
 	L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"
 };
 
-t_object* f_parse_rfc2822(std::wstring a_value)
-{
-	const wchar_t* s = a_value.c_str();
-	intptr_t day;
-	wchar_t month[4];
-	intptr_t year;
-	intptr_t hour;
-	intptr_t minute;
-	int i;
-	int n = std::swscanf(s, XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR "%n"), &day, month, &year, &hour, &minute, &i);
-	if (n < 5) f_throw(L"invalid format."sv);
-	intptr_t m = f_month_name_to_number(month);
-	if (m <= 0) f_throw(L"invalid format."sv);
-	intptr_t second;
-	wchar_t zone[6];
-	if (s[i] == L':') {
-		n = std::swscanf(s + ++i, XEMMAI__MACRO__L("%2" SCNdPTR " %5ls"), &second, zone);
-		if (n < 2) f_throw(L"invalid format."sv);
-	} else {
-		second = 0;
-		n = std::swscanf(s + i, L" %5ls", zone);
-		if (n < 1) f_throw(L"invalid format."sv);
-	}
-	if (year < 50)
-		year += 2000;
-	else if (year < 1000)
-		year += 1900;
-	return f_tuple(year, m, day, hour, minute, second, f_zone_to_offset(zone));
-}
-
-t_object* f_format_rfc2822(const t_tuple& a_value, intptr_t a_offset)
-{
-	size_t n = a_value.f_size();
-	if (n < 7) f_throw(L"must have at least 7 items."sv);
-	intptr_t year = f_item(a_value, 0);
-	intptr_t month = f_item(a_value, 1);
-	intptr_t day = f_item(a_value, 2);
-	intptr_t hour = f_item(a_value, 3);
-	intptr_t minute = f_item(a_value, 4);
-	intptr_t second = static_cast<intptr_t>(std::floor(f_item_with_fraction(a_value, 5)));
-	intptr_t week = f_item(a_value, 6);
-	wchar_t sign = a_offset > 0 ? L'+' : L'-';
-	a_offset = std::abs(a_offset) / 60;
-	wchar_t cs[32];
-	n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
-	return t_string::f_instantiate(cs, n);
-}
-
-t_object* f_parse_http(std::wstring a_value)
-{
-	intptr_t day;
-	wchar_t month[4];
-	intptr_t year;
-	intptr_t hour;
-	intptr_t minute;
-	intptr_t second;
-	int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
-	if (n < 6) {
-		n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*l[A-Za-z], %2" SCNdPTR "-%3ls-%2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
-		if (n < 6) {
-			n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls %3ls %2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " %4" SCNdPTR), month, &day, &hour, &minute, &second, &year);
-			if (n < 6) f_throw(L"invalid format."sv);
-		}
-	}
-	intptr_t m = f_month_name_to_number(month);
-	if (m <= 0) f_throw(L"invalid format."sv);
-	if (year < 50)
-		year += 2000;
-	else if (year < 1000)
-		year += 1900;
-	return f_tuple(year, m, day, hour, minute, second);
-}
-
-t_object* f_format_http(const t_tuple& a_value)
-{
-	if (a_value.f_size() < 7) f_throw(L"must have at least 7 items."sv);
-	intptr_t year = f_item(a_value, 0);
-	intptr_t month = f_item(a_value, 1);
-	intptr_t day = f_item(a_value, 2);
-	intptr_t hour = f_item(a_value, 3);
-	intptr_t minute = f_item(a_value, 4);
-	intptr_t second = static_cast<intptr_t>(std::floor(f_item_with_fraction(a_value, 5)));
-	intptr_t week = f_item(a_value, 6);
-	wchar_t cs[30];
-	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
-	return t_string::f_instantiate(cs, n);
-}
-
-t_object* f_parse_xsd(std::wstring a_value)
-{
-	intptr_t year;
-	intptr_t month;
-	intptr_t day;
-	intptr_t hour;
-	intptr_t minute;
-	double second;
-	wchar_t zone[7];
-	int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
-	if (n < 6) f_throw(L"invalid format."sv);
-	return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
-}
-
-t_object* f_format_xsd(const t_tuple& a_value, intptr_t a_offset, intptr_t a_precision)
-{
-	if (a_value.f_size() < 6) f_throw(L"must have at least 6 items."sv);
-	intptr_t year = f_item(a_value, 0);
-	intptr_t month = f_item(a_value, 1);
-	intptr_t day = f_item(a_value, 2);
-	intptr_t hour = f_item(a_value, 3);
-	intptr_t minute = f_item(a_value, 4);
-	double second = f_item_with_fraction(a_value, 5);
-	wchar_t cs[30];
-	size_t n;
-	if (a_offset == 0) {
-		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*fZ"), year, month, day, hour, minute, a_precision, second);
-	} else {
-		wchar_t sign = a_offset > 0 ? L'+' : L'-';
-		a_offset = std::abs(a_offset) / 60;
-		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*f%lc%02" PRIdPTR ":%02" PRIdPTR), year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
-	}
-	return t_string::f_instantiate(cs, n);
-}
-
 }
 
 void t_time::f_scan(t_scan a_scan)
@@ -530,17 +352,175 @@ void t_time::f_scan(t_scan a_scan)
 std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 {
 	return t_define(this)
-		(L"now"sv, t_static<double(*)(), f_now>())
-		(L"tick"sv, t_static<intptr_t(*)(t_time*), f_tick>())
-		(L"compose"sv, t_static<double(*)(const t_tuple&), f_compose>())
-		(L"decompose"sv, t_static<t_object*(*)(double), f_decompose>())
-		(L"offset"sv, t_static<intptr_t(*)(), f_offset>())
-		(L"parse_rfc2822"sv, t_static<t_object*(*)(std::wstring), f_parse_rfc2822>())
-		(L"format_rfc2822"sv, t_static<t_object*(*)(const t_tuple&, intptr_t), f_format_rfc2822>())
-		(L"parse_http"sv, t_static<t_object*(*)(std::wstring), f_parse_http>())
-		(L"format_http"sv, t_static<t_object*(*)(const t_tuple&), f_format_http>())
-		(L"parse_xsd"sv, t_static<t_object*(*)(std::wstring), f_parse_xsd>())
-		(L"format_xsd"sv, t_static<t_object*(*)(const t_tuple&, intptr_t, intptr_t), f_format_xsd>())
+	(L"now"sv, t_static<double(*)(), f_now>())
+	(L"tick"sv, t_static<intptr_t(*)(t_time*), [](auto a_library) -> intptr_t
+	{
+#ifdef __unix__
+		return (f_now() - a_library->v_tick_base) * 1000.0;
+#endif
+#ifdef _WIN32
+		return GetTickCount();
+#endif
+	}>())
+	(L"compose"sv, t_static<double(*)(const t_tuple&), [](auto a_value)
+	{
+		size_t n = a_value.f_size();
+		if (n < 3) f_throw(L"must have at least 3 items."sv);
+		intptr_t year = f_item(a_value, 0);
+		intptr_t month = f_item(a_value, 1) - 1;
+		year += month / 12;
+		month %= 12;
+		if (month < 0) {
+			--year;
+			month += 12;
+		}
+		intptr_t days = v_month_base_days[month];
+		if ((month > 1) && year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ++days;
+		--year;
+		days += year * 365 + year / 4 - year / 100 + year / 400;
+		double t = days + f_item(a_value, 2) - 1 - v_epoch_days;
+		t *= 24.0;
+		if (n >= 4) t += f_item(a_value, 3);
+		t *= 60.0;
+		if (n >= 5) t += f_item(a_value, 4);
+		t *= 60.0;
+		if (n >= 6) t += f_item_with_fraction(a_value, 5);
+		return t;
+	}>())
+	(L"decompose"sv, t_static<t_object*(*)(double), [](auto a_value)
+	{
+		auto t0 = static_cast<std::time_t>(std::floor(a_value));
+		double fraction = a_value - t0;
+		std::tm* t1 = std::gmtime(&t0);
+		return f_tuple(t1->tm_year + 1900, t1->tm_mon + 1, t1->tm_mday, t1->tm_hour, t1->tm_min, t1->tm_sec + fraction, t1->tm_wday, t1->tm_yday + 1);
+	}>())
+	(L"offset"sv, t_static<intptr_t(*)(), []
+	{
+		tzset();
+#ifdef __unix__
+		return -timezone;
+#endif
+#ifdef _WIN32
+		return -_timezone;
+#endif
+	}>())
+	(L"parse_rfc2822"sv, t_static<t_object*(*)(std::wstring), [](auto a_value)
+	{
+		const wchar_t* s = a_value.c_str();
+		intptr_t day;
+		wchar_t month[4];
+		intptr_t year;
+		intptr_t hour;
+		intptr_t minute;
+		int i;
+		int n = std::swscanf(s, XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR "%n"), &day, month, &year, &hour, &minute, &i);
+		if (n < 5) f_throw(L"invalid format."sv);
+		intptr_t m = f_month_name_to_number(month);
+		if (m <= 0) f_throw(L"invalid format."sv);
+		intptr_t second;
+		wchar_t zone[6];
+		if (s[i] == L':') {
+			n = std::swscanf(s + ++i, XEMMAI__MACRO__L("%2" SCNdPTR " %5ls"), &second, zone);
+			if (n < 2) f_throw(L"invalid format."sv);
+		} else {
+			second = 0;
+			n = std::swscanf(s + i, L" %5ls", zone);
+			if (n < 1) f_throw(L"invalid format."sv);
+		}
+		if (year < 50)
+			year += 2000;
+		else if (year < 1000)
+			year += 1900;
+		return f_tuple(year, m, day, hour, minute, second, f_zone_to_offset(zone));
+	}>())
+	(L"format_rfc2822"sv, t_static<t_object*(*)(const t_tuple&, intptr_t), [](auto a_value, auto a_offset)
+	{
+		size_t n = a_value.f_size();
+		if (n < 7) f_throw(L"must have at least 7 items."sv);
+		intptr_t year = f_item(a_value, 0);
+		intptr_t month = f_item(a_value, 1);
+		intptr_t day = f_item(a_value, 2);
+		intptr_t hour = f_item(a_value, 3);
+		intptr_t minute = f_item(a_value, 4);
+		intptr_t second = static_cast<intptr_t>(std::floor(f_item_with_fraction(a_value, 5)));
+		intptr_t week = f_item(a_value, 6);
+		wchar_t sign = (a_offset > 0) ? L'+' : L'-';
+		a_offset = std::abs(a_offset) / 60;
+		wchar_t cs[32];
+		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
+		return t_string::f_instantiate(cs, n);
+	}>())
+	(L"parse_http"sv, t_static<t_object*(*)(std::wstring), [](auto a_value)
+	{
+		intptr_t day;
+		wchar_t month[4];
+		intptr_t year;
+		intptr_t hour;
+		intptr_t minute;
+		intptr_t second;
+		int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
+		if (n < 6) {
+			n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*l[A-Za-z], %2" SCNdPTR "-%3ls-%2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
+			if (n < 6) {
+				n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls %3ls %2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " %4" SCNdPTR), month, &day, &hour, &minute, &second, &year);
+				if (n < 6) f_throw(L"invalid format."sv);
+			}
+		}
+		intptr_t m = f_month_name_to_number(month);
+		if (m <= 0) f_throw(L"invalid format."sv);
+		if (year < 50)
+			year += 2000;
+		else if (year < 1000)
+			year += 1900;
+		return f_tuple(year, m, day, hour, minute, second);
+	}>())
+	(L"format_http"sv, t_static<t_object*(*)(const t_tuple&), [](auto a_value)
+	{
+		if (a_value.f_size() < 7) f_throw(L"must have at least 7 items."sv);
+		intptr_t year = f_item(a_value, 0);
+		intptr_t month = f_item(a_value, 1);
+		intptr_t day = f_item(a_value, 2);
+		intptr_t hour = f_item(a_value, 3);
+		intptr_t minute = f_item(a_value, 4);
+		intptr_t second = static_cast<intptr_t>(std::floor(f_item_with_fraction(a_value, 5)));
+		intptr_t week = f_item(a_value, 6);
+		wchar_t cs[30];
+		size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
+		return t_string::f_instantiate(cs, n);
+	}>())
+	(L"parse_xsd"sv, t_static<t_object*(*)(std::wstring), [](auto a_value)
+	{
+		intptr_t year;
+		intptr_t month;
+		intptr_t day;
+		intptr_t hour;
+		intptr_t minute;
+		double second;
+		wchar_t zone[7];
+		int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
+		if (n < 6) f_throw(L"invalid format."sv);
+		return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
+	}>())
+	(L"format_xsd"sv, t_static<t_object*(*)(const t_tuple&, intptr_t, intptr_t), [](auto a_value, auto a_offset, auto a_precision)
+	{
+		if (a_value.f_size() < 6) f_throw(L"must have at least 6 items."sv);
+		intptr_t year = f_item(a_value, 0);
+		intptr_t month = f_item(a_value, 1);
+		intptr_t day = f_item(a_value, 2);
+		intptr_t hour = f_item(a_value, 3);
+		intptr_t minute = f_item(a_value, 4);
+		double second = f_item_with_fraction(a_value, 5);
+		wchar_t cs[30];
+		size_t n;
+		if (a_offset == 0) {
+			n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*fZ"), year, month, day, hour, minute, a_precision, second);
+		} else {
+			wchar_t sign = (a_offset > 0) ? L'+' : L'-';
+			a_offset = std::abs(a_offset) / 60;
+			n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*f%lc%02" PRIdPTR ":%02" PRIdPTR), year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
+		}
+		return t_string::f_instantiate(cs, n);
+	}>())
 	;
 }
 

@@ -618,12 +618,6 @@ inline t_pvalue t_type_of<t_string>::f_transfer(const t_global* a_library, auto&
 	return a_value.empty() ? a_library->f_string_empty() : f__construct(a_library->f_type<t_string>(), std::forward<decltype(a_value)>(a_value));
 }
 
-inline t_object* t_type_of<t_string>::f_from_code(t_global* a_library, intptr_t a_code)
-{
-	wchar_t c = a_code;
-	return f__construct(a_library->f_type<t_string>(), &c, 1);
-}
-
 inline t_object* t_type_of<t_string>::f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)
 {
 	return a_n > 0 ? f__construct(a_library->f_type<t_string>(), static_cast<const wchar_t*>(a_self) + a_i, a_n) : a_library->f_string_empty();

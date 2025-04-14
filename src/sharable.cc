@@ -20,8 +20,8 @@ void t_sharable::f_share()
 void t_type_of<t_sharable>::f_define()
 {
 	t_define{f_global()}
-		(L"own"sv, t_member<void(t_sharable::*)(), &t_sharable::f_own>())
-		(L"share"sv, t_member<void(t_sharable::*)(), &t_sharable::f_share>())
+	(L"own"sv, t_member<void(t_sharable::*)(), &t_sharable::f_own>())
+	(L"share"sv, t_member<void(t_sharable::*)(), &t_sharable::f_share>())
 	.f_derive<t_sharable, t_object>();
 }
 

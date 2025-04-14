@@ -48,7 +48,7 @@ void t_enum::f_scan(t_scan a_scan)
 std::vector<std::pair<t_root, t_rvalue>> t_enum::f_define()
 {
 	return t_define(this)
-		(L"Number"sv, t_type_of<t_number>::f_define(this))
+	(L"Number"sv, t_type_of<t_number>::f_define(this))
 	;
 }
 

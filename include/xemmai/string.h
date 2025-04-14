@@ -101,11 +101,6 @@ struct t_type_of<t_string> : t_holds<t_string>
 		return object;
 	}
 	static t_pvalue f_transfer(const t_global* a_library, auto&& a_value);
-	static t_object* f_from_code(t_global* a_library, intptr_t a_code);
-	static t_object* f_string(const t_pvalue& a_self)
-	{
-		return a_self;
-	}
 	static XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f__add(t_object* a_self, const t_pvalue& a_value)
 	{
 		auto add = [&](t_object* x)
@@ -125,21 +120,6 @@ struct t_type_of<t_string> : t_holds<t_string>
 		return f_is<t_string>(a_value) && a_self == a_value->f_as<t_string>();
 	}
 	static t_object* f__substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n);
-	static t_object* f_substring(t_global* a_library, const t_string& a_self, size_t a_i)
-	{
-		if (a_i > a_self.f_size()) f_throw(L"out of range."sv);
-		return f__substring(a_library, a_self, a_i, a_self.f_size() - a_i);
-	}
-	static t_object* f_substring(t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)
-	{
-		if (a_i > a_self.f_size()) f_throw(L"out of range."sv);
-		return f__substring(a_library, a_self, a_i, std::min(a_n, a_self.f_size() - a_i));
-	}
-	static intptr_t f_code_at(const t_string& a_self, size_t a_i)
-	{
-		if (a_i >= a_self.f_size()) f_throw(L"out of range."sv);
-		return a_self[a_i];
-	}
 	XEMMAI__LOCAL static void f_define();
 
 	using t_base::t_base;
