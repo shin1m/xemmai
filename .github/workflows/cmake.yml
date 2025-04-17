@@ -9,7 +9,7 @@ jobs:
         configuration: [Debug, Release]
         include:
           - os: ubuntu-latest
-            cxx: g++-12
+            cxx: g++-14
     steps:
       - uses: actions/checkout@v3
       - name: Prepare vcpkg
