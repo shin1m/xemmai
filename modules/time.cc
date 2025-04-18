@@ -404,9 +404,9 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		return -_timezone;
 #endif
 	}>())
-	(L"parse_rfc2822"sv, t_static<t_object*(*)(std::wstring), [](std::wstring a_value)
+	(L"parse_rfc2822"sv, t_static<t_object*(*)(const t_string&), [](const t_string& a_value)
 	{
-		const wchar_t* s = a_value.c_str();
+		const wchar_t* s = a_value;
 		intptr_t day;
 		wchar_t month[4];
 		intptr_t year;
@@ -450,7 +450,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
 		return t_string::f_instantiate(cs, n);
 	}>())
-	(L"parse_http"sv, t_static<t_object*(*)(std::wstring), [](std::wstring a_value)
+	(L"parse_http"sv, t_static<t_object*(*)(const t_string&), [](const t_string& a_value)
 	{
 		intptr_t day;
 		wchar_t month[4];
@@ -458,11 +458,11 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		intptr_t hour;
 		intptr_t minute;
 		intptr_t second;
-		int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
+		int n = std::swscanf(a_value, XEMMAI__MACRO__L("%*3ls, %2" SCNdPTR " %3ls %4" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
 		if (n < 6) {
-			n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*l[A-Za-z], %2" SCNdPTR "-%3ls-%2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
+			n = std::swscanf(a_value, XEMMAI__MACRO__L("%*l[A-Za-z], %2" SCNdPTR "-%3ls-%2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " GMT"), &day, month, &year, &hour, &minute, &second);
 			if (n < 6) {
-				n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%*3ls %3ls %2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " %4" SCNdPTR), month, &day, &hour, &minute, &second, &year);
+				n = std::swscanf(a_value, XEMMAI__MACRO__L("%*3ls %3ls %2" SCNdPTR " %2" SCNdPTR ":%2" SCNdPTR ":%2" SCNdPTR " %4" SCNdPTR), month, &day, &hour, &minute, &second, &year);
 				if (n < 6) f_throw(L"invalid format."sv);
 			}
 		}
@@ -488,7 +488,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
 		return t_string::f_instantiate(cs, n);
 	}>())
-	(L"parse_xsd"sv, t_static<t_object*(*)(std::wstring), [](std::wstring a_value)
+	(L"parse_xsd"sv, t_static<t_object*(*)(const t_string&), [](const t_string& a_value)
 	{
 		intptr_t year;
 		intptr_t month;
@@ -497,7 +497,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		intptr_t minute;
 		double second;
 		wchar_t zone[7];
-		int n = std::swscanf(a_value.c_str(), XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
+		int n = std::swscanf(a_value, XEMMAI__MACRO__L("%5" SCNdPTR "-%2" SCNdPTR "-%2" SCNdPTR "T%2" SCNdPTR ":%2" SCNdPTR ":%lf%6ls"), &year, &month, &day, &hour, &minute, &second, zone);
 		if (n < 6) f_throw(L"invalid format."sv);
 		return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
 	}>())
