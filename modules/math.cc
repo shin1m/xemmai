@@ -50,7 +50,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_math::f_define()
 	(L"fabs"sv, t_static<double(*)(double), std::fabs>())
 	(L"floor"sv, t_static<double(*)(double), std::floor>())
 	(L"fmod"sv, t_static<double(*)(double, double), std::fmod>())
-	(L"frexp"sv, t_static<t_object*(*)(double), [](auto a_value)
+	(L"frexp"sv, t_static<t_object*(*)(double), [](double a_value)
 	{
 		int e;
 		double m = std::frexp(a_value, &e);
@@ -59,7 +59,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_math::f_define()
 	(L"ldexp"sv, t_static<double(*)(double, int), std::ldexp>())
 	(L"log"sv, t_static<double(*)(double), std::log>())
 	(L"log10"sv, t_static<double(*)(double), std::log10>())
-	(L"modf"sv, t_static<t_object*(*)(double), [](auto a_value)
+	(L"modf"sv, t_static<t_object*(*)(double), [](double a_value)
 	{
 		double i;
 		double f = std::modf(a_value, &i);

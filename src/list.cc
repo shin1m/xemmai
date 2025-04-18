@@ -121,7 +121,7 @@ void t_type_of<t_list>::f_define()
 {
 	auto global = f_global();
 	t_define{global}
-	(global->f_symbol_string(), t_member<t_object*(*)(t_list&), [](auto a_self) -> t_object*
+	(global->f_symbol_string(), t_member<t_object*(*)(t_list&), [](t_list& a_self) -> t_object*
 	{
 		t_stringer s;
 		s << L'[';
@@ -146,77 +146,77 @@ void t_type_of<t_list>::f_define()
 		}
 		return s << L']';
 	}>())
-	(L"clear"sv, t_member<void(*)(t_list&), [](auto a_self)
+	(L"clear"sv, t_member<void(*)(t_list&), [](t_list& a_self)
 	{
 		a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			a_self.f_clear();
 		});
 	}>())
-	(global->f_symbol_size(), t_member<size_t(*)(t_list&), [](auto a_self)
+	(global->f_symbol_size(), t_member<size_t(*)(t_list&), [](t_list& a_self)
 	{
 		return a_self.template f_owned_or_shared<std::shared_lock>([&]
 		{
 			return a_self.f_size();
 		});
 	}>())
-	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), [](auto a_self, auto a_index)
+	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), [](t_list& a_self, intptr_t a_index)
 	{
 		return a_self.template f_owned_or_shared<std::shared_lock>([&]
 		{
 			return t_pvalue(a_self[a_index]);
 		});
 	}>())
-	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), [](auto a_self, auto a_index, auto a_value)
+	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), [](t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
 	{
 		return a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			return t_pvalue(a_self[a_index] = a_value);
 		});
 	}>())
-	(L"push"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_value)
+	(L"push"sv, t_member<void(*)(t_list&, const t_pvalue&), [](t_list& a_self, const t_pvalue& a_value)
 	{
 		a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			a_self.f_push(a_value);
 		});
 	}>())
-	(L"pop"sv, t_member<t_pvalue(*)(t_list&), [](auto a_self)
+	(L"pop"sv, t_member<t_pvalue(*)(t_list&), [](t_list& a_self)
 	{
 		return a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			return a_self.f_pop();
 		});
 	}>())
-	(L"unshift"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_value)
+	(L"unshift"sv, t_member<void(*)(t_list&, const t_pvalue&), [](t_list& a_self, const t_pvalue& a_value)
 	{
 		a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			a_self.f_unshift(a_value);
 		});
 	}>())
-	(L"shift"sv, t_member<t_pvalue(*)(t_list&), [](auto a_self)
+	(L"shift"sv, t_member<t_pvalue(*)(t_list&), [](t_list& a_self)
 	{
 		return a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			return a_self.f_shift();
 		});
 	}>())
-	(L"insert"sv, t_member<void(*)(t_list&, intptr_t, const t_pvalue&), [](auto a_self, auto a_index, auto a_value)
+	(L"insert"sv, t_member<void(*)(t_list&, intptr_t, const t_pvalue&), [](t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
 	{
 		a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			a_self.f_insert(a_index, a_value);
 		});
 	}>())
-	(L"remove"sv, t_member<t_pvalue(*)(t_list&, intptr_t), [](auto a_self, auto a_index)
+	(L"remove"sv, t_member<t_pvalue(*)(t_list&, intptr_t), [](t_list& a_self, intptr_t a_index)
 	{
 		return a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{
 			return a_self.f_remove(a_index);
 		});
 	}>())
-	(L"each"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_callable)
+	(L"each"sv, t_member<void(*)(t_list&, const t_pvalue&), [](t_list& a_self, const t_pvalue& a_callable)
 	{
 		size_t i = 0;
 		while (true) {
@@ -231,7 +231,7 @@ void t_type_of<t_list>::f_define()
 			++i;
 		}
 	}>())
-	(L"sort"sv, t_member<void(*)(t_list&, const t_pvalue&), [](auto a_self, auto a_less)
+	(L"sort"sv, t_member<void(*)(t_list&, const t_pvalue&), [](t_list& a_self, const t_pvalue& a_less)
 	{
 		t_object* object;
 		size_t head = 0;

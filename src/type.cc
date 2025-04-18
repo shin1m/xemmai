@@ -23,7 +23,7 @@ void t_type::f_define()
 		a_stack[0] = nullptr;
 	})
 	(global->f_symbol_call(), f_not_supported)
-	(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), [](auto a_self)
+	(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), [](const t_pvalue& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];
 		size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));

@@ -96,7 +96,7 @@ t_pvalue t_type_of<t_client>::f_transfer(t_library* a_library, t_client* a_value
 void t_type_of<t_client>::f_define(t_callback_library* a_library)
 {
 	t_define{a_library}
-	(a_library->v_symbol_on_message, t_member<void(*)(t_client&, std::wstring_view), [](auto a_self, auto a_message)
+	(a_library->v_symbol_on_message, t_member<void(*)(t_client&, std::wstring_view), [](t_client& a_self, std::wstring_view a_message)
 	{
 		if (dynamic_cast<t_client_wrapper*>(&a_self))
 			a_self.t_client::f_on_message(a_message);
@@ -109,7 +109,7 @@ void t_type_of<t_client>::f_define(t_callback_library* a_library)
 
 t_pvalue t_type_of<t_client>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_construct_with<t_object*(*)(t_type*), [](auto a_class)
+	return t_construct_with<t_object*(*)(t_type*), [](t_type* a_class)
 	{
 		auto object = a_class->template f_new<t_client*>(new t_client_wrapper);
 		object->template f_as<t_client_wrapper*>()->v_self = object;

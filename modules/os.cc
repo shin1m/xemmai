@@ -246,7 +246,7 @@ void t_type_of<portable::t_path>::f_define(t_os* a_library)
 
 t_pvalue t_type_of<portable::t_path>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_construct_with<t_object*(*)(t_type*, std::wstring_view), [](auto a_class, auto a_value)
+	return t_construct_with<t_object*(*)(t_type*, std::wstring_view), [](t_type* a_class, std::wstring_view a_value)
 	{
 		return a_class->template f_new<portable::t_path>(a_value);
 	}>::f_do(this, a_stack, a_n);
@@ -405,12 +405,12 @@ std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()
 #ifdef __unix__
 	(L"Child"sv, static_cast<t_object*>(v_type_child))
 #endif
-	(L"system"sv, t_static<int(*)(std::wstring_view), [](auto a_command)
+	(L"system"sv, t_static<int(*)(std::wstring_view), [](std::wstring_view a_command)
 	{
 		t_safe_region region;
 		return std::system(portable::f_convert(a_command).c_str());
 	}>())
-	(L"sleep"sv, t_static<void(*)(intptr_t), [](auto a_miliseconds)
+	(L"sleep"sv, t_static<void(*)(intptr_t), [](intptr_t a_miliseconds)
 	{
 		t_safe_region region;
 #ifdef __unix__

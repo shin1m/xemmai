@@ -110,7 +110,7 @@ template<typename... T_an>
 struct t_construct
 {
 	template<typename T_self>
-	using t_bind = t_construct_with<t_object*(*)(t_type*, T_an&&...), [](auto a_class, auto... a_an)
+	using t_bind = t_construct_with<t_object*(*)(t_type*, T_an&&...), [](t_type* a_class, T_an&&... a_an)
 	{
 		return a_class->template f_new<T_self>(std::forward<T_an>(a_an)...);
 	}>;

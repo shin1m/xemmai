@@ -43,12 +43,19 @@ XEMMAI__LIBRARY__TYPE_AS(t_threading, std::condition_variable, condition)
 void t_type_of<std::mutex>::f_define(t_threading* a_library)
 {
 	t_define{a_library}
-	(L"acquire"sv, t_member<void(*)(std::mutex&), [](auto a_self)
+	(L"acquire"sv, t_member<void(*)(std::mutex&), [](std::mutex& a_self)
 	{
 		t_safe_region region;
 		a_self.lock();
 	}>())
+#ifdef _MSC_VER
+	(L"release"sv, t_member<void(*)(std::mutex&), [](std::mutex& a_self)
+	{
+		a_self.unlock();
+	}>())
+#else
 	(L"release"sv, t_member<void(std::mutex::*)(), &std::mutex::unlock>())
+#endif
 	.f_derive<std::mutex, t_object>();
 }
 
@@ -61,13 +68,13 @@ void t_type_of<std::condition_variable>::f_define(t_threading* a_library)
 {
 	t_define{a_library}
 	(L"wait"sv,
-		t_member<void(*)(std::condition_variable&, std::mutex&), [](auto a_self, auto a_mutex)
+		t_member<void(*)(std::condition_variable&, std::mutex&), [](std::condition_variable& a_self, std::mutex& a_mutex)
 		{
 			t_safe_region region;
 			std::unique_lock lock(a_mutex, std::defer_lock);
 			a_self.wait(lock);
 		}>(),
-		t_member<void(*)(std::condition_variable&, std::mutex&, size_t), [](auto a_self, auto a_mutex, auto a_milliseconds)
+		t_member<void(*)(std::condition_variable&, std::mutex&, size_t), [](std::condition_variable& a_self, std::mutex& a_mutex, size_t a_milliseconds)
 		{
 			t_safe_region region;
 			std::unique_lock lock(a_mutex, std::defer_lock);

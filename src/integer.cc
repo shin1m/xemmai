@@ -169,11 +169,11 @@ void t_type_of<intptr_t>::f_define()
 t_pvalue t_type_of<intptr_t>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	return t_overload<
-		t_construct_with<t_pvalue(*)(t_type*, intptr_t), [](auto a_class, auto a_value)
+		t_construct_with<t_pvalue(*)(t_type*, intptr_t), [](t_type* a_class, intptr_t a_value)
 		{
 			return t_pvalue(a_value);
 		}>,
-		t_construct_with<t_pvalue(*)(t_type*, double), [](auto a_class, auto a_value)
+		t_construct_with<t_pvalue(*)(t_type*, double), [](t_type* a_class, double a_value)
 		{
 			return t_pvalue(static_cast<intptr_t>(a_value));
 		}>,

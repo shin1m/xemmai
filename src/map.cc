@@ -117,7 +117,7 @@ void t_type_of<t_map>::f_define()
 	auto global = f_global();
 	t_define{global}.f_derive<t_map::t_table, t_object>();
 	t_define{global}
-	(global->f_symbol_string(), t_member<t_object*(*)(t_map&), [](auto a_self) -> t_object*
+	(global->f_symbol_string(), t_member<t_object*(*)(t_map&), [](t_map& a_self) -> t_object*
 	{
 		t_stringer s;
 		s << L'{';
@@ -146,49 +146,49 @@ void t_type_of<t_map>::f_define()
 		}
 		return s << L'}';
 	}>())
-	(L"clear"sv, t_member<void(*)(t_map&), [](auto a_self)
+	(L"clear"sv, t_member<void(*)(t_map&), [](t_map& a_self)
 	{
 		a_self.template f_owned_or_shared<t_lock_with_safe_region>([&]
 		{
 			a_self.f_clear();
 		});
 	}>())
-	(global->f_symbol_size(), t_member<size_t(*)(t_map&), [](auto a_self)
+	(global->f_symbol_size(), t_member<size_t(*)(t_map&), [](t_map& a_self)
 	{
 		return a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 		{
 			return a_self.f_size();
 		});
 	}>())
-	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_key)
+	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key)
 	{
 		return a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 		{
 			return t_pvalue(a_self.f_get(a_key));
 		});
 	}>())
-	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), [](auto a_self, auto a_key, auto a_value)
+	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
 	{
 		return a_self.template f_owned_or_shared<t_lock_with_safe_region>([&]
 		{
 			return a_self.f_put(a_key, a_value);
 		});
 	}>())
-	(L"has"sv, t_member<bool(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_key)
+	(L"has"sv, t_member<bool(*)(t_map&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key)
 	{
 		return a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 		{
 			return a_self.f_has(a_key);
 		});
 	}>())
-	(L"remove"sv, t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_key)
+	(L"remove"sv, t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key)
 	{
 		return a_self.template f_owned_or_shared<t_lock_with_safe_region>([&]
 		{
 			return a_self.f_remove(a_key);
 		});
 	}>())
-	(L"each"sv, t_member<void(*)(t_map&, const t_pvalue&), [](auto a_self, auto a_callable)
+	(L"each"sv, t_member<void(*)(t_map&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_callable)
 	{
 		t_map::t_iterator i(a_self);
 		while (true) {

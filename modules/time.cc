@@ -353,7 +353,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 {
 	return t_define(this)
 	(L"now"sv, t_static<double(*)(), f_now>())
-	(L"tick"sv, t_static<intptr_t(*)(t_time*), [](auto a_library) -> intptr_t
+	(L"tick"sv, t_static<intptr_t(*)(t_time*), [](t_time* a_library) -> intptr_t
 	{
 #ifdef __unix__
 		return (f_now() - a_library->v_tick_base) * 1000.0;
@@ -362,7 +362,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		return GetTickCount();
 #endif
 	}>())
-	(L"compose"sv, t_static<double(*)(const t_tuple&), [](auto a_value)
+	(L"compose"sv, t_static<double(*)(const t_tuple&), [](const t_tuple& a_value)
 	{
 		size_t n = a_value.f_size();
 		if (n < 3) f_throw(L"must have at least 3 items."sv);
@@ -387,14 +387,14 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		if (n >= 6) t += f_item_with_fraction(a_value, 5);
 		return t;
 	}>())
-	(L"decompose"sv, t_static<t_object*(*)(double), [](auto a_value)
+	(L"decompose"sv, t_static<t_object*(*)(double), [](double a_value)
 	{
 		auto t0 = static_cast<std::time_t>(std::floor(a_value));
 		double fraction = a_value - t0;
 		std::tm* t1 = std::gmtime(&t0);
 		return f_tuple(t1->tm_year + 1900, t1->tm_mon + 1, t1->tm_mday, t1->tm_hour, t1->tm_min, t1->tm_sec + fraction, t1->tm_wday, t1->tm_yday + 1);
 	}>())
-	(L"offset"sv, t_static<intptr_t(*)(), []
+	(L"offset"sv, t_static<intptr_t(*)(), []() -> intptr_t
 	{
 		tzset();
 #ifdef __unix__
@@ -404,7 +404,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		return -_timezone;
 #endif
 	}>())
-	(L"parse_rfc2822"sv, t_static<t_object*(*)(std::wstring), [](auto a_value)
+	(L"parse_rfc2822"sv, t_static<t_object*(*)(std::wstring), [](std::wstring a_value)
 	{
 		const wchar_t* s = a_value.c_str();
 		intptr_t day;
@@ -433,7 +433,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 			year += 1900;
 		return f_tuple(year, m, day, hour, minute, second, f_zone_to_offset(zone));
 	}>())
-	(L"format_rfc2822"sv, t_static<t_object*(*)(const t_tuple&, intptr_t), [](auto a_value, auto a_offset)
+	(L"format_rfc2822"sv, t_static<t_object*(*)(const t_tuple&, intptr_t), [](const t_tuple& a_value, intptr_t a_offset)
 	{
 		size_t n = a_value.f_size();
 		if (n < 7) f_throw(L"must have at least 7 items."sv);
@@ -450,7 +450,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
 		return t_string::f_instantiate(cs, n);
 	}>())
-	(L"parse_http"sv, t_static<t_object*(*)(std::wstring), [](auto a_value)
+	(L"parse_http"sv, t_static<t_object*(*)(std::wstring), [](std::wstring a_value)
 	{
 		intptr_t day;
 		wchar_t month[4];
@@ -474,7 +474,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 			year += 1900;
 		return f_tuple(year, m, day, hour, minute, second);
 	}>())
-	(L"format_http"sv, t_static<t_object*(*)(const t_tuple&), [](auto a_value)
+	(L"format_http"sv, t_static<t_object*(*)(const t_tuple&), [](const t_tuple& a_value)
 	{
 		if (a_value.f_size() < 7) f_throw(L"must have at least 7 items."sv);
 		intptr_t year = f_item(a_value, 0);
@@ -488,7 +488,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
 		return t_string::f_instantiate(cs, n);
 	}>())
-	(L"parse_xsd"sv, t_static<t_object*(*)(std::wstring), [](auto a_value)
+	(L"parse_xsd"sv, t_static<t_object*(*)(std::wstring), [](std::wstring a_value)
 	{
 		intptr_t year;
 		intptr_t month;
@@ -501,7 +501,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		if (n < 6) f_throw(L"invalid format."sv);
 		return n < 7 ? f_tuple(year, month, day, hour, minute, second) : f_tuple(year, month, day, hour, minute, second, f_zone_to_offset(zone));
 	}>())
-	(L"format_xsd"sv, t_static<t_object*(*)(const t_tuple&, intptr_t, intptr_t), [](auto a_value, auto a_offset, auto a_precision)
+	(L"format_xsd"sv, t_static<t_object*(*)(const t_tuple&, intptr_t, intptr_t), [](const t_tuple& a_value, intptr_t a_offset, intptr_t a_precision)
 	{
 		if (a_value.f_size() < 6) f_throw(L"must have at least 6 items."sv);
 		intptr_t year = f_item(a_value, 0);
