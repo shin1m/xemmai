@@ -381,6 +381,10 @@ public:
 		std::copy(fields.begin(), fields.end(), type.f_fields());
 		std::copy(key2index.begin(), key2index.end(), type.f_key2index());
 	}
+	operator const t_fields&() const
+	{
+		return v_fields;
+	}
 	operator std::vector<std::pair<t_root, t_rvalue>>()
 	{
 		return std::move(v_fields.v_class);
@@ -435,7 +439,7 @@ struct t_enum_of : t_derivable<t_bears<T, t_type_of<intptr_t>>>
 		t_define{a_library}.template f_derive<T, intptr_t>();
 		t_define fields(a_library);
 		a_fields(std::ref(fields));
-		return static_cast<t_type_of<T>*>(a_library->template f_type<T>())->f_do_derive({{}, fields});
+		return static_cast<t_type_of<T>*>(a_library->template f_type<T>())->f_do_derive(fields);
 	}
 
 	using t_derivable<t_bears<T, t_type_of<intptr_t>>>::t_derivable;
