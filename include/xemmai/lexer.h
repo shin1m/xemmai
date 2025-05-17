@@ -83,7 +83,7 @@ private:
 	size_t v_line = 1;
 	size_t v_column = 1;
 	wint_t v_c;
-	t_at v_at{0, 0, 0};
+	t_at v_at;
 	bool v_newline;
 	t_stringer v_indent;
 	t_token v_token;

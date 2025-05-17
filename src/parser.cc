@@ -87,8 +87,8 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))));
-				if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::c_token__RIGHT_PARENTHESIS) call->v_expand = f_expressions(indent, call->v_arguments);
-				if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::c_token__RIGHT_PARENTHESIS) v_lexer.f_next();
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_expressions(indent, call->v_arguments);
+				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				return call;
 			}
 		default:
@@ -96,10 +96,10 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		}
 	case t_lexer::c_token__LEFT_PARENTHESIS:
 		{
+			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto expression = f_expression();
-			if (v_lexer.f_token() != t_lexer::c_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'."sv);
-			v_lexer.f_next();
+			f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 			return expression;
 		}
 	case t_lexer::c_token__ATMARK:
@@ -194,8 +194,8 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_list>()))));
-			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::c_token__RIGHT_BRACKET) call->v_expand = f_expressions(indent, call->v_arguments);
-			if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::c_token__RIGHT_BRACKET) v_lexer.f_next();
+			if (f_any(indent, t_lexer::c_token__RIGHT_BRACKET)) call->v_expand = f_expressions(indent, call->v_arguments);
+			f_close(indent, t_lexer::c_token__RIGHT_BRACKET);
 			return call;
 		}
 	case t_lexer::c_token__LEFT_BRACE:
@@ -203,7 +203,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_map>()))));
-			if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::c_token__RIGHT_BRACE)
+			if (f_any(indent, t_lexer::c_token__RIGHT_BRACE))
 				while (true) {
 					call->v_arguments.push_back(f_expression());
 					if (!f_single_colon()) f_throw(L"expecting ':'."sv);
@@ -216,7 +216,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 					}
 					if (!v_lexer.f_newline() || v_lexer.f_indent() <= indent) break;
 				}
-			if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::c_token__RIGHT_BRACE) v_lexer.f_next();
+			f_close(indent, t_lexer::c_token__RIGHT_BRACE);
 			return call;
 		}
 	case t_lexer::c_token__NULL:
@@ -280,7 +280,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 
 std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable)
 {
-	while (!v_lexer.f_newline() || v_lexer.f_indent() >= a_indent && v_lexer.f_token() == t_lexer::c_token__DOT) {
+	while (!v_lexer.f_newline() || v_lexer.f_indent() > a_indent) {
 		switch (v_lexer.f_token()) {
 		case t_lexer::c_token__LEFT_PARENTHESIS:
 			{
@@ -288,8 +288,8 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = std::make_unique<ast::t_call>(at, std::move(a_target));
-				if ((!v_lexer.f_newline() || v_lexer.f_indent() > indent) && v_lexer.f_token() != t_lexer::c_token__RIGHT_PARENTHESIS) call->v_expand = f_expressions(indent, call->v_arguments);
-				if ((!v_lexer.f_newline() || v_lexer.f_indent() >= indent) && v_lexer.f_token() == t_lexer::c_token__RIGHT_PARENTHESIS) v_lexer.f_next();
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_expressions(indent, call->v_arguments);
+				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				a_target = std::move(call);
 				continue;
 			}
@@ -300,10 +300,10 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 				switch (v_lexer.f_token()) {
 				case t_lexer::c_token__LEFT_PARENTHESIS:
 					{
+						size_t indent = v_lexer.f_indent();
 						v_lexer.f_next();
 						auto key = f_expression();
-						if (v_lexer.f_token() != t_lexer::c_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'."sv);
-						v_lexer.f_next();
+						f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 						if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 							if (!a_assignable) f_throw(L"can not assign to expression."sv);
 							v_lexer.f_next();
@@ -337,10 +337,10 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 					switch (v_lexer.f_token()) {
 					case t_lexer::c_token__LEFT_PARENTHESIS:
 						{
+							size_t indent = v_lexer.f_indent();
 							v_lexer.f_next();
 							auto key = f_expression();
-							if (v_lexer.f_token() != t_lexer::c_token__RIGHT_PARENTHESIS) f_throw(L"expecting ')'."sv);
-							v_lexer.f_next();
+							f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 							a_target.reset(new ast::t_object_has_indirect(at, std::move(a_target), std::move(key)));
 							continue;
 						}
@@ -361,10 +361,10 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 		case t_lexer::c_token__LEFT_BRACKET:
 			{
 				t_at at = v_lexer.f_at();
+				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto index = f_expression();
-				if (v_lexer.f_token() != t_lexer::c_token__RIGHT_BRACKET) f_throw(L"expecting ']'."sv);
-				v_lexer.f_next();
+				f_close(indent, t_lexer::c_token__RIGHT_BRACKET);
 				if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 					if (!a_assignable) f_throw(L"can not assign to expression."sv);
 					v_lexer.f_next();

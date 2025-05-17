@@ -22,7 +22,7 @@ base32_decode = @(source)
 	j = 8
 	for i = 0; i < source.size(); i = i + 1
 		try
-			d = ascii2i[source.code_at(i)]
+			d = ascii2i[source.code_at(i
 			if j < 5
 				bs.push(c << j | d >> 5 - j
 				c = d & (1 << 5 - j) - 1
@@ -102,7 +102,7 @@ sha1 = @
 	self
 
 hmac = @(hash, key, text)
-	key.size() > 64 && (key = hash().bytes(key).done())
+	key.size() > 64 && (key = hash().bytes(key).done(
 	h0 = hash(
 	h1 = hash(
 	for i = 0; i < key.size(); i = i + 1
@@ -166,10 +166,10 @@ if system.arguments.size() < 1
 		'(1234567890, 89005924
 		'(2000000000, 69279037
 		'(20000000000, 65353130
-	.each(@(x) assert(hotp(key, x[0] / 30) % 100000000 == x[1]
+	).each(@(x) assert(hotp(key, x[0] / 30) % 100000000 == x[1
 	system.error.write_line(system.script + " <secret>"
 else
-	key = base32_decode(system.arguments[0]
+	key = base32_decode(system.arguments[0
 	math = Module("math"
 	time = Module("time"
 	t = Integer(math.floor(time.now())) / 30

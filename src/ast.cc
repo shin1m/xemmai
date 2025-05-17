@@ -547,9 +547,8 @@ void t_object_get::f_method(t_emit& a_emit)
 {
 	v_target->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
-	a_emit.f_pop();
-	a_emit << c_instruction__METHOD_GET << a_emit.v_stack << v_key << 0;
-	a_emit.f_push().f_push();
+	a_emit << c_instruction__METHOD_GET << a_emit.v_stack - 1 << v_key << 0;
+	a_emit.f_push();
 	a_emit.f_at(this);
 }
 
