@@ -16,30 +16,34 @@ See [TermExpressions](TermExpressions.md).
 
 ### Compound Expressions
 
-    compound: if | while | try ;
+    compound: if | while | for | try ;
 
 ### The `if` Expression
 
-    if: 'if' expression block ('else' 'if' expression block)* ('else' block)? ;
+    if: 'if' options body ('else' 'if' options body)* ('else' body)? ;
 
 ### The `while` Expression
 
-    while: 'while' expression block ;
+    while: 'while' options body ;
 
 ### The `for` Expression
 
-    for: 'for' for-expressions? ';' expression? ';' for-expressions? block ;
-    for-expressions: expression (',' expression)* ;
+    for: 'for' options options options body ;
+
+### Options
+
+    options: expressions? (?newline | ';') ;
 
 ### The `try` Expression
 
-    try: 'try' block (catch+ finally? | finally) ;
-    catch: 'catch' expression symbol block ;
-    finally: 'finally' block ;
+    try: 'try' body (catch+ finally? | finally) ;
+    catch: 'catch' expression symbol body ;
+    finally: 'finally' body ;
 
-## Blocks
+## Bodies and Expressions
 
-    block: ':' expression | (indent expression+)? ;
+    body: expression | (indent expressions)* ;
+    expressions: expression (',' expression)* ;
 
 ## Module Definitions
 

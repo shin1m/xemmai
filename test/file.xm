@@ -3,7 +3,7 @@ io = Module("io"
 print = system.out.write_line
 
 bytes = Bytes(26
-for i = 0; i < bytes.size(); i = i + 1: bytes[i] = 65 + i
+for i = 0; i < bytes.size(); i = i + 1; bytes[i] = 65 + i
 
 file = io.File("file.xm.test", "w"
 try

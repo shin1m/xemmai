@@ -101,7 +101,20 @@ struct t_operand
 	}
 };
 
-class t_node
+struct t_node
+{
+	virtual ~t_node() = default;
+	virtual void f_flow(t_flow& a_flow);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear = false) = 0;
+};
+
+struct t_nodes : t_node, std::vector<std::unique_ptr<t_node>>
+{
+	virtual void f_flow(t_flow& a_flow);
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
+};
+
+class t_node_at : public t_node
 {
 	friend struct xemmai::t_emit;
 
@@ -109,18 +122,15 @@ protected:
 	const t_at v_at;
 
 public:
-	t_node(const t_at& a_at) : v_at(a_at)
+	t_node_at(const t_at& a_at) : v_at(a_at)
 	{
 	}
-	virtual ~t_node() = default;
-	virtual void f_flow(t_flow& a_flow);
-	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear = false) = 0;
 };
 
 struct t_scope
 {
 	t_scope* v_outer;
-	std::vector<std::unique_ptr<t_node>> v_block;
+	std::unique_ptr<t_node> v_body;
 	bool v_shared = false;
 	bool v_self_shared = false;
 	std::set<t_object*> v_references;
@@ -128,7 +138,7 @@ struct t_scope
 	std::map<t_object*, t_code::t_variable> v_variables;
 	std::vector<t_code::t_variable*> v_privates;
 	size_t v_shareds = 0;
-	t_block v_block_block;
+	t_block v_block_body;
 	t_block v_junction;
 
 	t_scope(t_scope* a_outer) : v_outer(a_outer)
@@ -137,16 +147,16 @@ struct t_scope
 	void f_analyze(size_t a_arguments);
 };
 
-struct t_lambda : t_node, t_scope
+struct t_lambda : t_node_at, t_scope
 {
 	bool v_variadic = false;
 	size_t v_arguments = 0;
-	std::vector<std::unique_ptr<t_node>> v_defaults;
+	t_nodes v_defaults;
 
 	t_object* f_code(t_object* a_module);
 	void f_safe_points(t_code& a_code, std::map<std::pair<size_t, void**>, size_t>& a_safe_points, const std::vector<std::tuple<size_t, size_t, size_t>>& a_safe_positions);
 
-	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node(a_at), t_scope(a_outer)
+	t_lambda(const t_at& a_at, t_scope* a_outer) : t_node_at(a_at), t_scope(a_outer)
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -156,15 +166,14 @@ struct t_lambda : t_node, t_scope
 struct t_if : t_node
 {
 	std::unique_ptr<t_node> v_condition;
-	bool v_preserve;
-	std::vector<std::unique_ptr<t_node>> v_true;
-	std::vector<std::unique_ptr<t_node>> v_false;
+	std::unique_ptr<t_node> v_true;
+	std::unique_ptr<t_node> v_false;
 	t_block v_block_true;
 	t_block v_block_false;
 	t_block v_junction;
 	t_block v_block_exit;
 
-	t_if(const t_at& a_at, std::unique_ptr<t_node>&& a_condition, bool a_preserve = false) : t_node(a_at), v_condition(std::move(a_condition)), v_preserve(a_preserve)
+	t_if(std::unique_ptr<t_node>&& a_condition) : v_condition(std::move(a_condition))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -174,14 +183,14 @@ struct t_if : t_node
 struct t_while : t_node
 {
 	std::unique_ptr<t_node> v_condition;
-	std::vector<std::unique_ptr<t_node>> v_block;
+	std::unique_ptr<t_node> v_body;
 	t_block v_junction_condition;
 	t_block v_block_condition;
-	t_block v_block_block;
+	t_block v_block_body;
 	t_block v_junction_exit;
 	t_block v_block_exit;
 
-	t_while(const t_at& a_at, std::unique_ptr<t_node>&& a_condition) : t_node(a_at), v_condition(std::move(a_condition))
+	t_while(std::unique_ptr<t_node>&& a_condition) : v_condition(std::move(a_condition))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -190,19 +199,18 @@ struct t_while : t_node
 
 struct t_for : t_node
 {
-	std::vector<std::unique_ptr<t_node>> v_initialization;
+	std::unique_ptr<t_node> v_initialization;
 	std::unique_ptr<t_node> v_condition;
-	std::vector<std::unique_ptr<t_node>> v_next;
-	std::vector<std::unique_ptr<t_node>> v_block;
+	std::unique_ptr<t_node> v_next;
+	std::unique_ptr<t_node> v_body;
 	t_block v_junction_condition;
 	t_block v_block_condition;
-	t_block v_block_block;
+	t_block v_block_body;
 	t_block v_junction_next;
 	t_block v_block_next;
 	t_block v_junction_exit;
 	t_block v_block_exit;
 
-	using t_node::t_node;
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
@@ -211,16 +219,16 @@ struct t_break : t_node
 {
 	std::unique_ptr<t_node> v_expression;
 
-	t_break(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
+	t_break(std::unique_ptr<t_node>&& a_expression) : v_expression(std::move(a_expression))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_continue : t_node
+struct t_continue : t_node_at
 {
-	using t_node::t_node;
+	using t_node_at::t_node_at;
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
@@ -229,7 +237,7 @@ struct t_return : t_node
 {
 	std::unique_ptr<t_node> v_expression;
 
-	t_return(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
+	t_return(std::unique_ptr<t_node>&& a_expression) : v_expression(std::move(a_expression))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -242,46 +250,45 @@ struct t_try : t_node
 	{
 		std::unique_ptr<t_node> v_expression;
 		const t_code::t_variable& v_variable;
-		std::vector<std::unique_ptr<t_node>> v_block;
+		std::unique_ptr<t_node> v_body;
 		t_block v_block_expression;
-		t_block v_block_block;
+		t_block v_block_body;
 
 		t_catch(std::unique_ptr<t_node>&& a_expression, const t_code::t_variable& a_variable) : v_expression(std::move(a_expression)), v_variable(a_variable)
 		{
 		}
 	};
 
-	std::vector<std::unique_ptr<t_node>> v_block;
+	std::unique_ptr<t_node> v_body;
 	std::vector<std::unique_ptr<t_catch>> v_catches;
-	std::vector<std::unique_ptr<t_node>> v_finally;
+	std::unique_ptr<t_node> v_finally;
 	t_block v_junction_try;
 	t_block v_block_try;
 	t_block v_junction_finally;
 	t_block v_block_finally;
 	t_block v_block_exit;
 
-	using t_node::t_node;
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_throw : t_node
+struct t_throw : t_node_at
 {
 	std::unique_ptr<t_node> v_expression;
 
-	t_throw(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_expression(std::move(a_expression))
+	t_throw(const t_at& a_at, std::unique_ptr<t_node>&& a_expression) : t_node_at(a_at), v_expression(std::move(a_expression))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_object_get : t_node
+struct t_object_get : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	t_object* v_key;
 
-	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
+	t_object_get(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node_at(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -289,69 +296,69 @@ struct t_object_get : t_node
 	void f_method(t_emit& a_emit);
 };
 
-struct t_object_get_indirect : t_node
+struct t_object_get_indirect : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	std::unique_ptr<t_node> v_key;
 
-	t_object_get_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
+	t_object_get_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node_at(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_object_put : t_node
+struct t_object_put : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	t_object* v_key;
 	std::unique_ptr<t_node> v_value;
 
-	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key), v_value(std::move(a_value))
+	t_object_put(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key, std::unique_ptr<t_node>&& a_value) : t_node_at(a_at), v_target(std::move(a_target)), v_key(a_key), v_value(std::move(a_value))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_object_put_indirect : t_node
+struct t_object_put_indirect : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	std::unique_ptr<t_node> v_key;
 	std::unique_ptr<t_node> v_value;
 
-	t_object_put_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key)), v_value(std::move(a_value))
+	t_object_put_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key, std::unique_ptr<t_node>&& a_value) : t_node_at(a_at), v_target(std::move(a_target)), v_key(std::move(a_key)), v_value(std::move(a_value))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_object_has : t_node
+struct t_object_has : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	t_object* v_key;
 
-	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(a_key)
+	t_object_has(const t_at& a_at, std::unique_ptr<t_node>&& a_target, t_object* a_key) : t_node_at(a_at), v_target(std::move(a_target)), v_key(a_key)
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_object_has_indirect : t_node
+struct t_object_has_indirect : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	std::unique_ptr<t_node> v_key;
 
-	t_object_has_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
+	t_object_has_indirect(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_key) : t_node_at(a_at), v_target(std::move(a_target)), v_key(std::move(a_key))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_symbol_get : t_node
+struct t_symbol_get : t_node_at
 {
 	size_t v_outer;
 	t_scope* v_scope;
@@ -359,70 +366,70 @@ struct t_symbol_get : t_node
 	size_t v_resolved;
 	const t_code::t_variable* v_variable = nullptr;
 
-	t_symbol_get(const t_at& a_at, size_t a_outer, t_scope* a_scope, t_object* a_symbol) : t_node(a_at), v_outer(a_outer), v_scope(a_scope), v_symbol(a_symbol)
+	t_symbol_get(const t_at& a_at, size_t a_outer, t_scope* a_scope, t_object* a_symbol) : t_node_at(a_at), v_outer(a_outer), v_scope(a_scope), v_symbol(a_symbol)
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_scope_put : t_node
+struct t_scope_put : t_node_at
 {
 	size_t v_outer;
 	const t_code::t_variable& v_variable;
 	std::unique_ptr<t_node> v_value;
 
-	t_scope_put(const t_at& a_at, size_t a_outer, const t_code::t_variable& a_variable, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_outer(a_outer), v_variable(a_variable), v_value(std::move(a_value))
+	t_scope_put(const t_at& a_at, size_t a_outer, const t_code::t_variable& a_variable, std::unique_ptr<t_node>&& a_value) : t_node_at(a_at), v_outer(a_outer), v_variable(a_variable), v_value(std::move(a_value))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_self : t_node
+struct t_self : t_node_at
 {
 	size_t v_outer;
 
-	t_self(const t_at& a_at, size_t a_outer) : t_node(a_at), v_outer(a_outer)
+	t_self(const t_at& a_at, size_t a_outer) : t_node_at(a_at), v_outer(a_outer)
 	{
 	}
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_class : t_node
+struct t_class : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 
-	t_class(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target))
+	t_class(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node_at(a_at), v_target(std::move(a_target))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_super : t_node
+struct t_super : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 
-	t_super(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target))
+	t_super(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node_at(a_at), v_target(std::move(a_target))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_null : t_node
+struct t_null : t_node_at
 {
-	using t_node::t_node;
+	using t_node_at::t_node_at;
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
 template<typename T>
-struct t_literal : t_node
+struct t_literal : t_node_at
 {
 	T v_value;
 
-	t_literal(const t_at& a_at, T a_value) : t_node(a_at), v_value(a_value)
+	t_literal(const t_at& a_at, T a_value) : t_node_at(a_at), v_value(a_value)
 	{
 	}
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
@@ -436,50 +443,55 @@ struct t_literal<bool> : t_literal<t_object*>
 	}
 };
 
-struct t_unary : t_node
+struct t_unary : t_node_at
 {
 	t_instruction v_instruction;
 	std::unique_ptr<t_node> v_expression;
 
-	t_unary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_expression) : t_node(a_at), v_instruction(a_instruction), v_expression(std::move(a_expression))
+	t_unary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_expression) : t_node_at(a_at), v_instruction(a_instruction), v_expression(std::move(a_expression))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_binary : t_node
+struct t_binary : t_node_at
 {
 	t_instruction v_instruction;
 	std::unique_ptr<t_node> v_left;
 	std::unique_ptr<t_node> v_right;
 
-	t_binary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_left, std::unique_ptr<t_node>&& a_right) : t_node(a_at), v_instruction(a_instruction), v_left(std::move(a_left)), v_right(std::move(a_right))
+	t_binary(const t_at& a_at, t_instruction a_instruction, std::unique_ptr<t_node>&& a_left, std::unique_ptr<t_node>&& a_right) : t_node_at(a_at), v_instruction(a_instruction), v_left(std::move(a_left)), v_right(std::move(a_right))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_call : t_node
+struct t_preserve : t_node
+{
+	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
+};
+
+struct t_call : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
-	std::vector<std::unique_ptr<t_node>> v_arguments;
+	t_nodes v_arguments;
 	bool v_expand;
 
-	t_call(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node(a_at), v_target(std::move(a_target)), v_expand(false)
+	t_call(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node_at(a_at), v_target(std::move(a_target)), v_expand(false)
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
 	virtual t_operand f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear);
 };
 
-struct t_get_at : t_node
+struct t_get_at : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	std::unique_ptr<t_node> v_index;
 
-	t_get_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index) : t_node(a_at), v_target(std::move(a_target)), v_index(std::move(a_index))
+	t_get_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index) : t_node_at(a_at), v_target(std::move(a_target)), v_index(std::move(a_index))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -487,13 +499,13 @@ struct t_get_at : t_node
 	void f_bind(t_emit& a_emit);
 };
 
-struct t_set_at : t_node
+struct t_set_at : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	std::unique_ptr<t_node> v_index;
 	std::unique_ptr<t_node> v_value;
 
-	t_set_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index, std::unique_ptr<t_node>&& a_value) : t_node(a_at), v_target(std::move(a_target)), v_index(std::move(a_index)), v_value(std::move(a_value))
+	t_set_at(const t_at& a_at, std::unique_ptr<t_node>&& a_target, std::unique_ptr<t_node>&& a_index, std::unique_ptr<t_node>&& a_value) : t_node_at(a_at), v_target(std::move(a_target)), v_index(std::move(a_index)), v_value(std::move(a_value))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -526,10 +538,7 @@ struct XEMMAI__LOCAL t_emit
 	};
 
 	template<typename T>
-	static constexpr t_instruction f_instruction_of()
-	{
-		return c_instruction__INSTANCE;
-	}
+	static constexpr t_instruction c_instruction_of = c_instruction__INSTANCE;
 
 	t_object* v_module;
 	std::map<std::pair<size_t, void**>, size_t>* v_safe_points;
@@ -610,7 +619,7 @@ struct XEMMAI__LOCAL t_emit
 			for (auto i : label) v_code->v_instructions[i] = p;
 		}
 	}
-	void f_at(ast::t_node* a_node)
+	void f_at(ast::t_node_at* a_node)
 	{
 		v_code->v_ats.push_back({a_node->v_at, f_last()});
 	}
@@ -618,7 +627,7 @@ struct XEMMAI__LOCAL t_emit
 	{
 		return (*this << c_instruction__NUL << v_stack).f_push();
 	}
-	void f_emit_safe_point(ast::t_node* a_node)
+	void f_emit_safe_point(ast::t_node_at* a_node)
 	{
 		if (!v_safe_points) return;
 		v_safe_positions->emplace_back(a_node->v_at.v_line, f_last(), a_node->v_at.v_column);
@@ -633,15 +642,9 @@ struct XEMMAI__LOCAL t_emit
 };
 
 template<>
-constexpr t_instruction t_emit::f_instruction_of<intptr_t>()
-{
-	return c_instruction__INTEGER;
-}
+constexpr t_instruction t_emit::c_instruction_of<intptr_t> = c_instruction__INTEGER;
 template<>
-constexpr t_instruction t_emit::f_instruction_of<double>()
-{
-	return c_instruction__FLOAT;
-}
+constexpr t_instruction t_emit::c_instruction_of<double> = c_instruction__FLOAT;
 
 namespace ast
 {
@@ -653,9 +656,9 @@ t_operand t_literal<T>::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 	if (a_clear) return {};
 	if (a_tail) {
 		a_emit.f_emit_safe_point(this);
-		a_emit << static_cast<t_instruction>(t_emit::f_instruction_of<T>() + c_instruction__RETURN_NUL - c_instruction__NUL) << v_value;
+		a_emit << static_cast<t_instruction>(t_emit::c_instruction_of<T> + c_instruction__RETURN_NUL - c_instruction__NUL) << v_value;
 	} else {
-		a_emit << t_emit::f_instruction_of<T>() << a_emit.v_stack << v_value;
+		a_emit << t_emit::c_instruction_of<T> << a_emit.v_stack << v_value;
 	}
 	a_emit.f_push();
 	a_emit.f_at(this);

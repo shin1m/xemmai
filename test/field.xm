@@ -4,7 +4,7 @@ print = system.out.write_line
 object = Object(
 !object.?hello || throw Throwable("Hello"
 !object.?world || throw Throwable("World"
-try: print(object.hello + ", " + object.world + "!" catch Throwable e: e.dump(
+try print(object.hello + ", " + object.world + "!" catch Throwable e e.dump(
 object = (Object + @
 	$hello
 	$world

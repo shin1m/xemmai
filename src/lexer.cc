@@ -4,6 +4,11 @@
 namespace xemmai
 {
 
+void t_lexer::f_throw()
+{
+	throw t_rvalue(f_new<t_error>(f_global(), *this));
+}
+
 void t_lexer::f_get()
 {
 	switch (v_c) {
@@ -339,11 +344,6 @@ void t_lexer::f_next()
 			f_throw();
 		}
 	}
-}
-
-t_object* t_lexer::t_error::f_instantiate(t_lexer& a_lexer)
-{
-	return f_new<t_error>(f_global(), a_lexer);
 }
 
 void t_lexer::t_error::f_dump() const

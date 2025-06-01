@@ -5,7 +5,7 @@ This page explains primary expressions.
     primary: variable
         | self symbol?
         | literal
-        | '(' expression ')'
+        | '(' arguments ')'
         | lambda
         | break
         | continue
@@ -35,7 +35,6 @@ See [Literals](Literals.md).
     arguments: '*' symbol
         | symbol ((',' symbol)* | '=' expression) (',' symbol '=' expression)* (',' '*' symbol)?
         ;
-    body: expression | (indent expression+)? ;
 
 ## The `break` Expressions
 
@@ -67,4 +66,8 @@ See [Literals](Literals.md).
 
 ## Call Expressions
 
-    call: primary '(' (indent? expressions)? ')'? ;
+    call: primary '(' arguments ('*' expression)? ')'? ;
+
+## Arguments
+
+    arguments: (indent? expression ((indent | ',') expression)*)? ;

@@ -29,7 +29,7 @@ while i > 0
 print("5"
 
 i = 0
-for ;;
+for ;;;
 	if i > 1
 		print("8"
 		break
@@ -65,7 +65,7 @@ for i = 0, j = 0; i < 2; i = i + 1, j = j + 1
 	throw Throwable("never reach here."
 
 i = 0
-for ;;
+for ;;;
 	i >= 2 && break
 	i = i + 1
 	continue

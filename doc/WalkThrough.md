@@ -15,6 +15,9 @@ This document walks through xemmai language.
     true
     false
 
+Only `null` and `false` are falsy.
+All the other values are truthy.
+
 ## Variables
 
     a = 1
@@ -27,14 +30,17 @@ This document walks through xemmai language.
 
     if a > 0
         # a is greater than zero.
-        greater = true
+        relation = 1
+    else if a == 0
+        # a is equal to zero.
+        relation = 0
     else
-        # a is less or equal to zero.
-        greater = false
+        # a is less than zero.
+        relation = -1
 
 A single line form:
 
-    if a > 0: greater = true else: greater = false
+    if a > 0; relation = 1 else if a == 0; relation = 0 else relation = -1
 
 ### `while` Expression
 
@@ -43,7 +49,7 @@ A single line form:
 
 A single line form:
 
-    while a > 0: a = a - 1
+    while a > 0; a = a - 1
 
 Using `break` and `continue` expressions:
 
@@ -55,7 +61,7 @@ Using `break` and `continue` expressions:
         if a % 3 == 0
             c = c + a
             continue
-        if b + c >= 100: break
+        if b + c >= 100; break
         a = a + 1
 
 ### `for` Expression
@@ -67,7 +73,7 @@ Using `break` and `continue` expressions:
 A single line form:
 
     n = 0
-    for i = 0; i < 10; i = i + 1: n = n + i
+    for i = 0; i < 10; i = i + 1; n = n + i
 
 ## Functions
 
@@ -84,7 +90,7 @@ A single line form:
 Using `return` expression:
 
     sum2 = @(n)
-        if n <= 0: return 0
+        if n <= 0; return 0
         n + sum2(n - 1) # Tail return can be omitted.
     sum2(10) # => 55
 
@@ -129,12 +135,63 @@ Each function is a lambda closure and has its own scope.
 Each reference is resolved from its local scope to an outer scope.
 Assigning to an outer variable must be explicitly prefixed with `:`.
 
+### Default Arguments
+
+    multiply = @(a, b = 1) a * b
+    multiply(5, 2) # => 10
+    multiply(5) # => 5
+
+The expression of a default argument is evaluated once when the lambda is defined:
+
+    push = @(x, xs = [])
+        xs.push(x)
+        xs
+    push(1) # => [1]
+    push(2) # => [1, 2]
+
+### Rest Arguments
+
+    multiply = @(x, *xs)
+        xs.each(@(x) :x = :x * x
+        x
+    multiply(2) # => 2
+    multiply(2, 3) # => 6
+    multiply(2, 3, 4) # => 24
+
 ### More on Function Calls
 
 Arguments list can be written using block form:
 
     # Same as foo(0, 1, 2).
     foo(
+        0 # , can be omitted.
+        1
+        2
+    )
+
+The last argument can be expanded:
+
+    xs = [1, 2]
+    # Same as foo(0, 1, 2).
+    foo(0, *xs)
+
+## Grouping
+
+Expressions can be grouped by `(` and `)`:
+
+    (0, 1, 2) # => 2
+
+Expressions in a group are evaluated sequentially.
+The value of the last expression becomes the value of the group.
+
+An empty group is evaluated to `null`:
+
+    () # => null
+
+Expressions can be written using block form:
+
+    # Same as (0, 1, 2).
+    (
         0 # , can be omitted.
         1
         2

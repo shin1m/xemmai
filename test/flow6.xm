@@ -6,4 +6,4 @@ assert(!!(@
 	finally
 		"" + null
 	false
-)()
+)(

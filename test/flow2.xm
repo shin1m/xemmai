@@ -8,7 +8,7 @@ while true
 		if i > 1
 			i = 3
 			break
-		if i > 0: throw 2
+		if i > 0; throw 2
 		i = 1
 	catch Float e
 		throw Throwable("never reach here."
@@ -66,10 +66,10 @@ assert((while true
 ) === true
 assert((for ; false;
 ) === null
-assert((for ;;
+assert((for ;;;
 	break
 ) === null
-assert((for ;;
+assert((for ;;;
 	break true
 ) === true
 
@@ -81,7 +81,7 @@ assert((try
 finally
 ) === null
 assert((try
-	if false: true
+	if false; true
 finally
 ) === null
 assert((try
@@ -95,11 +95,11 @@ assert((try
 finally
 ) === null
 assert((try
-	while true: break
+	while true; break
 finally
 ) === null
 assert((try
-	while true: break true
+	while true; break true
 finally
 ) === true
 assert((try
@@ -107,11 +107,11 @@ assert((try
 finally
 ) === null
 assert((try
-	for ;;: break
+	for ;;; break
 finally
 ) === null
 assert((try
-	for ;;: break true
+	for ;;; break true
 finally
 ) === true
 
@@ -127,7 +127,7 @@ catch Null e
 assert((try
 	throw null
 catch Null e
-	if false: true
+	if false; true
 ) === null
 assert((try
 	throw null
@@ -144,12 +144,12 @@ catch Null e
 assert((try
 	throw null
 catch Null e
-	while true: break
+	while true; break
 ) === null
 assert((try
 	throw null
 catch Null e
-	while true: break true
+	while true; break true
 ) === true
 assert((try
 	throw null
@@ -159,10 +159,10 @@ catch Null e
 assert((try
 	throw null
 catch Null e
-	for ;;: break
+	for ;;; break
 ) === null
 assert((try
 	throw null
 catch Null e
-	for ;;: break true
+	for ;;; break true
 ) === true

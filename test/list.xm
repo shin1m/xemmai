@@ -42,7 +42,7 @@ assert(a.size() == 3
 print(""
 
 b = [
-for i = 0; i < 5; i = i + 1: b.push(i.__string(
+for i = 0; i < 5; i = i + 1; b.push(i.__string(
 print(b
 assert_sequence(b, ["0", "1", "2", "3", "4"
 # 01234.
@@ -122,7 +122,7 @@ assert_sequence(b, ["4", "5", "6", "7", "8"
 # 678.45
 
 b = [
-for i = 0; i < 5; i = i + 1: b.unshift(i.__string(
+for i = 0; i < 5; i = i + 1; b.unshift(i.__string(
 print(b
 assert_sequence(b, ["4", "3", "2", "1", "0"
 # .43210
@@ -229,10 +229,10 @@ print(d
 assert_sequence(d, [
 
 e = [
-for i = 0; i < 3; i = i + 1: e.insert(0, i
+for i = 0; i < 3; i = i + 1; e.insert(0, i
 print(e
 assert_sequence(e, [2, 1, 0
-for ; i < 7; i = i + 1: e.unshift(i
+for ; i < 7; i = i + 1; e.unshift(i
 print(e
 e.remove(0
 print(e

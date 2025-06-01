@@ -3,6 +3,11 @@
 namespace xemmai
 {
 
+void t_parser::f_throw(std::wstring_view a_message)
+{
+	throw t_rvalue(f_new<t_error>(f_global(), a_message, v_lexer.f_path(), v_lexer.f_at()));
+}
+
 t_code::t_variable& t_parser::f_variable(ast::t_scope* a_scope, t_object* a_symbol)
 {
 	auto i = a_scope->v_variables.find(a_symbol);
@@ -13,6 +18,38 @@ t_code::t_variable& t_parser::f_variable(ast::t_scope* a_scope, t_object* a_symb
 		i->second.v_varies = true;
 	}
 	return i->second;
+}
+
+bool t_parser::f_has_expression() const
+{
+	if (v_lexer.f_newline()) return false;
+	switch (v_lexer.f_token()) {
+	case t_lexer::c_token__EXCLAMATION:
+	case t_lexer::c_token__APOSTROPHE:
+	case t_lexer::c_token__LEFT_PARENTHESIS:
+	case t_lexer::c_token__PLUS:
+	case t_lexer::c_token__HYPHEN:
+	case t_lexer::c_token__COLON:
+	case t_lexer::c_token__ATMARK:
+	case t_lexer::c_token__LEFT_BRACKET:
+	case t_lexer::c_token__LEFT_BRACE:
+	case t_lexer::c_token__TILDE:
+	case t_lexer::c_token__NULL:
+	case t_lexer::c_token__TRUE:
+	case t_lexer::c_token__FALSE:
+	case t_lexer::c_token__SYMBOL:
+	case t_lexer::c_token__SELF:
+	case t_lexer::c_token__INTEGER:
+	case t_lexer::c_token__FLOAT:
+	case t_lexer::c_token__STRING:
+	case t_lexer::c_token__IF:
+	case t_lexer::c_token__WHILE:
+	case t_lexer::c_token__FOR:
+	case t_lexer::c_token__TRY:
+		return true;
+	default:
+		return false;
+	}
 }
 
 std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
@@ -87,7 +124,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))));
-				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_expressions(indent, call->v_arguments);
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_arguments(indent, call->v_arguments);
 				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				return call;
 			}
@@ -98,9 +135,10 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		{
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto expression = f_expression();
+			auto nodes = std::make_unique<ast::t_nodes>();
+			if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) while (f_argument(indent, *nodes));
 			f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
-			return expression;
+			return nodes;
 		}
 	case t_lexer::c_token__ATMARK:
 		{
@@ -117,7 +155,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 							v_lexer.f_next();
 							if (v_lexer.f_token() == t_lexer::c_token__EQUAL) {
 								v_lexer.f_next();
-								lambda->v_defaults.push_back(f_expression());
+								lambda->v_defaults.emplace_back(f_expression());
 							} else {
 								if (lambda->v_defaults.size() > 0) f_throw(L"expecting '='."sv);
 							}
@@ -149,12 +187,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			bool can_jump = v_can_jump;
 			bool can_return = v_can_return;
 			v_can_return = true;
-			if (v_lexer.f_newline()) {
-				if (v_lexer.f_indent() > indent) f_block(lambda->v_block);
-			} else {
-				lambda->v_block.push_back(f_expression());
-				if (v_lexer.f_newline() && v_lexer.f_indent() > indent) f_throw(L"unexpected indent."sv);
-			}
+			lambda->v_body = f_body(indent);
 			for (auto symbol : lambda->v_unresolveds) {
 				auto i = lambda->v_variables.find(symbol);
 				if (i == lambda->v_variables.end())
@@ -194,7 +227,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_list>()))));
-			if (f_any(indent, t_lexer::c_token__RIGHT_BRACKET)) call->v_expand = f_expressions(indent, call->v_arguments);
+			if (f_any(indent, t_lexer::c_token__RIGHT_BRACKET)) call->v_expand = f_arguments(indent, call->v_arguments);
 			f_close(indent, t_lexer::c_token__RIGHT_BRACKET);
 			return call;
 		}
@@ -205,10 +238,10 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_map>()))));
 			if (f_any(indent, t_lexer::c_token__RIGHT_BRACE))
 				while (true) {
-					call->v_arguments.push_back(f_expression());
+					call->v_arguments.emplace_back(f_expression());
 					if (!f_single_colon()) f_throw(L"expecting ':'."sv);
 					v_lexer.f_next();
-					call->v_arguments.push_back(f_expression());
+					call->v_arguments.emplace_back(f_expression());
 					if (v_lexer.f_token() == t_lexer::c_token__COMMA) {
 						if (v_lexer.f_newline() && v_lexer.f_indent() < indent) break;
 						v_lexer.f_next();
@@ -248,15 +281,15 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 		}
 	case t_lexer::c_token__BREAK:
 		{
+			if (!v_can_jump) f_throw(L"expecting inside loop."sv);
 			t_at at = v_lexer.f_at();
-			if (!v_can_jump) f_throw(L"expecting inside loop."sv, at);
 			v_lexer.f_next();
-			return std::make_unique<ast::t_break>(at, f_end_of_expression() ? nullptr : f_expression());
+			return std::make_unique<ast::t_break>(f_has_expression() ? f_expression() : std::make_unique<ast::t_null>(at));
 		}
 	case t_lexer::c_token__CONTINUE:
 		{
+			if (!v_can_jump) f_throw(L"expecting inside loop."sv);
 			t_at at = v_lexer.f_at();
-			if (!v_can_jump) f_throw(L"expecting inside loop."sv, at);
 			v_lexer.f_next();
 			return std::make_unique<ast::t_continue>(at);
 		}
@@ -265,7 +298,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			if (!v_can_return) f_throw(L"expecting within lambda."sv);
 			t_at at = v_lexer.f_at();
 			v_lexer.f_next();
-			return std::make_unique<ast::t_return>(at, f_end_of_expression() ? nullptr : f_expression());
+			return std::make_unique<ast::t_return>(f_has_expression() ? f_expression() : std::make_unique<ast::t_null>(at));
 		}
 	case t_lexer::c_token__THROW:
 		{
@@ -288,7 +321,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = std::make_unique<ast::t_call>(at, std::move(a_target));
-				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_expressions(indent, call->v_arguments);
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_arguments(indent, call->v_arguments);
 				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				a_target = std::move(call);
 				continue;
@@ -592,10 +625,10 @@ std::unique_ptr<ast::t_node> t_parser::f_and_also(bool a_assignable)
 {
 	auto node = f_or(a_assignable);
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::c_token__AND_ALSO) {
-		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		auto branch = std::make_unique<ast::t_if>(at, std::move(node), true);
-		branch->v_true.push_back(f_or(false));
+		auto branch = std::make_unique<ast::t_if>(std::move(node));
+		branch->v_true = f_or(false);
+		branch->v_false = std::make_unique<ast::t_preserve>();
 		node = std::move(branch);
 	}
 	return node;
@@ -605,10 +638,10 @@ std::unique_ptr<ast::t_node> t_parser::f_or_else(bool a_assignable)
 {
 	auto node = f_and_also(a_assignable);
 	while (!v_lexer.f_newline() && v_lexer.f_token() == t_lexer::c_token__OR_ELSE) {
-		t_at at = v_lexer.f_at();
 		v_lexer.f_next();
-		auto branch = std::make_unique<ast::t_if>(at, std::move(node), true);
-		branch->v_false.push_back(f_and_also(false));
+		auto branch = std::make_unique<ast::t_if>(std::move(node));
+		branch->v_true = std::make_unique<ast::t_preserve>();
+		branch->v_false = f_and_also(false);
 		node = std::move(branch);
 	}
 	return node;
@@ -618,13 +651,12 @@ std::unique_ptr<ast::t_node> t_parser::f_conditional(bool a_assignable)
 {
 	auto node = f_or_else(a_assignable);
 	if (v_lexer.f_newline() || v_lexer.f_token() != t_lexer::c_token__QUESTION) return node;
-	t_at at = v_lexer.f_at();
 	v_lexer.f_next();
-	auto branch = std::make_unique<ast::t_if>(at, std::move(node));
-	branch->v_true.push_back(f_conditional(false));
+	auto branch = std::make_unique<ast::t_if>(std::move(node));
+	branch->v_true = f_conditional(false);
 	if (!f_single_colon()) f_throw(L"expecting ':'."sv);
 	v_lexer.f_next();
-	branch->v_false.push_back(f_conditional(false));
+	branch->v_false = f_conditional(false);
 	return branch;
 }
 
@@ -636,74 +668,53 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 			t_at at = v_lexer.f_at();
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto node = std::make_unique<ast::t_if>(at, f_expression());
-			if (v_lexer.f_newline()) {
-				if (v_lexer.f_indent() > indent) f_block(node->v_true);
-			} else if (f_single_colon()) {
-				v_lexer.f_next();
-				node->v_true.push_back(f_expression());
-			} else {
-				f_throw(L"expecting newline or ':'."sv);
-			}
+			auto node = std::make_unique<ast::t_if>(f_options());
+			node->v_true = f_body(indent);
 			if ((!v_lexer.f_newline() || v_lexer.f_indent() == indent) && v_lexer.f_token() == t_lexer::c_token__ELSE) {
 				v_lexer.f_next();
-				if (v_lexer.f_newline()) {
-					if (v_lexer.f_indent() > indent) f_block(node->v_false);
-				} else if (f_single_colon()) {
-					v_lexer.f_next();
-					node->v_false.push_back(f_expression());
-				} else if (v_lexer.f_token() == t_lexer::c_token__IF) {
-					node->v_false.push_back(f_expression());
-				} else {
-					f_throw(L"expecting newline or ':' or 'if'."sv);
-				}
+				node->v_false = f_body(indent);
+			} else {
+				node->v_false = std::make_unique<ast::t_null>(at);
 			}
 			return node;
 		}
 	case t_lexer::c_token__WHILE:
 		{
-			t_at at = v_lexer.f_at();
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			size_t varies = v_scope->v_privates.size();
-			auto node = std::make_unique<ast::t_while>(at, f_expression());
+			auto node = std::make_unique<ast::t_while>(f_options());
 			bool can_jump = v_can_jump;
 			v_can_jump = true;
-			f_block_or_expression(indent, node->v_block);
+			node->v_body = f_body(indent);
 			v_can_jump = can_jump;
 			while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
 			return node;
 		}
 	case t_lexer::c_token__FOR:
 		{
-			t_at at = v_lexer.f_at();
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto node = std::make_unique<ast::t_for>(at);
-			if (v_lexer.f_token() != t_lexer::c_token__SEMICOLON) f_expressions(node->v_initialization);
-			if (v_lexer.f_token() != t_lexer::c_token__SEMICOLON) f_throw(L"expecting ';'."sv);
-			v_lexer.f_next();
+			auto node = std::make_unique<ast::t_for>();
+			node->v_initialization = f_options();
 			size_t varies = v_scope->v_privates.size();
-			if (v_lexer.f_token() != t_lexer::c_token__SEMICOLON) node->v_condition = f_expression();
-			if (v_lexer.f_token() != t_lexer::c_token__SEMICOLON) f_throw(L"expecting ';'."sv);
-			v_lexer.f_next();
-			if (!v_lexer.f_newline() && !f_single_colon()) f_expressions(node->v_next);
+			node->v_condition = f_options();
+			node->v_next = f_options();
 			bool can_jump = v_can_jump;
 			v_can_jump = true;
-			f_block_or_expression(indent, node->v_block);
+			node->v_body = f_body(indent);
 			v_can_jump = can_jump;
 			while (varies < v_scope->v_privates.size()) v_scope->v_privates[varies++]->v_varies = true;
 			return node;
 		}
 	case t_lexer::c_token__TRY:
 		{
-			t_at at = v_lexer.f_at();
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
-			auto node = std::make_unique<ast::t_try>(at);
+			auto node = std::make_unique<ast::t_try>();
 			bool catching = false;
 			{
-				f_block_or_expression(indent, node->v_block);
+				node->v_body = f_body(indent);
 				while (v_lexer.f_indent() == indent && v_lexer.f_token() == t_lexer::c_token__CATCH) {
 					catching = true;
 					v_lexer.f_next();
@@ -712,8 +723,8 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 					auto symbol = f_symbol();
 					v_lexer.f_next();
 					auto c = std::make_unique<ast::t_try::t_catch>(std::move(expression), f_variable(v_scope, symbol));
-					f_block_or_expression(indent, c->v_block);
-					node->v_catches.push_back(std::move(c));
+					c->v_body = f_body(indent);
+					node->v_catches.emplace_back(std::move(c));
 				}
 			}
 			if (v_lexer.f_indent() == indent && v_lexer.f_token() == t_lexer::c_token__FINALLY) {
@@ -722,7 +733,7 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 				v_can_jump = false;
 				bool can_return = v_can_return;
 				v_can_return = false;
-				f_block_or_expression(indent, node->v_finally);
+				node->v_finally = f_body(indent);
 				v_can_jump = can_jump;
 				v_can_return = can_return;
 			} else {
@@ -735,53 +746,74 @@ std::unique_ptr<ast::t_node> t_parser::f_expression()
 	}
 }
 
-bool t_parser::f_expressions(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
+bool t_parser::f_argument(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
 {
-	while (v_lexer.f_token() != t_lexer::c_token__ASTERISK) {
-		a_nodes.push_back(f_expression());
-		if (v_lexer.f_token() == t_lexer::c_token__COMMA) {
-			if (v_lexer.f_newline() && v_lexer.f_indent() < a_indent) return false;
-			v_lexer.f_next();
-			continue;
-		}
-		if (!v_lexer.f_newline() || v_lexer.f_indent() <= a_indent) return false;
-	}
+	a_nodes.emplace_back(f_expression());
+	if (v_lexer.f_token() != t_lexer::c_token__COMMA) return v_lexer.f_newline() && v_lexer.f_indent() > a_indent;
+	if (v_lexer.f_newline() && v_lexer.f_indent() < a_indent) return false;
 	v_lexer.f_next();
-	a_nodes.push_back(f_expression());
 	return true;
 }
 
-void t_parser::f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
+bool t_parser::f_arguments(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
 {
-	size_t indent = v_lexer.f_indent();
-	do {
-		a_nodes.push_back(f_expression());
-		if (!v_lexer.f_newline()) f_throw(L"expecting newline."sv);
-	} while (v_lexer.f_indent() == indent);
-	if (v_lexer.f_indent() > indent) f_throw(L"unexpected indent."sv);
+	while (v_lexer.f_token() != t_lexer::c_token__ASTERISK) if (!f_argument(a_indent, a_nodes)) return false;
+	v_lexer.f_next();
+	a_nodes.emplace_back(f_expression());
+	return true;
 }
 
-void t_parser::f_block_or_expression(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
+void t_parser::f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
 {
-	if (v_lexer.f_newline()) {
-		if (v_lexer.f_indent() > a_indent) f_block(a_nodes);
-	} else if (f_single_colon()) {
+	while (true) {
+		a_nodes.emplace_back(f_expression());
+		if (v_lexer.f_newline() || v_lexer.f_token() != t_lexer::c_token__COMMA) break;
 		v_lexer.f_next();
-		a_nodes.push_back(f_expression());
-	} else {
-		f_throw(L"expecting newline or ':'."sv);
 	}
+}
+
+std::unique_ptr<ast::t_nodes> t_parser::f_options()
+{
+	if (v_lexer.f_newline()) return nullptr;
+	if (v_lexer.f_token() == t_lexer::c_token__SEMICOLON) {
+		v_lexer.f_next();
+		return nullptr;
+	}
+	auto nodes = std::make_unique<ast::t_nodes>();
+	f_expressions(*nodes);
+	if (!v_lexer.f_newline()) {
+		if (v_lexer.f_token() != t_lexer::c_token__SEMICOLON) f_throw(L"expecting ';'."sv);
+		v_lexer.f_next();
+	}
+	return nodes;
+}
+
+std::unique_ptr<ast::t_node> t_parser::f_body(size_t a_indent)
+{
+	if (!v_lexer.f_newline()) return f_expression();
+	auto nodes = std::make_unique<ast::t_nodes>();
+	size_t indent = v_lexer.f_indent();
+	if (indent > a_indent) {
+		do f_expressions(*nodes); while (v_lexer.f_newline() && v_lexer.f_indent() == indent);
+		if (v_lexer.f_indent() > indent) f_throw(L"unexpected indent."sv);
+	}
+	return nodes;
 }
 
 void t_parser::operator()(ast::t_scope& a_scope)
 {
 	v_scope = &a_scope;
-	size_t indent = v_lexer.f_indent();
-	while (v_lexer.f_token() != t_lexer::c_token__EOF) {
-		v_scope->v_block.push_back(f_expression());
-		if (!v_lexer.f_newline()) f_throw(L"expecting newline."sv);
-		if (v_lexer.f_indent() != indent) f_throw(L"unexpected indent."sv);
+	auto nodes = std::make_unique<ast::t_nodes>();
+	if (v_lexer.f_token() != t_lexer::c_token__EOF) {
+		size_t indent = v_lexer.f_indent();
+		while (true) {
+			f_expressions(*nodes);
+			if (v_lexer.f_token() == t_lexer::c_token__EOF) break;
+			if (!v_lexer.f_newline()) f_throw(L"expecting newline."sv);
+			if (v_lexer.f_indent() != indent) f_throw(L"unexpected indent."sv);
+		}
 	}
+	v_scope->v_body = std::move(nodes);
 	for (auto symbol : v_scope->v_unresolveds) {
 		auto i = v_scope->v_variables.find(symbol);
 		if (i != v_scope->v_variables.end()) i->second.v_shared = true;
@@ -797,11 +829,6 @@ void t_parser::operator()(ast::t_scope& a_scope)
 			v_scope->v_privates.push_back(p);
 		}
 	}
-}
-
-t_object* t_parser::t_error::f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at)
-{
-	return f_new<t_error>(f_global(), a_message, a_path, a_at);
 }
 
 void t_parser::t_error::f_dump() const

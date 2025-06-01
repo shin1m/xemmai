@@ -138,7 +138,7 @@ assert(-10 / 9 == -1
 print("-10 % 9 = " + (-10 % 9)
 assert(-10 % 9 == -1
 bits = 0
-for x = 1; x != 0; x = x << 1: bits = bits + 1
+for x = 1; x != 0; x = x << 1; bits = bits + 1
 print("-1 >> 1 = " + (-1 >> 1)
 assert(-1 >> 1 == ~(1 << bits - 1)
 print("0x1f = " + 0x1f

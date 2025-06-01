@@ -95,10 +95,7 @@ private:
 		double v_float;
 	};
 
-	void f_throw [[noreturn]] ()
-	{
-		throw t_rvalue(t_error::f_instantiate(*this));
-	}
+	void f_throw [[noreturn]] ();
 	void f_get();
 	void f_read_indent()
 	{
@@ -121,8 +118,6 @@ private:
 public:
 	struct t_error : t_throwable
 	{
-		static t_object* f_instantiate(t_lexer& a_lexer);
-
 		std::wstring v_path;
 		const t_at v_at;
 

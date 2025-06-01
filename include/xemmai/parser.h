@@ -22,14 +22,7 @@ class XEMMAI__LOCAL t_parser
 	{
 		return v_lexer.f_token() == t_lexer::c_token__COLON && v_lexer.f_integer() == 1;
 	}
-	void f_throw [[noreturn]] (std::wstring_view a_message, const t_at& a_at)
-	{
-		throw t_rvalue(t_error::f_instantiate(a_message, v_lexer.f_path(), a_at));
-	}
-	void f_throw [[noreturn]] (std::wstring_view a_message)
-	{
-		f_throw(a_message, v_lexer.f_at());
-	}
+	void f_throw [[noreturn]] (std::wstring_view a_message);
 	t_object* f_symbol() const
 	{
 		return v_module.f_slot(t_symbol::f_instantiate(v_lexer.f_value()));
@@ -43,6 +36,7 @@ class XEMMAI__LOCAL t_parser
 	{
 		if ((!v_lexer.f_newline() || v_lexer.f_indent() >= a_indent) && v_lexer.f_token() == a_right) v_lexer.f_next();
 	}
+	bool f_has_expression() const;
 	std::unique_ptr<ast::t_node> f_target(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_action(size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable);
 	std::unique_ptr<ast::t_node> f_action(size_t a_indent, ast::t_node* a_target, bool a_assignable)
@@ -62,39 +56,15 @@ class XEMMAI__LOCAL t_parser
 	std::unique_ptr<ast::t_node> f_or_else(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_conditional(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_expression();
-	bool f_expressions(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	void f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
-	{
-		while (true) {
-			a_nodes.push_back(f_expression());
-			if (v_lexer.f_token() != t_lexer::c_token__COMMA) break;
-			v_lexer.f_next();
-		}
-	}
-	bool f_end_of_expression()
-	{
-		if (v_lexer.f_newline()) return true;
-		switch (v_lexer.f_token()) {
-		case t_lexer::c_token__IF:
-		case t_lexer::c_token__ELSE:
-		case t_lexer::c_token__WHILE:
-		case t_lexer::c_token__FOR:
-		case t_lexer::c_token__TRY:
-		case t_lexer::c_token__CATCH:
-		case t_lexer::c_token__FINALLY:
-			return true;
-		default:
-			return false;
-		}
-	}
-	void f_block(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	void f_block_or_expression(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	bool f_argument(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	bool f_arguments(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	std::unique_ptr<ast::t_nodes> f_options();
+	std::unique_ptr<ast::t_node> f_body(size_t a_indent);
 
 public:
 	struct t_error : t_throwable
 	{
-		static t_object* f_instantiate(std::wstring_view a_message, std::wstring_view a_path, const t_at& a_at);
-
 		std::wstring v_path;
 		const t_at v_at;
 

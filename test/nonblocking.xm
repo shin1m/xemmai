@@ -92,7 +92,7 @@ try
 	assert(stream.write !== eof
 	assert(writer.resume(
 	assert(stream.write === eof
-	for i = 2; i < size; i = i + 1: assert(writer.write("$"
+	for i = 2; i < size; i = i + 1; assert(writer.write("$"
 	assert(!writer.write(String.from_code(0x418
 	stream.write = @(buffer, offset, size)
 		assert(size == :size - 1
@@ -107,7 +107,7 @@ try
 	assert(stream.write !== eof
 	assert(writer.flush(
 	assert(stream.write === eof
-	for i = 0; i < size; i = i + 1: assert(writer.write("$"
+	for i = 0; i < size; i = i + 1; assert(writer.write("$"
 	assert(!writer.write_line("$"
 	try
 		writer.write_line("$"
@@ -125,7 +125,7 @@ try
 		size
 	assert(writer.resume(
 	assert(stream.write === eof
-	for i = 1; i < size; i = i + 1: assert(writer.write("$"
+	for i = 1; i < size; i = i + 1; assert(writer.write("$"
 	assert(!writer.write_line("$"
 	stream.write = @(buffer, offset, size)
 		assert(size == :size
