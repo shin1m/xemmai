@@ -1,8 +1,7 @@
 #ifndef XEMMAI__THROWABLE_H
 #define XEMMAI__THROWABLE_H
 
-#include "fiber.h"
-#include "string.h"
+#include "object.h"
 
 namespace xemmai
 {
