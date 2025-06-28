@@ -313,7 +313,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 
 std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr<ast::t_node>&& a_target, bool a_assignable)
 {
-	while (!v_lexer.f_newline() || v_lexer.f_indent() > a_indent) {
+	while (!v_lexer.f_newline() || v_lexer.f_indent() > a_indent && v_lexer.f_token() == t_lexer::c_token__DOT) {
 		switch (v_lexer.f_token()) {
 		case t_lexer::c_token__LEFT_PARENTHESIS:
 			{

@@ -15,29 +15,18 @@ a = (Object + @
 )(
 assert(a.f(1)(2) == 3
 assert(a
-	.f
-		(1
-		(2) == 3
+	.f(1)(2) == 3
 assert(3 ==
 a
-	.f
-		(1
-		(2
+	.f(1)(2
 assert("c" == "abc"
 	.substring(1
 	.substring(1
 assert("ef" ==
 	"abcdef"
 		.substring(a
-			.f
-				(1
-				(2
+			.f(1)(2
 		.substring(1
-
-a = [["foo"
-assert("foo" == a
-	[0
-	[0
 
 f = @(
 	x,
