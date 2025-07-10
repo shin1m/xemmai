@@ -61,6 +61,8 @@ void t_global::f_scan(t_scan a_scan)
 	a_scan(v_symbol_xor);
 	a_scan(v_symbol_or);
 	a_scan(v_symbol_size);
+	a_scan(v_initialize_validate);
+	a_scan(v_initialize_ignore);
 	a_scan(v_string_empty);
 }
 
@@ -98,6 +100,15 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	v_symbol_xor = t_symbol::f_instantiate(L"__xor"sv);
 	v_symbol_or = t_symbol::f_instantiate(L"__or"sv);
 	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
+	v_initialize_validate = f_new<t_native>(this, [](t_library*, t_pvalue* a_stack, size_t a_n)
+	{
+		if (a_n > 0) f_throw(L"must be called with no argument."sv);
+		a_stack[0] = nullptr;
+	}, t_object::f_of(this));
+	v_initialize_ignore = f_new<t_native>(this, [](t_library*, t_pvalue* a_stack, size_t)
+	{
+		a_stack[0] = nullptr;
+	}, t_object::f_of(this));
 	v_type_object->f_define();
 	t_type_of<t_sharable>::f_define();
 	v_type_type->v_builtin = true;

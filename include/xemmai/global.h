@@ -16,7 +16,7 @@ namespace xemmai
 class t_global : public t_library
 {
 	template<typename> friend class t_value;
-	friend struct t_type_of<t_map>;
+	friend struct t_type_of<t_object>;
 	friend class t_engine;
 	friend XEMMAI__PUBLIC t_global* f_global();
 
@@ -79,6 +79,8 @@ class t_global : public t_library
 	t_slot v_symbol_xor;
 	t_slot v_symbol_or;
 	t_slot v_symbol_size;
+	t_slot v_initialize_validate;
+	t_slot v_initialize_ignore;
 	t_slot v_string_empty;
 
 public:
@@ -406,6 +408,22 @@ inline t_object* t_type::f_new(auto&&... a_xs)
 		p->f_be(this);
 		throw;
 	}
+}
+
+template<typename T>
+t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields, bool a_overridden_construct)
+{
+	auto [fields, key2index] = f_merge(a_fields);
+	auto instance = v_instance_fields + a_fields.v_instance.size();
+	if (a_overridden_construct) {
+		auto& initialize = fields[instance].second;
+		auto global = f_global();
+		if (initialize == global->v_initialize_validate) initialize = global->v_initialize_ignore;
+	}
+	auto p = f_engine()->f_allocate_for_type<T>(fields.size());
+	new(p->f_data()) T(T::c_IDS, this, a_module, T::c_NATIVE, instance, fields, key2index);
+	p->f_be(t_object::f_of(this)->v_type);
+	return p;
 }
 
 inline bool f_is_bindable(t_object* a_p)

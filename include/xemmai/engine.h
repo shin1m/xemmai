@@ -319,16 +319,6 @@ inline void t_object::f_decrement_step()
 	f_engine()->f_free_as_release(this);
 }
 
-template<typename T>
-t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields)
-{
-	auto [fields, key2index] = f_merge(a_fields);
-	auto p = f_engine()->f_allocate_for_type<T>(fields.size());
-	new(p->f_data()) T(T::c_IDS, this, a_module, T::c_NATIVE, v_instance_fields + a_fields.v_instance.size(), fields, key2index);
-	p->f_be(t_object::f_of(this)->v_type);
-	return p;
-}
-
 inline void t_thread::t_internal::f_epoch_suspend()
 {
 #ifdef __unix__

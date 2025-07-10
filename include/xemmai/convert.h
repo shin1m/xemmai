@@ -369,7 +369,7 @@ public:
 	template<typename T, typename T_super>
 	void f_derive()
 	{
-		v_library->template f_type_slot<T>().f_construct(v_library->template f_type<T_super>()->template f_derive<t_type_of<T>>(t_object::f_of(v_library), v_fields));
+		v_library->template f_type_slot<T>().f_construct(v_library->template f_type<T_super>()->template f_derive<t_type_of<T>>(t_object::f_of(v_library), v_fields, &t_type_of<T>::f_do_construct != &t_type_of<T_super>::f_do_construct));
 	}
 	template<typename T_super>
 	void f_derive(t_object* a_type)

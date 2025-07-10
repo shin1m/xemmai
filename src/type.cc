@@ -3,26 +3,17 @@
 namespace xemmai
 {
 
-namespace
-{
-
-void f_not_supported(xemmai::t_library* a_library, t_pvalue* a_stack, size_t a_n)
-{
-	f_throw(L"not supported."sv);
-}
-
-}
-
 void t_type::f_define()
 {
 	v_builtin = true;
 	auto global = f_global();
-	t_define{global}
-	(global->f_symbol_initialize(), +[](xemmai::t_library* a_library, t_pvalue* a_stack, size_t)
+	auto not_supported = xemmai::f_new<t_native>(global, [](xemmai::t_library*, t_pvalue*, size_t)
 	{
-		a_stack[0] = nullptr;
-	})
-	(global->f_symbol_call(), f_not_supported)
+		f_throw(L"not supported."sv);
+	}, t_object::f_of(global));
+	t_define{global}
+	(global->f_symbol_initialize(), static_cast<t_object*>(global->v_initialize_validate))
+	(global->f_symbol_call(), not_supported)
 	(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), [](const t_pvalue& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];
@@ -30,27 +21,27 @@ void t_type::f_define()
 		return t_string::f_instantiate(cs, n);
 	}>())
 	(global->f_symbol_hash(), t_member<intptr_t(*)(const t_pvalue&), f__hash>())
-	(global->f_symbol_get_at(), f_not_supported)
-	(global->f_symbol_set_at(), f_not_supported)
-	(global->f_symbol_plus(), f_not_supported)
-	(global->f_symbol_minus(), f_not_supported)
-	(global->f_symbol_complement(), f_not_supported)
-	(global->f_symbol_multiply(), f_not_supported)
-	(global->f_symbol_divide(), f_not_supported)
-	(global->f_symbol_modulus(), f_not_supported)
-	(global->f_symbol_add(), f_not_supported)
-	(global->f_symbol_subtract(), f_not_supported)
-	(global->f_symbol_left_shift(), f_not_supported)
-	(global->f_symbol_right_shift(), f_not_supported)
-	(global->f_symbol_less(), f_not_supported)
-	(global->f_symbol_less_equal(), f_not_supported)
-	(global->f_symbol_greater(), f_not_supported)
-	(global->f_symbol_greater_equal(), f_not_supported)
+	(global->f_symbol_get_at(), not_supported)
+	(global->f_symbol_set_at(), not_supported)
+	(global->f_symbol_plus(), not_supported)
+	(global->f_symbol_minus(), not_supported)
+	(global->f_symbol_complement(), not_supported)
+	(global->f_symbol_multiply(), not_supported)
+	(global->f_symbol_divide(), not_supported)
+	(global->f_symbol_modulus(), not_supported)
+	(global->f_symbol_add(), not_supported)
+	(global->f_symbol_subtract(), not_supported)
+	(global->f_symbol_left_shift(), not_supported)
+	(global->f_symbol_right_shift(), not_supported)
+	(global->f_symbol_less(), not_supported)
+	(global->f_symbol_less_equal(), not_supported)
+	(global->f_symbol_greater(), not_supported)
+	(global->f_symbol_greater_equal(), not_supported)
 	(global->f_symbol_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__equals>())
 	(global->f_symbol_not_equals(), t_member<bool(*)(const t_pvalue&, const t_pvalue&), f__not_equals>())
-	(global->f_symbol_and(), f_not_supported)
-	(global->f_symbol_xor(), f_not_supported)
-	(global->f_symbol_or(), f_not_supported)
+	(global->f_symbol_and(), not_supported)
+	(global->f_symbol_xor(), not_supported)
+	(global->f_symbol_or(), not_supported)
 	.f_derive<t_object>(t_object::f_of(this));
 }
 

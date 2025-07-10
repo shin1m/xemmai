@@ -174,7 +174,7 @@ struct t_type_of<t_object>
 	}
 	XEMMAI__PUBLIC std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> f_merge(const t_fields& a_fields);
 	template<typename T>
-	t_object* f_derive(t_object* a_module, const t_fields& a_fields);
+	t_object* f_derive(t_object* a_module, const t_fields& a_fields, bool a_overridden_construct = false);
 	XEMMAI__PUBLIC t_object* f_do_derive(const t_fields& a_fields);
 	t_object* (t_type::*v_derive)(const t_fields&) = nullptr;
 	t_object* f_derive(const t_fields& a_fields)
@@ -438,6 +438,7 @@ struct t_derived_primitive : t_derived<t_type_of<T>>
 	}
 	t_pvalue f_do_construct(t_pvalue* a_stack, size_t a_n)
 	{
+		if (a_n < 1) f_throw(L"must be called with at least an argument."sv);
 		f_check<T>(a_stack[2], L"argument0");
 		return this->template f_new<T>(f_as<T>(a_stack[2]));
 	}
