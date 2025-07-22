@@ -342,9 +342,9 @@ t_pvalue t_type_of<t_child>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 		t_object* pipes;
 		{
 			auto n = size(a_ios);
-			pipes = t_tuple::f_instantiate(n, [&](auto& t)
+			pipes = t_tuple::f_instantiate(n, [&](auto& tuple)
 			{
-				std::uninitialized_default_construct_n(&t[0], n);
+				std::uninitialized_default_construct_n(&tuple[0], n);
 			});
 			for (size_t i = 0; i < n; ++i) {
 				auto x = a_ios.f_get_at(i);

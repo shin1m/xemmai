@@ -458,31 +458,24 @@ int main(int argc, char* argv[])
 #else
 	int debug = -1;
 #endif
-	{
-		char** end = argv + argc;
-		char** q = argv;
-		for (char** p = argv; p < end; ++p) {
-			if ((*p)[0] == '-' && (*p)[1] == '-') {
-				const char* v = *p + 2;
-				if (std::strcmp(v, "verbose") == 0) {
-					options.v_verbose = true;
-				} else if (std::strncmp(v, "collector-threshold=", 20) == 0) {
-					std::sscanf(v + 20, "%zu", &options.v_collector__threshold);
-				} else if (std::strncmp(v, "debug", 5) == 0) {
+	auto end = argv + argc;
+	auto p = argv + 1;
+	for (; p < end && (*p)[0] == '-' && (*p)[1] == '-'; ++p) {
+		const char* v = *p + 2;
+		if (std::strcmp(v, "verbose") == 0) {
+			options.v_verbose = true;
+		} else if (std::strncmp(v, "collector-threshold=", 20) == 0) {
+			std::sscanf(v + 20, "%zu", &options.v_collector__threshold);
+		} else if (std::strncmp(v, "debug", 5) == 0) {
 #ifdef _WIN32
-					debug = v[5] == '=' ? v + 6 : v + 5;
+			debug = v[5] == '=' ? v + 6 : v + 5;
 #else
-					debug = 2;
-					if (v[5] == '=') std::sscanf(v + 6, "%u", &debug);
+			debug = 2;
+			if (v[5] == '=') std::sscanf(v + 6, "%u", &debug);
 #endif
-				}
-			} else {
-				*q++ = *p;
-			}
 		}
-		argc = q - argv;
 	}
-	if (argc < 2) {
+	if (p >= end) {
 		std::fprintf(stderr, "usage: %s [options] <script> ...\n", argv[0]);
 		return -1;
 	}
@@ -494,7 +487,7 @@ int main(int argc, char* argv[])
 		pthread_sigmask(SIG_BLOCK, &set, NULL);
 	}
 #endif
-	xemmai::t_engine engine(options, argc, argv);
+	xemmai::t_engine engine(options, argv[0], end - p, p);
 #ifdef _WIN32
 	if (!debug) return static_cast<int>(engine.f_run(nullptr));
 	auto fd = debug[0] ? creat(debug, S_IREAD | S_IWRITE) : dup(2);

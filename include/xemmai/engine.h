@@ -160,7 +160,7 @@ private:
 	XEMMAI__LOCAL void f_finalize(t_thread::t_internal* a_thread);
 
 public:
-	t_engine(const t_options& a_options, size_t a_count, char** a_arguments);
+	t_engine(const t_options& a_options, char* a_executable, size_t a_count, char** a_arguments);
 	~t_engine();
 	template<typename T>
 	t_object* f_allocate_for_type(size_t a_fields)

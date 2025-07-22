@@ -191,7 +191,7 @@ void t_engine::f_finalize(t_thread::t_internal* a_thread)
 	v_thread__condition.notify_all();
 }
 
-t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_arguments) : v_object__heap([]
+t_engine::t_engine(const t_options& a_options, char* a_executable, size_t a_count, char** a_arguments) : v_object__heap([]
 {
 	v_instance->f_tick();
 }), v_options(a_options)
@@ -261,26 +261,24 @@ t_engine::t_engine(const t_options& a_options, size_t a_count, char** a_argument
 		}
 		if (i < sv.size()) path->f_as<t_list>().f_push(global->f_as(sv.substr(i)));
 	}
-	std::wstring executable;
-	portable::t_path script({});
-	auto arguments = t_list::f_instantiate();
-	if (a_count > 0) {
-		executable = portable::f_convert(a_arguments[0]);
 #ifdef XEMMAI_MODULE_PATH
-		path->f_as<t_list>().f_push(global->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
+	path->f_as<t_list>().f_push(global->f_as(static_cast<const std::wstring&>(portable::t_path(portable::f_executable_path()) / std::wstring_view(L"../" XEMMAI__MACRO__LQ(XEMMAI_MODULE_PATH)))));
 #endif
-		if (a_count > 1) {
-			script = {portable::f_convert(a_arguments[1])};
-			path->f_as<t_list>().f_push(global->f_as(static_cast<const std::wstring&>(script / L".."sv)));
-			auto& as = arguments->f_as<t_list>();
-			for (size_t i = 2; i < a_count; ++i) as.f_push(global->f_as(portable::f_convert(a_arguments[i])));
-		}
+	portable::t_path script({});
+	if (a_count > 0) {
+		script = {portable::f_convert(a_arguments[0])};
+		path->f_as<t_list>().f_push(global->f_as(static_cast<const std::wstring&>(script / L".."sv)));
+		--a_count;
+		++a_arguments;
 	}
 	t_define system(global);
 	system(L"path"sv, path);
-	system(L"executable"sv, executable);
+	system(L"executable"sv, portable::f_convert(a_executable));
 	system(L"script"sv, static_cast<const std::wstring&>(script));
-	system(L"arguments"sv, arguments);
+	system(L"arguments"sv, t_tuple::f_instantiate(a_count, [&](auto& tuple)
+	{
+		for (size_t i = 0; i < a_count; ++i) new(&tuple[i]) t_svalue(global->f_as(portable::f_convert(a_arguments[i])));
+	}));
 	{
 		auto io = global->f_type<t_module::t_body>()->f_new<t_io>();
 		v_module_io = t_module::f_new(L"io"sv, io, io->f_as<t_io>().f_define());
