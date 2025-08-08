@@ -57,17 +57,22 @@ struct t_type_of<t_server> : t_derivable<t_holds<t_server>>
 
 struct t_callback_library : t_library
 {
-	t_slot v_symbol_on_message;
-	t_slot_of<t_type> v_type_client;
-	t_slot_of<t_type> v_type_server;
+#define CALLBACK_LIBRARY__SYMBOLS(_)\
+	_(on_message)
+	CALLBACK_LIBRARY__SYMBOLS(XEMMAI__SYMBOL__DECLARE)
+#define CALLBACK_LIBRARY__TYPES(_)\
+	_(client)\
+	_(server)
+	CALLBACK_LIBRARY__TYPES(XEMMAI__TYPE__DECLARE)
 
 	using t_library::t_library;
 	XEMMAI__LIBRARY__MEMBERS
 };
 
 XEMMAI__LIBRARY__BASE(t_callback_library, t_global, f_global())
-XEMMAI__LIBRARY__TYPE(t_callback_library, client)
-XEMMAI__LIBRARY__TYPE(t_callback_library, server)
+#define XEMMAI__TYPE__LIBRARY t_callback_library
+CALLBACK_LIBRARY__TYPES(XEMMAI__TYPE__DEFINE)
+#undef XEMMAI__TYPE__LIBRARY
 
 class t_client_wrapper : public t_client
 {
@@ -140,14 +145,13 @@ t_pvalue t_type_of<t_server>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 
 void t_callback_library::f_scan(t_scan a_scan)
 {
-	a_scan(v_symbol_on_message);
-	a_scan(v_type_client);
-	a_scan(v_type_server);
+	CALLBACK_LIBRARY__SYMBOLS(XEMMAI__SYMBOL__SCAN)
+	CALLBACK_LIBRARY__TYPES(XEMMAI__TYPE__SCAN)
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_callback_library::f_define()
 {
-	v_symbol_on_message = t_symbol::f_instantiate(L"on_message"sv);
+	CALLBACK_LIBRARY__SYMBOLS(XEMMAI__SYMBOL__INSTANTIATE)
 	t_type_of<t_client>::f_define(this);
 	t_type_of<t_server>::f_define(this);
 	return t_define(this)

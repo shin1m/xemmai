@@ -213,34 +213,35 @@ struct t_type_of<t_child> : t_derivable<t_holds<t_child>>
 
 struct t_os : t_library
 {
-	t_slot_of<t_type> v_type_path;
-	t_slot_of<t_type> v_type_file_type;
-	t_slot_of<t_type> v_type_permissions;
-	t_slot_of<t_type> v_type_directory_entry;
-	t_slot_of<t_type> v_type_directory;
 #ifdef __unix__
-	t_slot_of<t_type> v_type_child;
+#define XEMMAI__OS__CHILD(_) _(child)
+#else
+#define XEMMAI__OS__CHILD(_)
 #endif
+#define XEMMAI__OS__TYPES(_)\
+	_##_AS(portable::t_path, path)\
+	_##_AS(std::filesystem::file_type, file_type)\
+	_##_AS(std::filesystem::perms, permissions)\
+	_##_JUST(directory_entry)\
+	_(directory)\
+	XEMMAI__OS__CHILD(_)
+	XEMMAI__OS__TYPES(XEMMAI__TYPE__DECLARE)
 
 	using t_library::t_library;
 	XEMMAI__LIBRARY__MEMBERS
 };
 
 XEMMAI__LIBRARY__BASE(t_os, t_global, f_global())
-XEMMAI__LIBRARY__TYPE_AS(t_os, portable::t_path, path)
-XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::file_type, file_type)
-XEMMAI__LIBRARY__TYPE_AS(t_os, std::filesystem::perms, permissions)
-XEMMAI__LIBRARY__TYPE(t_os, directory)
-#ifdef __unix__
-XEMMAI__LIBRARY__TYPE(t_os, child)
-#endif
+#define XEMMAI__TYPE__LIBRARY t_os
+XEMMAI__OS__TYPES(XEMMAI__TYPE__DEFINE)
+#undef XEMMAI__TYPE__LIBRARY
 
 void t_type_of<portable::t_path>::f_define(t_os* a_library)
 {
 	auto global = f_global();
 	t_define{a_library}
-	(global->f_symbol_string(), t_member<const std::wstring&(portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
-	(global->f_symbol_divide(), t_member<portable::t_path(*)(const portable::t_path&, std::wstring_view), f__divide>())
+	(global->f_symbol___string(), t_member<const std::wstring&(portable::t_path::*)() const, &portable::t_path::operator const std::wstring&>())
+	(global->f_symbol___divide(), t_member<portable::t_path(*)(const portable::t_path&, std::wstring_view), f__divide>())
 	.f_derive<portable::t_path, t_object>();
 }
 
@@ -374,14 +375,7 @@ t_pvalue t_type_of<t_child>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 
 void t_os::f_scan(t_scan a_scan)
 {
-	a_scan(v_type_path);
-	a_scan(v_type_file_type);
-	a_scan(v_type_permissions);
-	a_scan(v_type_directory_entry);
-	a_scan(v_type_directory);
-#ifdef __unix__
-	a_scan(v_type_child);
-#endif
+	XEMMAI__OS__TYPES(XEMMAI__TYPE__SCAN)
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()

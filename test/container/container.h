@@ -43,15 +43,18 @@ struct t_type_of<t_queue> : t_derivable<t_holds<t_queue>>
 
 struct t_container : t_library
 {
-	t_slot_of<t_type> v_type_pair;
-	t_slot_of<t_type> v_type_queue;
+#define CONTAINER__TYPES(_)\
+	_(pair)\
+	_(queue)
+	CONTAINER__TYPES(XEMMAI__TYPE__DECLARE)
 
 	using t_library::t_library;
 	XEMMAI__LIBRARY__MEMBERS
 };
 
 XEMMAI__LIBRARY__BASE(t_container, t_global, f_global())
-XEMMAI__LIBRARY__TYPE(t_container, pair)
-XEMMAI__LIBRARY__TYPE(t_container, queue)
+#define XEMMAI__TYPE__LIBRARY t_container
+CONTAINER__TYPES(XEMMAI__TYPE__DEFINE)
+#undef XEMMAI__TYPE__LIBRARY
 
 #endif

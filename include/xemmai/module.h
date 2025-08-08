@@ -151,18 +151,33 @@ inline const T_base* a_library::f_library<T_base>() const\
 	return a_base;\
 }
 
-#define XEMMAI__LIBRARY__TYPE(a_library, a_name)\
+#define XEMMAI__TYPE__DECLARE(a_name) t_slot_of<t_type> v_type_##a_name;
+#define XEMMAI__TYPE__DECLARE_AS(a_type, a_name) t_slot_of<t_type> v_type_##a_name;
+#define XEMMAI__TYPE__DECLARE_JUST(a_name) XEMMAI__TYPE__DECLARE(a_name)
+#define XEMMAI__TYPE__DEFINE(a_name)\
 template<>\
-inline t_slot_of<t_type>& a_library::f_type_slot<t_##a_name>()\
+inline t_slot_of<t_type>& XEMMAI__TYPE__LIBRARY::f_type_slot<t_##a_name>()\
 {\
 	return v_type_##a_name;\
 }
+#define XEMMAI__TYPE__DEFINE_AS(a_type, a_name)\
+template<>\
+inline t_slot_of<t_type>& XEMMAI__TYPE__LIBRARY::f_type_slot<a_type>()\
+{\
+	return v_type_##a_name;\
+}
+#define XEMMAI__TYPE__DEFINE_JUST(a_name)
+#define XEMMAI__TYPE__SCAN(a_name) a_scan(v_type_##a_name);
+#define XEMMAI__TYPE__SCAN_AS(a_type, a_name) a_scan(v_type_##a_name);
+#define XEMMAI__TYPE__SCAN_JUST(a_name) XEMMAI__TYPE__SCAN(a_name)
 
-#define XEMMAI__LIBRARY__TYPE_AS(a_library, a_type, a_name)\
-template<>\
-inline t_slot_of<t_type>& a_library::f_type_slot<a_type>()\
-{\
-	return v_type_##a_name;\
-}
+#define XEMMAI__SYMBOL__DECLARE(a_symbol) t_slot v_symbol_##a_symbol;
+#define XEMMAI__SYMBOL__DEFINE(a_symbol)\
+	t_object* f_symbol_##a_symbol() const\
+	{\
+		return v_symbol_##a_symbol;\
+	}
+#define XEMMAI__SYMBOL__SCAN(a_symbol) a_scan(v_symbol_##a_symbol);
+#define XEMMAI__SYMBOL__INSTANTIATE(a_symbol) v_symbol_##a_symbol = t_symbol::f_instantiate(L""#a_symbol""sv);
 
 #endif

@@ -11,56 +11,33 @@ namespace xemmai
 
 class t_io : public t_library
 {
-	t_slot v_symbol_close;
-	t_slot v_symbol_read;
-	t_slot v_symbol_write;
-	t_slot v_symbol_flush;
-	t_slot v_symbol_read_line;
-	t_slot v_symbol_write_line;
-	t_slot v_symbol_resume;
-	t_slot_of<t_type> v_type_file;
-	t_slot_of<t_type> v_type_reader;
-	t_slot_of<t_type> v_type_writer;
+#define XEMMAI__IO__SYMBOLS(_)\
+	_(close)\
+	_(read)\
+	_(write)\
+	_(flush)\
+	_(read_line)\
+	_(write_line)\
+	_(resume)
+	XEMMAI__IO__SYMBOLS(XEMMAI__SYMBOL__DECLARE)
+#define XEMMAI__IO__TYPES(_)\
+	_##_AS(io::t_file, file)\
+	_##_AS(io::t_reader, reader)\
+	_##_AS(io::t_writer, writer)
+	XEMMAI__IO__TYPES(XEMMAI__TYPE__DECLARE)
 
 public:
 	t_io() : t_library(nullptr)
 	{
 	}
 	XEMMAI__LIBRARY__MEMBERS
-	t_object* f_symbol_close() const
-	{
-		return v_symbol_close;
-	}
-	t_object* f_symbol_read() const
-	{
-		return v_symbol_read;
-	}
-	t_object* f_symbol_write() const
-	{
-		return v_symbol_write;
-	}
-	t_object* f_symbol_flush() const
-	{
-		return v_symbol_flush;
-	}
-	t_object* f_symbol_read_line() const
-	{
-		return v_symbol_read_line;
-	}
-	t_object* f_symbol_write_line() const
-	{
-		return v_symbol_write_line;
-	}
-	t_object* f_symbol_resume() const
-	{
-		return v_symbol_resume;
-	}
+	XEMMAI__IO__SYMBOLS(XEMMAI__SYMBOL__DEFINE)
 };
 
 XEMMAI__LIBRARY__BASE(t_io, t_global, f_global())
-XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_file, file)
-XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_reader, reader)
-XEMMAI__LIBRARY__TYPE_AS(t_io, io::t_writer, writer)
+#define XEMMAI__TYPE__LIBRARY t_io
+XEMMAI__IO__TYPES(XEMMAI__TYPE__DEFINE)
+#undef XEMMAI__TYPE__LIBRARY
 
 inline t_object* io::t_file::f_instantiate(auto&&... a_xs)
 {

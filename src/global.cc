@@ -5,62 +5,8 @@ namespace xemmai
 
 void t_global::f_scan(t_scan a_scan)
 {
-	a_scan(v_type_object);
-	a_scan(v_type_sharable);
-	a_scan(v_type_type);
-	a_scan(v_type_builder);
-	a_scan(v_type_module__body);
-	a_scan(v_type_module);
-	a_scan(v_type_symbol);
-	a_scan(v_type_native);
-	a_scan(v_type_fiber);
-	a_scan(v_type_thread);
-	a_scan(v_type_scope);
-	a_scan(v_type_code);
-	a_scan(v_type_lambda);
-	a_scan(v_type_lambda_shared);
-	a_scan(v_type_advanced_lambda);
-	a_scan(v_type_advanced_lambda_shared);
-	a_scan(v_type_method);
-	a_scan(v_type_throwable);
-	a_scan(v_type_null);
-	a_scan(v_type_boolean);
-	a_scan(v_type_integer);
-	a_scan(v_type_float);
-	a_scan(v_type_string);
-	a_scan(v_type_tuple);
-	a_scan(v_type_list);
-	a_scan(v_type_map__table);
-	a_scan(v_type_map);
-	a_scan(v_type_bytes);
-	a_scan(v_type_lexer__error);
-	a_scan(v_type_parser__error);
-	a_scan(v_symbol_initialize);
-	a_scan(v_symbol_call);
-	a_scan(v_symbol_string);
-	a_scan(v_symbol_hash);
-	a_scan(v_symbol_get_at);
-	a_scan(v_symbol_set_at);
-	a_scan(v_symbol_plus);
-	a_scan(v_symbol_minus);
-	a_scan(v_symbol_complement);
-	a_scan(v_symbol_multiply);
-	a_scan(v_symbol_divide);
-	a_scan(v_symbol_modulus);
-	a_scan(v_symbol_add);
-	a_scan(v_symbol_subtract);
-	a_scan(v_symbol_left_shift);
-	a_scan(v_symbol_right_shift);
-	a_scan(v_symbol_less);
-	a_scan(v_symbol_less_equal);
-	a_scan(v_symbol_greater);
-	a_scan(v_symbol_greater_equal);
-	a_scan(v_symbol_equals);
-	a_scan(v_symbol_not_equals);
-	a_scan(v_symbol_and);
-	a_scan(v_symbol_xor);
-	a_scan(v_symbol_or);
-	a_scan(v_symbol_size);
+	XEMMAI__GLOBAL__TYPES(XEMMAI__TYPE__SCAN)
+	XEMMAI__GLOBAL__SYMBOLS(XEMMAI__SYMBOL__SCAN)
 	a_scan(v_initialize_validate);
 	a_scan(v_initialize_ignore);
 	a_scan(v_string_empty);
@@ -74,32 +20,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_global::f_define()
 	auto engine = f_engine();
 	v_type_symbol.f_construct(engine->f_new_type_on_boot<t_symbol>(t_type::c_FIELDS, v_type_object, t_object::f_of(this)));
 	v_type_native.f_construct(engine->f_new_type_on_boot<t_native>(t_type::c_FIELDS, v_type_object, t_object::f_of(this)));
-	v_symbol_initialize = t_symbol::f_instantiate(L"__initialize"sv);
-	v_symbol_call = t_symbol::f_instantiate(L"__call"sv);
-	v_symbol_string = t_symbol::f_instantiate(L"__string"sv);
-	v_symbol_hash = t_symbol::f_instantiate(L"__hash"sv);
-	v_symbol_get_at = t_symbol::f_instantiate(L"__get_at"sv);
-	v_symbol_set_at = t_symbol::f_instantiate(L"__set_at"sv);
-	v_symbol_plus = t_symbol::f_instantiate(L"__plus"sv);
-	v_symbol_minus = t_symbol::f_instantiate(L"__minus"sv);
-	v_symbol_complement = t_symbol::f_instantiate(L"__complement"sv);
-	v_symbol_multiply = t_symbol::f_instantiate(L"__multiply"sv);
-	v_symbol_divide = t_symbol::f_instantiate(L"__divide"sv);
-	v_symbol_modulus = t_symbol::f_instantiate(L"__modulus"sv);
-	v_symbol_add = t_symbol::f_instantiate(L"__add"sv);
-	v_symbol_subtract = t_symbol::f_instantiate(L"__subtract"sv);
-	v_symbol_left_shift = t_symbol::f_instantiate(L"__left_shift"sv);
-	v_symbol_right_shift = t_symbol::f_instantiate(L"__right_shift"sv);
-	v_symbol_less = t_symbol::f_instantiate(L"__less"sv);
-	v_symbol_less_equal = t_symbol::f_instantiate(L"__less_equal"sv);
-	v_symbol_greater = t_symbol::f_instantiate(L"__greater"sv);
-	v_symbol_greater_equal = t_symbol::f_instantiate(L"__greater_equal"sv);
-	v_symbol_equals = t_symbol::f_instantiate(L"__equals"sv);
-	v_symbol_not_equals = t_symbol::f_instantiate(L"__not_equals"sv);
-	v_symbol_and = t_symbol::f_instantiate(L"__and"sv);
-	v_symbol_xor = t_symbol::f_instantiate(L"__xor"sv);
-	v_symbol_or = t_symbol::f_instantiate(L"__or"sv);
-	v_symbol_size = t_symbol::f_instantiate(L"size"sv);
+	XEMMAI__GLOBAL__SYMBOLS(XEMMAI__SYMBOL__INSTANTIATE)
 	v_initialize_validate = f_new<t_native>(this, [](t_library*, t_pvalue* a_stack, size_t a_n)
 	{
 		if (a_n > 0) f_throw(L"must be called with no argument."sv);

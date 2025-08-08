@@ -121,7 +121,7 @@ void t_type_of<t_list>::f_define()
 {
 	auto global = f_global();
 	t_define{global}
-	(global->f_symbol_string(), t_member<t_object*(*)(t_list&), [](t_list& a_self) -> t_object*
+	(global->f_symbol___string(), t_member<t_object*(*)(t_list&), [](t_list& a_self) -> t_object*
 	{
 		t_stringer s;
 		s << L'[';
@@ -160,14 +160,14 @@ void t_type_of<t_list>::f_define()
 			return a_self.f_size();
 		});
 	}>())
-	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), [](t_list& a_self, intptr_t a_index)
+	(global->f_symbol___get_at(), t_member<t_pvalue(*)(t_list&, intptr_t), [](t_list& a_self, intptr_t a_index)
 	{
 		return a_self.template f_owned_or_shared<std::shared_lock>([&]
 		{
 			return t_pvalue(a_self[a_index]);
 		});
 	}>())
-	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), [](t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
+	(global->f_symbol___set_at(), t_member<t_pvalue(*)(t_list&, intptr_t, const t_pvalue&), [](t_list& a_self, intptr_t a_index, const t_pvalue& a_value)
 	{
 		return a_self.template f_owned_or_shared<std::lock_guard>([&]
 		{

@@ -29,16 +29,19 @@ struct t_type_of<std::condition_variable> : t_holds<std::condition_variable>
 
 struct t_threading : t_library
 {
-	t_slot_of<t_type> v_type_mutex;
-	t_slot_of<t_type> v_type_condition;
+#define XEMMAI__THREADING__TYPES(_)\
+	_##_AS(std::mutex, mutex)\
+	_##_AS(std::condition_variable, condition)
+	XEMMAI__THREADING__TYPES(XEMMAI__TYPE__DECLARE)
 
 	using t_library::t_library;
 	XEMMAI__LIBRARY__MEMBERS
 };
 
 XEMMAI__LIBRARY__BASE(t_threading, t_global, f_global())
-XEMMAI__LIBRARY__TYPE_AS(t_threading, std::mutex, mutex)
-XEMMAI__LIBRARY__TYPE_AS(t_threading, std::condition_variable, condition)
+#define XEMMAI__TYPE__LIBRARY t_threading
+XEMMAI__THREADING__TYPES(XEMMAI__TYPE__DEFINE)
+#undef XEMMAI__TYPE__LIBRARY
 
 void t_type_of<std::mutex>::f_define(t_threading* a_library)
 {
@@ -93,8 +96,7 @@ t_pvalue t_type_of<std::condition_variable>::f_do_construct(t_pvalue* a_stack, s
 
 void t_threading::f_scan(t_scan a_scan)
 {
-	a_scan(v_type_mutex);
-	a_scan(v_type_condition);
+	XEMMAI__THREADING__TYPES(XEMMAI__TYPE__SCAN)
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_threading::f_define()

@@ -9,14 +9,18 @@ enum t_number
 
 struct t_enum : t_library
 {
-	t_slot_of<t_type> v_type_number;
+#define ENUM__TYPES(_)\
+	_(number)
+	ENUM__TYPES(XEMMAI__TYPE__DECLARE)
 
 	using t_library::t_library;
 	XEMMAI__LIBRARY__MEMBERS
 };
 
 XEMMAI__LIBRARY__BASE(t_enum, t_global, f_global())
-XEMMAI__LIBRARY__TYPE(t_enum, number)
+#define XEMMAI__TYPE__LIBRARY t_enum
+ENUM__TYPES(XEMMAI__TYPE__DEFINE)
+#undef XEMMAI__TYPE__LIBRARY
 
 namespace xemmai
 {
@@ -42,7 +46,7 @@ struct t_type_of<t_number> : t_enum_of<t_number, t_enum>
 
 void t_enum::f_scan(t_scan a_scan)
 {
-	a_scan(v_type_number);
+	ENUM__TYPES(XEMMAI__TYPE__SCAN)
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_enum::f_define()

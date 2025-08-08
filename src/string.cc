@@ -17,7 +17,7 @@ void t_type_of<t_string>::f_define()
 		wchar_t c = a_code;
 		return f__construct(a_library->template f_type<t_string>(), &c, 1);
 	}>())
-	(global->f_symbol_string(), t_member<t_object*(*)(const t_pvalue&), [](const t_pvalue& a_self) -> t_object*
+	(global->f_symbol___string(), t_member<t_object*(*)(const t_pvalue&), [](const t_pvalue& a_self) -> t_object*
 	{
 		return a_self;
 	}>())

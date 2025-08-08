@@ -23,62 +23,66 @@ class t_global : public t_library
 	static inline XEMMAI__PORTABLE__THREAD t_global* v_instance;
 
 	t_type* v_tag_types[c_tag__OBJECT];
-	t_slot_of<t_type> v_type_object;
-	t_slot_of<t_type> v_type_sharable;
-	t_slot_of<t_type> v_type_type;
-	t_slot_of<t_type> v_type_builder;
-	t_slot_of<t_type> v_type_module__body;
-	t_slot_of<t_type> v_type_module;
-	t_slot_of<t_type> v_type_symbol;
-	t_slot_of<t_type> v_type_native;
-	t_slot_of<t_type> v_type_fiber;
-	t_slot_of<t_type> v_type_thread;
-	t_slot_of<t_type> v_type_scope;
-	t_slot_of<t_type> v_type_code;
-	t_slot_of<t_type> v_type_lambda;
-	t_slot_of<t_type> v_type_lambda_shared;
-	t_slot_of<t_type> v_type_advanced_lambda;
-	t_slot_of<t_type> v_type_advanced_lambda_shared;
-	t_slot_of<t_type> v_type_method;
-	t_slot_of<t_type> v_type_throwable;
-	t_slot_of<t_type> v_type_null;
-	t_slot_of<t_type> v_type_boolean;
-	t_slot_of<t_type> v_type_integer;
-	t_slot_of<t_type> v_type_float;
-	t_slot_of<t_type> v_type_string;
-	t_slot_of<t_type> v_type_tuple;
-	t_slot_of<t_type> v_type_list;
-	t_slot_of<t_type> v_type_map__table;
-	t_slot_of<t_type> v_type_map;
-	t_slot_of<t_type> v_type_bytes;
-	t_slot_of<t_type> v_type_lexer__error;
-	t_slot_of<t_type> v_type_parser__error;
-	t_slot v_symbol_initialize;
-	t_slot v_symbol_call;
-	t_slot v_symbol_string;
-	t_slot v_symbol_hash;
-	t_slot v_symbol_get_at;
-	t_slot v_symbol_set_at;
-	t_slot v_symbol_plus;
-	t_slot v_symbol_minus;
-	t_slot v_symbol_complement;
-	t_slot v_symbol_multiply;
-	t_slot v_symbol_divide;
-	t_slot v_symbol_modulus;
-	t_slot v_symbol_add;
-	t_slot v_symbol_subtract;
-	t_slot v_symbol_left_shift;
-	t_slot v_symbol_right_shift;
-	t_slot v_symbol_less;
-	t_slot v_symbol_less_equal;
-	t_slot v_symbol_greater;
-	t_slot v_symbol_greater_equal;
-	t_slot v_symbol_equals;
-	t_slot v_symbol_not_equals;
-	t_slot v_symbol_and;
-	t_slot v_symbol_xor;
-	t_slot v_symbol_or;
-	t_slot v_symbol_size;
+#define XEMMAI__GLOBAL__TYPES(_)\
+	_(object)\
+	_(sharable)\
+	_(type)\
+	_(builder)\
+	_##_AS(t_module::t_body, module__body)\
+	_(module)\
+	_(symbol)\
+	_(native)\
+	_(fiber)\
+	_(thread)\
+	_(scope)\
+	_(code)\
+	_(lambda)\
+	_(lambda_shared)\
+	_##_AS(t_advanced_lambda<t_lambda>, advanced_lambda)\
+	_##_AS(t_advanced_lambda<t_lambda_shared>, advanced_lambda_shared)\
+	_(method)\
+	_(throwable)\
+	_##_AS(std::nullptr_t, null)\
+	_##_AS(bool, boolean)\
+	_##_AS(intptr_t, integer)\
+	_##_AS(double, float)\
+	_(string)\
+	_(tuple)\
+	_(list)\
+	_##_AS(t_map::t_table, map__table)\
+	_(map)\
+	_(bytes)\
+	_##_AS(t_lexer::t_error, lexer__error)\
+	_##_AS(t_parser::t_error, parser__error)
+	XEMMAI__GLOBAL__TYPES(XEMMAI__TYPE__DECLARE)
+#define XEMMAI__GLOBAL__SYMBOLS(_)\
+	_(__initialize)\
+	_(__call)\
+	_(__string)\
+	_(__hash)\
+	_(__get_at)\
+	_(__set_at)\
+	_(__plus)\
+	_(__minus)\
+	_(__complement)\
+	_(__multiply)\
+	_(__divide)\
+	_(__modulus)\
+	_(__add)\
+	_(__subtract)\
+	_(__left_shift)\
+	_(__right_shift)\
+	_(__less)\
+	_(__less_equal)\
+	_(__greater)\
+	_(__greater_equal)\
+	_(__equals)\
+	_(__not_equals)\
+	_(__and)\
+	_(__xor)\
+	_(__or)\
+	_(size)
+	XEMMAI__GLOBAL__SYMBOLS(XEMMAI__SYMBOL__DECLARE)
 	t_slot v_initialize_validate;
 	t_slot v_initialize_ignore;
 	t_slot v_string_empty;
@@ -92,146 +96,16 @@ public:
 		v_type_module__body.f_construct(a_type_module__body);
 	}
 	XEMMAI__LIBRARY__MEMBERS
-	t_object* f_symbol_initialize() const
-	{
-		return v_symbol_initialize;
-	}
-	t_object* f_symbol_call() const
-	{
-		return v_symbol_call;
-	}
-	t_object* f_symbol_string() const
-	{
-		return v_symbol_string;
-	}
-	t_object* f_symbol_hash() const
-	{
-		return v_symbol_hash;
-	}
-	t_object* f_symbol_get_at() const
-	{
-		return v_symbol_get_at;
-	}
-	t_object* f_symbol_set_at() const
-	{
-		return v_symbol_set_at;
-	}
-	t_object* f_symbol_plus() const
-	{
-		return v_symbol_plus;
-	}
-	t_object* f_symbol_minus() const
-	{
-		return v_symbol_minus;
-	}
-	t_object* f_symbol_complement() const
-	{
-		return v_symbol_complement;
-	}
-	t_object* f_symbol_multiply() const
-	{
-		return v_symbol_multiply;
-	}
-	t_object* f_symbol_divide() const
-	{
-		return v_symbol_divide;
-	}
-	t_object* f_symbol_modulus() const
-	{
-		return v_symbol_modulus;
-	}
-	t_object* f_symbol_add() const
-	{
-		return v_symbol_add;
-	}
-	t_object* f_symbol_subtract() const
-	{
-		return v_symbol_subtract;
-	}
-	t_object* f_symbol_left_shift() const
-	{
-		return v_symbol_left_shift;
-	}
-	t_object* f_symbol_right_shift() const
-	{
-		return v_symbol_right_shift;
-	}
-	t_object* f_symbol_less() const
-	{
-		return v_symbol_less;
-	}
-	t_object* f_symbol_less_equal() const
-	{
-		return v_symbol_less_equal;
-	}
-	t_object* f_symbol_greater() const
-	{
-		return v_symbol_greater;
-	}
-	t_object* f_symbol_greater_equal() const
-	{
-		return v_symbol_greater_equal;
-	}
-	t_object* f_symbol_equals() const
-	{
-		return v_symbol_equals;
-	}
-	t_object* f_symbol_not_equals() const
-	{
-		return v_symbol_not_equals;
-	}
-	t_object* f_symbol_and() const
-	{
-		return v_symbol_and;
-	}
-	t_object* f_symbol_xor() const
-	{
-		return v_symbol_xor;
-	}
-	t_object* f_symbol_or() const
-	{
-		return v_symbol_or;
-	}
-	t_object* f_symbol_size() const
-	{
-		return v_symbol_size;
-	}
+	XEMMAI__GLOBAL__SYMBOLS(XEMMAI__SYMBOL__DEFINE)
 	t_object* f_string_empty() const
 	{
 		return v_string_empty;
 	}
 };
 
-XEMMAI__LIBRARY__TYPE(t_global, object)
-XEMMAI__LIBRARY__TYPE(t_global, sharable)
-XEMMAI__LIBRARY__TYPE(t_global, type)
-XEMMAI__LIBRARY__TYPE(t_global, builder)
-XEMMAI__LIBRARY__TYPE_AS(t_global, t_module::t_body, module__body)
-XEMMAI__LIBRARY__TYPE(t_global, module)
-XEMMAI__LIBRARY__TYPE(t_global, symbol)
-XEMMAI__LIBRARY__TYPE(t_global, native)
-XEMMAI__LIBRARY__TYPE(t_global, fiber)
-XEMMAI__LIBRARY__TYPE(t_global, thread)
-XEMMAI__LIBRARY__TYPE(t_global, scope)
-XEMMAI__LIBRARY__TYPE(t_global, code)
-XEMMAI__LIBRARY__TYPE(t_global, lambda)
-XEMMAI__LIBRARY__TYPE(t_global, lambda_shared)
-XEMMAI__LIBRARY__TYPE_AS(t_global, t_advanced_lambda<t_lambda>, advanced_lambda)
-XEMMAI__LIBRARY__TYPE_AS(t_global, t_advanced_lambda<t_lambda_shared>, advanced_lambda_shared)
-XEMMAI__LIBRARY__TYPE(t_global, method)
-XEMMAI__LIBRARY__TYPE(t_global, throwable)
-XEMMAI__LIBRARY__TYPE_AS(t_global, std::nullptr_t, null)
-XEMMAI__LIBRARY__TYPE_AS(t_global, bool, boolean)
-XEMMAI__LIBRARY__TYPE_AS(t_global, intptr_t, integer)
-XEMMAI__LIBRARY__TYPE_AS(t_global, double, float)
-XEMMAI__LIBRARY__TYPE(t_global, string)
-XEMMAI__LIBRARY__TYPE(t_global, tuple)
-XEMMAI__LIBRARY__TYPE(t_global, list)
-XEMMAI__LIBRARY__TYPE_AS(t_global, t_map::t_table, map__table)
-XEMMAI__LIBRARY__TYPE(t_global, map)
-XEMMAI__LIBRARY__TYPE(t_global, bytes)
-XEMMAI__LIBRARY__TYPE_AS(t_global, t_lexer::t_error, lexer__error)
-XEMMAI__LIBRARY__TYPE_AS(t_global, t_parser::t_error, parser__error)
+#define XEMMAI__TYPE__LIBRARY t_global
+XEMMAI__GLOBAL__TYPES(XEMMAI__TYPE__DEFINE)
+#undef XEMMAI__TYPE__LIBRARY
 
 #ifdef _WIN32
 XEMMAI__PUBLIC t_global* f_global();

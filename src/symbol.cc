@@ -31,7 +31,7 @@ void t_type_of<t_symbol>::f_define()
 	v_builtin = v_revive = true;
 	auto global = f_global();
 	t_define{global}
-	(global->f_symbol_string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
+	(global->f_symbol___string(), t_member<const std::wstring&(t_symbol::*)() const, &t_symbol::f_string>())
 	.f_derive<t_object>(t_object::f_of(this));
 }
 

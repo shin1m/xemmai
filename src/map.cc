@@ -117,7 +117,7 @@ void t_type_of<t_map>::f_define()
 	auto global = f_global();
 	t_define{global}.f_derive<t_map::t_table, t_object>();
 	t_define{global}
-	(global->f_symbol_string(), t_member<t_object*(*)(t_map&), [](t_map& a_self) -> t_object*
+	(global->f_symbol___string(), t_member<t_object*(*)(t_map&), [](t_map& a_self) -> t_object*
 	{
 		t_stringer s;
 		s << L'{';
@@ -160,14 +160,14 @@ void t_type_of<t_map>::f_define()
 			return a_self.f_size();
 		});
 	}>())
-	(global->f_symbol_get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key)
+	(global->f_symbol___get_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key)
 	{
 		return a_self.template f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 		{
 			return t_pvalue(a_self.f_get(a_key));
 		});
 	}>())
-	(global->f_symbol_set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
+	(global->f_symbol___set_at(), t_member<t_pvalue(*)(t_map&, const t_pvalue&, const t_pvalue&), [](t_map& a_self, const t_pvalue& a_key, const t_pvalue& a_value)
 	{
 		return a_self.template f_owned_or_shared<t_lock_with_safe_region>([&]
 		{
