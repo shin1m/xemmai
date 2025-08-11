@@ -5,7 +5,7 @@ This page explains primary expressions.
     primary: variable
         | self symbol?
         | literal
-        | '(' arguments ')'
+        | '(' (indent? expression ((indent | ',') expression)*)? ')'?
         | lambda
         | break
         | continue
@@ -54,20 +54,20 @@ See [Literals](Literals.md).
 
 ## Getter Expressions
 
-    getter: primary '.' ('@' | '^' | symbol | '(' expression ')') ;
+    getter: primary '.' ('@' | '^' | symbol | '(' expression ')'?) ;
 
 ## Tester Expressions
 
-    tester: primary '.' '?' (symbol | '(' expression ')') ;
+    tester: primary '.' '?' (symbol | '(' expression ')'?) ;
 
 ## Subscription Expressions
 
-    subscription: primary '[' expression ']' ;
+    subscription: primary '[' expression ']'? ;
 
 ## Call Expressions
 
-    call: primary '(' arguments ('*' expression)? ')'? ;
+    call: primary '(' expandable-expressions? ')'? ;
 
-## Arguments
+## Expandable Expressions
 
-    arguments: (indent? expression ((indent | ',') expression)*)? ;
+    expandable-expressions: indent? '*'? expression ((',' | indent) '*'? expression)* ;

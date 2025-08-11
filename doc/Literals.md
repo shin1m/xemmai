@@ -2,7 +2,7 @@
 
 This page explains literals.
 
-    target: symbol-literal | null | boolean | integer | float | string | tuple | list | map ;
+    literal: symbol-literal | null | boolean | integer | float | string | tuple | list | map ;
 
 ## Symbol Literals
 
@@ -32,15 +32,14 @@ This page explains literals.
 
 ## Tuple Literals
 
-    tuple: '\'' '(' (indent? expressions)? ')'? ;
-    expressions: '*' expression | expression ((',' | indent) expression)* ((',' | indent) '*' expression)? ;
+    tuple: '\'' '(' expandable-expressions? ')'? ;
 
 ## List Literals
 
-    list: '[' (indent? expressions)? ']'? ;
+    list: '[' expandable-expressions? ']'? ;
 
 ## Map Literals
 
-    map: '{' (indent? pairs)? '}'? ;
-    pairs: pair ((',' | indent) pair)* ;
+    map: '{' pairs? '}'? ;
+    pairs: indent? pair ((',' | indent) pair)* ;
     pair: expression ':' expression ;

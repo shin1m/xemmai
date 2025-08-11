@@ -1098,9 +1098,9 @@ void t_call::f_flow(t_flow& a_flow)
 
 t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	size_t instruction = v_expand ? c_instruction__CALL_WITH_EXPANSION : c_instruction__CALL;
+	size_t instruction = v_expands.empty() ? c_instruction__CALL : c_instruction__CALL_WITH_EXPANSION;
 	t_symbol_get* get = nullptr;
-	if (!v_expand) {
+	if (v_expands.empty()) {
 		auto p = dynamic_cast<t_symbol_get*>(v_target.get());
 		if (p && p->v_variable && (!p->v_variable->v_shared || p->v_resolved < 3 && !p->v_variable->v_varies)) get = p;
 	}
@@ -1125,6 +1125,15 @@ t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cle
 	if (!a_tail) a_emit << a_emit.v_stack;
 	if (get) a_emit << get->v_variable->v_index;
 	a_emit << v_arguments.size();
+	if (!v_expands.empty()) {
+		size_t i = 0;
+		for (auto [at, j] : v_expands) {
+			a_emit.f_at(at);
+			a_emit << j - i;
+			i = j + 1;
+		}
+		a_emit << v_arguments.size() - i;
+	}
 	a_emit.f_push();
 	a_emit.f_at(this);
 	if (a_clear) a_emit.f_pop();

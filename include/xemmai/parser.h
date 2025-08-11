@@ -57,7 +57,7 @@ class XEMMAI__LOCAL t_parser
 	std::unique_ptr<ast::t_node> f_conditional(bool a_assignable);
 	std::unique_ptr<ast::t_node> f_expression();
 	bool f_argument(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
-	bool f_arguments(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
+	void f_arguments(size_t a_indent, ast::t_call* a_call);
 	void f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes);
 	std::unique_ptr<ast::t_nodes> f_options();
 	std::unique_ptr<ast::t_node> f_body(size_t a_indent);

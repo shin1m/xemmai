@@ -477,9 +477,9 @@ struct t_call : t_node_at
 {
 	std::unique_ptr<t_node> v_target;
 	t_nodes v_arguments;
-	bool v_expand;
+	std::vector<std::pair<t_at, size_t>> v_expands;
 
-	t_call(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node_at(a_at), v_target(std::move(a_target)), v_expand(false)
+	t_call(const t_at& a_at, std::unique_ptr<t_node>&& a_target) : t_node_at(a_at), v_target(std::move(a_target))
 	{
 	}
 	virtual void f_flow(t_flow& a_flow);
@@ -619,9 +619,13 @@ struct XEMMAI__LOCAL t_emit
 			for (auto i : label) v_code->v_instructions[i] = p;
 		}
 	}
+	void f_at(const t_at& a_at)
+	{
+		v_code->v_ats.emplace_back(a_at, f_last());
+	}
 	void f_at(ast::t_node_at* a_node)
 	{
-		v_code->v_ats.push_back({a_node->v_at, f_last()});
+		f_at(a_node->v_at);
 	}
 	t_emit& f_emit_null()
 	{

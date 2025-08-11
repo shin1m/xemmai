@@ -169,11 +169,12 @@ Arguments list can be written using block form:
         2
     )
 
-The last argument can be expanded:
+Arguments can be expanded with `*` prefix:
 
-    xs = [1, 2]
-    # Same as foo(0, 1, 2).
-    foo(0, *xs)
+    xs = '(0, 1)
+    ys = [3, 4]
+    # Same as foo(0, 1, 2, 3, 4).
+    foo(*xs, 2, *ys)
 
 ## Grouping
 

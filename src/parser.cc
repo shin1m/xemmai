@@ -124,7 +124,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_tuple>()))));
-				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_arguments(indent, call->v_arguments);
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) f_arguments(indent, call.get());
 				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				return call;
 			}
@@ -227,7 +227,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 			size_t indent = v_lexer.f_indent();
 			v_lexer.f_next();
 			auto call = std::make_unique<ast::t_call>(at, std::make_unique<ast::t_literal<t_object*>>(at, v_module.f_slot(t_object::f_of(f_global()->f_type<t_list>()))));
-			if (f_any(indent, t_lexer::c_token__RIGHT_BRACKET)) call->v_expand = f_arguments(indent, call->v_arguments);
+			if (f_any(indent, t_lexer::c_token__RIGHT_BRACKET)) f_arguments(indent, call.get());
 			f_close(indent, t_lexer::c_token__RIGHT_BRACKET);
 			return call;
 		}
@@ -321,7 +321,7 @@ std::unique_ptr<ast::t_node> t_parser::f_action(size_t a_indent, std::unique_ptr
 				size_t indent = v_lexer.f_indent();
 				v_lexer.f_next();
 				auto call = std::make_unique<ast::t_call>(at, std::move(a_target));
-				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) call->v_expand = f_arguments(indent, call->v_arguments);
+				if (f_any(indent, t_lexer::c_token__RIGHT_PARENTHESIS)) f_arguments(indent, call.get());
 				f_close(indent, t_lexer::c_token__RIGHT_PARENTHESIS);
 				a_target = std::move(call);
 				continue;
@@ -755,12 +755,12 @@ bool t_parser::f_argument(size_t a_indent, std::vector<std::unique_ptr<ast::t_no
 	return true;
 }
 
-bool t_parser::f_arguments(size_t a_indent, std::vector<std::unique_ptr<ast::t_node>>& a_nodes)
+void t_parser::f_arguments(size_t a_indent, ast::t_call* a_call)
 {
-	while (v_lexer.f_token() != t_lexer::c_token__ASTERISK) if (!f_argument(a_indent, a_nodes)) return false;
-	v_lexer.f_next();
-	a_nodes.emplace_back(f_expression());
-	return true;
+	do if (v_lexer.f_token() == t_lexer::c_token__ASTERISK) {
+		a_call->v_expands.emplace_back(v_lexer.f_at(), a_call->v_arguments.size());
+		v_lexer.f_next();
+	} while (f_argument(a_indent, a_call->v_arguments));
 }
 
 void t_parser::f_expressions(std::vector<std::unique_ptr<ast::t_node>>& a_nodes)

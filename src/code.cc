@@ -15,40 +15,52 @@ void f_method_bind(t_pvalue* a_stack)
 	a_stack[1] = nullptr;
 }
 
-inline void f_allocate(t_pvalue* a_stack, size_t a_n)
-{
-	auto used = a_stack + a_n;
-	if (used > f_stack()) f_stack__(used);
-}
-
 size_t f_expand(void**& a_pc, t_pvalue* a_stack, size_t a_n)
 {
-	assert(a_n > 0);
-	a_stack += a_n + 1;
-	auto x = a_stack[0];
-	size_t n;
-	if (f_is<t_tuple>(x)) {
-		auto& tuple = x->f_as<t_tuple>();
-		n = tuple.f_size();
-		f_allocate(a_stack, n);
-		for (size_t i = 0; i < n; ++i) a_stack[i] = tuple[i];
-	} else if (f_is<t_list>(x)) {
-		auto& list = x->f_as<t_list>();
-		list.f_owned_or_shared<std::shared_lock>([&]
+	a_stack += 2;
+	size_t n = 0;
+	auto expand = [&](size_t m, auto get)
+	{
+		if (m > 0) {
+			auto used = a_stack + m + a_n;
+			if (used > f_stack()) f_stack__(used);
+			std::move_backward(a_stack + 1, a_stack + 1 + a_n, a_stack + m + a_n);
+			for (size_t i = 0; i < m; ++i) *a_stack++ = get(i);
+			n += m;
+		} else {
+			std::move(a_stack + 1, a_stack + 1 + a_n, a_stack);
+		}
+	};
+	auto list = [&](auto& xs)
+	{
+		expand(xs.f_size(), [&](size_t i)
 		{
-			n = list.f_size();
-			f_allocate(a_stack, n);
-			for (size_t i = 0; i < n; ++i) a_stack[i] = list[i];
+			return t_pvalue(xs[i]);
 		});
-	} else {
-		static size_t index;
-		auto size = x.f_invoke(f_global()->f_symbol_size(), index);
-		f_check<size_t>(size, L"size");
-		n = f_as<size_t>(size);
-		f_allocate(a_stack, n);
-		for (size_t i = 0; i < n; ++i) a_stack[i] = x.f_get_at(i);
+	};
+	while (true) {
+		auto d = reinterpret_cast<size_t>(*++a_pc);
+		n += d;
+		a_n -= d;
+		if (a_n <= 0) break;
+		a_stack += d;
+		auto x = *a_stack;
+		--a_n;
+		if (f_is<t_tuple>(x)) {
+			list(x->f_as<t_tuple>());
+		} else if (f_is<t_list>(x)) {
+			list(x->f_as<t_list>());
+		} else {
+			static size_t index;
+			auto size = x.f_invoke(f_global()->f_symbol_size(), index);
+			f_check<size_t>(size, L"size");
+			expand(f_as<size_t>(size), [&](size_t i)
+			{
+				return x.f_get_at(i);
+			});
+		}
 	}
-	return a_n - 1 + n;
+	return n;
 }
 
 }
@@ -433,8 +445,8 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(CALL_WITH_EXPANSION)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			++pc;
 			n = f_expand(pc, stack, n);
+			++pc;
 			stack[0].f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(STACK_CALL)
