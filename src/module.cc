@@ -9,17 +9,18 @@ t_object* t_module::f_load_script(std::wstring_view a_path)
 	auto stream = std::fopen(portable::f_convert(a_path).c_str(), "r");
 	if (!stream) return nullptr;
 	std::unique_ptr<std::FILE, int(*)(std::FILE*)> close(stream, std::fclose);
-	ast::t_scope scope(nullptr);
+	ast::t_arena arena;
+	ast::t_scope scope(arena, nullptr);
 	if (auto engine = f_engine(); engine->v_debugger) {
 		auto body = f_global()->f_type<t_module::t_body>()->f_new<t_debug_script>(a_path);
 		auto& script = body->f_as<t_debug_script>();
-		t_parser(script, stream)(scope);
+		t_parser(script, stream, arena)(scope);
 		script.v_code = t_emit(body, &script.v_safe_points)(scope);
 		engine->f_debug_script_loaded(script);
 		return script.v_code;
 	} else {
 		auto body = f_global()->f_type<t_module::t_body>()->f_new<t_script>(a_path);
-		t_parser(body->f_as<t_script>(), stream)(scope);
+		t_parser(body->f_as<t_script>(), stream, arena)(scope);
 		return t_emit(body, nullptr)(scope);
 	}
 }

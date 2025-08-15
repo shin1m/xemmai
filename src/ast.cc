@@ -6,7 +6,21 @@ namespace xemmai
 namespace ast
 {
 
-bool t_block::f_forward(const std::vector<t_private>& a_privates)
+void* t_arena::t_of::f_allocate(size_t a_n)
+{
+	auto p = v_p;
+	if (a_n > v_q - p) [[unlikely]] {
+		auto n = t_object::f_size_to_capacity<t_bytes, unsigned char>(std::max(t_object::f_capacity_to_size<t_bytes, unsigned char>(a_n), sizeof(t_object) << 5));
+		auto block = t_bytes::f_instantiate(n);
+		v_blocks.emplace_back(block);
+		p = &block->f_as<t_bytes>()[0];
+		v_q = p + n;
+	}
+	v_p = p + a_n;
+	return p;
+}
+
+bool t_block::f_forward(const std::vector<t_private, t_allocator<t_private>>& a_privates)
 {
 	bool b = false;
 	if (!v_forward) {
@@ -21,7 +35,7 @@ bool t_block::f_forward(const std::vector<t_private>& a_privates)
 	return b;
 }
 
-bool t_block::f_backward(const std::vector<t_private>& a_privates)
+bool t_block::f_backward(const std::vector<t_private, t_allocator<t_private>>& a_privates)
 {
 	bool b = !v_backward;
 	v_backward = true;
@@ -39,20 +53,52 @@ void t_node::f_flow(t_flow& a_flow)
 
 void t_nodes::f_flow(t_flow& a_flow)
 {
-	for (auto& p : *this) p->f_flow(a_flow);
+	f_each([&](auto p)
+	{
+		p->f_flow(a_flow);
+	});
 }
 
 t_operand t_nodes::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	auto i = begin();
-	auto j = end();
-	if (i == j) {
-		if (!a_clear) a_emit.f_emit_null();
+	if (auto p = v_tail) {
+		while (true) {
+			p = p->v_next;
+			if (p == v_tail) break;
+			p->f_emit(a_emit, false, false, true);
+		}
+		p->f_emit(a_emit, a_tail, false, a_clear);
 	} else {
-		for (--j; i != j; ++i) (*i)->f_emit(a_emit, false, false, true);
-		(*i)->f_emit(a_emit, a_tail, false, a_clear);
+		if (!a_clear) a_emit.f_emit_null();
 	}
 	return {};
+}
+
+void t_scope::f_vary(t_variable* a_p)
+{
+	if (a_p == v_privates.v_tail) return;
+	if (!a_p) a_p = v_privates.v_tail;
+	do {
+		a_p = a_p->v_next;
+		a_p->v_varies = true;
+	} while (a_p != v_privates.v_tail);
+}
+
+void t_scope::f_classify(t_variable* a_p)
+{
+	while (true)
+		if (auto p = a_p->v_next; p->v_shared) {
+			p->v_index = v_shareds++;
+			a_p->v_next = p->v_next;
+			if (p == v_privates.v_tail) {
+				v_privates.v_tail = p == a_p ? nullptr : a_p;
+				break;
+			}
+		} else {
+			p->v_index = v_privates.v_size++;
+			if (p == v_privates.v_tail) break;
+			a_p = p;
+		}
 }
 
 void t_scope::f_analyze(size_t a_arguments)
@@ -85,7 +131,7 @@ void t_scope::f_analyze(size_t a_arguments)
 			a_block->v_queue = nullptr;
 		}
 	};
-	v_block_body.f_forward(std::vector<t_block::t_private>(v_privates.size() - a_arguments));
+	v_block_body.f_forward(std::vector<t_block::t_private, t_allocator<t_block::t_private>>(v_privates.v_size - a_arguments, v_block_body.v_privates.get_allocator()));
 	loop([&](auto p)
 	{
 		for (auto q : p->v_nexts) if (q->f_forward(p->v_privates) && !q->v_queue) push(q);
@@ -98,9 +144,9 @@ void t_scope::f_analyze(size_t a_arguments)
 
 t_object* t_lambda::f_code(t_object* a_module)
 {
-	size_t minimum = v_arguments - v_defaults.size();
+	size_t minimum = v_arguments - v_defaults.v_size;
 	if (v_variadic) --minimum;
-	return a_module->f_as<t_script>().f_slot(t_code::f_instantiate(a_module, v_shared, v_variadic, v_privates.size(), v_shareds, v_arguments, minimum));
+	return a_module->f_as<t_script>().f_slot(t_code::f_instantiate(a_module, v_shared, v_variadic, v_privates.v_size, v_shareds, v_arguments, minimum));
 }
 
 void t_lambda::f_safe_points(t_code& a_code, std::map<std::pair<size_t, void**>, size_t>& a_safe_points, const std::vector<std::tuple<size_t, size_t, size_t>>& a_safe_positions)
@@ -138,10 +184,10 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	auto arguments0 = a_emit.v_arguments;
 	a_emit.v_arguments = v_arguments;
 	auto privates0 = a_emit.v_privates;
-	std::vector<bool> privates1(v_privates.size() - v_arguments);
+	std::vector<bool> privates1(v_privates.v_size - v_arguments);
 	a_emit.v_privates = &privates1;
 	auto stack0 = a_emit.v_stack;
-	a_emit.v_stack = v_privates.size();
+	a_emit.v_stack = v_privates.v_size;
 	auto labels0 = a_emit.v_labels;
 	std::deque<t_emit::t_label> labels1;
 	a_emit.v_labels = &labels1;
@@ -155,14 +201,16 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	if (v_self_shared) a_emit
 		<< c_instruction__SELF << a_emit.v_stack
 		<< c_instruction__SCOPE_PUT0 << a_emit.v_stack << 0;
-	for (size_t i = 0; i < v_arguments; ++i)
-		if (v_privates[i]->v_shared) a_emit
+	{
+		auto p = v_privates.v_tail;
+		for (size_t i = 0; i < v_arguments; ++i) if (p = p->v_next; p->v_shared) a_emit
 			<< c_instruction__STACK_GET << a_emit.v_stack << i
-			<< c_instruction__SCOPE_PUT0 << a_emit.v_stack << v_privates[i]->v_index;
+			<< c_instruction__SCOPE_PUT0 << a_emit.v_stack << p->v_index;
+	}
 	v_body->f_emit(a_emit, true, false);
 	a_emit.f_pop();
 	a_emit.f_target(return0);
-	assert(a_emit.v_stack == v_privates.size());
+	assert(a_emit.v_stack == v_privates.v_size);
 	a_emit << c_instruction__RETURN_T;
 	a_emit.f_resolve();
 	a_emit.v_scope = scope0;
@@ -175,9 +223,12 @@ t_operand t_lambda::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.v_safe_positions = safe_positions0;
 	if (a_emit.v_safe_points) f_safe_points(code1, *a_emit.v_safe_points, safe_positions1);
 	a_emit.f_emit_safe_point(this);
-	if (v_variadic || v_defaults.size() > 0) {
-		for (auto& p : v_defaults) p->f_emit(a_emit, false, false);
-		for (auto& p : v_defaults) a_emit.f_pop();
+	if (v_variadic || v_defaults.v_size > 0) {
+		v_defaults.f_each([&](auto p)
+		{
+			p->f_emit(a_emit, false, false);
+		});
+		for (size_t i = 0; i < v_defaults.v_size; ++i) a_emit.f_pop();
 		a_emit << c_instruction__ADVANCED_LAMBDA;
 	} else {
 		a_emit << c_instruction__LAMBDA;
@@ -372,7 +423,7 @@ t_operand t_return::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	a_emit.v_stack = a_emit.v_targets->v_return_stack;
 	v_expression->f_emit(a_emit, a_emit.v_targets->v_return_is_tail, false);
 	if (a_emit.v_targets->v_return_is_tail) {
-		assert(a_emit.v_stack == a_emit.v_scope->v_privates.size() + 1);
+		assert(a_emit.v_stack == a_emit.v_scope->v_privates.v_size + 1);
 		a_emit << c_instruction__RETURN_T;
 	} else {
 		a_emit.f_join(*a_emit.v_targets->v_return_junction);
@@ -394,7 +445,8 @@ void t_try::f_flow(t_flow& a_flow)
 	a_flow.v_current = &v_block_try;
 	v_body->f_flow(a_flow);
 	a_flow.v_current->f_next(&v_junction_finally);
-	for (auto& p : v_catches) {
+	v_catches.f_each([&](auto p)
+	{
 		a_flow.v_current->f_next(&p->v_block_expression);
 		a_flow.v_current = &p->v_block_expression;
 		p->v_expression->f_flow(a_flow);
@@ -405,7 +457,7 @@ void t_try::f_flow(t_flow& a_flow)
 		p->v_body->f_flow(a_flow);
 		a_flow.v_current->f_next(&v_junction_finally);
 		a_flow.v_current = block;
-	}
+	});
 	v_junction_finally.f_next(&v_junction_try);
 	v_junction_finally.f_next(&v_block_finally);
 	t_flow::t_targets targets2{nullptr, nullptr, nullptr};
@@ -438,7 +490,8 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 		v_body->f_emit(a_emit, false, false, a_clear);
 		a_emit << c_instruction__FINALLY << t_code::c_try__STEP;
 		a_emit.f_target(catch0);
-		for (auto& p : v_catches) {
+		v_catches.f_each([&](auto p)
+		{
 			if (!a_clear) a_emit.f_pop();
 			p->v_expression->f_emit(a_emit, false, false);
 			auto& label0 = a_emit.f_label();
@@ -446,7 +499,7 @@ t_operand t_try::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clea
 			p->v_body->f_emit(a_emit, false, false, a_clear);
 			a_emit << c_instruction__FINALLY << t_code::c_try__STEP;
 			a_emit.f_target(label0);
-		}
+		});
 		a_emit << c_instruction__FINALLY << t_code::c_try__THROW;
 		a_emit.f_target(break0);
 		a_emit << c_instruction__FINALLY << t_code::c_try__BREAK;
@@ -853,7 +906,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 	if (operand.v_tag != t_operand::c_tag__TEMPORARY) a_emit.f_push();
 	a_emit.f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
-	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.v_size);
 	if (!a_tail) a_emit << a_emit.v_stack;
 	switch (operand.v_tag) {
 	case t_operand::c_tag__LITERAL:
@@ -1048,7 +1101,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	if (right.v_tag != t_operand::c_tag__TEMPORARY) a_emit.f_push();
 	a_emit.f_pop().f_pop().f_pop();
 	a_emit << static_cast<t_instruction>(instruction);
-	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.v_size);
 	if (!a_tail) a_emit << a_emit.v_stack;
 	switch (left.v_tag) {
 	case t_operand::c_tag__INTEGER:
@@ -1098,41 +1151,45 @@ void t_call::f_flow(t_flow& a_flow)
 
 t_operand t_call::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_clear)
 {
-	size_t instruction = v_expands.empty() ? c_instruction__CALL : c_instruction__CALL_WITH_EXPANSION;
+	size_t instruction = v_expands.v_tail ? c_instruction__CALL_WITH_EXPANSION : c_instruction__CALL;
 	t_symbol_get* get = nullptr;
-	if (v_expands.empty()) {
-		auto p = dynamic_cast<t_symbol_get*>(v_target.get());
+	if (!v_expands.v_tail) {
+		auto p = dynamic_cast<t_symbol_get*>(v_target);
 		if (p && p->v_variable && (!p->v_variable->v_shared || p->v_resolved < 3 && !p->v_variable->v_varies)) get = p;
 	}
 	if (get) {
 		instruction = get->v_variable->v_shared ? c_instruction__SCOPE_CALL0 + get->v_resolved : c_instruction__STACK_CALL;
 		a_emit.f_push().f_push();
-	} else if (auto p = dynamic_cast<t_object_get*>(v_target.get())) {
+	} else if (auto p = dynamic_cast<t_object_get*>(v_target)) {
 		p->f_method(a_emit);
-	} else if (auto p = dynamic_cast<t_get_at*>(v_target.get())) {
+	} else if (auto p = dynamic_cast<t_get_at*>(v_target)) {
 		p->f_bind(a_emit);
 	} else {
 		v_target->f_emit(a_emit, false, false);
 		a_emit.f_emit_null();
 	}
-	for (auto& p : v_arguments) p->f_emit(a_emit, false, false);
-	for (auto& p : v_arguments) a_emit.f_pop();
+	v_arguments.f_each([&](auto p)
+	{
+		p->f_emit(a_emit, false, false);
+	});
+	for (size_t i = 0; i < v_arguments.v_size; ++i) a_emit.f_pop();
 	a_emit.f_pop().f_pop();
 	if (a_tail) instruction += c_instruction__CALL_TAIL - c_instruction__CALL;
 	a_emit.f_emit_safe_point(this);
 	a_emit << static_cast<t_instruction>(instruction);
-	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size());
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.v_size);
 	if (!a_tail) a_emit << a_emit.v_stack;
 	if (get) a_emit << get->v_variable->v_index;
-	a_emit << v_arguments.size();
-	if (!v_expands.empty()) {
+	a_emit << v_arguments.v_size;
+	if (v_expands.v_tail) {
 		size_t i = 0;
-		for (auto [at, j] : v_expands) {
-			a_emit.f_at(at);
-			a_emit << j - i;
-			i = j + 1;
-		}
-		a_emit << v_arguments.size() - i;
+		v_expands.f_each([&](auto p)
+		{
+			a_emit.f_at(p->v_at);
+			a_emit << p->v_index - i;
+			i = p->v_index + 1;
+		});
+		a_emit << v_arguments.v_size - i;
 	}
 	a_emit.f_push();
 	a_emit.f_at(this);
@@ -1153,7 +1210,7 @@ t_operand t_get_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	v_index->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << (a_tail ? c_instruction__GET_AT_TAIL : c_instruction__GET_AT);
-	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size() + 3);
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.v_size + 3);
 	if (!a_tail) a_emit << a_emit.v_stack - 3;
 	a_emit.f_pop().f_pop();
 	a_emit.f_at(this);
@@ -1185,7 +1242,7 @@ t_operand t_set_at::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 	v_value->f_emit(a_emit, false, false);
 	a_emit.f_emit_safe_point(this);
 	a_emit << (a_tail ? c_instruction__SET_AT_TAIL : c_instruction__SET_AT);
-	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.size() + 4);
+	assert(!a_tail || a_emit.v_stack == a_emit.v_scope->v_privates.v_size + 4);
 	if (!a_tail) a_emit << a_emit.v_stack - 4;
 	a_emit.f_pop().f_pop().f_pop();
 	a_emit.f_at(this);
@@ -1200,7 +1257,7 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 	a_scope.f_analyze(0);
 	v_scope = &a_scope;
 	v_arguments = 0;
-	std::vector<bool> privates(a_scope.v_privates.size());
+	std::vector<bool> privates(a_scope.v_privates.v_size);
 	v_privates = &privates;
 	v_stack = privates.size();
 	auto code = t_code::f_instantiate(v_module, true, false, privates.size(), a_scope.v_shareds, 0, 0);
