@@ -42,7 +42,6 @@ void t_map::f_rehash(const t_table::t_rank& a_rank)
 	auto object = t_table::f_instantiate(v_table->f_type(), a_rank);
 	auto& table0 = v_table->f_as<t_table>();
 	auto& table1 = object->f_as<t_table>();
-	table1.v_size = table0.v_size;
 	auto entries = table1.f_entries();
 	for (auto p = table0.f_entries(); p != table0.v_end; ++p) {
 		if (!p->v_gap) continue;
@@ -66,7 +65,7 @@ t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 	auto hash = f_as<size_t>(a_key.f_hash());
 	auto [p, gap] = table->f_find(hash, a_key);
 	if (p->v_gap == gap) return p->v_value = a_value;
-	if (table->v_size >= table->v_rank.v_upper) {
+	if (v_size >= table->v_rank.v_upper) {
 		auto rank = &table->v_rank + 1;
 		if (rank >= t_table::v_ranks + sizeof(t_table::v_ranks) / sizeof(t_table::t_rank)) f_throw(L"cannot grow."sv);
 		f_rehash(*rank);
@@ -74,7 +73,7 @@ t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 		std::tie(p, gap) = table->f_find(hash, a_key);
 	}
 	table->f_put(p, gap, hash, a_key, a_value);
-	++table->v_size;
+	++v_size;
 	return p->v_value;
 }
 
@@ -108,7 +107,7 @@ t_pvalue t_map::f_remove(const t_pvalue& a_key)
 		q->v_value = nullptr;
 		p = q;
 	}
-	if (--table.v_size < table.v_rank.v_lower) f_rehash(*(&table.v_rank - 1));
+	if (--v_size < table.v_rank.v_lower) f_rehash(*(&table.v_rank - 1));
 	return value;
 }
 

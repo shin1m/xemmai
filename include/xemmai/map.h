@@ -59,7 +59,6 @@ private:
 
 		size_t(*v_slot)(size_t);
 		t_entry* v_end;
-		size_t v_size = 0;
 		const t_rank& v_rank;
 
 		static t_object* f_instantiate(t_type* a_type, const t_rank& a_rank)
@@ -114,6 +113,7 @@ private:
 	friend struct t_type_of<t_table>;
 
 	t_slot v_table;
+	size_t v_size = 0;
 
 	t_map(t_type* a_table) : v_table(t_table::f_instantiate(a_table, t_table::v_ranks[0]))
 	{
@@ -149,10 +149,11 @@ public:
 	void f_clear()
 	{
 		v_table = t_table::f_instantiate(v_table->f_type(), t_table::v_ranks[0]);
+		v_size = 0;
 	}
 	size_t f_size() const
 	{
-		return v_table->f_as<t_table>().v_size;
+		return v_size;
 	}
 	const t_svalue& f_get(const t_pvalue& a_key) const
 	{
