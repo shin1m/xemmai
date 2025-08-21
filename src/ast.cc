@@ -109,16 +109,16 @@ void t_lambda::f_safe_points(t_code& a_code, std::map<std::pair<size_t, void**>,
 	self.v_shared = v_self_shared;
 	self.v_index = v_self_shared ? 0 : -1;
 	a_code.v_variables.emplace(L"$"sv, self);
-	for (auto& pair : v_variables) a_code.v_variables.emplace(pair.first->f_as<t_symbol>().f_string(), pair.second);
+	for (auto& [s, v] : v_variables) a_code.v_variables.emplace(s->f_as<t_symbol>().f_string(), v);
 	std::wstring prefix;
 	self.v_shared = true;
 	self.v_index = 0;
 	for (auto scope = v_outer; scope; scope = scope->v_outer) {
 		prefix += L':';
 		if (scope->v_self_shared) a_code.v_variables.emplace(prefix + L'$', self);
-		for (auto& pair : scope->v_variables) if (pair.second.v_shared) a_code.v_variables.emplace(prefix + pair.first->f_as<t_symbol>().f_string(), pair.second);
+		for (auto& [s, v] : scope->v_variables) if (v.v_shared) a_code.v_variables.emplace(prefix + s->f_as<t_symbol>().f_string(), v);
 	}
-	for (auto& x : a_safe_positions) a_safe_points.emplace(std::make_pair(std::get<0>(x), &a_code.v_instructions[std::get<1>(x)]), std::get<2>(x));
+	for (auto [l, a, c] : a_safe_positions) a_safe_points.emplace(std::make_pair(l, &a_code.v_instructions[a]), c);
 }
 
 void t_lambda::f_flow(t_flow& a_flow)
@@ -1222,8 +1222,8 @@ t_object* t_emit::operator()(ast::t_scope& a_scope)
 		self.v_shared = a_scope.v_self_shared;
 		self.v_index = a_scope.v_self_shared ? 0 : -1;
 		v_code->v_variables.emplace(L"$"sv, self);
-		for (auto& pair : a_scope.v_variables) v_code->v_variables.emplace(pair.first->f_as<t_symbol>().f_string(), pair.second);
-		for (auto& x : safe_positions) v_safe_points->emplace(std::make_pair(std::get<0>(x), &v_code->v_instructions[std::get<1>(x)]), std::get<2>(x));
+		for (auto& [s, v] : a_scope.v_variables) v_code->v_variables.emplace(s->f_as<t_symbol>().f_string(), v);
+		for (auto [l, a, c] : safe_positions) v_safe_points->emplace(std::make_pair(l, &v_code->v_instructions[a]), c);
 	}
 	return code;
 }

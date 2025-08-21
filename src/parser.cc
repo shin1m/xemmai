@@ -10,8 +10,8 @@ void t_parser::f_throw(std::wstring_view a_message)
 
 t_code::t_variable& t_parser::f_variable(ast::t_scope* a_scope, t_object* a_symbol)
 {
-	auto i = a_scope->v_variables.find(a_symbol);
-	if (i == a_scope->v_variables.end()) {
+	auto i = a_scope->v_variables.lower_bound(a_symbol);
+	if (i == a_scope->v_variables.end() || i->first != a_symbol) {
 		i = a_scope->v_variables.emplace_hint(i, a_symbol, t_code::t_variable());
 		a_scope->v_privates.push_back(&i->second);
 	} else {
@@ -195,10 +195,7 @@ std::unique_ptr<ast::t_node> t_parser::f_target(bool a_assignable)
 				else
 					i->second.v_shared = true;
 			}
-			for (auto symbol : lambda->v_references) {
-				auto i = lambda->v_variables.find(symbol);
-				if (i == lambda->v_variables.end()) lambda->v_outer->v_unresolveds.insert(symbol);
-			}
+			for (auto symbol : lambda->v_references) if (!lambda->v_variables.contains(symbol)) lambda->v_outer->v_unresolveds.insert(symbol);
 			v_scope = lambda->v_outer;
 			v_can_jump = can_jump;
 			v_can_return = can_return;
