@@ -916,7 +916,7 @@ void t_code::f_try(t_context* a_context)
 						auto index = reinterpret_cast<size_t>(*++pc);
 						++pc;
 						p.f_caught(thrown, a_context->v_lambda, caught);
-						if ((index & ~(~0 >> 1)) != 0)
+						if (index & ~(~size_t(0) >> 1))
 							a_context->v_scope->f_as<t_scope>().f_entries()[~index] = thrown;
 						else
 							base[index] = thrown;
