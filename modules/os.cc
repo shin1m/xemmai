@@ -353,7 +353,7 @@ t_pvalue t_type_of<t_child>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 					check(posix_spawn_file_actions_adddup2(&actions, x->template f_as<io::t_file>().f_fd(), i));
 				} else if (f_is<int>(x)) {
 					int fds[2];
-					if (pipe(fds) != 0) portable::f_throw_system_error();
+					if (pipe(fds) == -1) portable::f_throw_system_error();
 					auto [parent, child] = (f_as<int>(x) > 0) ? std::make_tuple(fds[0], fds[1]) : std::make_tuple(fds[1], fds[0]);
 					closes[0].push_back(parent);
 					closes[1].push_back(child);
@@ -421,7 +421,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_os::f_define()
 	(L"pipe"sv, t_static<t_object*(*)(), []
 	{
 		int fds[2];
-		if (pipe(fds) != 0) portable::f_throw_system_error();
+		if (pipe(fds) == -1) portable::f_throw_system_error();
 		return f_tuple(fds[0], fds[1]);
 	}>())
 #endif
