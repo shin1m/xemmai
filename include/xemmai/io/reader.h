@@ -29,9 +29,9 @@ class t_reader : public t_sharable, portable::t_iconv
 	XEMMAI__LOCAL wint_t f_get();
 
 public:
-	static t_object* f_instantiate(const t_pvalue& a_read, std::wstring_view a_encoding, size_t a_buffer);
+	static t_object* f_instantiate(const t_pvalue& a_read, std::wstring_view a_encoding);
 
-	t_reader(const t_pvalue& a_read, std::wstring_view a_encoding, size_t a_buffer = t_object::f_size_to_capacity<t_bytes, unsigned char>(sizeof(t_object) << 3));
+	t_reader(const t_pvalue& a_read, std::wstring_view a_encoding);
 	t_object* f_read(size_t a_size);
 	t_object* f_read_line();
 };

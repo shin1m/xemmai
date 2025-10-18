@@ -286,9 +286,8 @@ t_engine::t_engine(const t_options& a_options, char* a_executable, size_t a_coun
 	{
 		auto file = io::t_file::f_instantiate(0, false);
 		system(L"raw_in"sv, file);
-		auto tty = file->f_as<io::t_file>().f_tty();
 		size_t index;
-		system(L"in"sv, io::t_reader::f_instantiate(file->f_get(t_symbol::f_instantiate(L"read"sv), index), L""sv, tty ? 1 : t_object::f_size_to_capacity<t_bytes, unsigned char>(sizeof(t_object) << 3)));
+		system(L"in"sv, io::t_reader::f_instantiate(file->f_get(t_symbol::f_instantiate(L"read"sv), index), L""sv));
 	}
 	{
 		auto file = io::t_file::f_instantiate(1, false);

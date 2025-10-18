@@ -46,15 +46,15 @@ wint_t t_reader::f_get()
 	return v_c;
 }
 
-t_object* t_reader::f_instantiate(const t_pvalue& a_read, std::wstring_view a_encoding, size_t a_buffer)
+t_object* t_reader::f_instantiate(const t_pvalue& a_read, std::wstring_view a_encoding)
 {
-	return f_new<t_reader>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), a_read, a_encoding, a_buffer);
+	return f_new<t_reader>(&f_engine()->f_module_io()->f_as<t_module>().v_body->f_as<t_io>(), a_read, a_encoding);
 }
 
-t_reader::t_reader(const t_pvalue& a_read, std::wstring_view a_encoding, size_t a_buffer) : t_iconv("wchar_t", portable::f_convert(a_encoding).c_str())
+t_reader::t_reader(const t_pvalue& a_read, std::wstring_view a_encoding) : t_iconv("wchar_t", portable::f_convert(a_encoding).c_str())
 {
 	v_read = a_read;
-	v_buffer = t_bytes::f_instantiate(std::max(a_buffer, size_t(1)));
+	v_buffer = t_bytes::f_instantiate(t_object::f_size_to_capacity<t_bytes, unsigned char>(sizeof(t_object) << 3));
 }
 
 t_object* t_reader::f_read(size_t a_size)
@@ -105,10 +105,7 @@ void t_type_of<io::t_reader>::f_define(t_io* a_library)
 
 t_pvalue t_type_of<io::t_reader>::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	return t_overload<
-		t_construct<const t_pvalue&, const t_string&>,
-		t_construct<const t_pvalue&, const t_string&, size_t>
-	>::t_bind<io::t_reader>::f_do(this, a_stack, a_n);
+	return t_construct<const t_pvalue&, const t_string&>::t_bind<io::t_reader>::f_do(this, a_stack, a_n);
 }
 
 }
