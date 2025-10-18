@@ -6,13 +6,11 @@ namespace xemmai
 
 void t_io::f_scan(t_scan a_scan)
 {
-	XEMMAI__IO__SYMBOLS(XEMMAI__SYMBOL__SCAN)
 	XEMMAI__IO__TYPES(XEMMAI__TYPE__SCAN)
 }
 
 std::vector<std::pair<t_root, t_rvalue>> t_io::f_define()
 {
-	XEMMAI__IO__SYMBOLS(XEMMAI__SYMBOL__INSTANTIATE)
 	t_type_of<io::t_file>::f_define(this);
 	v_type_file->v_builtin = true;
 	t_type_of<io::t_reader>::f_define(this);

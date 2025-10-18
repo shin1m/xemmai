@@ -5,10 +5,10 @@ assert = @(x) x || throw Throwable("Assertion failed."
 
 child = os.Child(system.executable, '(os.Path(system.script) / "../psmtp.xm", "foo"), '(), '(0, 1, 1
 try
-	in = io.Writer(child.pipe(0), "utf-8"
-	out = io.Reader(child.pipe(1), "utf-8"
+	in = io.Writer(child.pipe(0).write, "utf-8"
+	out = io.Reader(child.pipe(1).read, "utf-8"
 	child.pipe(2).blocking__(false
-	error = io.Reader(child.pipe(2), "utf-8"
+	error = io.Reader(child.pipe(2).read, "utf-8"
 	log = ""
 	read_log = @ while true
 		x = error.read_line(

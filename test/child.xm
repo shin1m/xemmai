@@ -11,8 +11,8 @@ else
 	assert = @(x) x || throw Throwable("Assertion failed."
 	child = os.Child(system.executable, '(system.script, "World"), '(), '(0, 1
 	try
-		in = io.Writer(child.pipe(0), "utf-8"
-		out = io.Reader(child.pipe(1), "utf-8"
+		in = io.Writer(child.pipe(0).write, "utf-8"
+		out = io.Reader(child.pipe(1).read, "utf-8"
 		read = @
 			line = out.read_line()
 			print("1: " + line
