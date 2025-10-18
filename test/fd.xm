@@ -1,7 +1,7 @@
 io = Module("io"
 
-writer = io.Writer(io.File(1, false), "utf-8"
+file = io.File(1, false
 try
-	writer.write_line("Hello, world!"
+	io.Writer(file.write, "utf-8").write_line("Hello, world!"
 finally
-	writer.close(
+	file.close(

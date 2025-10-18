@@ -1,18 +1,21 @@
 io = Module("io"
 assert = @(x) x || throw Throwable("Assertion failed."
 
-writer = io.Writer(io.File("text.xm.test", "w"), "utf-8"
+file = io.File("text.xm.test", "w"
 try
+	writer = io.Writer(file.write, "utf-8"
 	assert(writer.write("Hello, "
 	assert(writer.write_line("world!"
 	assert(writer.write("This is shin."
 	assert(writer.write_line(""
 	assert(writer.write_line("Good bye."
+	writer.flush(
 finally
-	writer.close(
+	file.close(
 
-reader = io.Reader(io.File("text.xm.test", "r"), "utf-8"
+file = io.File("text.xm.test", "r"
 try
+	reader = io.Reader(file.read, "utf-8"
 	s = reader.read_line(
 	s == "Hello, world!\n" || throw Throwable(s
 	s = reader.read_line(
@@ -24,4 +27,4 @@ try
 	s = reader.read_line(
 	s == "" || throw Throwable(s
 finally
-	reader.close(
+	file.close(

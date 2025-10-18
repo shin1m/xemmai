@@ -16,7 +16,7 @@ class t_writer : public t_sharable, portable::t_iconv
 {
 	friend struct t_type_of<t_writer>;
 
-	t_slot v_stream;
+	t_slot v_write;
 	t_slot v_buffer;
 	char* v_p0;
 	size_t v_n0;
@@ -26,20 +26,19 @@ class t_writer : public t_sharable, portable::t_iconv
 	t_slot v_value;
 	int v_step = 0;
 
-	XEMMAI__LOCAL bool f_write(t_io* a_library);
-	XEMMAI__LOCAL bool f_write(t_io* a_library, char** a_p, size_t* a_n);
-	XEMMAI__LOCAL bool f__write(t_io* a_library, const t_pvalue& a_value);
-	XEMMAI__LOCAL bool f__resume(t_io* a_library);
+	XEMMAI__LOCAL bool f_write();
+	XEMMAI__LOCAL bool f_write(char** a_p, size_t* a_n);
+	XEMMAI__LOCAL bool f__write(const t_pvalue& a_value);
+	XEMMAI__LOCAL bool f__resume();
 
 public:
-	static t_object* f_instantiate(const t_pvalue& a_stream, std::wstring_view a_encoding);
+	static t_object* f_instantiate(const t_pvalue& a_write, std::wstring_view a_encoding);
 
-	t_writer(const t_pvalue& a_stream, std::wstring_view a_encoding);
-	void f_close(t_io* a_library);
-	bool f_write(t_io* a_library, const t_pvalue& a_value);
-	bool f_write_line(t_io* a_library, const t_pvalue& a_value);
-	bool f_flush(t_io* a_library);
-	bool f_resume(t_io* a_library);
+	t_writer(const t_pvalue& a_write, std::wstring_view a_encoding);
+	bool f_write(const t_pvalue& a_value);
+	bool f_write_line(const t_pvalue& a_value);
+	bool f_flush();
+	bool f_resume();
 };
 
 }
@@ -55,7 +54,7 @@ struct t_type_of<io::t_writer> : t_derivable<t_holds<io::t_writer>>
 	static void f_do_scan(t_object* a_this, t_scan a_scan)
 	{
 		auto& p = a_this->f_as<io::t_writer>();
-		a_scan(p.v_stream);
+		a_scan(p.v_write);
 		a_scan(p.v_buffer);
 		a_scan(p.v_value);
 	}

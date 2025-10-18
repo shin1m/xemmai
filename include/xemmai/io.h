@@ -11,15 +11,6 @@ namespace xemmai
 
 class t_io : public t_library
 {
-#define XEMMAI__IO__SYMBOLS(_)\
-	_(close)\
-	_(read)\
-	_(write)\
-	_(flush)\
-	_(read_line)\
-	_(write_line)\
-	_(resume)
-	XEMMAI__IO__SYMBOLS(XEMMAI__SYMBOL__DECLARE)
 #define XEMMAI__IO__TYPES(_)\
 	_##_AS(io::t_file, file)\
 	_##_AS(io::t_reader, reader)\
@@ -31,7 +22,6 @@ public:
 	{
 	}
 	XEMMAI__LIBRARY__MEMBERS
-	XEMMAI__IO__SYMBOLS(XEMMAI__SYMBOL__DEFINE)
 };
 
 XEMMAI__LIBRARY__BASE(t_io, t_global, f_global())

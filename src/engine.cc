@@ -287,13 +287,15 @@ t_engine::t_engine(const t_options& a_options, char* a_executable, size_t a_coun
 		auto file = io::t_file::f_instantiate(0, false);
 		system(L"raw_in"sv, file);
 		auto tty = file->f_as<io::t_file>().f_tty();
-		system(L"in"sv, io::t_reader::f_instantiate(file, L""sv, tty ? 1 : 1024));
+		size_t index;
+		system(L"in"sv, io::t_reader::f_instantiate(file->f_get(t_symbol::f_instantiate(L"read"sv), index), L""sv, tty ? 1 : t_object::f_size_to_capacity<t_bytes, unsigned char>(sizeof(t_object) << 3)));
 	}
 	{
 		auto file = io::t_file::f_instantiate(1, false);
 		file->f_as<io::t_file>().f_share();
 		system(L"raw_out"sv, file);
-		auto writer = io::t_writer::f_instantiate(file, L""sv);
+		size_t index;
+		auto writer = io::t_writer::f_instantiate(file->f_get(t_symbol::f_instantiate(L"write"sv), index), L""sv);
 		writer->f_as<io::t_writer>().f_share();
 		system(L"out"sv, writer);
 	}
@@ -301,7 +303,8 @@ t_engine::t_engine(const t_options& a_options, char* a_executable, size_t a_coun
 		auto file = io::t_file::f_instantiate(2, false);
 		file->f_as<io::t_file>().f_share();
 		system(L"raw_error"sv, file);
-		auto writer = io::t_writer::f_instantiate(file, L""sv);
+		size_t index;
+		auto writer = io::t_writer::f_instantiate(file->f_get(t_symbol::f_instantiate(L"write"sv), index), L""sv);
 		writer->f_as<io::t_writer>().f_share();
 		system(L"error"sv, writer);
 	}
