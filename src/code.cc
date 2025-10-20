@@ -182,8 +182,9 @@ size_t t_code::f_loop(t_context* a_context, const void*** a_labels)
 size_t t_code::f_loop(t_context* a_context)
 {
 #endif
-	auto& pc = a_context->v_pc;
+	auto pc = a_context->v_pc;
 	auto base = a_context->v_base;
+	try {
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	goto **pc;
 #define XEMMAI__CODE__CASE(a_name) XEMMAI__MACRO__CONCATENATE(label__, a_name):\
@@ -213,13 +214,18 @@ size_t t_code::f_loop(t_context* a_context)
 				pc = static_cast<void**>(*pc);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(TRY)
+			a_context->v_pc = pc;
 			f_try(a_context);
+			pc = a_context->v_pc;
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CATCH)
+			a_context->v_pc = pc;
 			XEMMAI__CODE__RETURN(c_try__CATCH)
 		XEMMAI__CODE__CASE(FINALLY)
-			XEMMAI__CODE__RETURN(static_cast<t_try>(reinterpret_cast<intptr_t>(*++pc)))
+			a_context->v_pc = ++pc;
+			XEMMAI__CODE__RETURN(static_cast<t_try>(reinterpret_cast<intptr_t>(*pc)))
 		XEMMAI__CODE__CASE(YRT)
+			a_context->v_pc = pc;
 			XEMMAI__CODE__RETURN(0)
 		XEMMAI__CODE__CASE(THROW)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
@@ -439,21 +445,21 @@ size_t t_code::f_loop(t_context* a_context)
 		XEMMAI__CODE__CASE(CALL)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			++pc;
+			a_context->v_pc = ++pc;
 			stack[0].f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CALL_WITH_EXPANSION)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
 			n = f_expand(pc, stack, n);
-			++pc;
+			a_context->v_pc = ++pc;
 			stack[0].f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(STACK_CALL)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			++pc;
+			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
 			base[index].f_call(stack, n);
 			XEMMAI__CODE__BREAK
@@ -461,7 +467,7 @@ size_t t_code::f_loop(t_context* a_context)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			++pc;
+			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
 			a_context->v_scope->f_as<t_scope>().f_entries()[index].f_call(stack, n);
 			XEMMAI__CODE__BREAK
@@ -469,7 +475,7 @@ size_t t_code::f_loop(t_context* a_context)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			++pc;
+			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
 			a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_entries()[index].f_call(stack, n);
 			XEMMAI__CODE__BREAK
@@ -477,7 +483,7 @@ size_t t_code::f_loop(t_context* a_context)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			++pc;
+			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
 			a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_entries()[index].f_call(stack, n);
 			XEMMAI__CODE__BREAK
@@ -586,6 +592,7 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
 			{\
 				XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
+				a_context->v_pc = pc;\
 				auto n = a0->f_type()->a_method(a0, stack);\
 				if (n != size_t(-1)) xemmai::f_loop(stack, n);\
 			}
@@ -747,6 +754,7 @@ size_t t_code::f_loop(t_context* a_context)
 			return -1;
 #define XEMMAI__CODE__OBJECT_CALL(a_method)\
 			XEMMAI__MACRO__CONCATENATE(XEMMAI__CODE__PREPARE, XEMMAI__CODE__OPERANDS)()\
+			a_context->v_pc = pc;\
 			return a_context->f_tail<&t_type::a_method>(a0);
 #define XEMMAI__CODE__CASE_END XEMMAI__CODE__CLOSE
 #define XEMMAI__CODE__OTHERS
@@ -856,11 +864,11 @@ size_t t_code::f_loop(t_context* a_context)
 #undef XEMMAI__CODE__OBJECT_CALL
 #undef XEMMAI__CODE__CASE_END
 		XEMMAI__CODE__CASE(SAFE_POINT)
-			++pc;
+			a_context->v_pc = ++pc;
 			f_engine()->f_debug_safe_point();
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(BREAK_POINT)
-			++pc;
+			a_context->v_pc = ++pc;
 			f_engine()->f_debug_break_point();
 			XEMMAI__CODE__BREAK
 #ifndef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
@@ -869,6 +877,10 @@ size_t t_code::f_loop(t_context* a_context)
 #endif
 label__THROW_NOT_SUPPORTED:
 	f_throw(L"not supported."sv);
+	} catch (...) {
+		a_context->v_pc = pc;
+		throw;
+	}
 }
 
 void t_code::f_rethrow()
@@ -932,14 +944,14 @@ void t_code::f_try(t_context* a_context)
 				pc = finally0;
 				f_loop(a_context);
 				p.v_caught = caught;
-				throw thrown;
+				throw;
 			}
 		}
 		if (try0 == c_try__THROW) {
 			pc = finally0;
 			f_loop(a_context);
 			p.v_caught = caught;
-			throw thrown;
+			throw;
 		}
 	}
 	pc = finally0;
