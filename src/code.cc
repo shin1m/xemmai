@@ -877,22 +877,23 @@ size_t t_code::f_loop(t_context* a_context)
 #endif
 label__THROW_NOT_SUPPORTED:
 	f_throw(L"not supported."sv);
-	} catch (...) {
-		a_context->v_pc = pc;
+	} catch (const std::pair<t_rvalue, void**>&) {
 		throw;
+	} catch (...) {
+		f_rethrow(pc);
 	}
 }
 
-void t_code::f_rethrow()
+void t_code::f_rethrow(void** a_pc)
 {
 	try {
 		std::rethrow_exception(std::current_exception());
-	} catch (const t_rvalue&) {
-		throw;
+	} catch (const t_rvalue& thrown) {
+		throw std::make_pair(thrown, a_pc);
 	} catch (std::exception& e) {
-		throw t_rvalue(t_throwable::f_instantiate(portable::f_convert(e.what())));
+		throw std::make_pair(t_rvalue(t_throwable::f_instantiate(portable::f_convert(e.what()))), a_pc);
 	} catch (...) {
-		throw t_rvalue(t_throwable::f_instantiate(L"<unknown>."sv));
+		throw std::make_pair(t_rvalue(t_throwable::f_instantiate(L"<unknown>."sv)), a_pc);
 	}
 }
 
@@ -906,28 +907,22 @@ void t_code::f_try(t_context* a_context)
 	++pc;
 	t_try try0;
 	try {
-		try {
-			try0 = static_cast<t_try>(f_loop(a_context));
-		} catch (...) {
-			f_rethrow();
-		}
-	} catch (const t_rvalue& thrown) {
-		auto& p = t_fiber::f_current()->f_as<t_fiber>();
-		void** caught = p.v_caught == nullptr ? pc : p.v_caught;
-		p.v_caught = nullptr;
+		try0 = static_cast<t_try>(f_loop(a_context));
+	} catch (const std::pair<t_rvalue, void**>& pair) {
+		auto& thrown = pair.first;
 		pc = catch0;
 		while (true) {
 			try {
+				try0 = static_cast<t_try>(f_loop(a_context));
+				if (try0 != c_try__CATCH) break;
 				try {
-					try0 = static_cast<t_try>(f_loop(a_context));
-					if (try0 != c_try__CATCH) break;
 					++pc;
 					auto type = stack[0];
 					f_check<t_type>(type, L"type");
 					if (thrown != f_engine()->v_fiber_exit && thrown.f_is(&type->f_as<t_type>())) {
 						auto index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						p.f_caught(thrown, a_context->v_lambda, caught);
+						t_backtrace::f_push(thrown, a_context->v_lambda, pair.second);
 						if (index & ~(~size_t(0) >> 1))
 							a_context->v_scope->f_as<t_scope>().f_entries()[~index] = thrown;
 						else
@@ -936,21 +931,17 @@ void t_code::f_try(t_context* a_context)
 						pc = static_cast<void**>(*pc);
 					}
 				} catch (...) {
-					f_rethrow();
+					f_rethrow(pc);
 				}
-			} catch (const t_rvalue& thrown) {
-				caught = p.v_caught == nullptr ? pc : p.v_caught;
-				p.v_caught = nullptr;
+			} catch (const std::pair<t_rvalue, void**>&) {
 				pc = finally0;
 				f_loop(a_context);
-				p.v_caught = caught;
 				throw;
 			}
 		}
 		if (try0 == c_try__THROW) {
 			pc = finally0;
 			f_loop(a_context);
-			p.v_caught = caught;
 			throw;
 		}
 	}
