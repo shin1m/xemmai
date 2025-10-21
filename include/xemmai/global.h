@@ -396,6 +396,24 @@ inline t_object* f_new(t_library::t_handle* a_handle, auto&&... a_xs)
 	return f_global()->f_type<t_module::t_body>()->f_new<T_library>(a_handle, std::forward<decltype(a_xs)>(a_xs)...);
 }
 
+inline t_object* t_tuple::f_instantiate(size_t a_size, auto a_construct)
+{
+	auto p = f_engine()->f_allocate(sizeof(t_tuple) + sizeof(t_svalue) * a_size);
+	a_construct(*new(p->f_data()) t_tuple(a_size));
+	p->f_be(f_global()->f_type<t_tuple>());
+	return p;
+}
+
+template<typename T_context>
+inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
+{
+	T_context context(t_object::f_of(this), a_stack);
+	context.v_scope = f_engine()->f_allocate(sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
+	new(context.v_scope->f_data()) t_scope(v_shareds, v_scope);
+	context.v_scope->f_be(f_global()->f_type<t_scope>());
+	return context.f_loop();
+}
+
 inline t_object* f_string_or_null(const auto& a_value)
 {
 	try {
@@ -409,7 +427,6 @@ inline t_object* f_string_or_null(const auto& a_value)
 template<typename T_context>
 intptr_t t_fiber::f_main(auto a_main)
 {
-	auto& fiber = t_thread::v_current->v_thread->v_fiber->f_as<t_fiber>();
 	intptr_t n = -1;
 	T_context context;
 	try {
@@ -417,7 +434,7 @@ intptr_t t_fiber::f_main(auto a_main)
 			a_main();
 			n = 0;
 		} catch (const t_rvalue& thrown) {
-			fiber.f_caught(thrown, nullptr);
+			t_backtrace::f_push(thrown, nullptr);
 			if (auto p = f_string_or_null(thrown))
 				std::fprintf(stderr, "caught: %ls\n", static_cast<const wchar_t*>(p->f_as<t_string>()));
 			else
@@ -427,6 +444,7 @@ intptr_t t_fiber::f_main(auto a_main)
 	} catch (...) {
 		std::fprintf(stderr, "caught: <unexpected>\n");
 	}
+	auto& fiber = t_thread::v_current->v_thread->v_fiber->f_as<t_fiber>();
 	assert(f_stack() == fiber.v_internal->v_estack.get());
 	t_thread::v_current->v_mutex.lock();
 	fiber.v_return = f_stack();
@@ -456,36 +474,15 @@ intptr_t t_fiber::f_main(auto a_main)
 	return n;
 }
 
-inline t_object* t_tuple::f_instantiate(size_t a_size, auto a_construct)
-{
-	auto p = f_engine()->f_allocate(sizeof(t_tuple) + sizeof(t_svalue) * a_size);
-	a_construct(*new(p->f_data()) t_tuple(a_size));
-	p->f_be(f_global()->f_type<t_tuple>());
-	return p;
-}
-
-inline size_t t_code::f_loop(t_context& a_context)
+inline size_t t_context::f_loop()
 {
 	try {
-		try {
-			return f_loop(&a_context);
-		} catch (...) {
-			f_rethrow();
-		}
-	} catch (const t_rvalue& thrown) {
-		a_context.f_backtrace(thrown);
-		throw;
+		return t_code::f_loop(this);
+	} catch (const std::pair<t_rvalue, void**>& pair) {
+		t_backtrace::f_push(pair.first, v_lambda, pair.second);
+		f_stack__(v_previous);
+		throw pair.first;
 	}
-}
-
-template<typename T_context>
-inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
-{
-	T_context context(t_object::f_of(this), a_stack);
-	context.v_scope = f_engine()->f_allocate(sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
-	new(context.v_scope->f_data()) t_scope(v_shareds, v_scope);
-	context.v_scope->f_be(f_global()->f_type<t_scope>());
-	return t_code::f_loop(context);
 }
 
 t_object* t_string::f_instantiate(size_t a_n, auto a_fill)

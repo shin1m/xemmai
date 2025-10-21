@@ -78,7 +78,6 @@ struct t_fiber
 	t_svalue v_callable;
 	size_t v_stack;
 	t_internal* v_internal = nullptr;
-	void** v_caught = nullptr;
 	bool v_throw = false;
 	t_pvalue* v_return;
 	t_debug_context* v_context = nullptr;
@@ -86,7 +85,6 @@ struct t_fiber
 	t_fiber(const t_pvalue& a_callable, size_t a_stack) : v_callable(a_callable), v_stack(a_stack)
 	{
 	}
-	XEMMAI__LOCAL void f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc = nullptr);
 };
 
 template<>
@@ -150,7 +148,7 @@ struct t_context
 	}
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
 	size_t f_tail(t_object* a_this);
-	void f_backtrace(const t_pvalue& a_value);
+	size_t f_loop();
 	const t_pvalue* f_variable(std::wstring_view a_name) const;
 };
 

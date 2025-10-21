@@ -159,7 +159,7 @@ void t_fiber::f_run()
 		try {
 			x = q->v_callable(x);
 		} catch (const t_rvalue& thrown) {
-			q->f_caught(thrown, nullptr);
+			t_backtrace::f_push(thrown, nullptr);
 			b = true;
 			x = thrown;
 		} catch (...) {
@@ -183,11 +183,6 @@ void t_fiber::f_run()
 	v_current = p.v_internal;
 	SwitchToFiber(p.v_internal->v_handle);
 #endif
-}
-
-void t_fiber::f_caught(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
-{
-	if (f_is<t_throwable>(a_value)) t_backtrace::f_push(a_value, a_lambda, a_pc);
 }
 
 void t_type_of<t_fiber>::f_define()
@@ -244,16 +239,6 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 	if (!q->v_throw) return -1;
 	q->v_throw = false;
 	throw t_rvalue(*q->v_return);
-}
-
-void t_context::f_backtrace(const t_pvalue& a_value)
-{
-	if (f_is<t_throwable>(a_value)) {
-		auto& p = t_fiber::f_current()->f_as<t_fiber>();
-		t_backtrace::f_push(a_value, v_lambda, p.v_caught == nullptr ? v_pc : p.v_caught);
-		p.v_caught = nullptr;
-	}
-	f_stack__(v_previous);
 }
 
 const t_pvalue* t_context::f_variable(std::wstring_view a_name) const

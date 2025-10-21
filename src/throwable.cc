@@ -3,9 +3,10 @@
 namespace xemmai
 {
 
-void t_backtrace::f_push(t_object* a_throwable, t_object* a_lambda, void** a_pc)
+void t_backtrace::f_push(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
 {
-	auto& head = a_throwable->f_as<t_throwable>().v_backtrace;
+	if (!f_is<t_throwable>(a_value)) return;
+	auto& head = a_value->f_as<t_throwable>().v_backtrace;
 	auto p = new t_backtrace(head.load(std::memory_order_relaxed), a_lambda, a_pc);
 	while (!head.compare_exchange_weak(p->v_next, p, std::memory_order_release, std::memory_order_relaxed));
 }
