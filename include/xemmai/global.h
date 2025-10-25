@@ -414,66 +414,6 @@ inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 	return context.f_loop();
 }
 
-inline t_object* f_string_or_null(const auto& a_value)
-{
-	try {
-		auto p = a_value.f_string();
-		if (f_is<t_string>(p)) return p;
-	} catch (...) {
-	}
-	return nullptr;
-}
-
-template<typename T_context>
-intptr_t t_fiber::f_main(auto a_main)
-{
-	intptr_t n = -1;
-	T_context context;
-	try {
-		try {
-			a_main();
-			n = 0;
-		} catch (const t_rvalue& thrown) {
-			t_backtrace::f_push(thrown, nullptr);
-			if (auto p = f_string_or_null(thrown))
-				std::fprintf(stderr, "caught: %ls\n", static_cast<const wchar_t*>(p->f_as<t_string>()));
-			else
-				std::fprintf(stderr, "caught: <unprintable>\n");
-			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/t_type::c_FIELDS);
-		}
-	} catch (...) {
-		std::fprintf(stderr, "caught: <unexpected>\n");
-	}
-	auto& fiber = t_thread::v_current->v_thread->v_fiber->f_as<t_fiber>();
-	assert(f_stack() == fiber.v_internal->v_estack.get());
-	t_thread::v_current->v_mutex.lock();
-	fiber.v_return = f_stack();
-	f_stack__(fiber.v_return + 1);
-	fiber.v_internal->f_epoch_get();
-	while (true) {
-		auto p = t_thread::v_current->v_fibers;
-		while (p != fiber.v_internal && !p->v_thread) p = p->v_next;
-		if (p == fiber.v_internal) break;
-		p->v_fiber->v_throw = true;
-		*p->v_fiber->v_return = f_engine()->v_fiber_exit;
-		t_thread::v_current->v_active = p->v_fiber->v_internal;
-#ifdef __unix__
-		f_stack__(p->v_estack_used);
-		swapcontext(&fiber.v_internal->v_context, &p->v_context);
-#endif
-#ifdef _WIN32
-		v_current = p;
-		SwitchToFiber(p->v_handle);
-#endif
-	}
-#ifdef _WIN32
-	fiber.v_internal->v_handle = NULL;
-	ConvertFiberToThread();
-#endif
-	t_thread::v_current->v_mutex.unlock();
-	return n;
-}
-
 inline size_t t_context::f_loop()
 {
 	try {
@@ -514,6 +454,16 @@ inline t_object* t_type_of<t_string>::f__substring(t_global* a_library, const t_
 
 inline t_stringer::t_stringer() : v_p(f_global()->f_string_empty()), v_i(const_cast<wchar_t*>(static_cast<const wchar_t*>(v_p->f_as<t_string>()))), v_j(v_i)
 {
+}
+
+inline t_object* f_string_or_null(const auto& a_value)
+{
+	try {
+		auto p = a_value.f_string();
+		if (f_is<t_string>(p)) return p;
+	} catch (...) {
+	}
+	return nullptr;
 }
 
 inline t_object* t_type_of<t_bytes>::f__construct(t_type* a_class, size_t a_size)

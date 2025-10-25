@@ -369,14 +369,10 @@ t_object* t_engine::f_fork(const t_pvalue& a_callable, size_t a_stack)
 				internal->f_initialize(&p);
 			}
 			t_global::v_instance = &v_module_global->f_as<t_module>().v_body->f_as<t_global>();
-			auto main = []
+			t_fiber::f_main([]
 			{
 				t_fiber::f_current()->f_as<t_fiber>().v_callable();
-			};
-			if (v_debugger)
-				t_fiber::f_main<t_debug_context>(main);
-			else
-				t_fiber::f_main<t_context>(main);
+			});
 			{
 				std::unique_lock lock(v_thread__mutex);
 				if (v_debugger) {
@@ -427,7 +423,14 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 	} else {
 		f_initialize_calls<t_context>();
 	}
-	intptr_t n = v_debugger ? t_fiber::f_main<t_debug_context>(t_module::f_main) : t_fiber::f_main<t_context>(t_module::f_main);
+	intptr_t n = t_fiber::f_main([]
+	{
+		auto path = f_as<std::wstring_view>(v_instance->v_module_system->f_fields()[/*script*/2]);
+		if (path.empty()) f_throw(L"script path is empty."sv);
+		auto code = t_module::f_load_script(path);
+		if (!code) f_throw(L"file \"" + std::wstring(path) + L"\" not found.");
+		t_module::f_execute_script(code);
+	});
 	auto& thread = v_thread->f_as<t_thread>();
 	{
 		std::unique_lock lock(v_thread__mutex);
@@ -449,24 +452,6 @@ intptr_t t_engine::f_run(t_debugger* a_debugger)
 		assert(v_debug__safe <= 0);
 	}
 	return n;
-}
-
-void t_engine::f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc)
-{
-	if (a_lambda) {
-		auto& code = a_lambda->f_code()->f_as<t_code>();
-		auto& path = code.v_module->f_as<t_script>().v_path;
-		std::fprintf(a_out, "%ls", path.c_str());
-		const t_at* at = code.f_at(a_pc);
-		if (at) {
-			std::fprintf(a_out, ":%zu:%zu\n", at->v_line, at->v_column);
-			f_print_with_caret(a_out, path, at->v_position, at->v_column);
-		} else {
-			std::fputc('\n', a_out);
-		}
-	} else {
-		std::fputs("<fiber>\n", a_out);
-	}
 }
 
 void t_engine::f_debug_safe_point()

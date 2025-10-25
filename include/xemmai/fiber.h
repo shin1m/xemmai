@@ -12,7 +12,8 @@ namespace xemmai
 {
 
 struct t_debug_context;
-void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column);
+XEMMAI__LOCAL void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_position, size_t a_column);
+XEMMAI__LOCAL void f_print_context(std::FILE* a_out, const t_lambda& a_lambda, void** a_pc);
 
 struct t_fiber
 {
@@ -42,7 +43,7 @@ struct t_fiber
 
 		XEMMAI__LOCAL t_internal(size_t a_stack, size_t a_n);
 		XEMMAI__LOCAL t_internal(size_t a_stack, void* a_bottom);
-		XEMMAI__LOCAL t_internal(t_fiber* a_fiber, void(*a_f)());
+		XEMMAI__LOCAL t_internal(t_fiber* a_fiber);
 #ifdef _WIN32
 		~t_internal()
 		{
@@ -70,10 +71,8 @@ struct t_fiber
 
 	static t_object* f_current();
 	XEMMAI__LOCAL static t_object* f_instantiate(const t_pvalue& a_callable, size_t a_stack);
-	template<typename T_context>
-	static intptr_t f_main(auto a_main);
-	template<typename T_context>
-	static void f_run();
+	XEMMAI__LOCAL static intptr_t f_main(void(*a_main)());
+	XEMMAI__LOCAL static void f_run();
 
 	t_svalue v_callable;
 	size_t v_stack;
@@ -125,9 +124,6 @@ struct t_context
 	t_pvalue* v_previous;
 	t_object* v_scope;
 
-	t_context() : v_base(f_stack()), v_pc(nullptr), v_lambda(nullptr)
-	{
-	}
 	t_context(t_object* a_lambda, t_pvalue* a_stack) : v_pc(a_lambda->f_as<t_lambda>().v_instructions), v_base(a_stack + 2), v_lambda(a_lambda)
 	{
 		v_previous = f_stack();
@@ -168,10 +164,6 @@ struct t_debug_context : t_context
 {
 	t_debug_context* v_next;
 
-	t_debug_context() : v_next(nullptr)
-	{
-		t_fiber::f_current()->f_as<t_fiber>().v_context = this;
-	}
 	t_debug_context(t_object* a_lambda, t_pvalue* a_stack) : t_context(a_lambda, a_stack)
 	{
 		auto& fiber = t_fiber::f_current()->f_as<t_fiber>();

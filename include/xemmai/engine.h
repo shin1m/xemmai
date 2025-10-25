@@ -220,7 +220,6 @@ public:
 	{
 		return v_module__instances;
 	}
-	XEMMAI__LOCAL void f_context_print(std::FILE* a_out, t_lambda* a_lambda, void** a_pc);
 	XEMMAI__LOCAL void f_debug_safe_point();
 	XEMMAI__LOCAL void f_debug_break_point();
 	XEMMAI__PUBLIC void f_debug_safe_region_enter();

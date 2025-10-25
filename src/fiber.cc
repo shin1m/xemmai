@@ -30,6 +30,19 @@ void f_print_with_caret(std::FILE* a_out, std::wstring_view a_path, long a_posit
 	std::putc('\n', a_out);
 }
 
+void f_print_context(std::FILE* a_out, const t_lambda& a_lambda, void** a_pc)
+{
+	auto& code = a_lambda.f_code()->f_as<t_code>();
+	auto& path = code.v_module->f_as<t_script>().v_path;
+	std::fprintf(a_out, "%ls", path.c_str());
+	if (auto at = code.f_at(a_pc)) {
+		std::fprintf(a_out, ":%zu:%zu\n", at->v_line, at->v_column);
+		f_print_with_caret(a_out, path, at->v_position, at->v_column);
+	} else {
+		std::fputc('\n', a_out);
+	}
+}
+
 t_fiber::t_internal::t_internal(size_t a_stack, size_t a_n) : v_next(t_thread::v_current->v_fibers), v_thread(t_thread::v_current), v_estack(new t_pvalue[a_stack]), v_estack_used(v_estack.get())
 {
 #ifdef __unix__
@@ -61,7 +74,7 @@ t_fiber::t_internal::t_internal(size_t a_stack, void* a_bottom) : t_internal(a_s
 }
 
 #ifdef __unix__
-t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber->v_stack, 3)
+t_fiber::t_internal::t_internal(t_fiber* a_fiber) : t_internal(a_fiber->v_stack, 3)
 {
 	v_fiber = a_fiber;
 	auto n = v_stack_copy - v_stack_last_bottom;
@@ -70,18 +83,18 @@ t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_f
 	v_context.uc_link = nullptr;
 	v_context.uc_stack.ss_sp = v_stack_copy;
 	v_context.uc_stack.ss_size = n * sizeof(t_object*);
-	makecontext(&v_context, a_f, 0);
+	makecontext(&v_context, f_run, 0);
 #endif
 #ifdef _WIN32
-t_fiber::t_internal::t_internal(t_fiber* a_fiber, void(*a_f)()) : t_internal(a_fiber->v_stack, 2)
+t_fiber::t_internal::t_internal(t_fiber* a_fiber) : t_internal(a_fiber->v_stack, 2)
 {
 	v_fiber = a_fiber;
-	v_handle = CreateFiber(0, [](PVOID a_f)
+	v_handle = CreateFiber(0, [](PVOID)
 	{
 		t_object* bottom = nullptr;
 		v_current->v_stack_bottom = &bottom;
-		reinterpret_cast<void(*)()>(a_f)();
-	}, a_f);
+		f_run();
+	}, NULL);
 	if (v_handle == NULL) throw std::system_error(GetLastError(), std::system_category());
 #endif
 	t_thread::v_current->v_fibers = this;
@@ -145,7 +158,53 @@ t_object* t_fiber::f_instantiate(const t_pvalue& a_callable, size_t a_stack)
 	return f_new<t_fiber>(f_global(), a_callable, a_stack);
 }
 
-template<typename T_context>
+intptr_t t_fiber::f_main(void(*a_main)())
+{
+	intptr_t n = -1;
+	try {
+		try {
+			a_main();
+			n = 0;
+		} catch (const t_rvalue& thrown) {
+			if (auto p = f_string_or_null(thrown))
+				std::fprintf(stderr, "caught: %ls\n", static_cast<const wchar_t*>(p->f_as<t_string>()));
+			else
+				std::fprintf(stderr, "caught: <unprintable>\n");
+			if (f_is<t_throwable>(thrown)) thrown->f_invoke_class(/*dump*/t_type::c_FIELDS);
+		}
+	} catch (...) {
+		std::fprintf(stderr, "caught: <unexpected>\n");
+	}
+	auto& fiber = t_thread::v_current->v_thread->v_fiber->f_as<t_fiber>();
+	assert(f_stack() == fiber.v_internal->v_estack.get());
+	t_thread::v_current->v_mutex.lock();
+	fiber.v_return = f_stack();
+	f_stack__(fiber.v_return + 1);
+	fiber.v_internal->f_epoch_get();
+	while (true) {
+		auto p = t_thread::v_current->v_fibers;
+		while (p != fiber.v_internal && !p->v_thread) p = p->v_next;
+		if (p == fiber.v_internal) break;
+		p->v_fiber->v_throw = true;
+		*p->v_fiber->v_return = f_engine()->v_fiber_exit;
+		t_thread::v_current->v_active = p->v_fiber->v_internal;
+#ifdef __unix__
+		f_stack__(p->v_estack_used);
+		swapcontext(&fiber.v_internal->v_context, &p->v_context);
+#endif
+#ifdef _WIN32
+		v_current = p;
+		SwitchToFiber(p->v_handle);
+#endif
+	}
+#ifdef _WIN32
+	fiber.v_internal->v_handle = NULL;
+	ConvertFiberToThread();
+#endif
+	t_thread::v_current->v_mutex.unlock();
+	return n;
+}
+
 void t_fiber::f_run()
 {
 	t_thread::v_current->v_mutex.unlock();
@@ -154,20 +213,16 @@ void t_fiber::f_run()
 	f_stack__(used);
 	auto q = t_thread::v_current->v_active->v_fiber;
 	auto b = false;
-	{
-		T_context context;
-		try {
-			x = q->v_callable(x);
-		} catch (const t_rvalue& thrown) {
-			t_backtrace::f_push(thrown, nullptr);
-			b = true;
-			x = thrown;
-		} catch (...) {
-			b = true;
-			x = t_throwable::f_instantiate(L"<unexpected>."sv);
-		}
-		assert(f_stack() == q->v_internal->v_estack.get());
+	try {
+		x = q->v_callable(x);
+	} catch (const t_rvalue& thrown) {
+		b = true;
+		x = thrown;
+	} catch (...) {
+		b = true;
+		x = t_throwable::f_instantiate(L"<unexpected>."sv);
 	}
+	assert(f_stack() == q->v_internal->v_estack.get());
 	t_thread::v_current->v_mutex.lock();
 	q->v_internal->v_thread = nullptr;
 	q->v_internal = nullptr;
@@ -219,7 +274,7 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 		}
 		*p.v_return = a_stack[2];
 	} else {
-		p.v_internal = new t_fiber::t_internal(&p, f_engine()->v_debugger ? t_fiber::f_run<t_debug_context> : t_fiber::f_run<t_context>);
+		p.v_internal = new t_fiber::t_internal(&p);
 		p.v_internal->v_estack_used = p.v_internal->v_estack.get() + 1;
 		p.v_internal->v_estack[0] = a_stack[2];
 	}
