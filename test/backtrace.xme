@@ -15,5 +15,4 @@ debugger> .*backtrace\.xm:2:7
 .*backtrace\.xm:5:4
 	bar\("a", "b"
 	   \^
-<fiber>
 debugger> 

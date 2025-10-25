@@ -99,15 +99,6 @@ t_object* t_module::f_instantiate(std::wstring_view a_name)
 	f_throw(L"module \"" + std::wstring(a_name) + L"\" not found.");
 }
 
-void t_module::f_main()
-{
-	auto path = f_as<std::wstring_view>(f_engine()->f_module_system()->f_fields()[/*script*/2]);
-	if (path.empty()) f_throw(L"script path is empty."sv);
-	auto code = f_load_script(path);
-	if (!code) f_throw(L"file \"" + std::wstring(path) + L"\" not found.");
-	f_execute_script(code);
-}
-
 t_module::~t_module()
 {
 	f_engine()->v_module__instances.erase(v_entry);

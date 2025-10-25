@@ -22,7 +22,6 @@ struct t_module
 	XEMMAI__LOCAL static t_object* f_load_library(std::wstring_view a_path);
 	XEMMAI__LOCAL static t_object* f_new(std::wstring_view a_name, t_object* a_body, const std::vector<std::pair<t_root, t_rvalue>>& a_fields);
 	XEMMAI__PUBLIC static t_object* f_instantiate(std::wstring_view a_name);
-	XEMMAI__LOCAL static void f_main();
 
 	std::map<std::wstring, t_slot, std::less<>>::iterator v_entry;
 	t_slot v_body;

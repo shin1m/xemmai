@@ -144,7 +144,7 @@ class t_debugger : public xemmai::t_debugger
 	}
 	void f_print(t_context* a_context)
 	{
-		v_engine.f_context_print(v_out, f_as<t_lambda*>(a_context->v_lambda), a_context->v_pc);
+		f_print_context(v_out, f_as<t_lambda&>(a_context->v_lambda), a_context->v_pc);
 	}
 	void f_print_contexts(t_debug_context* a_context, t_context* a_current)
 	{

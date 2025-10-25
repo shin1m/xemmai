@@ -8,4 +8,3 @@ caught: b
 at .*dump\.xm:9:1
 	throw Throwable\("b"
 	\^
-from <fiber>
