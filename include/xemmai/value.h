@@ -219,7 +219,7 @@ public:
 	}
 };
 
-void XEMMAI__PUBLIC f_throw [[noreturn]] (std::wstring_view a_message);
+XEMMAI__PUBLIC void f_throw [[noreturn]] (std::wstring_view a_message);
 
 template<typename T_tag>
 class t_value : public T_tag
