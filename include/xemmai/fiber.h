@@ -116,7 +116,7 @@ inline void f_stack__(t_pvalue* a_p)
 }
 #endif
 
-struct t_context
+struct XEMMAI__LOCAL t_context
 {
 	void** v_pc;
 	t_pvalue* v_base;
@@ -143,24 +143,21 @@ struct t_context
 		f_stack__(std::max(v_previous, v_base + a_n));
 	}
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-	size_t f_tail(t_object* a_this);
+	size_t f_tail(t_object* a_this)
+	{
+		auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
+		auto n = (a_this->f_type()->*A_function)(a_this, stack);
+		if (n == size_t(-1))
+			f_return(stack[0]);
+		else
+			f_tail(stack, n);
+		return n;
+	}
 	size_t f_loop();
 	const t_pvalue* f_variable(std::wstring_view a_name) const;
 };
 
-template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-size_t t_context::f_tail(t_object* a_this)
-{
-	auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
-	size_t n = (a_this->f_type()->*A_function)(a_this, stack);
-	if (n == size_t(-1))
-		f_return(stack[0]);
-	else
-		f_tail(stack, n);
-	return n;
-}
-
-struct t_debug_context : t_context
+struct XEMMAI__LOCAL t_debug_context : t_context
 {
 	t_debug_context* v_next;
 

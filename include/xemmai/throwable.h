@@ -8,7 +8,7 @@ namespace xemmai
 
 struct t_backtrace
 {
-	XEMMAI__LOCAL static void f_push(const t_pvalue& a_value, t_object* a_lambda, void** a_pc = nullptr);
+	XEMMAI__LOCAL static void f_push(t_object* a_value, t_object* a_lambda, void** a_pc);
 
 	t_backtrace* v_next;
 	t_slot v_lambda;
