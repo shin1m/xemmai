@@ -3,7 +3,7 @@
 namespace xemmai
 {
 
-void t_backtrace::f_push(const t_pvalue& a_value, t_object* a_lambda, void** a_pc)
+void t_backtrace::f_push(t_object* a_value, t_object* a_lambda, void** a_pc)
 {
 	if (!f_is<t_throwable>(a_value)) return;
 	auto& head = a_value->f_as<t_throwable>().v_backtrace;
