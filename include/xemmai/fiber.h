@@ -153,7 +153,17 @@ struct XEMMAI__LOCAL t_context
 			f_tail(stack, n);
 		return n;
 	}
-	size_t f_loop();
+	void f_backtrace(t_object* a_value, void** a_pc);
+	size_t f_loop()
+	{
+		try {
+			return t_code::f_loop(this);
+		} catch (const std::pair<t_rvalue, void**>& pair) {
+			f_backtrace(pair.first, pair.second);
+			f_stack__(v_previous);
+			throw pair.first;
+		}
+	}
 	const t_pvalue* f_variable(std::wstring_view a_name) const;
 };
 

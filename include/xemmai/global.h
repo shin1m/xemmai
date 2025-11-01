@@ -414,17 +414,6 @@ inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 	return context.f_loop();
 }
 
-inline size_t t_context::f_loop()
-{
-	try {
-		return t_code::f_loop(this);
-	} catch (const std::pair<t_rvalue, void**>& pair) {
-		t_backtrace::f_push(pair.first, v_lambda, pair.second);
-		f_stack__(v_previous);
-		throw pair.first;
-	}
-}
-
 t_object* t_string::f_instantiate(size_t a_n, auto a_fill)
 {
 	auto object = t_type_of<t_string>::f__construct(f_global()->f_type<t_string>(), a_n);

@@ -296,6 +296,14 @@ size_t t_type_of<t_fiber>::f_do_call(t_object* a_this, t_pvalue* a_stack, size_t
 	throw t_rvalue(*q->v_return);
 }
 
+void t_context::f_backtrace(t_object* a_value, void** a_pc)
+{
+	if (!f_is<t_throwable>(a_value)) return;
+	auto& head = a_value->f_as<t_throwable>().v_backtrace;
+	auto p = new t_backtrace(head.load(std::memory_order_relaxed), v_lambda, a_pc);
+	while (!head.compare_exchange_weak(p->v_next, p, std::memory_order_release, std::memory_order_relaxed));
+}
+
 const t_pvalue* t_context::f_variable(std::wstring_view a_name) const
 {
 	auto& lambda = v_lambda->f_as<t_lambda>();
