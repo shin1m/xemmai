@@ -8,8 +8,6 @@ namespace xemmai
 
 struct t_backtrace
 {
-	XEMMAI__LOCAL static void f_push(t_object* a_value, t_object* a_lambda, void** a_pc);
-
 	t_backtrace* v_next;
 	t_slot v_lambda;
 	void** v_pc;
@@ -22,7 +20,7 @@ struct t_backtrace
 
 class t_throwable
 {
-	friend struct t_backtrace;
+	friend struct t_context;
 	friend struct t_finalizes<t_bears<t_throwable>>;
 	friend struct t_type_of<t_throwable>;
 

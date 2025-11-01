@@ -922,7 +922,7 @@ void t_code::f_try(t_context* a_context)
 					if (thrown != f_engine()->v_fiber_exit && thrown.f_is(&type->f_as<t_type>())) {
 						auto index = reinterpret_cast<size_t>(*++pc);
 						++pc;
-						t_backtrace::f_push(thrown, a_context->v_lambda, pair.second);
+						a_context->f_backtrace(thrown, pair.second);
 						if (index & ~(~size_t(0) >> 1))
 							a_context->v_scope->f_as<t_scope>().f_entries()[~index] = thrown;
 						else
