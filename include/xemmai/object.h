@@ -213,8 +213,8 @@ class t_object
 	void f_cyclic_decrement()
 	{
 		f_scan_fields(f_push<&t_object::f_cyclic_decrement_push>);
-		if (v_type->f_finalize) v_type->f_finalize(this, f_push<&t_object::f_cyclic_decrement_push>);
-		if (v_type->v_this) v_type->v_this->f_cyclic_decrement_push();
+		if (auto p = v_type->f_finalize) p(this, f_push<&t_object::f_cyclic_decrement_push>);
+		t_object::f_of(v_type)->f_cyclic_decrement_push();
 		v_type = nullptr;
 	}
 
@@ -370,12 +370,12 @@ struct t_type::t_cast<T*>
 	}
 };
 
-inline t_type::t_type_of() : v_this(t_object::f_of(this)), v_depth(c_IDS.size() - 1), v_ids(c_IDS.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
+inline t_type::t_type_of() : v_depth(c_IDS.size() - 1), v_ids(c_IDS.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
 {
 }
 
 template<size_t A_n>
-inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module, size_t a_native, size_t a_instance_fields, const std::vector<std::pair<t_root, t_rvalue>>& a_fields, const std::map<t_object*, size_t>& a_key2index) : v_this(t_object::f_of(this)), v_depth(A_n - 1), v_ids(a_ids.data()), v_module(a_module), v_fields_offset(t_object::f_fields_offset(a_native)), v_instance_fields(a_instance_fields), v_fields(a_fields.size())
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module, size_t a_native, size_t a_instance_fields, const std::vector<std::pair<t_root, t_rvalue>>& a_fields, const std::map<t_object*, size_t>& a_key2index) : v_depth(A_n - 1), v_ids(a_ids.data()), v_module(a_module), v_fields_offset(t_object::f_fields_offset(a_native)), v_instance_fields(a_instance_fields), v_fields(a_fields.size())
 {
 	v_super.f_construct(t_object::f_of(a_super));
 	std::uninitialized_copy(a_fields.begin(), a_fields.end(), f_fields());

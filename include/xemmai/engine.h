@@ -307,7 +307,7 @@ void t_slot::t_queue<A_SIZE>::f_next() noexcept
 inline void t_object::f_decrement_step()
 {
 	f_scan_fields(f_push<&t_object::f_decrement_push>);
-	if (v_type->f_finalize) v_type->f_finalize(this, f_push<&t_object::f_decrement_push>);
+	if (auto p = v_type->f_finalize) p(this, f_push<&t_object::f_decrement_push>);
 	t_object::f_of(v_type)->f_decrement_push();
 	v_type = nullptr;
 	if (v_next) {

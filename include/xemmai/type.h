@@ -129,7 +129,6 @@ struct t_type_of<t_object>
 	}
 	XEMMAI__LOCAL void f_define();
 
-	t_slot v_this;
 	size_t v_depth;
 	const t_type_id* v_ids;
 	t_slot_of<t_type> v_super;
@@ -155,7 +154,6 @@ struct t_type_of<t_object>
 	XEMMAI__LOCAL size_t f_index(t_object* a_key);
 	void f_scan_type(t_scan a_scan)
 	{
-		a_scan(v_this);
 		a_scan(v_super);
 		a_scan(v_module);
 		auto p = f_fields();
