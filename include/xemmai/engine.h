@@ -304,6 +304,17 @@ void t_slot::t_queue<A_SIZE>::f_next() noexcept
 	}
 }
 
+template<size_t A_SIZE>
+inline XEMMAI__PORTABLE__ALWAYS_INLINE void t_slot::t_queue<A_SIZE>::f__push(t_object* a_object)
+{
+	assert(a_object->v_type != nullptr);
+	*v_head = a_object;
+	if (v_head == v_next)
+		f_next();
+	else
+		[[likely]] ++v_head;
+}
+
 inline void t_object::f_decrement_step()
 {
 	f_scan_fields(f_push<&t_object::f_decrement_push>);

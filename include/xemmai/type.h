@@ -140,7 +140,8 @@ struct t_type_of<t_object>
 	bool v_revive = false;
 	bool v_bindable = false;
 
-	t_type_of();
+	template<size_t A_n>
+	t_type_of(const std::array<t_type_id, A_n>& a_ids, size_t a_native);
 	template<size_t A_n>
 	t_type_of(const std::array<t_type_id, A_n>& a_ids, t_type* a_super, t_object* a_module, size_t a_native, size_t a_instance_fields, const std::vector<std::pair<t_root, t_rvalue>>& a_fields, const std::map<t_object*, size_t>& a_key2index);
 	std::pair<t_slot, t_svalue>* f_fields()

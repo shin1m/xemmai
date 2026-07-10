@@ -54,14 +54,7 @@ protected:
 		t_object* volatile* v_tail = v_objects + A_SIZE - 1;
 
 		void f_next() noexcept;
-		XEMMAI__PORTABLE__ALWAYS_INLINE void f__push(t_object* a_object)
-		{
-			*v_head = a_object;
-			if (v_head == v_next)
-				f_next();
-			else
-				[[likely]] ++v_head;
-		}
+		void f__push(t_object* a_object);
 		void f__flush(t_object* volatile* a_epoch, auto a_do)
 		{
 			auto end = v_objects + A_SIZE - 1;

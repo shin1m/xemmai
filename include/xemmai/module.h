@@ -28,7 +28,6 @@ struct t_module
 
 	t_module(std::map<std::wstring, t_slot, std::less<>>::iterator a_entry, t_object* a_body) : v_entry(a_entry), v_body(a_body)
 	{
-		v_entry->second = t_object::f_of(this);
 	}
 	XEMMAI__LOCAL ~t_module();
 	void f_scan(t_scan a_scan)

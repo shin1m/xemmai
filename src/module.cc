@@ -67,7 +67,7 @@ t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std:
 	for (size_t i = 0; i < n; ++i) new(q + i) t_svalue(a_fields[i].second);
 	new(p->f_data()) t_module(i, a_body);
 	p->f_be(&type->f_as<t_type>());
-	return p;
+	return i->second = p;
 }
 
 t_object* t_module::f_instantiate(std::wstring_view a_name)

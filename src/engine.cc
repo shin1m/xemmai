@@ -223,21 +223,25 @@ t_engine::t_engine(const t_options& a_options, char* a_executable, size_t a_coun
 	v_thread__internals = new t_thread::t_internal{nullptr};
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	std::thread(&t_engine::f_collector, this).detach();
+	auto type_type = f_allocate_for_type<t_class>(0);
+	v_type_type = new(type_type->f_data()) t_class;
+	type_type->f_be(v_type_type);
 	auto type_object = f_allocate_for_type<t_type>(t_type::c_FIELDS);
-	auto type = new(type_object->f_data()) t_type;
+	auto type = new(type_object->f_data()) t_type(t_type::c_IDS, 0);
 	type->v_derive = &t_type::f_do_derive;
 	std::uninitialized_default_construct_n(type->f_fields(), t_type::c_FIELDS);
-	auto type_type = f_allocate_for_type<t_class>(0);
-	v_type_type = new(type_type->f_data()) t_class(t_class::c_IDS, type);
 	type_object->f_be(v_type_type);
-	type_type->f_be(v_type_type);
+	v_type_type->v_super.f_construct(type_object);
 	{
 		auto type_module__body = f_new_type_on_boot<t_module::t_body>(t_type::c_FIELDS, type, nullptr);
 		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_type, type_module__body);
 		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}
-	v_fiber_exit = f_allocate(0);
-	v_fiber_exit->f_be(type);
+	{
+		auto exit = f_allocate(0);
+		exit->f_be(type);
+		v_fiber_exit = exit;
+	}
 	auto global = f_global();
 	v_thread = f_new<t_thread>(global, v_thread__internals, f_new<t_fiber>(global, nullptr, v_options.v_stack_size));
 	v_thread__internals->f_initialize(&v_thread->f_as<t_thread>());

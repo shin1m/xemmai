@@ -257,9 +257,9 @@ public:
 
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_be(t_type* a_type)
 	{
-		t_slot::t_increments::f_push(f_of(a_type));
 		std::atomic_signal_fence(std::memory_order_release);
 		v_type = a_type;
+		t_slot::t_increments::f_push(f_of(a_type));
 		t_slot::t_decrements::f_push(this);
 	}
 	t_type* f_type() const
@@ -383,7 +383,8 @@ struct t_type::t_cast<T*>
 	}
 };
 
-inline t_type::t_type_of() : v_depth(c_IDS.size() - 1), v_ids(c_IDS.data()), v_fields_offset(t_object::f_fields_offset(0)), v_instance_fields(0), v_fields(0)
+template<size_t A_n>
+inline t_type::t_type_of(const std::array<t_type_id, A_n>& a_ids, size_t a_native) : v_depth(A_n - 1), v_ids(a_ids.data()), v_fields_offset(t_object::f_fields_offset(a_native)), v_instance_fields(0), v_fields(0)
 {
 }
 

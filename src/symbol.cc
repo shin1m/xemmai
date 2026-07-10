@@ -18,12 +18,12 @@ t_object* t_symbol::f_instantiate(std::wstring_view a_value)
 	if (i == instances.end() || i->first != a_value) {
 		i = instances.emplace_hint(i, a_value, nullptr);
 		engine->v_object__reviving__mutex.unlock();
-		return f_new<t_symbol>(f_global(), i);
+		i->second = f_new<t_symbol>(f_global(), i);
 	} else {
 		i->second->v_reviving = true;
 		engine->v_object__reviving__mutex.unlock();
-		return i->second;
 	}
+	return i->second;
 }
 
 void t_type_of<t_symbol>::f_define()
