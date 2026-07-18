@@ -255,12 +255,13 @@ public:
 		return (a_size - f_fields_offset(sizeof(T_object))) / sizeof(T_element);
 	}
 
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_be(t_type* a_type)
+	XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f_be(t_type* a_type)
 	{
 		std::atomic_signal_fence(std::memory_order_release);
 		v_type = a_type;
 		t_slot::t_increments::f_push(f_of(a_type));
 		t_slot::t_decrements::f_push(this);
+		return this;
 	}
 	t_type* f_type() const
 	{

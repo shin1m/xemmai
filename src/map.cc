@@ -67,7 +67,7 @@ t_pvalue t_map::f_put(const t_pvalue& a_key, const t_pvalue& a_value)
 	if (p->v_gap == gap) return p->v_value = a_value;
 	if (v_size >= table->v_rank.v_upper) {
 		auto rank = &table->v_rank + 1;
-		if (rank >= t_table::v_ranks + sizeof(t_table::v_ranks) / sizeof(t_table::t_rank)) f_throw(L"cannot grow."sv);
+		if (rank >= std::end(t_table::v_ranks)) f_throw(L"cannot grow."sv);
 		f_rehash(*rank);
 		table = &v_table->f_as<t_table>();
 		std::tie(p, gap) = table->f_find(hash, a_key);

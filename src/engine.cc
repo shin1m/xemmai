@@ -230,18 +230,13 @@ t_engine::t_engine(const t_options& a_options, char* a_executable, size_t a_coun
 	auto type = new(type_object->f_data()) t_type(t_type::c_IDS, 0);
 	type->v_derive = &t_type::f_do_derive;
 	std::uninitialized_default_construct_n(type->f_fields(), t_type::c_FIELDS);
-	type_object->f_be(v_type_type);
-	v_type_type->v_super.f_construct(type_object);
+	v_type_type->v_super.f_construct(type_object->f_be(v_type_type));
 	{
 		auto type_module__body = f_new_type_on_boot<t_module::t_body>(t_type::c_FIELDS, type, nullptr);
 		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_type, type_module__body);
 		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}
-	{
-		auto exit = f_allocate(0);
-		exit->f_be(type);
-		v_fiber_exit = exit;
-	}
+	v_fiber_exit = f_allocate(0)->f_be(type);
 	auto global = f_global();
 	v_thread = f_new<t_thread>(global, v_thread__internals, f_new<t_fiber>(global, nullptr, v_options.v_stack_size));
 	v_thread__internals->f_initialize(&v_thread->f_as<t_thread>());

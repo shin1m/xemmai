@@ -45,7 +45,7 @@ void t_server::f_run()
 {
 	wchar_t cs[256];
 	while (true) {
-		wchar_t* p = std::fgetws(cs, sizeof(cs) / sizeof(wchar_t), stdin);
+		wchar_t* p = std::fgetws(cs, std::size(cs), stdin);
 		if (!p) break;
 		std::wstring_view s = p;
 		f_post(s.substr(0, s.size() - 1));

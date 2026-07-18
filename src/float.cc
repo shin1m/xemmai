@@ -6,7 +6,7 @@ namespace xemmai
 t_object* t_type_of<double>::f__string(double a_self)
 {
 	wchar_t cs[32];
-	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"%g", a_self);
+	size_t n = std::swprintf(cs, std::size(cs), L"%g", a_self);
 	return t_string::f_instantiate(cs, n);
 }
 

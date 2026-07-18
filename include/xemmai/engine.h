@@ -172,8 +172,7 @@ public:
 	{
 		auto p = f_allocate_for_type<t_type_of<T>>(a_fields);
 		std::uninitialized_default_construct_n((new(p->f_data()) t_type_of<T>(t_type_of<T>::c_IDS, a_super, a_module, t_type_of<T>::c_NATIVE, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{}))->f_fields(), a_fields);
-		p->f_be(v_type_type);
-		return p;
+		return p->f_be(v_type_type);
 	}
 #ifdef _WIN32
 	XEMMAI__PUBLIC t_object* f_allocate(size_t a_size);
@@ -372,8 +371,7 @@ inline t_object* f_new_value(t_type* a_type, auto&&... a_xs)
 	assert(a_type->v_instance_fields == sizeof...(a_xs));
 	auto p = f_engine()->f_allocate(sizeof(t_svalue) * sizeof...(a_xs));
 	f__construct(p->f_fields(0), std::make_index_sequence<sizeof...(a_xs)>(), std::forward<decltype(a_xs)>(a_xs)...);
-	p->f_be(a_type);
-	return p;
+	return p->f_be(a_type);
 }
 
 }

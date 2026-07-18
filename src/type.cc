@@ -17,7 +17,7 @@ void t_type::f_define()
 	(global->f_symbol___string(), t_member<t_object*(*)(const t_pvalue&), [](const t_pvalue& a_self)
 	{
 		wchar_t cs[13 + sizeof(t_object*) * 2];
-		size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), L"object at %p", static_cast<t_object*>(a_self));
+		size_t n = std::swprintf(cs, std::size(cs), L"object at %p", static_cast<t_object*>(a_self));
 		return t_string::f_instantiate(cs, n);
 	}>())
 	(global->f_symbol___hash(), t_member<intptr_t(*)(const t_pvalue&), f__hash>())
@@ -65,7 +65,7 @@ size_t t_type::f_index(t_object* a_key)
 std::pair<std::vector<std::pair<t_root, t_rvalue>>, std::map<t_object*, size_t>> t_type::f_merge(const t_fields& a_fields)
 {
 	std::vector<std::pair<t_root, t_rvalue>> fields{f_fields(), f_fields() + v_instance_fields};
-	std::map<t_object*, size_t> key2index{f_key2index(), f_key2index() + v_fields};
+	std::map key2index{f_key2index(), f_key2index() + v_fields};
 	for (auto& x : a_fields.v_instance) {
 		if (key2index.contains(x)) f_throw(x->f_as<t_symbol>().f_string());
 		key2index.emplace(x, fields.size());
@@ -111,8 +111,7 @@ t_pvalue t_type::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
 	auto p = f_engine()->f_allocate(sizeof(t_svalue) * v_instance_fields);
 	std::uninitialized_default_construct_n(p->f_fields(0), v_instance_fields);
-	p->f_be(this);
-	return p;
+	return p->f_be(this);
 }
 
 void t_type::f_do_instantiate(t_pvalue* a_stack, size_t a_n)

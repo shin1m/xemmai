@@ -6,7 +6,7 @@ namespace xemmai
 t_object* t_type_of<intptr_t>::f__string(intptr_t a_self)
 {
 	wchar_t cs[32];
-	size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%" PRIdPTR), a_self);
+	size_t n = std::swprintf(cs, std::size(cs), XEMMAI__MACRO__L("%" PRIdPTR), a_self);
 	return t_string::f_instantiate(cs, n);
 }
 

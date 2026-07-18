@@ -410,7 +410,7 @@ size_t t_code::f_loop(t_context* a_context)
 				double a_x;\
 				void* a_y[sizeof(double) / sizeof(void*)];\
 			};\
-			for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) a_y[i] = *++pc;
+			for (auto& x : a_y) x = *++pc;
 		XEMMAI__CODE__CASE(FLOAT)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
 			XEMMAI__CODE__FLOAT(v0, v1)

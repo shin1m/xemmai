@@ -447,7 +447,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		wchar_t sign = (a_offset > 0) ? L'+' : L'-';
 		a_offset = std::abs(a_offset) / 60;
 		wchar_t cs[32];
-		n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
+		n = std::swprintf(cs, std::size(cs), XEMMAI__MACRO__L("%ls, %" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " %lc%02" PRIdPTR "%02" PRIdPTR), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second, sign, a_offset / 60, a_offset % 60);
 		return t_string::f_instantiate(cs, n);
 	}>())
 	(L"parse_http"sv, t_static<t_object*(*)(const t_string&), [](const t_string& a_value)
@@ -485,7 +485,7 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		intptr_t second = static_cast<intptr_t>(std::floor(f_item_with_fraction(a_value, 5)));
 		intptr_t week = f_item(a_value, 6);
 		wchar_t cs[30];
-		size_t n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
+		size_t n = std::swprintf(cs, std::size(cs), XEMMAI__MACRO__L("%ls, %02" PRIdPTR " %ls %04" PRIdPTR " %02" PRIdPTR ":%02" PRIdPTR ":%02" PRIdPTR " GMT"), v_rfc2822_days[week], day, v_rfc2822_months[month - 1], year, hour, minute, second);
 		return t_string::f_instantiate(cs, n);
 	}>())
 	(L"parse_xsd"sv, t_static<t_object*(*)(const t_string&), [](const t_string& a_value)
@@ -513,11 +513,11 @@ std::vector<std::pair<t_root, t_rvalue>> t_time::f_define()
 		wchar_t cs[30];
 		size_t n;
 		if (a_offset == 0) {
-			n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*fZ"), year, month, day, hour, minute, a_precision, second);
+			n = std::swprintf(cs, std::size(cs), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*fZ"), year, month, day, hour, minute, a_precision, second);
 		} else {
 			wchar_t sign = (a_offset > 0) ? L'+' : L'-';
 			a_offset = std::abs(a_offset) / 60;
-			n = std::swprintf(cs, sizeof(cs) / sizeof(wchar_t), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*f%lc%02" PRIdPTR ":%02" PRIdPTR), year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
+			n = std::swprintf(cs, std::size(cs), XEMMAI__MACRO__L("%04" PRIdPTR "-%02" PRIdPTR "-%02" PRIdPTR "T%02" PRIdPTR ":%02" PRIdPTR ":%02.*f%lc%02" PRIdPTR ":%02" PRIdPTR), year, month, day, hour, minute, a_precision, second, sign, a_offset / 60, a_offset % 60);
 		}
 		return t_string::f_instantiate(cs, n);
 	}>())

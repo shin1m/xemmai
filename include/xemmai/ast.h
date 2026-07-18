@@ -713,7 +713,7 @@ struct XEMMAI__LOCAL t_emit
 			void* v1[sizeof(double) / sizeof(void*)];
 		};
 		v0 = a_operand;
-		for (size_t i = 0; i < sizeof(double) / sizeof(void*); ++i) v_code->v_instructions.push_back(v1[i]);
+		for (auto x : v1) v_code->v_instructions.push_back(x);
 		return *this;
 	}
 	t_emit& operator<<(t_object* a_operand)

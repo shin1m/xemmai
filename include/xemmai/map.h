@@ -65,8 +65,7 @@ private:
 		{
 			auto p = f_engine()->f_allocate(sizeof(t_table) + sizeof(t_entry) * a_rank.v_capacity);
 			new(p->f_data()) t_table(a_rank);
-			p->f_be(a_type);
-			return p;
+			return p->f_be(a_type);
 		}
 
 		t_table(const t_rank& a_rank) : v_slot(a_rank.v_slot), v_end(f_entries() + a_rank.v_capacity), v_rank(a_rank)
