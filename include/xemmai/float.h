@@ -20,26 +20,27 @@ struct t_type_of<double> : t_derivable<t_bears<double>, t_derived_primitive<doub
 	struct t_cast
 	{
 		using t_type = typename t_fundamental<T>::t_type;
+		using t_value = std::remove_reference_t<T>;
 
-		static t_type f_as(auto&& a_object)
+		static t_value f_as(auto&& a_object)
 		{
 			auto p = static_cast<t_object*>(a_object);
 			switch (reinterpret_cast<uintptr_t>(p)) {
 			case c_tag__INTEGER:
-				return a_object.f_integer();
+				return static_cast<t_value>(a_object.f_integer());
 			case c_tag__FLOAT:
-				return a_object.f_float();
+				return static_cast<t_value>(a_object.f_float());
 			default:
-				return p->f_as<double>();
+				return static_cast<t_value>(p->f_as<double>());
 			}
 		}
-		static t_type f_as(t_object* a_object)
+		static t_value f_as(t_object* a_object)
 		{
-			return a_object->f_as<double>();
+			return static_cast<t_value>(a_object->f_as<double>());
 		}
 		static bool f_is(t_object* a_object)
 		{
-			if (!std::is_same_v<typename t_fundamental<T>::t_type, double>) return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+			if (!std::is_same_v<t_type, double>) return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<t_type>();
 			switch (reinterpret_cast<uintptr_t>(a_object)) {
 			case c_tag__NULL:
 			case c_tag__FALSE:

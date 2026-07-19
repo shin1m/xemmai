@@ -89,7 +89,7 @@ private:
 		}
 		XEMMAI__PORTABLE__ALWAYS_INLINE t_entry* f_find(const t_pvalue& a_key) const
 		{
-			size_t hash = f_as<size_t>(a_key.f_hash());
+			auto hash = f_as<size_t>(a_key.f_hash());
 			auto p = f_entries() + v_slot(hash);
 			size_t gap = 1;
 			for (; p->v_gap > gap; ++gap) if (++p >= v_end) p = f_entries();

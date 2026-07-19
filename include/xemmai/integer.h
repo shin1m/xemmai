@@ -10,7 +10,7 @@ namespace xemmai
 {
 
 template<typename T>
-struct t_fundamental<T, std::enable_if_t<std::conjunction_v<std::is_same<T, std::remove_const_t<T>>, std::is_integral<T>, std::negation<std::is_same<T, bool>>>>>
+struct t_fundamental<T, std::enable_if_t<std::conjunction_v<std::is_integral<T>, std::negation<std::is_same<T, bool>>>>>
 {
 	using t_type = intptr_t;
 };
@@ -22,18 +22,19 @@ struct t_type_of<intptr_t> : t_derivable<t_bears<intptr_t>, t_derived_primitive<
 	struct t_cast
 	{
 		using t_type = typename t_fundamental<T>::t_type;
+		using t_value = std::remove_reference_t<T>;
 
-		static t_type f_as(auto&& a_object)
+		static t_value f_as(auto&& a_object)
 		{
-			return static_cast<t_type>(a_object.f_integer());
+			return static_cast<t_value>(a_object.f_integer());
 		}
-		static t_type f_as(t_object* a_object)
+		static t_value f_as(t_object* a_object)
 		{
-			return static_cast<t_type>(a_object->f_as<intptr_t>());
+			return static_cast<t_value>(a_object->f_as<intptr_t>());
 		}
 		static bool f_is(t_object* a_object)
 		{
-			if (!std::is_same_v<typename t_fundamental<T>::t_type, intptr_t>) return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<typename t_fundamental<T>::t_type>();
+			if (!std::is_same_v<t_type, intptr_t>) return reinterpret_cast<uintptr_t>(a_object) >= c_tag__OBJECT && a_object->f_type()->f_derives<t_type>();
 			switch (reinterpret_cast<uintptr_t>(a_object)) {
 			case c_tag__INTEGER:
 				return true;

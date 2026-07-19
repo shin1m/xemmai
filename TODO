@@ -1,4 +1,33 @@
+handle alignment in t_object::f_as<>().
+optimize argument expansion.
+make Class able to be key of Map.
+allow return in module.
 get rid of f_engine() in f_allocate().
+
+Remove Boolean.
+make Tuple mutable.
+switch to stack based instructions.
+pass a1 as arguments.
+
+//fix f_as<size_t>(...) returns intptr_t.
+//use arena allocator for ast.
+//improve argument expansion.
+//use macro to reduce redundancy.
+//refactor construct/initialize.
+//	Object(... can take any number of arguments.
+//resolve conflict of : in for. make options ; delimited.
+//make more parentheses omittable.
+//unify e_instruction__BOOLEAN into e_instruction__INSTANCE.
+//make null falsy.
+//remove Method.__get_at
+//change find() != end() to contains().
+//remove operator!=
+//fix indirect get/put with non-symbol.
+//make File/Directory sharables.
+//move io.Path to os.Path.
+//macro for library definitions.
+//skip if (p->v_type == v_type_type) p->f_as<t_type>().~t_type();
+//improve dfa to reduce implicit null initializations.
 //make t_tuple require constructing elements.
 //further reduce code for stack estimation.
 //align catch <unknown>.
