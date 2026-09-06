@@ -62,7 +62,7 @@ t_object* t_module::f_new(std::wstring_view a_name, t_object* a_body, const std:
 		i = engine->v_module__instances.emplace(a_name, nullptr).first;
 	}
 	auto n = type->f_as<t_type>().v_instance_fields;
-	auto p = engine->f_allocate(t_object::f_align_for_fields(sizeof(t_module)) + sizeof(t_svalue) * n);
+	auto p = f_allocate(t_object::f_align_for_fields(sizeof(t_module)) + sizeof(t_svalue) * n);
 	auto q = p->f_fields(sizeof(t_module));
 	for (size_t i = 0; i < n; ++i) new(q + i) t_svalue(a_fields[i].second);
 	new(p->f_data()) t_module(i, a_body);

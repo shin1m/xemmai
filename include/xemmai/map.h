@@ -63,7 +63,7 @@ private:
 
 		static t_object* f_instantiate(t_type* a_type, const t_rank& a_rank)
 		{
-			auto p = f_engine()->f_allocate(sizeof(t_table) + sizeof(t_entry) * a_rank.v_capacity);
+			auto p = f_allocate(sizeof(t_table) + sizeof(t_entry) * a_rank.v_capacity);
 			new(p->f_data()) t_table(a_rank);
 			return p->f_be(a_type);
 		}

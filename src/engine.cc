@@ -224,15 +224,15 @@ t_engine::t_engine(const t_options& a_options, char* a_executable, size_t a_coun
 	v_thread__internals->f_initialize(v_options.v_stack_size, this);
 	std::thread(&t_engine::f_collector, this).detach();
 	auto type_type = f_allocate_for_type<t_class>(0);
-	v_type_type = new(type_type->f_data()) t_class;
-	type_type->f_be(v_type_type);
+	auto clazz = new(type_type->f_data()) t_class;
+	type_type->f_be(clazz);
 	auto type_object = f_allocate_for_type<t_type>(t_type::c_FIELDS);
 	auto type = new(type_object->f_data()) t_type(t_type::c_IDS, 0);
 	type->v_derive = &t_type::f_do_derive;
 	std::uninitialized_default_construct_n(type->f_fields(), t_type::c_FIELDS);
-	v_type_type->v_super.f_construct(type_object->f_be(v_type_type));
+	clazz->v_super.f_construct(type_object->f_be(clazz));
 	{
-		auto type_module__body = f_new_type_on_boot<t_module::t_body>(t_type::c_FIELDS, type, nullptr);
+		auto type_module__body = f_new_type_on_boot<t_module::t_body>(t_type::c_FIELDS, type, nullptr, clazz);
 		auto global = type_module__body->f_as<t_type>().f_new<t_global>(type_object, type_type, type_module__body);
 		v_module_global = t_module::f_new(L"__global"sv, global, global->f_as<t_global>().f_define());
 	}
@@ -514,14 +514,14 @@ void t_slot::t_decrements::f_push(t_object* a_object)
 	v_instance->f__push(a_object);
 }
 
-t_object* t_engine::f_allocate(size_t a_size)
-{
-	return f__allocate(a_size);
-}
-
 t_engine* f_engine()
 {
 	return t_engine::v_instance;
+}
+
+t_object* f_allocate(size_t a_size)
+{
+	return f__allocate(a_size);
 }
 #endif
 

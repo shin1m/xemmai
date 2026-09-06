@@ -33,6 +33,11 @@ class t_engine
 	friend struct t_code;
 	friend struct t_safe_region;
 	friend XEMMAI__PUBLIC t_engine* f_engine();
+#ifdef _WIN32
+	friend t_object* f__allocate(size_t a_size);
+#else
+	friend t_object* f_allocate(size_t a_size);
+#endif
 
 public:
 	struct t_options
@@ -70,7 +75,6 @@ private:
 	t_thread::t_internal* v_thread__internals;
 	std::mutex v_thread__mutex;
 	std::condition_variable v_thread__condition;
-	t_type* v_type_type;
 	std::map<std::wstring, t_slot, std::less<>> v_module__instances;
 	std::recursive_mutex v_module__instantiate__mutex;
 	t_library::t_handle* v_library__handle__finalizing = nullptr;
@@ -162,29 +166,6 @@ private:
 public:
 	t_engine(const t_options& a_options, char* a_executable, size_t a_count, char** a_arguments);
 	~t_engine();
-	template<typename T>
-	t_object* f_allocate_for_type(size_t a_fields)
-	{
-		return f_allocate(t_object::f_align_for_fields(sizeof(T)) + (sizeof(std::pair<t_slot, t_svalue>) + sizeof(std::pair<t_object*, size_t>)) * a_fields);
-	}
-	template<typename T>
-	t_object* f_new_type_on_boot(size_t a_fields, t_type* a_super, t_object* a_module)
-	{
-		auto p = f_allocate_for_type<t_type_of<T>>(a_fields);
-		std::uninitialized_default_construct_n((new(p->f_data()) t_type_of<T>(t_type_of<T>::c_IDS, a_super, a_module, t_type_of<T>::c_NATIVE, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{}))->f_fields(), a_fields);
-		return p->f_be(v_type_type);
-	}
-#ifdef _WIN32
-	XEMMAI__PUBLIC t_object* f_allocate(size_t a_size);
-	t_object* f__allocate(size_t a_size)
-#else
-	XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f_allocate(size_t a_size)
-#endif
-	{
-		auto p = v_object__heap.f_allocate(sizeof(t_object) - sizeof(t_object::v_data) + a_size);
-		p->v_next = nullptr;
-		return p;
-	}
 	void f_tick()
 	{
 		if (v_collector__running.test(std::memory_order_relaxed)) return;
@@ -242,12 +223,39 @@ void t_engine::f_debug_break_point(std::unique_lock<std::mutex>& a_lock, auto a_
 
 #ifdef _WIN32
 XEMMAI__PUBLIC t_engine* f_engine();
+
+XEMMAI__PUBLIC t_object* f_allocate(size_t a_size);
+inline t_object* f__allocate(size_t a_size)
 #else
 inline t_engine* f_engine()
 {
 	return t_engine::v_instance;
 }
+
+inline XEMMAI__PORTABLE__ALWAYS_INLINE t_object* f_allocate(size_t a_size)
 #endif
+{
+	auto p = t_heap<t_object>::f_allocate<[]() -> auto&
+	{
+		return f_engine()->v_object__heap;
+	}>(sizeof(t_object) - sizeof(t_object::v_data) + a_size);
+	p->v_next = nullptr;
+	return p;
+}
+
+template<typename T>
+inline t_object* f_allocate_for_type(size_t a_fields)
+{
+	return f_allocate(t_object::f_align_for_fields(sizeof(T)) + (sizeof(std::pair<t_slot, t_svalue>) + sizeof(std::pair<t_object*, size_t>)) * a_fields);
+}
+
+template<typename T>
+inline t_object* f_new_type_on_boot(size_t a_fields, t_type* a_super, t_object* a_module, t_type* a_type_type)
+{
+	auto p = f_allocate_for_type<t_type_of<T>>(a_fields);
+	std::uninitialized_default_construct_n((new(p->f_data()) t_type_of<T>(t_type_of<T>::c_IDS, a_super, a_module, t_type_of<T>::c_NATIVE, 0, std::vector<std::pair<t_root, t_rvalue>>{}, std::map<t_object*, size_t>{}))->f_fields(), a_fields);
+	return p->f_be(a_type_type);
+}
 
 struct t_safe_region
 {
@@ -369,7 +377,7 @@ inline t_object* f_new_value(t_type* a_type, auto&&... a_xs)
 {
 	assert(a_type->v_fields_offset == t_object::f_fields_offset(0));
 	assert(a_type->v_instance_fields == sizeof...(a_xs));
-	auto p = f_engine()->f_allocate(sizeof(t_svalue) * sizeof...(a_xs));
+	auto p = f_allocate(sizeof(t_svalue) * sizeof...(a_xs));
 	f__construct(p->f_fields(0), std::make_index_sequence<sizeof...(a_xs)>(), std::forward<decltype(a_xs)>(a_xs)...);
 	return p->f_be(a_type);
 }

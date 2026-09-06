@@ -109,7 +109,7 @@ bool t_type::f_derives(t_type* a_type)
 
 t_pvalue t_type::f_do_construct(t_pvalue* a_stack, size_t a_n)
 {
-	auto p = f_engine()->f_allocate(sizeof(t_svalue) * v_instance_fields);
+	auto p = f_allocate(sizeof(t_svalue) * v_instance_fields);
 	std::uninitialized_default_construct_n(p->f_fields(0), v_instance_fields);
 	return p->f_be(this);
 }

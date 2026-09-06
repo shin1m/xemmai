@@ -34,9 +34,11 @@ class t_object
 	friend class t_with_lock_for_write;
 #ifdef _WIN32
 	friend struct t_thread;
+	friend t_object* f__allocate(size_t a_size);
 
 	static inline XEMMAI__PORTABLE__THREAD struct t_roots
 #else
+	friend t_object* f_allocate(size_t a_size);
 
 	static inline XEMMAI__PORTABLE__THREAD struct
 #endif

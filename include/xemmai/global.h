@@ -272,7 +272,7 @@ XEMMAI__VALUE__BINARY_BITWISE(or, |)
 template<typename T>
 inline t_object* t_type::f_new(auto&&... a_xs)
 {
-	auto p = f_engine()->f_allocate(t_object::f_align_for_fields(sizeof(T)) + sizeof(t_svalue) * v_instance_fields);
+	auto p = f_allocate(t_object::f_align_for_fields(sizeof(T)) + sizeof(t_svalue) * v_instance_fields);
 	std::uninitialized_default_construct_n(p->f_fields(sizeof(T)), v_instance_fields);
 	try {
 		new(p->f_data()) T(std::forward<decltype(a_xs)>(a_xs)...);
@@ -293,7 +293,7 @@ t_object* t_type::f_derive(t_object* a_module, const t_fields& a_fields, bool a_
 		auto global = f_global();
 		if (initialize == global->v_initialize_validate) initialize = global->v_initialize_ignore;
 	}
-	auto p = f_engine()->f_allocate_for_type<T>(fields.size());
+	auto p = f_allocate_for_type<T>(fields.size());
 	new(p->f_data()) T(T::c_IDS, this, a_module, T::c_NATIVE, instance, fields, key2index);
 	return p->f_be(t_object::f_of(this)->v_type);
 }
@@ -396,7 +396,7 @@ inline t_object* f_new(t_library::t_handle* a_handle, auto&&... a_xs)
 
 inline t_object* t_tuple::f_instantiate(size_t a_size, auto a_construct)
 {
-	auto p = f_engine()->f_allocate(sizeof(t_tuple) + sizeof(t_svalue) * a_size);
+	auto p = f_allocate(sizeof(t_tuple) + sizeof(t_svalue) * a_size);
 	a_construct(*new(p->f_data()) t_tuple(a_size));
 	return p->f_be(f_global()->f_type<t_tuple>());
 }
@@ -405,7 +405,7 @@ template<typename T_context>
 inline size_t t_lambda_shared::f_call(t_pvalue* a_stack)
 {
 	T_context context(t_object::f_of(this), a_stack);
-	context.v_scope = f_engine()->f_allocate(sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
+	context.v_scope = f_allocate(sizeof(t_scope) + sizeof(t_svalue) * v_shareds);
 	new(context.v_scope->f_data()) t_scope(v_shareds, v_scope);
 	context.v_scope->f_be(f_global()->f_type<t_scope>());
 	return context.f_loop();
@@ -423,7 +423,7 @@ t_object* t_string::f_instantiate(size_t a_n, auto a_fill)
 
 inline t_object* t_type_of<t_string>::f__construct(t_type* a_class, size_t a_n)
 {
-	return f_engine()->f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1))->f_be(a_class);
+	return f_allocate(sizeof(t_string) + sizeof(wchar_t) * (a_n + 1))->f_be(a_class);
 }
 
 inline t_pvalue t_type_of<t_string>::f_transfer(const t_global* a_library, auto&& a_value)
@@ -452,7 +452,7 @@ inline t_object* f_string_or_null(const auto& a_value)
 
 inline t_object* t_type_of<t_bytes>::f__construct(t_type* a_class, size_t a_size)
 {
-	auto p = f_engine()->f_allocate(sizeof(t_bytes) + a_size);
+	auto p = f_allocate(sizeof(t_bytes) + a_size);
 	new(p->f_data()) t_bytes(a_size);
 	return p->f_be(a_class);
 }

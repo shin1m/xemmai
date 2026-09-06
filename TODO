@@ -2,13 +2,13 @@ handle alignment in t_object::f_as<>().
 optimize argument expansion.
 make Class able to be key of Map.
 allow return in module.
-get rid of f_engine() in f_allocate().
 
 Remove Boolean.
 make Tuple mutable.
 switch to stack based instructions.
 pass a1 as arguments.
 
+//get rid of f_engine() in f_allocate().
 //fix f_as<size_t>(...) returns intptr_t.
 //use arena allocator for ast.
 //improve argument expansion.
