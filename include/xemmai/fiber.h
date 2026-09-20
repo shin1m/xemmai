@@ -137,22 +137,9 @@ struct XEMMAI__LOCAL t_context
 		v_base[-2] = std::forward<decltype(a_value)>(a_value);
 		f_stack__(v_previous);
 	}
-	XEMMAI__PORTABLE__ALWAYS_INLINE void f_tail(t_pvalue* a_stack, size_t a_n)
-	{
-		std::copy(a_stack, a_stack + a_n + 2, v_base - 2);
-		f_stack__(std::max(v_previous, v_base + a_n));
-	}
+	void f_tail(t_pvalue* a_stack, size_t a_n);
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-	size_t f_tail(t_object* a_this)
-	{
-		auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
-		auto n = (a_this->f_type()->*A_function)(a_this, stack);
-		if (n == size_t(-1))
-			f_return(stack[0]);
-		else
-			f_tail(stack, n);
-		return n;
-	}
+	size_t f_tail(t_object* a_this);
 	void f_backtrace(t_object* a_value, void** a_pc);
 	size_t f_loop()
 	{
@@ -166,6 +153,18 @@ struct XEMMAI__LOCAL t_context
 	}
 	const t_pvalue* f_variable(std::wstring_view a_name) const;
 };
+
+template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
+size_t t_context::f_tail(t_object* a_this)
+{
+	auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
+	auto n = (a_this->f_type()->*A_function)(a_this, stack);
+	if (n == size_t(-1))
+		f_return(stack[0]);
+	else
+		f_tail(stack, n);
+	return n;
+}
 
 struct XEMMAI__LOCAL t_debug_context : t_context
 {
