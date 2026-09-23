@@ -206,7 +206,7 @@ size_t t_code::f_loop(t_context* a_context)
 			pc = static_cast<void**>(*++pc);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(BRANCH)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
 			if (f_as<bool>(stack[0]))
 				++pc;
@@ -228,12 +228,12 @@ size_t t_code::f_loop(t_context* a_context)
 			a_context->v_pc = pc;
 			XEMMAI__CODE__RETURN(0)
 		XEMMAI__CODE__CASE(THROW)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
 			throw t_rvalue(stack[0]);
 			XEMMAI__CODE__CLOSE
 		XEMMAI__CODE__CASE(OBJECT_GET)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto key = static_cast<t_object*>(*++pc);
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
@@ -241,7 +241,7 @@ size_t t_code::f_loop(t_context* a_context)
 			top = top.f_get(key, index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_GET_INDIRECT)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
 			auto& top = stack[0];
@@ -249,7 +249,7 @@ size_t t_code::f_loop(t_context* a_context)
 			top = top.f_get(key, index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto key = static_cast<t_object*>(*++pc);
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
@@ -259,7 +259,7 @@ size_t t_code::f_loop(t_context* a_context)
 			top = value;
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_PUT_INDIRECT)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
 			auto& top = stack[0];
@@ -269,7 +269,7 @@ size_t t_code::f_loop(t_context* a_context)
 			top = value;
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_HAS)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto key = static_cast<t_object*>(*++pc);
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
@@ -277,7 +277,7 @@ size_t t_code::f_loop(t_context* a_context)
 			top = top.f_has(key, index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(OBJECT_HAS_INDIRECT)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
 			auto& top = stack[0];
@@ -285,7 +285,7 @@ size_t t_code::f_loop(t_context* a_context)
 			top = top.f_has(key, index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_GET)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto key = static_cast<t_object*>(*++pc);
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
@@ -293,100 +293,100 @@ size_t t_code::f_loop(t_context* a_context)
 			top.f_bind(key, index, stack);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(METHOD_BIND)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
 			auto p = static_cast<t_object*>(stack[0]);
 			if (reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT) goto label__THROW_NOT_SUPPORTED;
 			if (!p->f_type()->v_bindable) f_method_bind(stack);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(GLOBAL_GET)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto key = static_cast<t_object*>(*++pc);
 			auto& index = reinterpret_cast<size_t&>(*++pc);
 			++pc;
 			stack[0] = f_engine()->f_module_global()->f_get(key, index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(STACK_GET)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
-			stack[0] = base[index];
+			stack[0] = *f_add_in_bytes(base, index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(STACK_PUT)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
-			base[index] = stack[0];
+			*f_add_in_bytes(base, index) = stack[0];
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET0)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
-			stack[0] = a_context->v_scope->f_as<t_scope>().f_entries()[index];
+			stack[0] = *f_add_in_bytes(a_context->v_scope->f_as<t_scope>().f_entries(), index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET1)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
-			stack[0] = a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_entries()[index];
+			stack[0] = *f_add_in_bytes(a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_entries(), index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET2)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
-			stack[0] = a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_entries()[index];
+			stack[0] = *f_add_in_bytes(a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_entries(), index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_GET)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto outer = reinterpret_cast<size_t>(*++pc);
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
 			assert(outer >= 3);
 			auto scope = a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_outer();
 			for (size_t i = 3; i < outer; ++i) scope = scope->f_as<t_scope>().f_outer();
-			stack[0] = scope->f_as<t_scope>().f_entries()[index];
+			stack[0] = *f_add_in_bytes(scope->f_as<t_scope>().f_entries(), index);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_PUT0)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
-			a_context->v_scope->f_as<t_scope>().f_entries()[index] = stack[0];
+			*f_add_in_bytes(a_context->v_scope->f_as<t_scope>().f_entries(), index) = stack[0];
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_PUT)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto outer = reinterpret_cast<size_t>(*++pc);
 			auto index = reinterpret_cast<size_t>(*++pc);
 			++pc;
 			assert(outer >= 1);
 			t_object* scope = a_context->v_lambda->f_as<t_lambda>().v_scope;
 			for (size_t i = 1; i < outer; ++i) scope = scope->f_as<t_scope>().f_outer();
-			scope->f_as<t_scope>().f_entries()[index] = stack[0];
+			*f_add_in_bytes(scope->f_as<t_scope>().f_entries(), index) = stack[0];
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(LAMBDA)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto code = static_cast<t_object*>(*++pc);
 			++pc;
 			stack[0] = t_lambda::f_instantiate(a_context->v_scope, code);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(ADVANCED_LAMBDA)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto code = static_cast<t_object*>(*++pc);
 			++pc;
 			stack[0] = t_lambda::f_instantiate(a_context->v_scope, code, stack);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SELF)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
 			stack[0] = base[-1];
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CLASS)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
 			auto& top = stack[0];
 			top = t_object::f_of(top.f_type());
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SUPER)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
 			auto& top = stack[0];
 			if (top.f_type() != f_global()->f_type<t_type>()) f_throw(L"not class."sv);
@@ -394,12 +394,12 @@ size_t t_code::f_loop(t_context* a_context)
 			if (!top) f_throw(L"no more super class."sv);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(NUL)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			++pc;
 			stack[0] = nullptr;
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(INTEGER)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto value = reinterpret_cast<intptr_t>(*++pc);
 			++pc;
 			stack[0] = value;
@@ -409,13 +409,13 @@ size_t t_code::f_loop(t_context* a_context)
 			std::memcpy(&a_x, ++pc, sizeof(double));\
 			pc += (sizeof(double) - 1) / sizeof(void*);
 		XEMMAI__CODE__CASE(FLOAT)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			XEMMAI__CODE__FLOAT(v)
 			++pc;
 			stack[0] = v;
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(INSTANCE)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto value = static_cast<t_object*>(*++pc);
 			++pc;
 			stack[0] = value;
@@ -434,60 +434,60 @@ size_t t_code::f_loop(t_context* a_context)
 			a_context->f_return(static_cast<t_object*>(*++pc));
 			XEMMAI__CODE__RETURN(-1)
 		XEMMAI__CODE__CASE(RETURN_V)
-			a_context->f_return(base[reinterpret_cast<size_t>(*++pc)]);
+			a_context->f_return(*f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc)));
 			XEMMAI__CODE__RETURN(-1)
 		XEMMAI__CODE__CASE(RETURN_T)
-			a_context->f_return(base[a_context->v_lambda->f_as<t_lambda>().v_privates]);
+			a_context->f_return(*f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates));
 			XEMMAI__CODE__RETURN(-1)
 		XEMMAI__CODE__CASE(CALL)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto n = reinterpret_cast<size_t>(*++pc);
 			a_context->v_pc = ++pc;
 			stack[0].f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(CALL_WITH_EXPANSION)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto n = reinterpret_cast<size_t>(*++pc);
 			n = f_expand(pc, stack, n);
 			a_context->v_pc = ++pc;
 			stack[0].f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(STACK_CALL)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
 			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
-			base[index].f_call(stack, n);
+			f_add_in_bytes(base, index)->f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_CALL0)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
 			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
-			a_context->v_scope->f_as<t_scope>().f_entries()[index].f_call(stack, n);
+			f_add_in_bytes(a_context->v_scope->f_as<t_scope>().f_entries(), index)->f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_CALL1)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
 			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
-			a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_entries()[index].f_call(stack, n);
+			f_add_in_bytes(a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_entries(), index)->f_call(stack, n);
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(SCOPE_CALL2)
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
 			a_context->v_pc = ++pc;
 			stack[1] = nullptr;
-			a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_entries()[index].f_call(stack, n);
+			f_add_in_bytes(a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_entries(), index)->f_call(stack, n);
 			XEMMAI__CODE__BREAK
 #define XEMMAI__CODE__CASE_NAME(a_name)\
 		XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name, XEMMAI__CODE__OPERANDS))
 #define XEMMAI__CODE__STACK()\
-			auto stack = base + reinterpret_cast<size_t>(*++pc);
+			auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 #define XEMMAI__CODE__FETCH()\
 			auto& a0 = stack[1];
 #define XEMMAI__CODE__PREPARE()
@@ -495,7 +495,7 @@ size_t t_code::f_loop(t_context* a_context)
 			t_pvalue a0 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__PREPARE_L()
 #define XEMMAI__CODE__FETCH_V()\
-			auto& a0 = base[reinterpret_cast<size_t>(*++pc)];
+			auto& a0 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 #define XEMMAI__CODE__PREPARE_V()
 #define XEMMAI__CODE__FETCH_T() XEMMAI__CODE__FETCH()
 #define XEMMAI__CODE__PREPARE_T()
@@ -506,7 +506,7 @@ size_t t_code::f_loop(t_context* a_context)
 			auto a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PREPARE_LI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VI()\
-			auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
+			auto& a0 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));\
 			auto a1 = reinterpret_cast<intptr_t>(*++pc);
 #define XEMMAI__CODE__PREPARE_VI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TI()\
@@ -518,7 +518,7 @@ size_t t_code::f_loop(t_context* a_context)
 			XEMMAI__CODE__FLOAT(a1)
 #define XEMMAI__CODE__PREPARE_LF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VF()\
-			auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
+			auto& a0 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));\
 			XEMMAI__CODE__FLOAT(a1)
 #define XEMMAI__CODE__PREPARE_VF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TF()\
@@ -536,7 +536,7 @@ size_t t_code::f_loop(t_context* a_context)
 			t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__PREPARE_LL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VL()\
-			auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
+			auto& a0 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));\
 			t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__PREPARE_VL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TL()\
@@ -545,36 +545,36 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__PREPARE_TL() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IV()\
 			auto a0 = reinterpret_cast<intptr_t>(*++pc);\
-			auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
+			auto& a1 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 #define XEMMAI__CODE__FETCH_FV()\
 			XEMMAI__CODE__FLOAT(a0)\
-			auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
+			auto& a1 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 #define XEMMAI__CODE__FETCH_LV()\
 			t_pvalue a0 = static_cast<t_object*>(*++pc);\
-			auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
+			auto& a1 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 #define XEMMAI__CODE__PREPARE_LV() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VV()\
-			auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
-			auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
+			auto& a0 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));\
+			auto& a1 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 #define XEMMAI__CODE__PREPARE_VV() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TV()\
 			auto& a0 = stack[1];\
-			auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
+			auto& a1 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 #define XEMMAI__CODE__PREPARE_TV() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IT()\
 			auto a0 = reinterpret_cast<intptr_t>(*++pc);\
-			auto& a1 = stack[1];
+			auto& a1 = stack[2];
 #define XEMMAI__CODE__FETCH_FT()\
 			XEMMAI__CODE__FLOAT(a0)\
-			auto& a1 = stack[1];
+			auto& a1 = stack[2];
 #define XEMMAI__CODE__FETCH_LT()\
 			t_pvalue a0 = static_cast<t_object*>(*++pc);\
-			auto& a1 = stack[1];
-#define XEMMAI__CODE__PREPARE_LT() XEMMAI__CODE__PREPARE_A1()
+			auto& a1 = stack[2];
+#define XEMMAI__CODE__PREPARE_LT()
 #define XEMMAI__CODE__FETCH_VT()\
-			auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
-			auto& a1 = stack[1];
-#define XEMMAI__CODE__PREPARE_VT() XEMMAI__CODE__PREPARE_A1()
+			auto& a0 = *f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));\
+			auto& a1 = stack[2];
+#define XEMMAI__CODE__PREPARE_VT()
 #define XEMMAI__CODE__FETCH_TT()\
 			auto& a0 = stack[1];\
 			auto& a1 = stack[2];
@@ -702,50 +702,50 @@ size_t t_code::f_loop(t_context* a_context)
 #undef XEMMAI__CODE__CASE_END
 		XEMMAI__CODE__CASE(CALL_TAIL)
 			auto n = reinterpret_cast<size_t>(*++pc);
-			a_context->f_tail(base + a_context->v_lambda->f_as<t_lambda>().v_privates, n);
+			a_context->f_tail(f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates), n);
 			XEMMAI__CODE__RETURN(n)
 		XEMMAI__CODE__CASE(CALL_WITH_EXPANSION_TAIL)
 			auto n = reinterpret_cast<size_t>(*++pc);
-			auto stack = base + a_context->v_lambda->f_as<t_lambda>().v_privates;
+			auto stack = f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates);
 			n = f_expand(pc, stack, n);
 			a_context->f_tail(stack, n);
 			XEMMAI__CODE__RETURN(n)
 		XEMMAI__CODE__CASE(STACK_CALL_TAIL)
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			auto stack = base + a_context->v_lambda->f_as<t_lambda>().v_privates;
-			stack[0] = base[index];
+			auto stack = f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates);
+			stack[0] = *f_add_in_bytes(base, index);
 			stack[1] = nullptr;
 			a_context->f_tail(stack, n);
 			XEMMAI__CODE__RETURN(n)
 		XEMMAI__CODE__CASE(SCOPE_CALL0_TAIL)
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			auto stack = base + a_context->v_lambda->f_as<t_lambda>().v_privates;
-			stack[0] = a_context->v_scope->f_as<t_scope>().f_entries()[index];
+			auto stack = f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates);
+			stack[0] = *f_add_in_bytes(a_context->v_scope->f_as<t_scope>().f_entries(), index);
 			stack[1] = nullptr;
 			a_context->f_tail(stack, n);
 			XEMMAI__CODE__RETURN(n)
 		XEMMAI__CODE__CASE(SCOPE_CALL1_TAIL)
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			auto stack = base + a_context->v_lambda->f_as<t_lambda>().v_privates;
-			stack[0] = a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_entries()[index];
+			auto stack = f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates);
+			stack[0] = *f_add_in_bytes(a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_entries(), index);
 			stack[1] = nullptr;
 			a_context->f_tail(stack, n);
 			XEMMAI__CODE__RETURN(n)
 		XEMMAI__CODE__CASE(SCOPE_CALL2_TAIL)
 			auto index = reinterpret_cast<size_t>(*++pc);
 			auto n = reinterpret_cast<size_t>(*++pc);
-			auto stack = base + a_context->v_lambda->f_as<t_lambda>().v_privates;
-			stack[0] = a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_entries()[index];
+			auto stack = f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates);
+			stack[0] = *f_add_in_bytes(a_context->v_lambda->f_as<t_lambda>().v_scope->f_as<t_scope>().f_outer()->f_as<t_scope>().f_entries(), index);
 			stack[1] = nullptr;
 			a_context->f_tail(stack, n);
 			XEMMAI__CODE__RETURN(n)
 #define XEMMAI__CODE__CASE_NAME(a_name)\
 		XEMMAI__CODE__CASE(XEMMAI__MACRO__CONCATENATE(a_name##_TAIL, XEMMAI__CODE__OPERANDS))
 #define XEMMAI__CODE__STACK()\
-			auto stack = base + a_context->v_lambda->f_as<t_lambda>().v_privates;
+			auto stack = f_add_in_bytes(base, a_context->v_lambda->f_as<t_lambda>().v_privates);
 #define XEMMAI__CODE__PRIMITIVE_CALL(a_x)\
 			a_context->f_return(a_x);\
 			return -1;
@@ -898,7 +898,7 @@ void t_code::f_try(t_context* a_context)
 {
 	auto& pc = a_context->v_pc;
 	auto base = a_context->v_base;
-	auto stack = base + reinterpret_cast<size_t>(*++pc);
+	auto stack = f_add_in_bytes(base, reinterpret_cast<size_t>(*++pc));
 	auto catch0 = static_cast<void**>(*++pc);
 	auto finally0 = static_cast<void**>(*++pc);
 	++pc;
@@ -921,9 +921,9 @@ void t_code::f_try(t_context* a_context)
 						++pc;
 						a_context->f_backtrace(thrown, pair.second);
 						if (index & ~(~size_t(0) >> 1))
-							a_context->v_scope->f_as<t_scope>().f_entries()[~index] = thrown;
+							*f_add_in_bytes(a_context->v_scope->f_as<t_scope>().f_entries(), ~index) = thrown;
 						else
-							base[index] = thrown;
+							*f_add_in_bytes(base, index) = thrown;
 					} else {
 						pc = static_cast<void**>(*pc);
 					}

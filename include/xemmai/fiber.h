@@ -127,9 +127,9 @@ struct XEMMAI__LOCAL t_context
 	t_context(t_object* a_lambda, t_pvalue* a_stack) : v_pc(a_lambda->f_as<t_lambda>().v_instructions), v_base(a_stack + 2), v_lambda(a_lambda)
 	{
 		v_previous = f_stack();
-		f_stack__(v_base + v_lambda->f_as<t_lambda>().v_size);
+		f_stack__(f_add_in_bytes(v_base, v_lambda->f_as<t_lambda>().v_size));
 #ifndef NDEBUG
-		std::fill(v_base + v_lambda->f_as<t_lambda>().v_arguments, v_base + v_lambda->f_as<t_lambda>().v_privates, 0);
+		std::fill(v_base + v_lambda->f_as<t_lambda>().v_arguments, f_add_in_bytes(v_base, v_lambda->f_as<t_lambda>().v_privates), 0);
 #endif
 	}
 	XEMMAI__PORTABLE__ALWAYS_INLINE void f_return(auto&& a_value)
@@ -157,7 +157,7 @@ struct XEMMAI__LOCAL t_context
 template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
 size_t t_context::f_tail(t_object* a_this)
 {
-	auto stack = v_base + v_lambda->f_as<t_lambda>().v_privates;
+	auto stack = f_add_in_bytes(v_base, v_lambda->f_as<t_lambda>().v_privates);
 	auto n = (a_this->f_type()->*A_function)(a_this, stack);
 	if (n == size_t(-1))
 		f_return(stack[0]);

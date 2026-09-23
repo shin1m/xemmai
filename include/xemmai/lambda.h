@@ -27,10 +27,10 @@ protected:
 	t_lambda(t_object* a_scope, t_object* a_code) : v_scope(a_scope), v_code(a_code)
 	{
 		auto& code = v_code->f_as<t_code>();
-		v_size = code.v_size;
 		v_arguments = code.v_arguments;
-		v_privates = code.v_privates;
 		v_instructions = &code.v_instructions[0];
+		v_size = f_in_bytes(code.v_size);
+		v_privates = f_in_bytes(code.v_privates);
 	}
 	~t_lambda() = default;
 	template<typename T_context>

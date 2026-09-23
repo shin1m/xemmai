@@ -748,7 +748,7 @@ struct XEMMAI__LOCAL t_emit
 	}
 	t_emit& f_emit_null()
 	{
-		return (*this << c_instruction__NUL << v_stack).f_push();
+		return (*this << c_instruction__NUL << f_in_bytes(v_stack)).f_push();
 	}
 	void f_emit_safe_point(ast::t_node_at* a_node)
 	{
@@ -781,7 +781,7 @@ t_operand t_literal<T>::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool
 		a_emit.f_emit_safe_point(this);
 		a_emit << static_cast<t_instruction>(t_emit::c_instruction_of<T> + c_instruction__RETURN_NUL - c_instruction__NUL) << v_value;
 	} else {
-		a_emit << t_emit::c_instruction_of<T> << a_emit.v_stack << v_value;
+		a_emit << t_emit::c_instruction_of<T> << f_in_bytes(a_emit.v_stack) << v_value;
 	}
 	a_emit.f_push();
 	a_emit.f_at(this);

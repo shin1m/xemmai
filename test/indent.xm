@@ -1,5 +1,3 @@
-system = Module("system"
-print = system.out.write_line
 assert = @(x) x || throw Throwable("Assertion failed."
 
 if true

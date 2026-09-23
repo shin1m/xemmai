@@ -203,6 +203,16 @@ struct t_type_of<t_code> : t_uninstantiatable<t_finalizes<t_derives<t_code>>>
 	}
 };
 
+inline size_t f_in_bytes(size_t a_n)
+{
+	return a_n * sizeof(t_pvalue);
+}
+
+inline auto f_add_in_bytes(auto* a_p, size_t a_n)
+{
+	return reinterpret_cast<decltype(a_p)>(reinterpret_cast<char*>(a_p) + a_n);
+}
+
 }
 
 #endif
