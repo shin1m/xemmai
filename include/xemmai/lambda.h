@@ -22,7 +22,6 @@ protected:
 	size_t v_arguments;
 	void** v_instructions;
 	size_t v_size;
-	size_t v_privates;
 
 	t_lambda(t_object* a_scope, t_object* a_code) : v_scope(a_scope), v_code(a_code)
 	{
@@ -30,7 +29,6 @@ protected:
 		v_arguments = code.v_arguments;
 		v_instructions = &code.v_instructions[0];
 		v_size = f_in_bytes(code.v_size);
-		v_privates = f_in_bytes(code.v_privates);
 	}
 	~t_lambda() = default;
 	template<typename T_context>

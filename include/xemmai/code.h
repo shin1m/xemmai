@@ -47,8 +47,7 @@ enum t_instruction
 	c_instruction__RETURN_INTEGER,
 	c_instruction__RETURN_FLOAT,
 	c_instruction__RETURN_INSTANCE,
-	c_instruction__RETURN_V,
-	c_instruction__RETURN_T,
+	c_instruction__RETURN,
 #define XEMMAI__CODE__INSTRUCTION_UNARY(a_name)\
 	c_instruction__##a_name##_L,\
 	c_instruction__##a_name##_V,\
