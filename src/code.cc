@@ -63,6 +63,62 @@ size_t f_expand(void**& a_pc, t_pvalue* a_stack, size_t a_n)
 	return n;
 }
 
+struct t_left_shift
+{
+	auto operator()(auto x, auto y) const
+	{
+		return x << y;
+	}
+};
+
+struct t_right_shift
+{
+	auto operator()(auto x, auto y) const
+	{
+		return x >> y;
+	}
+};
+
+}
+
+template<auto A_operator>
+auto t_code::f_binary_arithmetic(intptr_t a0, const t_pvalue& a1)
+{
+	if (a1.f_tag() == c_tag__INTEGER) return A_operator(a0, a1.v_integer);
+	if (a1.f_tag() == c_tag__FLOAT) return A_operator(a0, a1.v_float);
+	if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<intptr_t>()) return A_operator(a0, a1->f_as<intptr_t>());
+	f_throw(L"not supported."sv);
+}
+
+template<auto A_operator>
+auto t_code::f_binary_arithmetic(double a0, const t_pvalue& a1)
+{
+	if (a1.f_tag() == c_tag__FLOAT) return A_operator(a0, a1.v_float);
+	if (a1.f_tag() == c_tag__INTEGER) return A_operator(a0, a1.v_integer);
+	if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<double>()) return A_operator(a0, a1->f_as<double>());
+	f_throw(L"not supported."sv);
+}
+
+template<auto A_operator>
+intptr_t t_code::f_binary_integral(uintptr_t a0, const t_pvalue& a1)
+{
+	if (a1.f_tag() == c_tag__INTEGER) return A_operator(a0, a1.v_integer);
+	if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<intptr_t>()) return A_operator(a0, a1->f_as<intptr_t>());
+	f_throw(L"not supported."sv);
+}
+
+bool t_code::f_binary_equality(intptr_t a0, const t_pvalue& a1)
+{
+	if (a1.f_tag() == c_tag__INTEGER) return a0 == a1.v_integer;
+	if (a1.f_tag() == c_tag__FLOAT) return a0 == a1.v_float;
+	return a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<intptr_t>() && a0 == a1->f_as<intptr_t>();
+}
+
+bool t_code::f_binary_equality(double a0, const t_pvalue& a1)
+{
+	if (a1.f_tag() == c_tag__FLOAT) return a0 == a1.v_float;
+	if (a1.f_tag() == c_tag__INTEGER) return a0 == a1.v_integer;
+	return a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<double>() && a0 == a1->f_as<double>();
 }
 
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO

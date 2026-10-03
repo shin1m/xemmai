@@ -149,6 +149,14 @@ struct XEMMAI__LOCAL t_code
 		c_try__THROW
 	};
 
+	template<auto A_operator>
+	static auto f_binary_arithmetic(intptr_t a0, const t_pvalue& a1);
+	template<auto A_operator>
+	static auto f_binary_arithmetic(double a0, const t_pvalue& a1);
+	template<auto A_operator>
+	static intptr_t f_binary_integral(uintptr_t a0, const t_pvalue& a1);
+	static bool f_binary_equality(intptr_t a0, const t_pvalue& a1);
+	static bool f_binary_equality(double a0, const t_pvalue& a1);
 #ifdef XEMMAI__PORTABLE__SUPPORTS_COMPUTED_GOTO
 	XEMMAI__PUBLIC static size_t f_loop(t_context* a_context, const void*** a_labels = nullptr);
 	static const void** f_labels()
