@@ -72,18 +72,22 @@
 #if defined(XEMMAI__CODE__BINARY_XF) || defined(XEMMAI__CODE__BINARY_LI) || defined(XEMMAI__CODE__BINARY_LF)
 #define XEMMAI__CODE__BINARY_BITWISE(a_name, a_operator, a_method) XEMMAI__CODE__OTHERS_OBJECT(a_name, a_method)
 #endif
-#define XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, a_type,  a_field)\
+#define XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, a_type, a_field)\
 				if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<t_fundamental<a_type>::t_type>()) {\
 					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0 a_field, a1->f_as<a_type>()))\
 				} else {\
 					goto label__THROW_NOT_SUPPORTED;\
 				}
 #define XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, a_type, a_field)\
-				if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<a_type>()) {\
-					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0 a_field == a1->f_as<a_type>()))\
-				} else {\
-					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(false))\
-				}
+				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<a_type>() && a0 a_field == a1->f_as<a_type>()))
+#if defined(XEMMAI__CODE__BINARY_XX) || defined(XEMMAI__CODE__BINARY_IX)
+#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator, a_field)\
+				if (a1.f_tag() == c_tag__INTEGER) {\
+					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0 a_field, a1.v_integer))\
+				} else if (a1.f_tag() == c_tag__FLOAT) {\
+					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0 a_field, a1.v_float))\
+				} else XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, a_field)
+#endif
 #if defined(XEMMAI__CODE__BINARY_LX) || defined(XEMMAI__CODE__BINARY_XL) || defined(XEMMAI__CODE__BINARY_XX)
 #ifdef XEMMAI__CODE__BINARY_LX
 #define XEMMAI__CODE__BINARY_EQUALITY_PRIMITIVE(a_operator)
@@ -100,8 +104,10 @@
 		XEMMAI__CODE__CASE_END
 #else
 #ifdef XEMMAI__CODE__BINARY_XL
-#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)
-#define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)
+#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator, a_field)\
+				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, a_field)
+#define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
+				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, double, .v_float)
 #define XEMMAI__CODE__BINARY_INTEGRAL_INTEGER(a_operator)\
 				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, uintptr_t, .v_integer)
 #define XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)\
@@ -109,18 +115,8 @@
 #define XEMMAI__CODE__BINARY_EQUALITY_FLOAT(a_operator)\
 				XEMMAI__CODE__BINARY_DERIVED_OR_FALSE(a_operator, double, .v_float)
 #else
-#define XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)\
-				if (a1.f_tag() == c_tag__INTEGER) {\
-					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_integer, a1.v_integer))\
-				} else if (a1.f_tag() == c_tag__FLOAT) {\
-					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_integer, a1.v_float))\
-				} else
 #define XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
-				if (a1.f_tag() == c_tag__FLOAT) {\
-					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_float, a1.v_float))\
-				} else if (a1.f_tag() == c_tag__INTEGER) {\
-					XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0.v_float, a1.v_integer))\
-				} else
+				XEMMAI__CODE__PRIMITIVE_CALL(f_binary_arithmetic<a_operator>(a0.v_float, a1))
 #define XEMMAI__CODE__BINARY_INTEGRAL_INTEGER(a_operator)\
 				XEMMAI__CODE__PRIMITIVE_CALL(f_binary_integral<a_operator>(a0.v_integer, a1))
 #define XEMMAI__CODE__BINARY_EQUALITY_INTEGER(a_operator)\
@@ -132,12 +128,10 @@
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 			switch (a0.f_tag()) {\
 			case c_tag__INTEGER:\
-				XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator)\
-				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, intptr_t, .v_integer)\
+				XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator, .v_integer)\
 				break;\
 			case c_tag__FLOAT:\
 				XEMMAI__CODE__BINARY_ARITHMETIC_FLOAT(a_operator)\
-				XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, double, .v_float)\
 				break;\
 			default:\
 				XEMMAI__CODE__OBJECT_OR_THROW(a_method)\
@@ -245,29 +239,21 @@
 #endif
 #if defined(XEMMAI__CODE__BINARY_IX)
 #define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
-			if (a1.f_tag() == c_tag__INTEGER) {\
-				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0, a1.v_integer))\
-			} else if (a1.f_tag() == c_tag__FLOAT) {\
-				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0, a1.v_float))\
-			} else
+			XEMMAI__CODE__BINARY_ARITHMETIC_INTEGER(a_operator, )
 #define XEMMAI__CODE__BINARY_INTEGRAL_INTEGER(a_operator)\
 			XEMMAI__CODE__PRIMITIVE_CALL(f_binary_integral<a_operator>(a0, a1))
 #elif defined(XEMMAI__CODE__BINARY_FX)
 #define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
-			if (a1.f_tag() == c_tag__FLOAT) {\
-				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0, a1.v_float))\
-			} else if (a1.f_tag() == c_tag__INTEGER) {\
-				XEMMAI__CODE__PRIMITIVE_CALL(a_operator(a0, a1.v_integer))\
-			} else
+			XEMMAI__CODE__PRIMITIVE_CALL(f_binary_arithmetic<a_operator>(a0, a1))
 #else
-#define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)
+#define XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
+			XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, XEMMAI__CODE__BINARY_TYPE, )
 #define XEMMAI__CODE__BINARY_INTEGRAL_INTEGER(a_operator)\
 			XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, uintptr_t, )
 #endif
 #define XEMMAI__CODE__BINARY_ARITHMETIC(a_name, a_operator, a_method)\
 		XEMMAI__CODE__CASE_BEGIN(a_name)\
 			XEMMAI__CODE__BINARY_ARITHMETIC_PRIMITIVE(a_operator)\
-			XEMMAI__CODE__BINARY_DERIVED_OR_THROW(a_operator, XEMMAI__CODE__BINARY_TYPE, )\
 		XEMMAI__CODE__CASE_END
 #if defined(XEMMAI__CODE__BINARY_IL) || defined(XEMMAI__CODE__BINARY_IX)
 #define XEMMAI__CODE__BINARY_INTEGRAL(a_name, a_operator, a_method)\

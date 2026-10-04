@@ -150,8 +150,6 @@ struct XEMMAI__LOCAL t_code
 	};
 
 	template<auto A_operator>
-	static auto f_binary_arithmetic(intptr_t a0, const t_pvalue& a1);
-	template<auto A_operator>
 	static auto f_binary_arithmetic(double a0, const t_pvalue& a1);
 	template<auto A_operator>
 	static intptr_t f_binary_integral(uintptr_t a0, const t_pvalue& a1);

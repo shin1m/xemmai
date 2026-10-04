@@ -134,13 +134,9 @@ struct XEMMAI__LOCAL t_context
 	}
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
 	void f_call(t_object* a_this, t_pvalue* a_stack, void** a_pc);
-	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-	void f_call_or_throw(t_object* a_this, t_pvalue* a_stack, void** a_pc);
 	size_t f_tail(t_pvalue* a_stack, size_t a_n);
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
 	size_t f_tail(t_object* a_this, t_pvalue* a_stack, void** a_pc);
-	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-	size_t f_tail_or_throw(t_object* a_this, t_pvalue* a_stack, void** a_pc);
 	void f_backtrace(t_object* a_value, void** a_pc);
 	size_t f_loop()
 	{
@@ -164,13 +160,6 @@ void t_context::f_call(t_object* a_this, t_pvalue* a_stack, void** a_pc)
 }
 
 template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-void t_context::f_call_or_throw(t_object* a_this, t_pvalue* a_stack, void** a_pc)
-{
-	if (reinterpret_cast<uintptr_t>(a_this) < c_tag__OBJECT) [[unlikely]] f_throw(L"not supported."sv);
-	f_call<A_function>(a_this, a_stack, a_pc);
-}
-
-template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
 size_t t_context::f_tail(t_object* a_this, t_pvalue* a_stack, void** a_pc)
 {
 	v_pc = a_pc;
@@ -179,13 +168,6 @@ size_t t_context::f_tail(t_object* a_this, t_pvalue* a_stack, void** a_pc)
 	v_base[-2] = a_stack[0];
 	f_stack__(v_previous);
 	return -1;
-}
-
-template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-size_t t_context::f_tail_or_throw(t_object* a_this, t_pvalue* a_stack, void** a_pc)
-{
-	if (reinterpret_cast<uintptr_t>(a_this) < c_tag__OBJECT) [[unlikely]] f_throw(L"not supported."sv);
-	return f_tail<A_function>(a_this, a_stack, a_pc);
 }
 
 struct XEMMAI__LOCAL t_debug_context : t_context
