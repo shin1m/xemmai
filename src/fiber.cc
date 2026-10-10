@@ -1,5 +1,4 @@
 #include <xemmai/convert.h>
-#include <cstring>
 #ifdef __unix__
 #include <sys/resource.h>
 #endif

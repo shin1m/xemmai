@@ -404,18 +404,15 @@ size_t t_code::f_loop(t_context* a_context)
 			++pc;
 			stack[0] = value;
 			XEMMAI__CODE__BREAK
-#define XEMMAI__CODE__FLOAT(a_x, a_y)\
-			union\
-			{\
-				double a_x;\
-				void* a_y[sizeof(double) / sizeof(void*)];\
-			};\
-			for (auto& x : a_y) x = *++pc;
+#define XEMMAI__CODE__FLOAT(a_x)\
+			double a_x;\
+			std::memcpy(&a_x, ++pc, sizeof(double));\
+			pc += (sizeof(double) - 1) / sizeof(void*);
 		XEMMAI__CODE__CASE(FLOAT)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
-			XEMMAI__CODE__FLOAT(v0, v1)
+			XEMMAI__CODE__FLOAT(v)
 			++pc;
-			stack[0] = v0;
+			stack[0] = v;
 			XEMMAI__CODE__BREAK
 		XEMMAI__CODE__CASE(INSTANCE)
 			auto stack = base + reinterpret_cast<size_t>(*++pc);
@@ -430,8 +427,8 @@ size_t t_code::f_loop(t_context* a_context)
 			a_context->f_return(reinterpret_cast<intptr_t>(*++pc));
 			XEMMAI__CODE__RETURN(-1)
 		XEMMAI__CODE__CASE(RETURN_FLOAT)
-			XEMMAI__CODE__FLOAT(v0, v1)
-			a_context->f_return(v0);
+			XEMMAI__CODE__FLOAT(v)
+			a_context->f_return(v);
 			XEMMAI__CODE__RETURN(-1)
 		XEMMAI__CODE__CASE(RETURN_INSTANCE)
 			a_context->f_return(static_cast<t_object*>(*++pc));
@@ -518,21 +515,21 @@ size_t t_code::f_loop(t_context* a_context)
 #define XEMMAI__CODE__PREPARE_TI() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_LF()\
 			t_pvalue a0 = static_cast<t_object*>(*++pc);\
-			XEMMAI__CODE__FLOAT(a1, v1)
+			XEMMAI__CODE__FLOAT(a1)
 #define XEMMAI__CODE__PREPARE_LF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_VF()\
 			auto& a0 = base[reinterpret_cast<size_t>(*++pc)];\
-			XEMMAI__CODE__FLOAT(a1, v1)
+			XEMMAI__CODE__FLOAT(a1)
 #define XEMMAI__CODE__PREPARE_VF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_TF()\
 			auto& a0 = stack[1];\
-			XEMMAI__CODE__FLOAT(a1, v1)
+			XEMMAI__CODE__FLOAT(a1)
 #define XEMMAI__CODE__PREPARE_TF() XEMMAI__CODE__PREPARE_A1()
 #define XEMMAI__CODE__FETCH_IL()\
 			auto a0 = reinterpret_cast<intptr_t>(*++pc);\
 			t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__FETCH_FL()\
-			XEMMAI__CODE__FLOAT(a0, v0)\
+			XEMMAI__CODE__FLOAT(a0)\
 			t_pvalue a1 = static_cast<t_object*>(*++pc);
 #define XEMMAI__CODE__FETCH_LL()\
 			t_pvalue a0 = static_cast<t_object*>(*++pc);\
@@ -550,7 +547,7 @@ size_t t_code::f_loop(t_context* a_context)
 			auto a0 = reinterpret_cast<intptr_t>(*++pc);\
 			auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__FETCH_FV()\
-			XEMMAI__CODE__FLOAT(a0, v0)\
+			XEMMAI__CODE__FLOAT(a0)\
 			auto& a1 = base[reinterpret_cast<size_t>(*++pc)];
 #define XEMMAI__CODE__FETCH_LV()\
 			t_pvalue a0 = static_cast<t_object*>(*++pc);\
@@ -568,7 +565,7 @@ size_t t_code::f_loop(t_context* a_context)
 			auto a0 = reinterpret_cast<intptr_t>(*++pc);\
 			auto& a1 = stack[1];
 #define XEMMAI__CODE__FETCH_FT()\
-			XEMMAI__CODE__FLOAT(a0, v0)\
+			XEMMAI__CODE__FLOAT(a0)\
 			auto& a1 = stack[1];
 #define XEMMAI__CODE__FETCH_LT()\
 			t_pvalue a0 = static_cast<t_object*>(*++pc);\

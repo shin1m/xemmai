@@ -3,6 +3,7 @@
 
 #include "code.h"
 #include <set>
+#include <cstring>
 
 namespace xemmai
 {
@@ -707,13 +708,9 @@ struct XEMMAI__LOCAL t_emit
 	}
 	t_emit& operator<<(double a_operand)
 	{
-		union
-		{
-			double v0;
-			void* v1[sizeof(double) / sizeof(void*)];
-		};
-		v0 = a_operand;
-		for (auto x : v1) v_code->v_instructions.push_back(x);
+		void* xs[(sizeof(double) + sizeof(void*) - 1) / sizeof(void*)];
+		std::memcpy(xs, &a_operand, sizeof(double));
+		for (auto x : xs) v_code->v_instructions.push_back(x);
 		return *this;
 	}
 	t_emit& operator<<(t_object* a_operand)

@@ -2,7 +2,6 @@
 #include <xemmai/global.h>
 #include <thread>
 #include <clocale>
-#include <cstring>
 #ifdef __unix__
 #include <signal.h>
 #endif
