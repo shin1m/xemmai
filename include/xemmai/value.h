@@ -213,6 +213,8 @@ public:
 };
 
 XEMMAI__PUBLIC void f_throw [[noreturn]] (std::wstring_view a_message);
+void f_throw_not_supported [[noreturn]] ();
+void f_throw_out_of_range [[noreturn]] ();
 
 template<typename T_tag>
 class t_value : public T_tag
@@ -312,7 +314,7 @@ public:
 	t_object* f_object_or_throw() const
 	{
 		auto p = static_cast<t_object*>(*this);
-		if (reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT) f_throw(L"not supported."sv);
+		if (reinterpret_cast<uintptr_t>(p) < c_tag__OBJECT) f_throw_not_supported();
 		return p;
 	}
 	void f_put(t_object* a_key, size_t& a_index, const t_value<t_pointer>& a_value) const

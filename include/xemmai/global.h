@@ -186,7 +186,7 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	case c_tag__NULL:\
 	case c_tag__FALSE:\
 	case c_tag__TRUE:\
-		f_throw(L"not supported."sv);\
+		f_throw_not_supported();\
 	case c_tag__INTEGER:\
 		return t_type_of<intptr_t>::f__##a_name(v_integer, a_value);\
 	case c_tag__FLOAT:\
@@ -209,7 +209,7 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 	case c_tag__FALSE:\
 	case c_tag__TRUE:\
 	case c_tag__FLOAT:\
-		f_throw(L"not supported."sv);\
+		f_throw_not_supported();\
 	default:\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
 	}\
@@ -246,7 +246,7 @@ inline t_pvalue t_value<T_tag>::f_##a_name(const t_pvalue& a_value) const\
 		return v_integer a_operator f_as<intptr_t>(a_value);\
 	case c_tag__NULL:\
 	case c_tag__FLOAT:\
-		f_throw(L"not supported."sv);\
+		f_throw_not_supported();\
 	default:\
 		XEMMAI__VALUE__BINARY(f_##a_name)\
 	}\

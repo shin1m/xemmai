@@ -87,7 +87,7 @@ auto t_code::f_binary_arithmetic(double a0, const t_pvalue& a1)
 	if (a1.f_tag() == c_tag__FLOAT) return A_operator(a0, a1.v_float);
 	if (a1.f_tag() == c_tag__INTEGER) return A_operator(a0, a1.v_integer);
 	if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<double>()) return A_operator(a0, a1->f_as<double>());
-	f_throw(L"not supported."sv);
+	f_throw_not_supported();
 }
 
 template<auto A_operator>
@@ -95,7 +95,7 @@ intptr_t t_code::f_binary_integral(uintptr_t a0, const t_pvalue& a1)
 {
 	if (a1.f_tag() == c_tag__INTEGER) return A_operator(a0, a1.v_integer);
 	if (a1.f_tag() >= c_tag__OBJECT && a1->f_type()->f_derives<intptr_t>()) return A_operator(a0, a1->f_as<intptr_t>());
-	f_throw(L"not supported."sv);
+	f_throw_not_supported();
 }
 
 bool t_code::f_binary_equality(intptr_t a0, const t_pvalue& a1)
@@ -906,7 +906,7 @@ size_t t_code::f_loop(t_context* a_context)
 	}
 #endif
 label__THROW_NOT_SUPPORTED:
-	f_throw(L"not supported."sv);
+	f_throw_not_supported();
 	} catch (const std::pair<t_rvalue, void**>&) {
 		throw;
 	} catch (...) {

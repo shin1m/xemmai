@@ -267,7 +267,7 @@ inline t_pvalue t_value<T_tag>::f_##a_name() const\
 	case c_tag__NULL:\
 	case c_tag__FALSE:\
 	case c_tag__TRUE:\
-		f_throw(L"not supported."sv);\
+		f_throw_not_supported();\
 	case c_tag__INTEGER:\
 		return a_operator(v_integer);\
 	case c_tag__FLOAT:\
@@ -291,7 +291,7 @@ inline t_pvalue t_value<T_tag>::f_complement() const
 	case c_tag__FALSE:
 	case c_tag__TRUE:
 	case c_tag__FLOAT:
-		f_throw(L"not supported."sv);
+		f_throw_not_supported();
 	default:
 		XEMMAI__VALUE__UNARY(f_complement)
 	}

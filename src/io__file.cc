@@ -51,7 +51,7 @@ intptr_t t_file::f_read(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 	return f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 	{
 		if (v_fd < 0) f_throw(L"already closed."sv);
-		if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
+		if (a_offset + a_size > a_bytes.f_size()) f_throw_out_of_range();
 		for (auto p = &a_bytes[0] + a_offset;;) {
 			auto n = read(v_fd, p, a_size);
 			if (n == -1) {
@@ -68,7 +68,7 @@ size_t t_file::f_write(t_bytes& a_bytes, size_t a_offset, size_t a_size)
 	return f_owned_or_shared<t_shared_lock_with_safe_region>([&]
 	{
 		if (v_fd < 0) f_throw(L"already closed."sv);
-		if (a_offset + a_size > a_bytes.f_size()) f_throw(L"out of range."sv);
+		if (a_offset + a_size > a_bytes.f_size()) f_throw_out_of_range();
 		auto size = a_size;
 		for (auto p = &a_bytes[0] + a_offset;;) {
 			auto n = write(v_fd, p, size);

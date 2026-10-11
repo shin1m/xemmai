@@ -19,6 +19,16 @@ void f_throw(std::wstring_view a_message)
 	throw t_rvalue(t_throwable::f_instantiate(a_message));
 }
 
+void f_throw_not_supported()
+{
+	f_throw(L"not supported."sv);
+}
+
+void f_throw_out_of_range()
+{
+	f_throw(L"out of range."sv);
+}
+
 t_throwable::~t_throwable()
 {
 	for (auto p = v_backtrace.load(std::memory_order_acquire); p;) {

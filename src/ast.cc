@@ -891,7 +891,7 @@ t_operand t_unary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_cl
 		case c_instruction__NOT_T:
 			return t_literal(v_at, false).f_emit(a_emit, a_tail, a_operand, a_clear);
 		default:
-			f_throw(L"not supported."sv);
+			f_throw_not_supported();
 		}
 	}
 	size_t instruction = v_instruction;
@@ -1005,7 +1005,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case c_instruction__NOT_IDENTICAL_TT:
 				return t_literal(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported."sv);
+				f_throw_not_supported();
 			}
 		}
 	} else if (left.v_tag == t_operand::c_tag__FLOAT) {
@@ -1037,7 +1037,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case c_instruction__NOT_IDENTICAL_TT:
 				return t_literal(v_at, true).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported."sv);
+				f_throw_not_supported();
 			}
 		} else if (right.v_tag == t_operand::c_tag__FLOAT) {
 			a_emit.f_pop().f_pop().v_code->v_size = size;
@@ -1065,7 +1065,7 @@ t_operand t_binary::f_emit(t_emit& a_emit, bool a_tail, bool a_operand, bool a_c
 			case c_instruction__NOT_IDENTICAL_TT:
 				return t_literal(v_at, left.v_float != right.v_float).f_emit(a_emit, a_tail, a_operand, a_clear);
 			default:
-				f_throw(L"not supported."sv);
+				f_throw_not_supported();
 			}
 		}
 	}

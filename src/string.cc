@@ -25,18 +25,18 @@ void t_type_of<t_string>::f_define()
 	(L"substring"sv,
 		t_member<t_object*(*)(t_global*, const t_string&, size_t), [](t_global* a_library, const t_string& a_self, size_t a_i)
 		{
-			if ((a_i > a_self.f_size())) f_throw(L"out of range."sv);
+			if ((a_i > a_self.f_size())) f_throw_out_of_range();
 			return f__substring(a_library, a_self, a_i, a_self.f_size() - a_i);
 		}>(),
 		t_member<t_object*(*)(t_global*, const t_string&, size_t, size_t), [](t_global* a_library, const t_string& a_self, size_t a_i, size_t a_n)
 		{
-			if ((a_i > a_self.f_size())) f_throw(L"out of range."sv);
+			if ((a_i > a_self.f_size())) f_throw_out_of_range();
 			return f__substring(a_library, a_self, a_i, std::min(a_n, a_self.f_size() - a_i));
 		}>()
 	)
 	(L"code_at"sv, t_member<intptr_t(*)(const t_string&, size_t), [](const t_string& a_self, size_t a_i) -> intptr_t
 	{
-		if (a_i >= a_self.f_size()) f_throw(L"out of range."sv);
+		if (a_i >= a_self.f_size()) f_throw_out_of_range();
 		return a_self[a_i];
 	}>())
 	.f_derive<t_string, t_object>();

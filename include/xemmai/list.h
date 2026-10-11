@@ -45,9 +45,9 @@ class t_list : public t_sharable
 	{
 		if (a_index < 0) {
 			a_index += v_size;
-			if (a_index < 0) f_throw(L"out of range."sv);
+			if (a_index < 0) f_throw_out_of_range();
 		} else {
-			if (a_index >= static_cast<intptr_t>(v_size)) f_throw(L"out of range."sv);
+			if (a_index >= static_cast<intptr_t>(v_size)) f_throw_out_of_range();
 		}
 	}
 	t_svalue& f_at(size_t a_index) const

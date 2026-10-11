@@ -44,12 +44,12 @@ size_t t_class::f_do_add(t_object* a_this, t_pvalue* a_stack)
 
 void t_class::f_not_supported0(t_object* a_this, t_pvalue* a_stack)
 {
-	f_throw(L"not supported."sv);
+	f_throw_not_supported();
 }
 
 size_t t_class::f_not_supported1(t_object* a_this, t_pvalue* a_stack)
 {
-	f_throw(L"not supported."sv);
+	f_throw_not_supported();
 }
 
 t_pvalue t_type_of<t_builder>::f_do_get(t_object* a_this, t_object* a_key, size_t& a_index)

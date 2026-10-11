@@ -44,7 +44,7 @@ public:
 	}
 	const t_svalue& f_get_at(size_t a_index) const
 	{
-		if (a_index >= v_size) f_throw(L"out of range."sv);
+		if (a_index >= v_size) f_throw_out_of_range();
 		return (*this)[a_index];
 	}
 	t_object* f_string() const;

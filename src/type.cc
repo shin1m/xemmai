@@ -9,7 +9,7 @@ void t_type::f_define()
 	auto global = f_global();
 	auto not_supported = xemmai::f_new<t_native>(global, [](xemmai::t_library*, t_pvalue*, size_t)
 	{
-		f_throw(L"not supported."sv);
+		f_throw_not_supported();
 	}, t_object::f_of(global));
 	t_define{global}
 	(global->f_symbol___initialize(), static_cast<t_object*>(global->v_initialize_validate))
@@ -257,7 +257,7 @@ XEMMAI__TYPE__METHOD(and, 22, 1)
 XEMMAI__TYPE__METHOD(xor, 23, 1)
 XEMMAI__TYPE__METHOD(or, 24, 1)
 
-void f_throw_type_error [[noreturn]] (const std::type_info& a_type, const wchar_t* a_name)
+void f_throw_type_error(const std::type_info& a_type, const wchar_t* a_name)
 {
 	f_throw(std::wstring(a_name) + L" must be " + portable::f_convert(a_type.name()) + L'.');
 }
