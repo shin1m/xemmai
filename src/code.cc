@@ -1,4 +1,5 @@
 #include <xemmai/convert.h>
+#include <functional>
 
 namespace xemmai
 {

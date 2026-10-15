@@ -213,8 +213,8 @@ public:
 };
 
 XEMMAI__PUBLIC void f_throw [[noreturn]] (std::wstring_view a_message);
-void f_throw_not_supported [[noreturn]] ();
-void f_throw_out_of_range [[noreturn]] ();
+XEMMAI__PUBLIC void f_throw_not_supported [[noreturn]] ();
+XEMMAI__PUBLIC void f_throw_out_of_range [[noreturn]] ();
 
 template<typename T_tag>
 class t_value : public T_tag
