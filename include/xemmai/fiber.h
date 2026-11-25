@@ -134,9 +134,6 @@ struct XEMMAI__LOCAL t_context
 	}
 	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
 	void f_call(t_object* a_this, t_pvalue* a_stack, void** a_pc);
-	size_t f_tail(t_pvalue* a_stack, size_t a_n);
-	template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-	size_t f_tail(t_object* a_this, t_pvalue* a_stack, void** a_pc);
 	void f_backtrace(t_object* a_value, void** a_pc);
 	size_t f_loop()
 	{
@@ -157,17 +154,6 @@ void t_context::f_call(t_object* a_this, t_pvalue* a_stack, void** a_pc)
 	v_pc = a_pc;
 	auto n = (a_this->f_type()->*A_function)(a_this, a_stack);
 	if (n != size_t(-1)) xemmai::f_loop(a_stack, n);
-}
-
-template<size_t (*t_type::*A_function)(t_object*, t_pvalue*)>
-size_t t_context::f_tail(t_object* a_this, t_pvalue* a_stack, void** a_pc)
-{
-	v_pc = a_pc;
-	auto n = (a_this->f_type()->*A_function)(a_this, a_stack);
-	if (n != size_t(-1)) return f_tail(a_stack, n);
-	v_base[-2] = a_stack[0];
-	f_stack__(v_previous);
-	return -1;
 }
 
 struct XEMMAI__LOCAL t_debug_context : t_context
